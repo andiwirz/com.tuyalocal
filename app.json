@@ -1,0 +1,171 @@
+{
+  "id": "com.tuya.dehumidifier",
+  "version": "1.0.0",
+  "compatibility": ">=12.0.0",
+  "sdk": 3,
+  "platforms": ["local"],
+  "name": {
+    "en": "Tuya Dehumidifier"
+  },
+  "description": {
+    "en": "Control Tuya-based dehumidifiers over local LAN"
+  },
+  "category": ["climate"],
+  "permissions": [],
+  "author": {
+    "name": "Andi",
+    "email": "andi@wirzfamily.ch"
+  },
+  "capabilities": {
+    "target_humidity": {
+      "type": "number",
+      "title": {
+        "en": "Target Humidity"
+      },
+      "units": {
+        "en": "%"
+      },
+      "min": 30,
+      "max": 80,
+      "step": 5,
+      "getable": true,
+      "setable": true,
+      "uiComponent": "slider",
+      "uiQuickAction": false,
+      "insights": true
+    }
+  },
+  "drivers": [
+    {
+      "id": "dehumidifier",
+      "name": {
+        "en": "Dehumidifier"
+      },
+      "class": "thermostat",
+      "capabilities": [
+        "onoff",
+        "measure_humidity",
+        "target_humidity",
+        "alarm_water"
+      ],
+      "capabilitiesOptions": {
+        "alarm_water": {
+          "title": {
+            "en": "Water Tank Full"
+          },
+          "insightsTitleTrue": {
+            "en": "Water tank became full"
+          },
+          "insightsTitleFalse": {
+            "en": "Water tank emptied"
+          }
+        }
+      },
+      "settings": [
+        {
+          "type": "group",
+          "label": {
+            "en": "Connection"
+          },
+          "children": [
+            {
+              "id": "ip",
+              "type": "text",
+              "label": {
+                "en": "IP Address"
+              },
+              "value": ""
+            },
+            {
+              "id": "device_id",
+              "type": "text",
+              "label": {
+                "en": "Device ID"
+              },
+              "value": ""
+            },
+            {
+              "id": "local_key",
+              "type": "text",
+              "label": {
+                "en": "Local Key"
+              },
+              "value": ""
+            },
+            {
+              "id": "version",
+              "type": "dropdown",
+              "label": {
+                "en": "Protocol Version"
+              },
+              "value": "3.3",
+              "values": [
+                { "id": "3.1", "label": { "en": "3.1 (legacy)" } },
+                { "id": "3.3", "label": { "en": "3.3" } },
+                { "id": "3.4", "label": { "en": "3.4" } },
+                { "id": "3.5", "label": { "en": "3.5" } }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Data Points (DPs)"
+          },
+          "children": [
+            {
+              "id": "dp_onoff",
+              "type": "number",
+              "label": {
+                "en": "On/Off DP"
+              },
+              "value": 1,
+              "hint": {
+                "en": "DP number for power on/off (default: 1)"
+              }
+            },
+            {
+              "id": "dp_current_humidity",
+              "type": "number",
+              "label": {
+                "en": "Current Humidity DP"
+              },
+              "value": 20,
+              "hint": {
+                "en": "DP number for current humidity reading (common: 20 or 102)"
+              }
+            },
+            {
+              "id": "dp_target_humidity",
+              "type": "number",
+              "label": {
+                "en": "Target Humidity DP"
+              },
+              "value": 101,
+              "hint": {
+                "en": "DP number for target humidity setpoint (common: 101 or 103)"
+              }
+            },
+            {
+              "id": "dp_water_full",
+              "type": "number",
+              "label": {
+                "en": "Water Full DP"
+              },
+              "value": 102,
+              "hint": {
+                "en": "DP number for water tank full alarm (common: 7 or 102)"
+              }
+            }
+          ]
+        }
+      ],
+      "pair": [
+        {
+          "id": "credentials"
+        }
+      ]
+    }
+  ]
+}

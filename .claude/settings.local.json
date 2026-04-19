@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ping -n 3 10.160.13.148)",
+      "Bash(nmap -sV --open -p 22,23,80,443,6668,6669,8080,8443,8883,1883,502,4711,55443 10.160.13.148)",
+      "Bash(curl -s --max-time 5 http://10.160.13.148/)",
+      "Bash(curl -s --max-time 5 http://10.160.13.148:6668/)",
+      "Bash(nc -w 3 10.160.13.148 6668)",
+      "Bash(xxd)",
+      "Bash(python3 -c ' *)",
+      "Bash(python -c ' *)",
+      "Bash(npm install *)",
+      "Bash(homey app *)"
+    ]
+  }
+}

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 14px;
+    }
+    .device-item {
+      padding: 12px;
+      border: 1px solid #1a73e8;
+      border-radius: 6px;
+      background: #e8f0fe;
+      margin-bottom: 12px;
+    }
+    .device-name { font-weight: 600; }
+    .device-ip   { font-size: 12px; color: #555; margin-top: 2px; }
+    button {
+      width: 100%;
+      padding: 11px;
+      background: #1a73e8;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    button:disabled { opacity: 0.55; cursor: not-allowed; }
+    #status { margin-top: 10px; font-size: 13px; color: #c5221f; }
+  </style>
+</head>
+<body>
+  <div id="deviceList"></div>
+  <button id="addBtn" disabled>Add Device</button>
+  <div id="status"></div>
+
+  <script>
+    var foundDevices = [];
+
+    var timeoutId = setTimeout(function () {
+      if (foundDevices.length === 0) {
+        document.getElementById('status').textContent =
+          'No device received. Go back and check your credentials.';
+      }
+    }, 5000);
+
+    Homey.on('devices', function (devices) {
+      clearTimeout(timeoutId);
+
+      var list   = document.getElementById('deviceList');
+      var status = document.getElementById('status');
+      var addBtn = document.getElementById('addBtn');
+
+      status.textContent = '';
+      list.innerHTML = '';
+
+      if (!devices || devices.length === 0) {
+        status.textContent = 'No device found. Go back and check your credentials.';
+        return;
+      }
+
+      foundDevices = devices;
+
+      devices.forEach(function (device) {
+        var item = document.createElement('div');
+        item.className = 'device-item';
+
+        var name = document.createElement('div');
+        name.className = 'device-name';
+        name.textContent = device.name;
+
+        var ip = document.createElement('div');
+        ip.className = 'device-ip';
+        ip.textContent = device.settings ? device.settings.ip : '';
+
+        item.appendChild(name);
+        item.appendChild(ip);
+        list.appendChild(item);
+      });
+
+      addBtn.disabled = false;
+    });
+
+    document.getElementById('addBtn').addEventListener('click', function () {
+      this.disabled = true;
+      this.textContent = 'Adding…';
+      Homey.nextView();
+    });
+  </script>
+</body>
+</html>

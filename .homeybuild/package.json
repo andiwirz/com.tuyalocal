@@ -1,0 +1,12 @@
+{
+  "name": "com.tuya.dehumidifier",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "start": "homey app run",
+    "validate": "homey app validate"
+  },
+  "dependencies": {
+    "tuyapi": "^7.5.2"
+  }
+}
