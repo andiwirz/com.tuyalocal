@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: -apple-system, sans-serif; padding: 16px; font-size: 13px; background: #f5f6f7; }
+    h2   { margin: 0 0 4px; font-size: 16px; }
+    p    { color: #666; margin: 0 0 14px; font-size: 12px; }
+    .bar { display: flex; gap: 8px; margin-bottom: 12px; }
+    button { padding: 7px 14px; border: none; border-radius: 6px; font-size: 13px; cursor: pointer; }
+    #btnRefresh { background: #1a73e8; color: #fff; }
+    #btnClear   { background: #f1f3f4; color: #c5221f; }
+    pre {
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 11px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      min-height: 60px;
+      margin: 0;
+    }
+    #count { margin-top: 6px; font-size: 11px; color: #888; text-align: right; }
+  </style>
+</head>
+<body>
+  <h2>Diagnostic Logs</h2>
+  <p>Persistent log buffer (max 500 entries).</p>
+  <div class="bar">
+    <button id="btnRefresh">&#8635; Refresh</button>
+    <button id="btnClear">&#128465; Clear</button>
+  </div>
+  <pre id="output">Loading…</pre>
+  <div id="count"></div>
+
+  <script>
+    Homey.ready();
+
+    function load() {
+      Homey.get('diagnostic_logs', function(err, val) {
+        var logs = Array.isArray(val) ? val : [];
+        if (logs.length === 0) {
+          document.getElementById('output').textContent = 'No entries yet.';
+          document.getElementById('count').textContent  = '';
+          return;
+        }
+        var lines = logs.slice().reverse().map(function(e) {
+          var t = e.time ? e.time.replace('T', ' ').slice(0, 19) : '';
+          return t + '  [' + (e.source || '?') + ']  ' + (e.message || '');
+        });
+        document.getElementById('output').textContent = lines.join('\n');
+        document.getElementById('count').textContent  = logs.length + ' entries';
+      });
+    }
+
+    document.getElementById('btnRefresh').addEventListener('click', load);
+    document.getElementById('btnClear').addEventListener('click', function() {
+      if (!confirm('Clear all logs?')) return;
+      Homey.set('diagnostic_logs', [], function() {
+        document.getElementById('output').textContent = 'Cleared.';
+        document.getElementById('count').textContent  = '';
+      });
+    });
+
+    load();
+  </script>
+</body>
+</html>

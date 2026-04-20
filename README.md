@@ -1,4 +1,4 @@
-# com.tuya.local
+# com.tuyalocal
 
 A Homey app for direct, **local control** of Tuya-based smart devices — no cloud, no internet dependency. Communication happens entirely over your local network using the Tuya LAN protocol.
 
@@ -24,7 +24,7 @@ A Homey app for direct, **local control** of Tuya-based smart devices — no clo
 ## Installation
 
 ```bash
-git clone https://github.com/andiwirz/com.tuya.local
+git clone https://github.com/andiwirz/com.tuyalocal
 cd com.tuyalocal
 npm install
 ```
@@ -106,7 +106,7 @@ node discover-dps.js 192.168.1.100 abc123 0123456789abcdef 3.3
 
 ## Contributing
 
-Bug reports and feature requests: [GitHub Issues](https://github.com/andiwirz/com.tuya.local/issues)
+Bug reports and feature requests: [GitHub Issues](https://github.com/andiwirz/com.tuyalocal/issues)
 
 Donations: [PayPal](https://paypal.me/AndiWirz)
 

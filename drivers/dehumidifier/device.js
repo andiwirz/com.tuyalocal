@@ -5,6 +5,7 @@ const TuyAPI = require('tuyapi');
 
 const RECONNECT_BASE_MS = 10000;   // 10 s initial delay
 const RECONNECT_MAX_MS  = 300000;  // 5 min maximum delay
+const CMD_TIMEOUT_MS    = 5000;    // per-command timeout
 
 class DehumidifierDevice extends Homey.Device {
   async onInit() {
@@ -16,6 +17,7 @@ class DehumidifierDevice extends Homey.Device {
     this._pollPending       = false;
     this._tuya              = null;
     this._connected         = false;
+    this._cmdQueue          = Promise.resolve(); // serial command queue
 
     // ── Flow trigger cards ───────────────────────────────────────────────────
     this._triggerHumidityAbove = this.homey.flow.getDeviceTriggerCard('humidity_above');
@@ -42,6 +44,11 @@ class DehumidifierDevice extends Homey.Device {
     await this._connect();
   }
 
+  _appLog(message) {
+    this.log(message);
+    try { this.homey.app.addLog(this.getName(), message); } catch (e) {}
+  }
+
   async _connect() {
     if (this._tuya) {
       try { this._tuya.disconnect(); } catch (e) {}
@@ -64,17 +71,19 @@ class DehumidifierDevice extends Homey.Device {
     });
 
     this._tuya.on('connected', () => {
-      this.log('Connected');
+      this._appLog('Connected');
       this._connected         = true;
       this._reconnectAttempts = 0;
       this.setAvailable().catch(() => {});
 
-      // Request all DPs after a short delay to let the handshake complete
+      // Request all DPs after a short delay; guard with _pollPending to prevent
+      // overlap if the polling timer fires at the same moment
       setTimeout(() => {
-        if (this._tuya && this._connected) {
-          this._tuya.get({ schema: true }).catch((err) =>
-            this.log('Failed to get initial state:', err.message)
-          );
+        if (this._tuya && this._connected && !this._pollPending) {
+          this._pollPending = true;
+          this._tuya.get({ schema: true })
+            .catch((err) => this._appLog(`Initial state fetch failed: ${err.message}`))
+            .finally(() => { this._pollPending = false; });
         }
       }, 500);
 
@@ -82,7 +91,7 @@ class DehumidifierDevice extends Homey.Device {
     });
 
     this._tuya.on('disconnected', () => {
-      this.log('Disconnected');
+      this._appLog('Disconnected');
       this._connected = false;
       this._stopPolling();
       this.setUnavailable('Device disconnected').catch(() => {});
@@ -91,7 +100,7 @@ class DehumidifierDevice extends Homey.Device {
 
     this._tuya.on('error', (err) => {
       const msg = (err && err.message) ? err.message : String(err || 'Unknown error');
-      this.log('Error:', msg);
+      this._appLog(`Error: ${msg}`);
 
       // Timeout on a single GET/SET – TCP connection is usually still alive.
       // Treat as non-fatal; next poll will retry.
@@ -118,7 +127,7 @@ class DehumidifierDevice extends Homey.Device {
     try {
       await this._tuya.connect();
     } catch (err) {
-      this.log('Connection failed:', err.message);
+      this._appLog(`Connection failed: ${err.message}`);
       this.setUnavailable('Connection failed').catch(() => {});
       this._scheduleReconnect();
     }
@@ -158,7 +167,6 @@ class DehumidifierDevice extends Homey.Device {
         await this.setCapabilityValue('alarm_water', newWater).catch(() => {});
         if (!prevWater && newWater) {
           this._triggerWaterFull.trigger(this).catch(() => {});
-          // Push notification so the user sees it without a flow
           this.homey.notifications.createNotification({
             excerpt: `${this.getName()}: ${this.homey.__('notifications.waterFull')}`,
           }).catch(() => {});
@@ -200,24 +208,40 @@ class DehumidifierDevice extends Homey.Device {
 
   // ── Internal helpers ───────────────────────────────────────────────────────
 
+  // Serialises all SET commands through a queue so concurrent capability
+  // changes don't race each other on the TCP socket.
   async _setDp(dp, value) {
     if (!this._connected || !this._tuya) throw new Error('Device not connected');
-    try {
-      await this._tuya.set({ dps: dp, set: value });
-    } catch (err) {
-      const msg = (err && err.message) ? err.message : String(err || 'Unknown error');
-      // SET timeouts are non-fatal – the device usually applies the value anyway
-      if (msg.toLowerCase().includes('timeout')) {
-        this.log(`Set DP ${dp} timed out (value may still have been applied):`, msg);
-        return;
+
+    const execute = async () => {
+      if (!this._connected || !this._tuya) throw new Error('Device not connected');
+      try {
+        await Promise.race([
+          this._tuya.set({ dps: dp, set: value }),
+          new Promise((_, rej) =>
+            setTimeout(() => rej(new Error('timeout')), CMD_TIMEOUT_MS)
+          ),
+        ]);
+      } catch (err) {
+        const msg = (err && err.message) ? err.message : String(err || 'Unknown error');
+        // SET timeouts are non-fatal – the device usually applies the value anyway
+        if (msg.toLowerCase().includes('timeout')) {
+          this.log(`Set DP ${dp} timed out (value may still have been applied)`);
+          return;
+        }
+        throw err;
       }
-      throw err;
-    }
+    };
+
+    // Keep the queue alive even if this task throws
+    const task = this._cmdQueue.then(execute);
+    this._cmdQueue = task.catch(() => {});
+    return task;
   }
 
   _startPolling() {
     this._stopPolling();
-    const intervalSec = this.getSetting('polling_interval') ?? 300;
+    const intervalSec = this.getSetting('polling_interval') ?? 30;
     if (!intervalSec || intervalSec <= 0) return;
     this.log(`Polling every ${intervalSec}s`);
     this._pollTimer = setInterval(() => {
@@ -252,11 +276,11 @@ class DehumidifierDevice extends Homey.Device {
 
   _scheduleReconnect() {
     if (this._reconnectTimer) return;
-    // Exponential backoff: 10 s → 20 s → 40 s → … → 5 min max
-    const delay = Math.min(
-      RECONNECT_BASE_MS * Math.pow(2, this._reconnectAttempts),
-      RECONNECT_MAX_MS
-    );
+    // Exponential backoff with ±20 % jitter to avoid thundering herd when
+    // multiple devices reconnect simultaneously after a network outage.
+    const base  = Math.min(RECONNECT_BASE_MS * Math.pow(2, this._reconnectAttempts), RECONNECT_MAX_MS);
+    const jitter = base * 0.2 * (Math.random() * 2 - 1);
+    const delay  = Math.max(1000, Math.round(base + jitter));
     this._reconnectAttempts++;
     this.log(`Reconnecting in ${Math.round(delay / 1000)}s (attempt ${this._reconnectAttempts})`);
     this._reconnectTimer = setTimeout(async () => {

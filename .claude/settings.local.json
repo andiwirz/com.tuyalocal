@@ -10,7 +10,13 @@
       "Bash(python3 -c ' *)",
       "Bash(python -c ' *)",
       "Bash(npm install *)",
-      "Bash(homey app *)"
+      "Bash(homey app *)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:api.github.com)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:apps.developer.homey.app)",
+      "WebFetch(domain:apps-sdk-v3.developer.homey.app)"
     ]
   }
 }

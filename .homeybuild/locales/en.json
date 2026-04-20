@@ -50,5 +50,25 @@
       "error": "Error: ",
       "deviceName": "Device name"
     }
+  },
+  "repair": {
+    "title": "Update Connection",
+    "subtitle": "Update the connection settings for this device.",
+    "save": "Save & Reconnect",
+    "saving": "Saving…",
+    "success": "Settings saved! Reconnecting…",
+    "fillAll": "Please fill in IP address and Local Key."
+  },
+  "settings": {
+    "logs": {
+      "title": "Diagnostic Logs",
+      "subtitle": "In-memory log buffer — cleared on app restart.",
+      "colTime": "Time",
+      "colDevice": "Device",
+      "colMessage": "Message",
+      "empty": "No log entries yet.",
+      "entries": "entries",
+      "confirmClear": "Clear all log entries?"
+    }
   }
 }

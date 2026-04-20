@@ -50,5 +50,25 @@
       "error": "Fehler: ",
       "deviceName": "Gerätename"
     }
+  },
+  "repair": {
+    "title": "Verbindung aktualisieren",
+    "subtitle": "Verbindungseinstellungen für dieses Gerät anpassen.",
+    "save": "Speichern & Neu verbinden",
+    "saving": "Speichern…",
+    "success": "Einstellungen gespeichert! Verbinde neu…",
+    "fillAll": "Bitte IP-Adresse und Lokalen Schlüssel ausfüllen."
+  },
+  "settings": {
+    "logs": {
+      "title": "Diagnose-Protokoll",
+      "subtitle": "In-Memory-Puffer — wird bei App-Neustart geleert.",
+      "colTime": "Zeit",
+      "colDevice": "Gerät",
+      "colMessage": "Meldung",
+      "empty": "Noch keine Einträge vorhanden.",
+      "entries": "Einträge",
+      "confirmClear": "Alle Protokolleinträge löschen?"
+    }
   }
 }

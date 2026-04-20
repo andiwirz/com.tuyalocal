@@ -1045,10 +1045,10 @@
                 "en": "Polling Interval (seconds)",
                 "de": "Abfrageintervall (Sekunden)"
               },
-              "value": 300,
+              "value": 30,
               "hint": {
-                "en": "How often to actively request current values from the device. Set to 0 to disable polling (push-only). Default: 300 s (5 min).",
-                "de": "Wie oft die aktuellen Werte aktiv vom Gerät abgefragt werden. 0 = kein Polling (nur Push). Standard: 300 s (5 Min.)."
+                "en": "How often to actively request current values from the device. Set to 0 to disable polling (push-only). Default: 30 s.",
+                "de": "Wie oft die aktuellen Werte aktiv vom Gerät abgefragt werden. 0 = kein Polling (nur Push). Standard: 30 s."
               },
               "min": 0,
               "max": 3600
@@ -1188,6 +1188,11 @@
         },
         {
           "id": "list_devices"
+        }
+      ],
+      "repair": [
+        {
+          "id": "credentials"
         }
       ],
       "images": {
