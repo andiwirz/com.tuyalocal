@@ -98,8 +98,8 @@ npm install
 
 **Deploy to Homey:**
 ```bash
-npm start        # homey app run (development)
-npm run validate # validates app.json manifest
+homey app build    # build the app
+homey app install  # install on Homey Pro
 ```
 
 ---
