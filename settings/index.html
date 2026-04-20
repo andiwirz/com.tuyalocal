@@ -2,16 +2,26 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <!-- Required for all Homey app settings pages -->
   <script type="text/javascript" src="/homey.js" data-origin="settings"></script>
   <style>
     body { font-family: -apple-system, sans-serif; padding: 16px; font-size: 13px; background: #f5f6f7; margin: 0; }
     h2   { margin: 0 0 4px; font-size: 16px; }
     p    { color: #666; margin: 0 0 14px; font-size: 12px; }
-    .bar { display: flex; gap: 8px; margin-bottom: 12px; }
+    .section { margin-bottom: 28px; }
+    .bar { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; }
     button { padding: 7px 14px; border: none; border-radius: 6px; font-size: 13px; cursor: pointer; }
-    #btnRefresh { background: #1a73e8; color: #fff; }
-    #btnClear   { background: #f1f3f4; color: #c5221f; }
+    #btnRefresh    { background: #1a73e8; color: #fff; }
+    #btnClear      { background: #f1f3f4; color: #c5221f; }
+    #btnDpRefresh  { background: #1a73e8; color: #fff; }
+    #autoToggle    { background: #f1f3f4; color: #333; }
+    #autoToggle.active { background: #e6f4ea; color: #1e6a34; }
+    select {
+      padding: 7px 10px;
+      border: 1px solid #d0d0d0;
+      border-radius: 6px;
+      font-size: 13px;
+      background: #fff;
+    }
     pre {
       background: #fff;
       border: 1px solid #e0e0e0;
@@ -22,51 +32,230 @@
       word-break: break-all;
       min-height: 60px;
       margin: 0;
+      line-height: 1.6;
     }
-    #count { margin-top: 6px; font-size: 11px; color: #888; text-align: right; }
+    #count    { margin-top: 6px; font-size: 11px; color: #888; text-align: right; }
+    #dpMeta   { margin-top: 6px; font-size: 11px; color: #888; }
+    .lvl-warn  { color: #b45309; }
+    .lvl-error { color: #c5221f; }
+    .lvl-info  { color: #333; }
+
+    /* DP debug table */
+    .dp-debug-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      overflow: hidden;
+      font-size: 12px;
+    }
+    .dp-debug-table th {
+      text-align: left;
+      color: #666;
+      font-weight: 500;
+      padding: 7px 12px;
+      border-bottom: 1px solid #e8e8e8;
+      background: #f8f9fa;
+    }
+    .dp-debug-table td {
+      padding: 6px 12px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .dp-debug-table tr:last-child td { border-bottom: none; }
+    .dp-num  { font-weight: 600; color: #1a73e8; }
+    .val-bool-true  { color: #1e6a34; font-weight: 500; }
+    .val-bool-false { color: #c5221f; font-weight: 500; }
+    .val-num    { color: #7c4dff; }
+    .val-str    { color: #b45309; }
+    .type-badge {
+      display: inline-block;
+      font-size: 10px;
+      padding: 1px 5px;
+      border-radius: 3px;
+      background: #f1f3f4;
+      color: #666;
+    }
+    #dpPlaceholder { color: #999; font-size: 12px; padding: 16px 0; }
   </style>
 </head>
 <body>
-  <h2>Diagnostic Logs</h2>
-  <p>Persistent log buffer (max 500 entries).</p>
-  <div class="bar">
-    <button id="btnRefresh">&#8635; Refresh</button>
-    <button id="btnClear">&#128465; Clear</button>
+
+  <!-- ── Diagnostic Logs ─────────────────────────────────────────────── -->
+  <div class="section">
+    <h2>Diagnostic Logs</h2>
+    <p>Persistent log buffer (max 500 entries).</p>
+    <div class="bar">
+      <button id="btnRefresh">&#8635; Refresh</button>
+      <button id="btnClear">&#128465; Clear</button>
+    </div>
+    <pre id="output">Loading…</pre>
+    <div id="count"></div>
   </div>
-  <pre id="output">Loading…</pre>
-  <div id="count"></div>
+
+  <!-- ── DP Debug ────────────────────────────────────────────────────── -->
+  <div class="section">
+    <h2>DP Debug</h2>
+    <p>Live data points received from each device. Updated on every data push.</p>
+    <div class="bar">
+      <select id="deviceSelect"><option value="">— select device —</option></select>
+      <button id="btnDpRefresh">&#8635; Refresh</button>
+      <button id="autoToggle">Auto-refresh: off</button>
+    </div>
+    <div id="dpContent"><div id="dpPlaceholder">Select a device above to see its DPs.</div></div>
+    <div id="dpMeta"></div>
+  </div>
 
   <script type="text/javascript">
+    function escHtml(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
     function onHomeyReady(Homey) {
       Homey.ready();
 
-      function load() {
+      // ── Logs ────────────────────────────────────────────────────────
+
+      function loadLogs() {
         Homey.get('diagnostic_logs', function(err, val) {
           var logs = Array.isArray(val) ? val : [];
+          var out  = document.getElementById('output');
           if (logs.length === 0) {
-            document.getElementById('output').textContent = 'No entries yet.';
-            document.getElementById('count').textContent  = '';
+            out.innerHTML = 'No entries yet.';
+            document.getElementById('count').textContent = '';
             return;
           }
-          var lines = logs.slice().reverse().map(function(e) {
-            var t = (e.time || '').replace('T', ' ').slice(0, 19);
-            return t + '  [' + (e.source || '?') + ']  ' + (e.message || '');
-          });
-          document.getElementById('output').textContent = lines.join('\n');
-          document.getElementById('count').textContent  = logs.length + ' entries';
+          var html = logs.slice().reverse().map(function(e) {
+            var t     = (e.time || '').replace('T', ' ').slice(0, 19);
+            var lvl   = (e.level || 'info');
+            var badge = lvl === 'error' ? '[ERR]' : lvl === 'warn' ? '[WRN]' : '[INF]';
+            var cls   = 'lvl-' + lvl;
+            return '<span class="' + cls + '">'
+              + escHtml(t) + '  ' + badge + '  ['
+              + escHtml(e.source  || '?') + ']  '
+              + escHtml(e.message || '')
+              + '</span>';
+          }).join('\n');
+          out.innerHTML = html;
+          document.getElementById('count').textContent = logs.length + ' entries';
         });
       }
 
-      document.getElementById('btnRefresh').addEventListener('click', load);
+      document.getElementById('btnRefresh').addEventListener('click', loadLogs);
       document.getElementById('btnClear').addEventListener('click', function() {
         if (!confirm('Clear all logs?')) return;
         Homey.set('diagnostic_logs', [], function() {
-          document.getElementById('output').textContent = 'Cleared.';
-          document.getElementById('count').textContent  = '';
+          document.getElementById('output').innerHTML = 'Cleared.';
+          document.getElementById('count').textContent = '';
         });
       });
+      loadLogs();
 
-      load();
+      // ── DP Debug ────────────────────────────────────────────────────
+
+      var snapshot    = {};
+      var autoTimer   = null;
+      var isAuto      = false;
+
+      function loadSnapshot(cb) {
+        Homey.get('dp_snapshot', function(err, val) {
+          snapshot = (val && typeof val === 'object') ? val : {};
+          populateDeviceSelect();
+          if (cb) cb();
+        });
+      }
+
+      function populateDeviceSelect() {
+        var sel     = document.getElementById('deviceSelect');
+        var current = sel.value;
+        // Keep placeholder option, rebuild the rest
+        while (sel.options.length > 1) sel.remove(1);
+        Object.keys(snapshot).forEach(function(id) {
+          var opt   = document.createElement('option');
+          opt.value = id;
+          opt.textContent = snapshot[id].name || id;
+          sel.appendChild(opt);
+        });
+        // Restore selection if device still exists
+        if (current && snapshot[current]) sel.value = current;
+      }
+
+      function renderDps() {
+        var sel      = document.getElementById('deviceSelect');
+        var deviceId = sel.value;
+        var content  = document.getElementById('dpContent');
+        var meta     = document.getElementById('dpMeta');
+
+        if (!deviceId || !snapshot[deviceId]) {
+          content.innerHTML = '<div id="dpPlaceholder">Select a device above to see its DPs.</div>';
+          meta.textContent  = '';
+          return;
+        }
+
+        var entry = snapshot[deviceId];
+        var dps   = entry.dps || {};
+        var keys  = Object.keys(dps).map(Number).sort(function(a, b) { return a - b; });
+
+        if (keys.length === 0) {
+          content.innerHTML = '<div id="dpPlaceholder">No data received yet for this device.</div>';
+          meta.textContent  = '';
+          return;
+        }
+
+        var rows = keys.map(function(dp) {
+          var val     = dps[String(dp)];
+          var type    = typeof val;
+          var valHtml;
+          if (type === 'boolean') {
+            valHtml = '<span class="' + (val ? 'val-bool-true' : 'val-bool-false') + '">' + val + '</span>';
+          } else if (type === 'number') {
+            valHtml = '<span class="val-num">' + val + '</span>';
+          } else {
+            valHtml = '<span class="val-str">&quot;' + escHtml(String(val)) + '&quot;</span>';
+          }
+          return '<tr>'
+            + '<td><span class="dp-num">DP ' + dp + '</span></td>'
+            + '<td>' + valHtml + '</td>'
+            + '<td><span class="type-badge">' + type + '</span></td>'
+            + '</tr>';
+        }).join('');
+
+        content.innerHTML =
+          '<table class="dp-debug-table">'
+          + '<thead><tr><th>DP</th><th>Value</th><th>Type</th></tr></thead>'
+          + '<tbody>' + rows + '</tbody>'
+          + '</table>';
+
+        var d = new Date(entry.updatedAt);
+        meta.textContent = 'Last update: ' + d.toLocaleTimeString() + ' · ' + keys.length + ' DPs';
+      }
+
+      function refreshDp() {
+        loadSnapshot(renderDps);
+      }
+
+      document.getElementById('deviceSelect').addEventListener('change', renderDps);
+      document.getElementById('btnDpRefresh').addEventListener('click', refreshDp);
+
+      document.getElementById('autoToggle').addEventListener('click', function() {
+        isAuto = !isAuto;
+        var btn = document.getElementById('autoToggle');
+        if (isAuto) {
+          btn.textContent = 'Auto-refresh: on (5 s)';
+          btn.classList.add('active');
+          autoTimer = setInterval(refreshDp, 5000);
+        } else {
+          btn.textContent = 'Auto-refresh: off';
+          btn.classList.remove('active');
+          clearInterval(autoTimer);
+          autoTimer = null;
+        }
+      });
+
+      loadSnapshot(renderDps);
     }
   </script>
 </body>

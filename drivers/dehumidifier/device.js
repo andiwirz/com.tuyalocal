@@ -1,42 +1,47 @@
 'use strict';
 
-const Homey = require('homey');
-const TuyAPI = require('tuyapi');
+const Homey          = require('homey');
+const TuyaConnection = require('../../lib/TuyaConnection');
 
-const RECONNECT_BASE_MS    = 10000;   // 10 s initial delay
-const RECONNECT_MAX_MS     = 300000;  // 5 min maximum delay
-const CMD_TIMEOUT_MS       = 5000;    // per-command timeout
-const HEARTBEAT_TIMEOUT_MS = 60000;   // reconnect if no data for 60 s
+const DEBOUNCE_MS = 300; // debounce delay for slider capabilities
 
-// Maps device settings keys → Homey capabilities.
+// Maps settings keys → Homey capabilities.
 // settable: false = read-only, no capability listener registered.
+// debounce: true  = delay physical command to avoid rapid-fire sends (e.g. sliders).
 const DP_PROFILE = [
-  { settingKey: 'dp_onoff',            capability: 'onoff',            transform: (v) => Boolean(v),  settable: true  },
-  { settingKey: 'dp_current_humidity', capability: 'measure_humidity', transform: (v) => Number(v),   settable: false },
-  { settingKey: 'dp_target_humidity',  capability: 'target_humidity',  transform: (v) => Number(v),   settable: true  },
-  { settingKey: 'dp_fan_speed',        capability: 'fan_speed',        transform: (v) => String(v),   settable: true  },
-  { settingKey: 'dp_mode',             capability: 'mode',             transform: (v) => String(v),   settable: true  },
-  { settingKey: 'dp_countdown_left',   capability: 'countdown_left',   transform: (v) => Number(v),   settable: false },
-  { settingKey: 'dp_countdown_timer',  capability: 'countdown_timer',  transform: (v) => String(v),   settable: true  },
-  { settingKey: 'dp_child_lock',       capability: 'child_lock',       transform: (v) => Boolean(v),  settable: true  },
-  { settingKey: 'dp_water_full',       capability: 'alarm_water',      transform: (v) => Boolean(v),  settable: false },
+  { settingKey: 'dp_onoff',            capability: 'onoff',            transform: (v) => Boolean(v),  settable: true              },
+  { settingKey: 'dp_current_humidity', capability: 'measure_humidity', transform: (v) => Number(v),   settable: false             },
+  { settingKey: 'dp_target_humidity',  capability: 'target_humidity',  transform: (v) => Number(v),   settable: true, debounce: true },
+  { settingKey: 'dp_fan_speed',        capability: 'fan_speed',        transform: (v) => String(v),   settable: true              },
+  { settingKey: 'dp_mode',             capability: 'mode',             transform: (v) => String(v),   settable: true              },
+  { settingKey: 'dp_countdown_left',   capability: 'countdown_left',   transform: (v) => Number(v),   settable: false             },
+  { settingKey: 'dp_countdown_timer',  capability: 'countdown_timer',  transform: (v) => String(v),   settable: true              },
+  { settingKey: 'dp_child_lock',       capability: 'child_lock',       transform: (v) => Boolean(v),  settable: true              },
+  { settingKey: 'dp_water_full',       capability: 'alarm_water',      transform: (v) => Boolean(v),  settable: false             },
+  { settingKey: 'dp_temperature',      capability: 'measure_temperature', transform: (v) => Number(v) / 10, settable: false            },
 ];
 
 class DehumidifierDevice extends Homey.Device {
   async onInit() {
     this.log('Device initialized:', this.getName());
 
-    this._reconnectTimer    = null;
-    this._reconnectAttempts = 0;
-    this._pollTimer         = null;
-    this._pollPending       = false;
-    this._tuya              = null;
-    this._connected         = false;
-    this._cmdQueue          = Promise.resolve();
-    this._heartbeatTimer    = null;
-    this._lastDps           = {};
+    this._conn           = null;
+    this._pollTimer      = null;
+    this._lastDps        = {};
+    this._lastDataTime   = null;
+    this._debounceTimers = {};
+
+    // Restore last known DPS from store — prevents redundant updates on first poll.
+    try {
+      const stored = this.getStoreValue('lastDps');
+      if (stored && typeof stored === 'object') {
+        this._lastDps = stored;
+        this._writeDpSnapshot();
+      }
+    } catch (e) {}
 
     await this._migrateCapabilities();
+    await this._syncOptionalCapabilities();
 
     // ── Flow trigger cards ───────────────────────────────────────────────────
     this._triggerHumidityAbove = this.homey.flow.getDeviceTriggerCard('humidity_above');
@@ -49,20 +54,47 @@ class DehumidifierDevice extends Homey.Device {
       state.prevHumidity >= args.humidity && state.humidity < args.humidity
     );
 
-    this._triggerWaterFull        = this.homey.flow.getDeviceTriggerCard('water_tank_full');
-    this._triggerWaterEmptied     = this.homey.flow.getDeviceTriggerCard('water_tank_emptied');
-    this._triggerDeviceConnected  = this.homey.flow.getDeviceTriggerCard('device_connected');
+    this._triggerWaterFull          = this.homey.flow.getDeviceTriggerCard('water_tank_full');
+    this._triggerWaterEmptied       = this.homey.flow.getDeviceTriggerCard('water_tank_emptied');
+    this._triggerDeviceConnected    = this.homey.flow.getDeviceTriggerCard('device_connected');
     this._triggerDeviceDisconnected = this.homey.flow.getDeviceTriggerCard('device_disconnected');
+    this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('dp_changed');
 
     // ── Capability listeners (auto-registered from DP_PROFILE) ──────────────
     for (const entry of DP_PROFILE) {
       if (!entry.settable) continue;
-      this.registerCapabilityListener(entry.capability, async (value) => {
-        await this._setDp(this.getSetting(entry.settingKey), value);
-      });
+
+      if (entry.debounce) {
+        let timer = null;
+        this.registerCapabilityListener(entry.capability, (value) => {
+          clearTimeout(timer);
+          // Resolve immediately so Homey UI stays responsive; command is delayed.
+          return new Promise((resolve) => {
+            timer = setTimeout(() => {
+              this._conn?.set(this.getSetting(entry.settingKey), value)
+                .then(resolve).catch(resolve);
+            }, DEBOUNCE_MS);
+          });
+        });
+      } else {
+        this.registerCapabilityListener(entry.capability, async (value) => {
+          await this._conn?.set(this.getSetting(entry.settingKey), value);
+        });
+      }
     }
 
     await this._connect();
+  }
+
+  async _syncOptionalCapabilities() {
+    const dpTemp = this.getSetting('dp_temperature');
+    if (dpTemp > 0) {
+      if (!this.hasCapability('measure_temperature'))
+        await this.addCapability('measure_temperature').catch(() => {});
+    } else {
+      if (this.hasCapability('measure_temperature'))
+        await this.removeCapability('measure_temperature').catch(() => {});
+    }
   }
 
   // Placeholder for future capability renames across app versions.
@@ -79,118 +111,87 @@ class DehumidifierDevice extends Homey.Device {
     }
   }
 
-  _appLog(message) {
+  _writeDpSnapshot() {
+    try {
+      const snapshot = this.homey.settings.get('dp_snapshot') || {};
+      snapshot[this.getData().id] = {
+        name:      this.getName(),
+        dps:       { ...this._lastDps },
+        updatedAt: Date.now(),
+      };
+      this.homey.settings.set('dp_snapshot', snapshot);
+    } catch (e) {}
+  }
+
+  _appLog(message, level = 'info') {
     this.log(message);
-    try { this.homey.app.addLog(this.getName(), message); } catch (e) {}
+    try { this.homey.app.addLog(this.getName(), message, level); } catch (e) {}
   }
 
   async _connect() {
-    this._stopHeartbeatWatchdog();
-    if (this._tuya) {
-      try { this._tuya.disconnect(); } catch (e) {}
-      this._tuya = null;
+    if (this._conn) {
+      this._conn.removeAllListeners();
+      this._conn.disconnect();
+      this._conn = null;
     }
 
     const { ip, device_id, local_key, version } = this.getSettings();
-
     if (!ip || !device_id || !local_key) {
       this.setUnavailable(this.homey.__('errors.missing_settings')).catch(() => {});
       return;
     }
 
-    this._tuya = new TuyAPI({
-      id: device_id,
-      key: local_key,
-      ip,
-      version: String(version || '3.3'),
-      issueGetOnConnect: false,
-    });
+    this._conn = new TuyaConnection({ id: device_id, key: local_key, ip, version });
 
-    this._tuya.on('connected', () => {
-      this._appLog('Connected');
-      this._connected         = true;
-      this._reconnectAttempts = 0;
+    this._conn.on('connected', () => {
+      this._appLog('Connected', 'info');
+      this._lastDataTime = Date.now();
       this.setAvailable().catch(() => {});
       this._triggerDeviceConnected.trigger(this).catch(() => {});
-      this._resetHeartbeatWatchdog();
-
-      // Request all DPs after a short delay; guard with _pollPending to prevent
-      // overlap if the polling timer fires at the same moment.
-      setTimeout(() => {
-        if (this._tuya && this._connected && !this._pollPending) {
-          this._pollPending = true;
-          this._tuya.get({ schema: true })
-            .catch((err) => this._appLog(`Initial state fetch failed: ${err.message}`))
-            .finally(() => { this._pollPending = false; });
-        }
-      }, 500);
-
+      this._updateStatusSettings('Connected');
+      // Initial full state fetch after a short settle delay.
+      setTimeout(() => this._conn?.get().catch(() => {}), 500);
       this._startPolling();
     });
 
-    this._tuya.on('disconnected', () => {
-      this._appLog('Disconnected');
-      this._connected = false;
+    this._conn.on('disconnected', (reason) => {
+      this._appLog(reason ? `Disconnected: ${reason}` : 'Disconnected', 'warn');
       this._stopPolling();
-      this._stopHeartbeatWatchdog();
-      this.setUnavailable('Device disconnected').catch(() => {});
+      this.setUnavailable(reason || 'Device disconnected').catch(() => {});
       this._triggerDeviceDisconnected.trigger(this).catch(() => {});
-      this._scheduleReconnect();
+      this._updateStatusSettings('Disconnected');
     });
 
-    this._tuya.on('error', (err) => {
-      const msg = (err && err.message) ? err.message : String(err || 'Unknown error');
-      this._appLog(`Error: ${msg}`);
-
-      // Timeout on a single GET/SET – TCP connection is usually still alive.
-      if (msg.toLowerCase().includes('timeout')) {
-        this.log('Timeout (non-fatal), will retry on next poll');
-        return;
-      }
-
-      this._connected = false;
-      this._stopPolling();
-      this._stopHeartbeatWatchdog();
-      this.setUnavailable(`Error: ${msg}`).catch(() => {});
-      this._triggerDeviceDisconnected.trigger(this).catch(() => {});
-      this._scheduleReconnect();
+    this._conn.on('data', (dps) => {
+      this._lastDataTime = Date.now();
+      this.log('Raw DPS received:', JSON.stringify(dps));
+      this._handleDps(dps).catch((err) => this.log('Error handling DPS:', err.message));
     });
 
-    this._tuya.on('data', (data) => {
-      this._resetHeartbeatWatchdog();
-      this.log('Raw DPS received:', JSON.stringify(data));
-      if (data && data.dps) {
-        this._handleDps(data.dps).catch((err) =>
-          this.log('Error handling DPS:', err.message)
-        );
-      }
-    });
+    this._conn.on('log', ({ message, level }) => this._appLog(message, level));
 
-    // Some TuyAPI versions emit 'heartbeat' for keep-alive packets.
-    this._tuya.on('heartbeat', () => this._resetHeartbeatWatchdog());
-
-    try {
-      await this._tuya.connect();
-    } catch (err) {
-      this._appLog(`Connection failed: ${err.message}`);
-      this.setUnavailable('Connection failed').catch(() => {});
-      this._scheduleReconnect();
-    }
+    await this._conn.connect();
   }
 
   async _handleDps(dps) {
     const settings = this.getSettings();
+    let   changed  = false;
 
     for (const [dpStr, value] of Object.entries(dps)) {
-      // Skip unchanged values (_lastDps cache)
       if (this._lastDps[dpStr] === value) continue;
       this._lastDps[dpStr] = value;
+      changed = true;
 
       const dp    = parseInt(dpStr, 10);
       const entry = DP_PROFILE.find((e) => {
         const dpNum = settings[e.settingKey];
         return dpNum > 0 && dp === dpNum;
       });
+
+      // Generic dp_changed trigger fires for every changed DP.
+      this._triggerDpChanged
+        .trigger(this, { dp: dpStr, value: String(value) })
+        .catch(() => {});
 
       if (!entry) {
         this.log(`Unknown DP ${dp}:`, value);
@@ -202,7 +203,8 @@ class DehumidifierDevice extends Homey.Device {
       if (entry.capability === 'measure_humidity') {
         const prevHumidity = this.getCapabilityValue('measure_humidity') || 0;
         await this.setCapabilityValue('measure_humidity', converted).catch(() => {});
-        const tokens = { humidity: converted };
+        const trend  = converted > prevHumidity ? 'up' : 'down';
+        const tokens = { humidity: converted, prevHumidity, trend };
         const state  = { humidity: converted, prevHumidity };
         this._triggerHumidityAbove.trigger(this, tokens, state).catch(() => {});
         this._triggerHumidityBelow.trigger(this, tokens, state).catch(() => {});
@@ -226,89 +228,42 @@ class DehumidifierDevice extends Homey.Device {
 
       await this.setCapabilityValue(entry.capability, converted).catch(() => {});
     }
-  }
 
-  // ── Heartbeat watchdog ─────────────────────────────────────────────────────
-
-  _resetHeartbeatWatchdog() {
-    if (this._heartbeatTimer) clearTimeout(this._heartbeatTimer);
-    this._heartbeatTimer = setTimeout(() => {
-      this._appLog('No heartbeat received — reconnecting');
-      if (this._tuya) {
-        try { this._tuya.disconnect(); } catch (e) {}
-      }
-    }, HEARTBEAT_TIMEOUT_MS);
-  }
-
-  _stopHeartbeatWatchdog() {
-    if (this._heartbeatTimer) {
-      clearTimeout(this._heartbeatTimer);
-      this._heartbeatTimer = null;
+    // Persist updated DPS snapshot so _lastDps survives an app restart.
+    if (changed) {
+      this.setStoreValue('lastDps', this._lastDps).catch(() => {});
+      this._writeDpSnapshot();
     }
   }
 
-  // ── Internal helpers ───────────────────────────────────────────────────────
-
-  // Serialises all SET commands through a queue so concurrent capability
-  // changes don't race each other on the TCP socket.
-  async _setDp(dp, value) {
-    if (!this._connected || !this._tuya) throw new Error('Device not connected');
-
-    const version       = this.getSetting('version');
-    const isNewProtocol = version === '3.4' || version === '3.5';
-
-    const execute = async () => {
-      if (!this._connected || !this._tuya) throw new Error('Device not connected');
-
-      if (isNewProtocol) {
-        // Protocol 3.4/3.5: fire-and-forget — device pushes STATUS asynchronously,
-        // so waiting for a response echo would always time out.
-        this._tuya.set({ dps: dp, set: value }).catch((err) => {
-          const msg = String(err?.message || err);
-          if (!msg.toLowerCase().includes('timeout')) {
-            this._appLog(`Set DP ${dp} failed: ${msg}`);
-          }
-        });
-        return;
-      }
-
-      try {
-        await Promise.race([
-          this._tuya.set({ dps: dp, set: value }),
-          new Promise((_, rej) =>
-            setTimeout(() => rej(new Error('timeout')), CMD_TIMEOUT_MS)
-          ),
-        ]);
-      } catch (err) {
-        const msg = (err && err.message) ? err.message : String(err || 'Unknown error');
-        // SET timeouts are non-fatal – the device usually applies the value anyway.
-        if (msg.toLowerCase().includes('timeout')) {
-          this.log(`Set DP ${dp} timed out (value may still have been applied)`);
-          return;
-        }
-        throw err;
-      }
-    };
-
-    // Keep the queue alive even if this task throws.
-    const task = this._cmdQueue.then(execute);
-    this._cmdQueue = task.catch(() => {});
-    return task;
+  _updateStatusSettings(status) {
+    const lastSeen = new Date().toLocaleString(this.homey.i18n.getLanguage(), {
+      dateStyle: 'short',
+      timeStyle: 'medium',
+      timeZone:  this.homey.clock.getTimezone(),
+    });
+    this.setSettings({ connection_status: status, last_seen: lastSeen }).catch(() => {});
   }
+
+  // ── Polling ────────────────────────────────────────────────────────────────
 
   _startPolling() {
     this._stopPolling();
     const intervalSec = this.getSetting('polling_interval') ?? 30;
     if (!intervalSec || intervalSec <= 0) return;
     this.log(`Polling every ${intervalSec}s`);
-    this._pollTimer = setInterval(() => {
-      if (this._tuya && this._connected && !this._pollPending) {
-        this._pollPending = true;
-        this._tuya.get({ schema: true })
-          .catch((err) => this.log('Poll failed:', err.message))
-          .finally(() => { this._pollPending = false; });
+
+    const intervalMs = intervalSec * 1000;
+    this._pollTimer  = setInterval(async () => {
+      // If connected but no data received for 3× the poll interval, force reconnect.
+      if (this._conn?.connected && this._lastDataTime
+          && Date.now() - this._lastDataTime > intervalMs * 3) {
+        this._appLog('No data received for extended period — reconnecting', 'warn');
+        await this._connect();
+        return;
       }
-    }, intervalSec * 1000);
+      this._conn?.get().catch((err) => this.log('Poll failed:', err.message));
+    }, intervalMs);
   }
 
   _stopPolling() {
@@ -320,54 +275,36 @@ class DehumidifierDevice extends Homey.Device {
 
   // Public – called by the "refresh_device" flow action.
   async pollNow() {
-    if (!this._tuya || !this._connected || this._pollPending) return;
-    this._pollPending = true;
-    try {
-      await this._tuya.get({ schema: true });
-    } catch (err) {
-      this.log('Manual poll failed:', err && err.message);
-    } finally {
-      this._pollPending = false;
-    }
+    await this._conn?.get();
   }
 
-  _scheduleReconnect() {
-    if (this._reconnectTimer) return;
-    // Exponential backoff with ±20 % jitter to avoid thundering herd when
-    // multiple devices reconnect simultaneously after a network outage.
-    const base   = Math.min(RECONNECT_BASE_MS * Math.pow(2, this._reconnectAttempts), RECONNECT_MAX_MS);
-    const jitter = base * 0.2 * (Math.random() * 2 - 1);
-    const delay  = Math.max(1000, Math.round(base + jitter));
-    this._reconnectAttempts++;
-    this.log(`Reconnecting in ${Math.round(delay / 1000)}s (attempt ${this._reconnectAttempts})`);
-    this._reconnectTimer = setTimeout(async () => {
-      this._reconnectTimer = null;
-      await this._connect();
-    }, delay);
+  // Public – called by the "force_reconnect" flow action.
+  async forceReconnect() {
+    this._appLog('Force reconnect requested', 'info');
+    await this._connect();
   }
 
-  async onSettings({ newSettings, changedKeys }) {
+  // ── Homey lifecycle ────────────────────────────────────────────────────────
+
+  async onSettings({ changedKeys }) {
     const connectionKeys = ['ip', 'device_id', 'local_key', 'version'];
     if (changedKeys.some((k) => connectionKeys.includes(k))) {
       this.log('Connection settings changed, reconnecting');
-      this._reconnectAttempts = 0;
       await this._connect();
     } else if (changedKeys.includes('polling_interval')) {
       this.log('Polling interval changed, restarting polling');
       this._startPolling();
+    } else if (changedKeys.includes('dp_temperature')) {
+      await this._syncOptionalCapabilities();
     }
   }
 
   async onDeleted() {
     this._stopPolling();
-    this._stopHeartbeatWatchdog();
-    if (this._reconnectTimer) {
-      clearTimeout(this._reconnectTimer);
-      this._reconnectTimer = null;
-    }
-    if (this._tuya) {
-      try { this._tuya.disconnect(); } catch (e) {}
-      this._tuya = null;
+    if (this._conn) {
+      this._conn.removeAllListeners();
+      this._conn.disconnect();
+      this._conn = null;
     }
     this.log('Device deleted');
   }

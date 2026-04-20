@@ -24,7 +24,9 @@
       "scanNone": "No Tuya devices found on the local network.",
       "scanError": "Scan failed — check network connection.",
       "error": "Error: ",
-      "ipPlaceholder": "e.g. 192.168.1.56"
+      "ipPlaceholder": "e.g. 192.168.1.56",
+      "invalidIp": "Invalid IP address format.",
+      "invalidKey": "Local key must be 16 or 32 characters."
     },
     "list_devices": {
       "title": "Device found",
@@ -43,6 +45,7 @@
       "currentHumidity": "Current Humidity",
       "targetHumidity": "Target Humidity",
       "waterFull": "Water Tank Full",
+      "temperature": "Temperature",
       "unknown": "unknown — configure in settings",
       "addBtn": "Add Device",
       "adding": "Adding…",
@@ -53,7 +56,10 @@
   },
   "flow": {
     "device_connected": "Device connected",
-    "device_disconnected": "Device disconnected"
+    "device_disconnected": "Device disconnected",
+    "dp_changed": "A data point changed",
+    "device_is_connected": "Device is connected",
+    "force_reconnect": "Force reconnect"
   },
   "repair": {
     "title": "Update Connection",

@@ -64,6 +64,17 @@ class DehumidifierDriver extends Homey.Driver {
       .registerRunListener(async (args) => {
         return args.device.pollNow();
       });
+
+    this.homey.flow.getActionCard('force_reconnect')
+      .registerRunListener(async (args) => {
+        return args.device.forceReconnect();
+      });
+
+    // ── Conditions (new) ─────────────────────────────────────────────────────
+    this.homey.flow.getConditionCard('device_is_connected')
+      .registerRunListener(async (args) =>
+        args.device._conn?.connected === true
+      );
   }
 
   async onPair(session) {
@@ -78,6 +89,15 @@ class DehumidifierDriver extends Homey.Driver {
 
     session.setHandler('credentials', async (data) => {
       const { ip, deviceId, localKey, version } = data;
+
+      // Validate inputs before attempting a connection
+      const net = require('net');
+      if (!net.isIPv4(ip)) {
+        throw new Error(this.homey.__('pair.credentials.invalidIp'));
+      }
+      if (localKey.length !== 16 && localKey.length !== 32) {
+        throw new Error(this.homey.__('pair.credentials.invalidKey'));
+      }
 
       let connected    = false;
       let detectedDps  = null;
@@ -153,51 +173,81 @@ class DehumidifierDriver extends Homey.Driver {
 
   // Auto-detect DP mapping from a raw DPS snapshot
   _detectDps(dps) {
-    const boolDps  = [];
-    const humDps   = [];
-    const enumDps  = [];
+    const boolDps = [];
+    const humDps  = [];
+    const tempDps = [];
+    const enumDps = [];
 
     for (const [dp, val] of Object.entries(dps)) {
       const num = parseInt(dp, 10);
       if (typeof val === 'boolean') {
         boolDps.push({ dp: num, val });
-      } else if (typeof val === 'number' && val >= 1 && val <= 100) {
+      } else if (typeof val === 'number' && val >= 0 && val <= 100) {
         humDps.push({ dp: num, val });
+      } else if (typeof val === 'number' && val > 100 && val <= 600) {
+        // Raw temperature values, e.g. 220 = 22.0 °C
+        tempDps.push({ dp: num, val });
       } else if (typeof val === 'string') {
         enumDps.push({ dp: num, val });
       }
     }
 
-    const onoffEntry     = boolDps.find((d) => d.dp === 1) || boolDps.find((d) => d.val === true) || boolDps[0];
-    const dp_onoff       = onoffEntry ? onoffEntry.dp : 1;
+    // On/Off: DP 1 if boolean, else a DP that is currently true, else any bool
+    const onoffEntry = boolDps.find((d) => d.dp === 1)
+      || boolDps.find((d) => d.val === true)
+      || boolDps[0];
+    const dp_onoff = onoffEntry ? onoffEntry.dp : 1;
 
-    const childLockEntry = boolDps.find((d) => d.dp !== dp_onoff && d.val === false);
-    const dp_child_lock  = childLockEntry ? childLockEntry.dp : 14;
+    // Child lock: boolean DP that is currently false (locked = false on most devices),
+    // explicitly not the on/off DP and not DP 1
+    const childLockEntry = boolDps.find((d) => d.dp !== dp_onoff && d.dp !== 1 && d.val === false)
+      || boolDps.find((d) => d.dp !== dp_onoff);
+    const dp_child_lock = childLockEntry ? childLockEntry.dp : 14;
 
-    const dp_water_full  = 19;
+    const dp_water_full = 19;
 
     humDps.sort((a, b) => a.dp - b.dp);
-    const targetEntry        = humDps.find((d) => d.val % 5 === 0) || humDps[0];
+
+    // Target humidity: divisible by 5 within typical setpoint range 25–80
+    const targetEntry = humDps.find((d) => d.val % 5 === 0 && d.val >= 25 && d.val <= 80)
+      || humDps.find((d) => d.val % 5 === 0)
+      || humDps[0];
     const dp_target_humidity = targetEntry ? targetEntry.dp : 2;
 
-    const currentEntry        = humDps.find((d) => d.dp !== dp_target_humidity);
+    // Current humidity: different DP from target, within realistic ambient range
+    const currentEntry = humDps.find((d) => d.dp !== dp_target_humidity && d.val >= 20 && d.val <= 100)
+      || humDps.find((d) => d.dp !== dp_target_humidity);
     const dp_current_humidity = currentEntry ? currentEntry.dp : 16;
 
-    const modeEntry  = enumDps.find((d) => ['manual', 'laundry'].includes(String(d.val).toLowerCase()));
-    const dp_mode    = modeEntry ? modeEntry.dp : 4;
+    // Mode: expanded known dehumidifier mode values
+    const KNOWN_MODES = ['manual', 'laundry', 'auto', 'sleep', 'continuous', 'smart'];
+    const modeEntry = enumDps.find((d) => KNOWN_MODES.includes(String(d.val).toLowerCase()));
+    const dp_mode   = modeEntry ? modeEntry.dp : 4;
 
-    const fanEntry     = enumDps.find((d) => ['low', 'high'].includes(String(d.val).toLowerCase()));
+    // Fan speed: expanded known fan values
+    const KNOWN_FAN  = ['low', 'high', 'medium', 'auto', 'turbo'];
+    const fanEntry   = enumDps.find((d) => KNOWN_FAN.includes(String(d.val).toLowerCase()));
     const dp_fan_speed = fanEntry ? fanEntry.dp : 5;
 
-    const timerEntry         = enumDps.find((d) => String(d.val) === 'cancel' || /^\d+h$/.test(String(d.val)));
+    // Timer: 'cancel' or Xh pattern (e.g. '1h', '12h')
+    const timerEntry = enumDps.find(
+      (d) => String(d.val) === 'cancel' || /^\d+h$/.test(String(d.val))
+    );
     const dp_countdown_timer = timerEntry ? timerEntry.dp : 17;
 
     const dp_countdown_left = 18;
 
+    // Temperature: raw value 101–600 (e.g. 220 = 22.0 °C), prefer highest DP number
+    // to avoid false positives from countdown timers (which also produce large numbers)
+    const usedDps = new Set([dp_onoff, dp_child_lock, dp_target_humidity,
+      dp_current_humidity, dp_mode, dp_fan_speed, dp_countdown_timer, dp_countdown_left, dp_water_full]);
+    const tempEntry = tempDps.filter((d) => !usedDps.has(d.dp))[0];
+    const dp_temperature = tempEntry ? tempEntry.dp : 0;
+
     return {
       dp_onoff, dp_mode, dp_child_lock, dp_countdown_left,
       dp_countdown_timer, dp_current_humidity, dp_target_humidity,
-      dp_fan_speed, dp_water_full,
+      dp_fan_speed, dp_water_full, dp_temperature,
     };
   }
 
@@ -217,6 +267,12 @@ class DehumidifierDriver extends Homey.Driver {
     session.setHandler('save_settings', async (data) => {
       const { ip, local_key, version } = data;
       if (!ip || !local_key) throw new Error(this.homey.__('pair.credentials.fillAll'));
+
+      const net = require('net');
+      if (!net.isIPv4(ip)) throw new Error(this.homey.__('pair.credentials.invalidIp'));
+      if (local_key.length !== 16 && local_key.length !== 32) {
+        throw new Error(this.homey.__('pair.credentials.invalidKey'));
+      }
 
       let connected = false;
       try {

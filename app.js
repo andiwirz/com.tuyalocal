@@ -18,11 +18,12 @@ class TuyaDehumidifierApp extends Homey.App {
     this.log('Tuya Dehumidifier App initialized');
   }
 
-  addLog(source, message) {
+  addLog(source, message, level = 'info') {
     this._logs.push({
-      time: new Date().toISOString(),
-      source: String(source),
+      time:    new Date().toISOString(),
+      source:  String(source),
       message: String(message),
+      level:   String(level),
     });
     if (this._logs.length > LOG_MAX) this._logs.shift();
 

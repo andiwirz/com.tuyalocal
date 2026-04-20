@@ -218,6 +218,11 @@
         ['water', s.dp_water_full,       Homey.__('pair.list_devices.waterFull')],
       ];
 
+      // Only show temperature row if a DP was detected
+      if (s.dp_temperature > 0) {
+        rowDefs.push(['temp', s.dp_temperature, Homey.__('pair.list_devices.temperature')]);
+      }
+
       var tbody = document.getElementById('dp-tbody');
       tbody.innerHTML = '';
       rowDefs.forEach(function(r) {

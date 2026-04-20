@@ -24,7 +24,9 @@
       "scanNone": "Keine Tuya-Geräte im lokalen Netzwerk gefunden.",
       "scanError": "Scan fehlgeschlagen — Netzwerkverbindung prüfen.",
       "error": "Fehler: ",
-      "ipPlaceholder": "z.B. 192.168.1.56"
+      "ipPlaceholder": "z.B. 192.168.1.56",
+      "invalidIp": "Ungültiges IP-Adressformat.",
+      "invalidKey": "Lokaler Schlüssel muss 16 oder 32 Zeichen lang sein."
     },
     "list_devices": {
       "title": "Gerät gefunden",
@@ -43,6 +45,7 @@
       "currentHumidity": "Aktuelle Luftfeuchtigkeit",
       "targetHumidity": "Ziel-Luftfeuchtigkeit",
       "waterFull": "Wassertank voll",
+      "temperature": "Temperatur",
       "unknown": "unbekannt — in Einstellungen konfigurieren",
       "addBtn": "Gerät hinzufügen",
       "adding": "Wird hinzugefügt…",
@@ -53,7 +56,10 @@
   },
   "flow": {
     "device_connected": "Gerät verbunden",
-    "device_disconnected": "Gerät getrennt"
+    "device_disconnected": "Gerät getrennt",
+    "dp_changed": "Ein Datenpunkt hat sich geändert",
+    "device_is_connected": "Gerät ist verbunden",
+    "force_reconnect": "Verbindung neu aufbauen"
   },
   "repair": {
     "title": "Verbindung aktualisieren",
