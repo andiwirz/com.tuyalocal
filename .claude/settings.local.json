@@ -17,7 +17,16 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:apps.developer.homey.app)",
       "WebFetch(domain:apps-sdk-v3.developer.homey.app)",
-      "WebFetch(domain:apps-sdk-v3.developer.athom.com)"
+      "WebFetch(domain:apps-sdk-v3.developer.athom.com)",
+      "Bash(curl -s https://raw.githubusercontent.com/rcoemans/com.tuya.local/main/drivers/climate/driver.ts)",
+      "Bash(curl -s https://raw.githubusercontent.com/rcoemans/com.tuya.local/main/drivers/climate/device.ts)",
+      "Bash(curl -s https://raw.githubusercontent.com/rcoemans/com.tuya.local/main/lib/TuyaDriver.ts)",
+      "Bash(curl -s https://raw.githubusercontent.com/rcoemans/com.tuya.local/main/lib/TuyaDevice.ts)",
+      "Bash(curl -s https://raw.githubusercontent.com/rcoemans/com.tuya.local/main/lib/tuya/connection.ts)",
+      "Bash(curl -s https://raw.githubusercontent.com/rcoemans/com.tuya.local/main/lib/AppLogger.ts)",
+      "Bash(curl -s \"https://raw.githubusercontent.com/rcoemans/com.tuya.local/main/drivers/dehumidifier/device.ts\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/rcoemans/com.tuya.local/main/lib/TuyaDevice.ts\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/rcoemans/com.tuya.local/main/lib/tuya/connection.ts\")"
     ]
   }
 }
