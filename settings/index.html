@@ -2,8 +2,10 @@
 <html>
 <head>
   <meta charset="utf-8">
+  <!-- Required for all Homey app settings pages -->
+  <script type="text/javascript" src="/homey.js" data-origin="settings"></script>
   <style>
-    body { font-family: -apple-system, sans-serif; padding: 16px; font-size: 13px; background: #f5f6f7; }
+    body { font-family: -apple-system, sans-serif; padding: 16px; font-size: 13px; background: #f5f6f7; margin: 0; }
     h2   { margin: 0 0 4px; font-size: 16px; }
     p    { color: #666; margin: 0 0 14px; font-size: 12px; }
     .bar { display: flex; gap: 8px; margin-bottom: 12px; }
@@ -34,36 +36,38 @@
   <pre id="output">Loading…</pre>
   <div id="count"></div>
 
-  <script>
-    Homey.ready();
+  <script type="text/javascript">
+    function onHomeyReady(Homey) {
+      Homey.ready();
 
-    function load() {
-      Homey.get('diagnostic_logs', function(err, val) {
-        var logs = Array.isArray(val) ? val : [];
-        if (logs.length === 0) {
-          document.getElementById('output').textContent = 'No entries yet.';
-          document.getElementById('count').textContent  = '';
-          return;
-        }
-        var lines = logs.slice().reverse().map(function(e) {
-          var t = e.time ? e.time.replace('T', ' ').slice(0, 19) : '';
-          return t + '  [' + (e.source || '?') + ']  ' + (e.message || '');
+      function load() {
+        Homey.get('diagnostic_logs', function(err, val) {
+          var logs = Array.isArray(val) ? val : [];
+          if (logs.length === 0) {
+            document.getElementById('output').textContent = 'No entries yet.';
+            document.getElementById('count').textContent  = '';
+            return;
+          }
+          var lines = logs.slice().reverse().map(function(e) {
+            var t = (e.time || '').replace('T', ' ').slice(0, 19);
+            return t + '  [' + (e.source || '?') + ']  ' + (e.message || '');
+          });
+          document.getElementById('output').textContent = lines.join('\n');
+          document.getElementById('count').textContent  = logs.length + ' entries';
         });
-        document.getElementById('output').textContent = lines.join('\n');
-        document.getElementById('count').textContent  = logs.length + ' entries';
+      }
+
+      document.getElementById('btnRefresh').addEventListener('click', load);
+      document.getElementById('btnClear').addEventListener('click', function() {
+        if (!confirm('Clear all logs?')) return;
+        Homey.set('diagnostic_logs', [], function() {
+          document.getElementById('output').textContent = 'Cleared.';
+          document.getElementById('count').textContent  = '';
+        });
       });
+
+      load();
     }
-
-    document.getElementById('btnRefresh').addEventListener('click', load);
-    document.getElementById('btnClear').addEventListener('click', function() {
-      if (!confirm('Clear all logs?')) return;
-      Homey.set('diagnostic_logs', [], function() {
-        document.getElementById('output').textContent = 'Cleared.';
-        document.getElementById('count').textContent  = '';
-      });
-    });
-
-    load();
   </script>
 </body>
 </html>

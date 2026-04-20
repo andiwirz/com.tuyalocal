@@ -16,7 +16,8 @@
       "WebSearch",
       "WebFetch(domain:github.com)",
       "WebFetch(domain:apps.developer.homey.app)",
-      "WebFetch(domain:apps-sdk-v3.developer.homey.app)"
+      "WebFetch(domain:apps-sdk-v3.developer.homey.app)",
+      "WebFetch(domain:apps-sdk-v3.developer.athom.com)"
     ]
   }
 }

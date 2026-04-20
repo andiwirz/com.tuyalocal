@@ -206,30 +206,28 @@ class DehumidifierDriver extends Homey.Driver {
   // Reuses the existing credentials view; intercepts its events to update
   // device settings instead of creating a new device.
   async onRepair(session, device) {
-    // Allow network scan to work normally in repair mode
-    session.setHandler('scan_network', async () => {
-      return this._scanNetwork();
+    session.setHandler('get_settings', async () => {
+      return {
+        ip:        device.getSetting('ip')        || '',
+        local_key: device.getSetting('local_key') || '',
+        version:   device.getSetting('version')   || '3.3',
+      };
     });
 
-    session.setHandler('credentials', async (data) => {
-      const { ip, deviceId, localKey: local_key, version } = data;
+    session.setHandler('save_settings', async (data) => {
+      const { ip, local_key, version } = data;
       if (!ip || !local_key) throw new Error(this.homey.__('pair.credentials.fillAll'));
 
       let connected = false;
-      const collectedDps = {};
-
       try {
         const testDev = new TuyAPI({
-          id: deviceId || device.getSetting('device_id'),
+          id: device.getSetting('device_id'),
           key: local_key,
           ip,
           version: String(version),
           issueGetOnConnect: true,
         });
         testDev.on('error', () => {});
-        testDev.on('data', (payload) => {
-          if (payload && payload.dps) Object.assign(collectedDps, payload.dps);
-        });
         await Promise.race([
           testDev.connect(),
           new Promise((_, rej) => setTimeout(() => rej(new Error('Connection timed out')), 8000)),
@@ -242,18 +240,11 @@ class DehumidifierDriver extends Homey.Driver {
       }
 
       if (connected) {
-        const updates = { ip, local_key, version: String(version) };
-        if (deviceId) updates.device_id = deviceId;
-        await device.setSettings(updates);
+        await device.setSettings({ ip, local_key, version: String(version) });
       }
 
-      // repair: true signals credentials.html to call Homey.done() instead
-      // of Homey.nextView(), preventing navigation into the pair flow.
-      return { connected, detectedDps: null, repair: true };
+      return { connected };
     });
-
-    session.setHandler('list_devices', async () => []);
-    session.setHandler('raw_dps',      async () => ({}));
   }
 
   // Extracted so scan logic can be shared between onPair and onRepair

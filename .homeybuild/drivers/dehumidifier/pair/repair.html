@@ -85,22 +85,6 @@
       document.getElementById('label-version').textContent  = Homey.__('pair.credentials.version')  || 'Protocol Version';
       document.getElementById('saveBtn').textContent     = Homey.__('pair.repair.save')      || 'Save & Reconnect';
     }
-    if (typeof Homey !== 'undefined') initText();
-
-    // Pre-fill form with current device settings
-    Homey.emit('get_settings', null, function(err, settings) {
-      if (err || !settings) return;
-      document.getElementById('ip').value       = settings.ip || '';
-      document.getElementById('localKey').value = settings.local_key || '';
-      var sel = document.getElementById('version');
-      for (var i = 0; i < sel.options.length; i++) {
-        if (sel.options[i].value === String(settings.version)) {
-          sel.selectedIndex = i;
-          break;
-        }
-      }
-    });
-
     document.getElementById('saveBtn').addEventListener('click', function() {
       var btn      = document.getElementById('saveBtn');
       var ip       = document.getElementById('ip').value.trim();
@@ -127,7 +111,21 @@
       });
     });
 
-    Homey.ready(function() {});
+    Homey.ready(function() {
+      if (typeof initText === 'function') initText();
+      Homey.emit('get_settings', {}, function(err, settings) {
+        if (err || !settings) return;
+        document.getElementById('ip').value       = settings.ip || '';
+        document.getElementById('localKey').value = settings.local_key || '';
+        var sel = document.getElementById('version');
+        for (var i = 0; i < sel.options.length; i++) {
+          if (sel.options[i].value === String(settings.version)) {
+            sel.selectedIndex = i;
+            break;
+          }
+        }
+      });
+    });
   </script>
 </body>
 </html>

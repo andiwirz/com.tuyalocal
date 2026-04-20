@@ -1192,7 +1192,7 @@
       ],
       "repair": [
         {
-          "id": "credentials"
+          "id": "repair"
         }
       ],
       "images": {
