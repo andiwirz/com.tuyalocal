@@ -51,6 +51,10 @@
       "deviceName": "Device name"
     }
   },
+  "flow": {
+    "device_connected": "Device connected",
+    "device_disconnected": "Device disconnected"
+  },
   "repair": {
     "title": "Update Connection",
     "subtitle": "Update the connection settings for this device.",

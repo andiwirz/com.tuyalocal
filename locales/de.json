@@ -51,6 +51,10 @@
       "deviceName": "Gerätename"
     }
   },
+  "flow": {
+    "device_connected": "Gerät verbunden",
+    "device_disconnected": "Gerät getrennt"
+  },
   "repair": {
     "title": "Verbindung aktualisieren",
     "subtitle": "Verbindungseinstellungen für dieses Gerät anpassen.",

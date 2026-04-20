@@ -425,6 +425,34 @@
             "filter": "driver_id=dehumidifier"
           }
         ]
+      },
+      {
+        "id": "device_connected",
+        "title": {
+          "en": "Device connected",
+          "de": "Gerät verbunden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=dehumidifier"
+          }
+        ]
+      },
+      {
+        "id": "device_disconnected",
+        "title": {
+          "en": "Device disconnected",
+          "de": "Gerät getrennt"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=dehumidifier"
+          }
+        ]
       }
     ],
     "conditions": [
