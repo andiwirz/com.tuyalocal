@@ -1,0 +1,54 @@
+{
+  "device": {
+    "defaultName": "Dehumidifier"
+  },
+  "notifications": {
+    "waterFull": "Water tank is full — please empty it."
+  },
+  "pair": {
+    "credentials": {
+      "title": "Connect Device",
+      "ip": "IP Address",
+      "deviceId": "Device ID",
+      "localKey": "Local Key",
+      "version": "Protocol Version",
+      "connect": "Test & Connect",
+      "connecting": "Connecting…",
+      "success": "Connection successful!",
+      "failed": "Connection failed — check your Device ID, Local Key and protocol version.",
+      "skip": "Continue anyway (without connection test)",
+      "fillAll": "Please fill in all fields.",
+      "scanBtn": "Scan network",
+      "scanRunning": "Listening for Tuya broadcasts + scanning local subnet… (~10 s)",
+      "scanFound": "{{count}} Tuya device(s) found — click to use IP:",
+      "scanNone": "No Tuya devices found on the local network.",
+      "scanError": "Scan failed — check network connection.",
+      "error": "Error: ",
+      "ipPlaceholder": "e.g. 192.168.1.56"
+    },
+    "list_devices": {
+      "title": "Device found",
+      "subtitle": "Ready to add.",
+      "loading": "Loading device data…",
+      "noDevice": "No device found. Please go back and check your credentials.",
+      "dp": "DP",
+      "currentValue": "Current value",
+      "function": "Function",
+      "onoff": "On / Off",
+      "mode": "Mode",
+      "childLock": "Child Lock",
+      "timer": "Timer",
+      "timerLeft": "Timer remaining",
+      "fanSpeed": "Fan Speed",
+      "currentHumidity": "Current Humidity",
+      "targetHumidity": "Target Humidity",
+      "waterFull": "Water Tank Full",
+      "unknown": "unknown — configure in settings",
+      "addBtn": "Add Device",
+      "adding": "Adding…",
+      "added": "Device added successfully!",
+      "error": "Error: ",
+      "deviceName": "Device name"
+    }
+  }
+}
