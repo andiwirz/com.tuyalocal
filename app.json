@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -355,6 +355,24 @@
               "de": "Luftfeuchtigkeit (%)"
             },
             "example": 65
+          },
+          {
+            "name": "prevHumidity",
+            "type": "number",
+            "title": {
+              "en": "Previous Humidity (%)",
+              "de": "Vorherige Luftfeuchtigkeit (%)"
+            },
+            "example": 60
+          },
+          {
+            "name": "trend",
+            "type": "string",
+            "title": {
+              "en": "Trend (up / down)",
+              "de": "Trend (up / down)"
+            },
+            "example": "up"
           }
         ]
       },
@@ -395,6 +413,24 @@
               "de": "Luftfeuchtigkeit (%)"
             },
             "example": 45
+          },
+          {
+            "name": "prevHumidity",
+            "type": "number",
+            "title": {
+              "en": "Previous Humidity (%)",
+              "de": "Vorherige Luftfeuchtigkeit (%)"
+            },
+            "example": 50
+          },
+          {
+            "name": "trend",
+            "type": "string",
+            "title": {
+              "en": "Trend (up / down)",
+              "de": "Trend (up / down)"
+            },
+            "example": "down"
           }
         ]
       },
@@ -451,6 +487,40 @@
             "name": "device",
             "type": "device",
             "filter": "driver_id=dehumidifier"
+          }
+        ]
+      },
+      {
+        "id": "dp_changed",
+        "title": {
+          "en": "A data point changed",
+          "de": "Ein Datenpunkt hat sich geändert"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=dehumidifier"
+          }
+        ],
+        "tokens": [
+          {
+            "name": "dp",
+            "type": "string",
+            "title": {
+              "en": "Data Point (DP)",
+              "de": "Datenpunkt (DP)"
+            },
+            "example": "1"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "title": {
+              "en": "Value",
+              "de": "Wert"
+            },
+            "example": "true"
           }
         ]
       }
@@ -519,6 +589,20 @@
         "title": {
           "en": "Water tank !{{is|is not}} full",
           "de": "Wassertank !{{ist|ist nicht}} voll"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=dehumidifier"
+          }
+        ]
+      },
+      {
+        "id": "device_is_connected",
+        "title": {
+          "en": "Device !{{is|is not}} connected",
+          "de": "Gerät ist !{{verbunden|nicht verbunden}}"
         },
         "args": [
           {
@@ -931,6 +1015,24 @@
         ]
       },
       {
+        "id": "force_reconnect",
+        "title": {
+          "en": "Force reconnect",
+          "de": "Verbindung neu aufbauen"
+        },
+        "titleFormatted": {
+          "en": "Force [[device]] to reconnect",
+          "de": "[[device]] neu verbinden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=dehumidifier"
+          }
+        ]
+      },
+      {
         "id": "refresh_device",
         "title": {
           "en": "Refresh device values",
@@ -1205,6 +1307,54 @@
               "hint": {
                 "en": "DP number for water tank full alarm. Set to 0 to disable.",
                 "de": "DP-Nummer für den Wassertank-Alarm. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_temperature",
+              "type": "number",
+              "label": {
+                "en": "Temperature DP",
+                "de": "Temperatur DP"
+              },
+              "value": 0,
+              "hint": {
+                "en": "DP number for temperature sensor (raw value ÷ 10, e.g. 220 = 22.0 °C). Set to 0 to disable — the measure_temperature capability will be removed.",
+                "de": "DP-Nummer für den Temperatursensor (Rohwert ÷ 10, z.B. 220 = 22,0 °C). 0 = deaktiviert — die Temperatur-Capability wird entfernt."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Status",
+            "de": "Status"
+          },
+          "children": [
+            {
+              "id": "connection_status",
+              "type": "text",
+              "label": {
+                "en": "Connection",
+                "de": "Verbindung"
+              },
+              "value": "—",
+              "hint": {
+                "en": "Updated automatically by the app. Do not edit.",
+                "de": "Wird automatisch von der App aktualisiert. Nicht bearbeiten."
+              }
+            },
+            {
+              "id": "last_seen",
+              "type": "text",
+              "label": {
+                "en": "Last data received",
+                "de": "Zuletzt Daten empfangen"
+              },
+              "value": "—",
+              "hint": {
+                "en": "Updated automatically by the app. Do not edit.",
+                "de": "Wird automatisch von der App aktualisiert. Nicht bearbeiten."
               }
             }
           ]
