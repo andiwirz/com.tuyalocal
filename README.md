@@ -10,18 +10,21 @@ Direct, **local control** of Tuya-based smart devices — no cloud, no internet 
 - **Real-time push** — devices report state changes instantly; no polling required (polling is optional)
 - **Automatic reconnect** — exponential backoff with jitter; watchdog detects stale connections
 - **Network scanner** — finds Tuya devices via UDP broadcast (ports 6666/6667) and TCP subnet scan (port 6668)
-- **Auto DP detection** — on/off, humidity, fan speed, mode, timers and child lock are detected automatically during pairing
-- **Optional temperature** — `measure_temperature` capability is added only when a temperature DP is detected (raw value ÷ 10)
+- **Auto DP detection** — on/off, humidity, fan speed, mode, timers, child lock and temperature are detected automatically during pairing
+- **Inline DP editor** — DP numbers can be adjusted directly in the pairing screen before adding the device
+- **Optional capabilities** — `child_lock`, `countdown_timer`, `countdown_left`, `alarm_water`, `measure_temperature` and `anion` are only added when their DP is set to a value > 0; set to 0 to remove them from the device card
+- **Configurable mode & fan values** — the exact strings your device uses for mode and fan speed can be set per device; the picker shows only those values
 - **Repair flow** — update IP / Local Key without removing and re-adding the device
 - **Diagnostic logs** — in-app log buffer with severity levels (info / warn / error)
 - **DP debug panel** — live view of all received data points per device (App Settings → DP Debug)
+- **Raw data panel** — full unprocessed payload per device including metadata (App Settings → Raw Data)
 - **Bilingual** — English and German UI
 
 ### Supported Devices
 
 | Device | Capabilities |
 |---|---|
-| Dehumidifier | on/off · current humidity · target humidity · fan speed · mode · countdown timer · child lock · water tank alarm · temperature *(optional)* |
+| Dehumidifier | on/off · current humidity · target humidity · fan speed · mode · countdown timer *(optional)* · child lock *(optional)* · water tank alarm *(optional)* · temperature *(optional)* · ioniser *(optional)* |
 
 ---
 
@@ -96,7 +99,7 @@ cd com.tuyalocal
 npm install
 ```
 
-**Deploy to Homey:**
+**Deploy to Homey Pro:**
 ```bash
 homey app build    # build the app
 homey app install  # install on Homey Pro
@@ -110,8 +113,10 @@ homey app install  # install on Homey Pro
 2. Click **Scan Network** — waits for UDP broadcasts and scans the local subnet (~10 s).  
    Or enter credentials manually: IP, Device ID, Local Key, Protocol Version.
 3. The app connects to the device, collects live data points, and maps them automatically.
-4. A preview table shows each detected DP with its current value and mapped function.
-5. Optionally rename the device, then click **Add Device**.
+4. A preview table shows each function with its assigned DP number (editable) and current live value.  
+   Adjust any DP number directly if the auto-detection mapped it incorrectly.
+5. Expand **Show all detected DPs** to see the complete raw DP snapshot from the device.
+6. Optionally rename the device, then click **Add Device**.
 
 ---
 
@@ -129,20 +134,33 @@ homey app install  # install on Homey Pro
 
 ### Data Points (auto-detected, manually adjustable)
 
-| Setting | Function | Default |
-|---|---|---|
-| `dp_onoff` | Power on/off | 1 |
-| `dp_current_humidity` | Current humidity (%) | 16 |
-| `dp_target_humidity` | Target humidity setpoint (%) | 2 |
-| `dp_mode` | Operating mode | 4 |
-| `dp_fan_speed` | Fan speed | 5 |
-| `dp_countdown_timer` | Timer duration | 17 |
-| `dp_countdown_left` | Timer remaining (read-only) | 18 |
-| `dp_child_lock` | Child lock | 14 |
-| `dp_water_full` | Water tank full alarm (0 = disabled) | 19 |
-| `dp_temperature` | Temperature sensor — raw ÷ 10 = °C (0 = disabled) | 0 |
+| Setting | Function | Default | Optional |
+|---|---|---|---|
+| `dp_onoff` | Power on/off | 1 | — |
+| `dp_current_humidity` | Current humidity (%) | 16 | — |
+| `dp_target_humidity` | Target humidity setpoint (%) | 2 | — |
+| `dp_mode` | Operating mode | 4 | — |
+| `dp_fan_speed` | Fan speed | 5 | — |
+| `dp_child_lock` | Child lock | 14 | ✓ 0 = disabled |
+| `dp_countdown_timer` | Timer duration | 17 | ✓ 0 = disabled |
+| `dp_countdown_left` | Timer remaining (read-only) | 18 | ✓ 0 = disabled |
+| `dp_water_full` | Water tank full alarm | 19 | ✓ 0 = disabled |
+| `dp_temperature` | Temperature sensor — raw ÷ 10 = °C | 0 | ✓ 0 = disabled |
+| `dp_anion` | Ioniser (anion) | 0 | ✓ 0 = disabled |
 
-> Setting `dp_temperature` to a non-zero value dynamically adds the `measure_temperature` capability. Setting it back to 0 removes it.
+Optional capabilities are dynamically added or removed — setting a DP to 0 removes the corresponding tile from the device card immediately.
+
+### Mode & Fan Speed Values
+
+| Setting | Description | Default |
+|---|---|---|
+| `mode_values` | Comma-separated mode strings your device uses | all known values |
+| `fan_speed_values` | Comma-separated fan speed strings your device uses | all known values |
+
+**Supported mode values:** `manual`, `laundry`, `auto`, `continuous`, `smart`, `sleep`, `drying`  
+**Supported fan speed values:** `low`, `medium`, `middle`, `high`, `auto`, `turbo`
+
+Remove values your device does not support; the picker will show only the remaining ones. Custom values can be added if your device uses different strings — check the **Raw Data** panel to find them. After saving, **restart the Tuya Local app** for the picker to reflect the changes.
 
 ### Status (read-only)
 
@@ -179,7 +197,7 @@ Use **Repair** (long-press the device in Homey) to update the IP address or Loca
 | Humidity is / is not below value |
 | Water tank is / is not full |
 | Device is / is not connected |
-| Mode is / is not (manual / laundry) |
+| Mode is / is not |
 
 ### Actions
 
@@ -201,17 +219,24 @@ Open **Homey app → More → Apps → Tuya Local → Settings** to access:
 
 ### Diagnostic Logs
 Timestamped log buffer (max 500 entries, cleared on app restart) with severity levels:
-- `[INF]` — normal events (connect, disconnect, DP changes)
-- `[WRN]` — warnings (reconnect attempts, stale connection)
+- `[INF]` — normal events (connect, disconnect, DP changes, capability option updates)
+- `[WRN]` — warnings (reconnect attempts, stale connection, rejected capability option values)
 - `[ERR]` — errors
 
 ### DP Debug Panel
 Live view of all data points received from each device:
 - Select a device from the dropdown
-- Shows **DP number**, **raw value**, and **type** (boolean / number / string)
+- Shows **DP number**, **current value**, and **type** (boolean / number / string)
 - Values are colour-coded: green = `true`, red = `false`, purple = number, orange = string
 - **Auto-refresh** mode updates the table every 5 seconds
 - Useful for identifying unknown DPs on new devices and verifying DP mappings
+
+### Raw Data Panel
+Complete unprocessed payload for the selected device:
+- Shows all DPs as a sorted JSON object
+- Includes device metadata: `devId`, `uid`, `cid`, timestamp
+- **Copy** button copies the full payload to clipboard
+- Useful for finding the exact string values your device uses for mode and fan speed
 
 ---
 
