@@ -7,5 +7,8 @@
   },
   "1.0.2": {
     "en": "extens value options for humidifier device"
+  },
+  "1.0.3": {
+    "en": "allow to disable additional DPS"
   }
 }

@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -299,6 +299,18 @@
       "title": {
         "en": "Child Lock",
         "de": "Kindersicherung"
+      },
+      "getable": true,
+      "setable": true,
+      "uiComponent": "toggle",
+      "uiQuickAction": false,
+      "insights": false
+    },
+    "anion": {
+      "type": "boolean",
+      "title": {
+        "en": "Ioniser",
+        "de": "Ionisator"
       },
       "getable": true,
       "setable": true,
@@ -1128,11 +1140,7 @@
         "measure_humidity",
         "fan_speed",
         "mode",
-        "child_lock",
-        "countdown_timer",
-        "target_humidity",
-        "alarm_water",
-        "countdown_left"
+        "target_humidity"
       ],
       "capabilitiesOptions": {
         "measure_humidity": {
@@ -1314,10 +1322,10 @@
                 "en": "Mode values (comma-separated)",
                 "de": "Modus-Werte (kommagetrennt)"
               },
-              "value": "manual,laundry",
+              "value": "manual,laundry,auto,continuous,smart,sleep,drying",
               "hint": {
-                "en": "Exact values your device sends for mode. Check Raw Data in app settings to find them. Example: manual,laundry,continuous,smart",
-                "de": "Genaue Werte, die das Gerät für den Modus sendet. Raw Data in den App-Einstellungen zeigt sie. Beispiel: manual,laundry,continuous,smart"
+                "en": "All supported values: manual, laundry, auto, continuous, smart, sleep, drying. Remove values your device does not support. You can also add custom values if your device uses different strings (check Raw Data in app settings). After saving, restart the Tuya Local app for the picker to reflect the updated options.",
+                "de": "Alle unterstützten Werte: manual, laundry, auto, continuous, smart, sleep, drying. Nicht unterstützte Werte entfernen. Eigene Werte können ergänzt werden, falls das Gerät andere Strings verwendet (Raw Data in den App-Einstellungen). Nach dem Speichern die Tuya Local App neu starten, damit der Picker die aktualisierten Optionen anzeigt."
               }
             },
             {
@@ -1329,8 +1337,8 @@
               },
               "value": 18,
               "hint": {
-                "en": "DP number for remaining countdown hours (read-only)",
-                "de": "DP-Nummer für die verbleibende Timer-Zeit (nur lesen)"
+                "en": "DP number for remaining countdown hours (read-only). Set to 0 to disable.",
+                "de": "DP-Nummer für die verbleibende Timer-Zeit (nur lesen). 0 = deaktiviert."
               }
             },
             {
@@ -1342,8 +1350,8 @@
               },
               "value": 17,
               "hint": {
-                "en": "DP number for countdown timer (default: 17)",
-                "de": "DP-Nummer für den Countdown-Timer (Standard: 17)"
+                "en": "DP number for countdown timer (default: 17). Set to 0 to disable.",
+                "de": "DP-Nummer für den Countdown-Timer (Standard: 17). 0 = deaktiviert."
               }
             },
             {
@@ -1355,8 +1363,8 @@
               },
               "value": 14,
               "hint": {
-                "en": "DP number for child lock (default: 14)",
-                "de": "DP-Nummer für die Kindersicherung (Standard: 14)"
+                "en": "DP number for child lock (default: 14). Set to 0 to disable.",
+                "de": "DP-Nummer für die Kindersicherung (Standard: 14). 0 = deaktiviert."
               }
             },
             {
@@ -1379,10 +1387,10 @@
                 "en": "Fan speed values (comma-separated)",
                 "de": "Lüftergeschwindigkeit-Werte (kommagetrennt)"
               },
-              "value": "low,high",
+              "value": "low,medium,middle,high,auto,turbo",
               "hint": {
-                "en": "Exact values your device sends for fan speed. Check Raw Data in app settings to find them. Example: low,medium,high",
-                "de": "Genaue Werte, die das Gerät für die Lüftergeschwindigkeit sendet. Beispiel: low,medium,high"
+                "en": "All supported values: low, medium, middle, high, auto, turbo. Remove values your device does not support. You can also add custom values if your device uses different strings (check Raw Data in app settings). After saving, restart the Tuya Local app for the picker to reflect the updated options.",
+                "de": "Alle unterstützten Werte: low, medium, middle, high, auto, turbo. Nicht unterstützte Werte entfernen. Eigene Werte können ergänzt werden, falls das Gerät andere Strings verwendet (Raw Data in den App-Einstellungen). Nach dem Speichern die Tuya Local App neu starten, damit der Picker die aktualisierten Optionen anzeigt."
               }
             },
             {
@@ -1407,8 +1415,21 @@
               },
               "value": 0,
               "hint": {
-                "en": "DP number for temperature sensor (raw value ÷ 10, e.g. 220 = 22.0 °C). Set to 0 to disable — the measure_temperature capability will be removed.",
-                "de": "DP-Nummer für den Temperatursensor (Rohwert ÷ 10, z.B. 220 = 22,0 °C). 0 = deaktiviert — die Temperatur-Capability wird entfernt."
+                "en": "DP number for temperature sensor (raw value ÷ 10, e.g. 220 = 22.0 °C). Set to 0 to disable.",
+                "de": "DP-Nummer für den Temperatursensor (Rohwert ÷ 10, z.B. 220 = 22,0 °C). 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_anion",
+              "type": "number",
+              "label": {
+                "en": "Ioniser DP",
+                "de": "Ionisator DP"
+              },
+              "value": 0,
+              "hint": {
+                "en": "DP number for ioniser (anion). Set to 0 to disable.",
+                "de": "DP-Nummer für den Ionisator (Anion). 0 = deaktiviert."
               }
             }
           ]
