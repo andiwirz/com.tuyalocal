@@ -19,6 +19,7 @@ const DP_PROFILE = [
   { settingKey: 'dp_child_lock',       capability: 'child_lock',       transform: (v) => Boolean(v),  settable: true              },
   { settingKey: 'dp_water_full',       capability: 'alarm_water',      transform: (v) => Boolean(v),  settable: false             },
   { settingKey: 'dp_temperature',      capability: 'measure_temperature', transform: (v) => Number(v) / 10, settable: false            },
+  { settingKey: 'dp_anion',            capability: 'anion',               transform: (v) => Boolean(v),     settable: true             },
 ];
 
 class DehumidifierDevice extends Homey.Device {
@@ -28,6 +29,7 @@ class DehumidifierDevice extends Homey.Device {
     this._conn           = null;
     this._pollTimer      = null;
     this._lastDps        = {};
+    this._lastRawMeta    = null;
     this._lastDataTime   = null;
     this._debounceTimers = {};
 
@@ -42,6 +44,7 @@ class DehumidifierDevice extends Homey.Device {
 
     await this._migrateCapabilities();
     await this._syncOptionalCapabilities();
+    await this._syncEnumCapabilities();
 
     // ── Flow trigger cards ───────────────────────────────────────────────────
     this._triggerHumidityAbove = this.homey.flow.getDeviceTriggerCard('humidity_above');
@@ -86,14 +89,68 @@ class DehumidifierDevice extends Homey.Device {
     await this._connect();
   }
 
+  async _syncEnumCapabilities() {
+    const capitalize = (v) => v.charAt(0).toUpperCase() + v.slice(1).replace(/_/g, ' ');
+    const toOptions  = (csv) =>
+      (csv || '').split(',').map((v) => v.trim()).filter(Boolean)
+        .map((v) => ({ id: v, title: { en: capitalize(v), de: capitalize(v) } }));
+
+    const apply = async (capabilityId, csv) => {
+      if (!this.hasCapability(capabilityId)) return;
+      const opts = toOptions(csv);
+      if (opts.length === 0) return;
+
+      // If the capability's current value is not in the new option list, Homey will
+      // reject the call. Skip and warn rather than silently fail.
+      const currentValue = this.getCapabilityValue(capabilityId);
+      if (currentValue !== null && currentValue !== undefined
+          && !opts.some((o) => o.id === currentValue)) {
+        this._appLog(
+          `${capabilityId}: cannot restrict options to [${opts.map((o) => o.id).join(', ')}] — ` +
+          `current value "${currentValue}" is not in that list. ` +
+          `Update the device to a supported value first, or include "${currentValue}" in the setting.`,
+          'warn',
+        );
+        return;
+      }
+
+      try {
+        await this.setCapabilityOptions(capabilityId, { values: opts });
+        this._appLog(`${capabilityId} options → ${opts.map((o) => o.id).join(', ')}`, 'info');
+      } catch (err) {
+        // Homey rejects values not in the app.json superset — log clearly so the user can debug
+        this._appLog(
+          `setCapabilityOptions(${capabilityId}) failed: ${err.message}. ` +
+          `Attempted values: [${opts.map((o) => o.id).join(', ')}]. ` +
+          `Each value must exist in the capability's superset defined in app.json.`,
+          'warn',
+        );
+      }
+    };
+
+    await apply('mode',      this.getSetting('mode_values'));
+    await apply('fan_speed', this.getSetting('fan_speed_values'));
+  }
+
   async _syncOptionalCapabilities() {
-    const dpTemp = this.getSetting('dp_temperature');
-    if (dpTemp > 0) {
-      if (!this.hasCapability('measure_temperature'))
-        await this.addCapability('measure_temperature').catch(() => {});
-    } else {
-      if (this.hasCapability('measure_temperature'))
-        await this.removeCapability('measure_temperature').catch(() => {});
+    const optionals = [
+      { setting: 'dp_temperature',     capability: 'measure_temperature' },
+      { setting: 'dp_anion',           capability: 'anion'               },
+      { setting: 'dp_child_lock',      capability: 'child_lock'          },
+      { setting: 'dp_countdown_timer', capability: 'countdown_timer'     },
+      { setting: 'dp_countdown_left',  capability: 'countdown_left'      },
+      { setting: 'dp_water_full',      capability: 'alarm_water'         },
+    ];
+
+    for (const { setting, capability } of optionals) {
+      const dp = this.getSetting(setting);
+      if (dp > 0) {
+        if (!this.hasCapability(capability))
+          await this.addCapability(capability).catch(() => {});
+      } else {
+        if (this.hasCapability(capability))
+          await this.removeCapability(capability).catch(() => {});
+      }
     }
   }
 
@@ -117,6 +174,7 @@ class DehumidifierDevice extends Homey.Device {
       snapshot[this.getData().id] = {
         name:      this.getName(),
         dps:       { ...this._lastDps },
+        rawMeta:   this._lastRawMeta,
         updatedAt: Date.now(),
       };
       this.homey.settings.set('dp_snapshot', snapshot);
@@ -162,8 +220,16 @@ class DehumidifierDevice extends Homey.Device {
       this._updateStatusSettings('Disconnected');
     });
 
-    this._conn.on('data', (dps) => {
+    this._conn.on('data', (dps, raw) => {
       this._lastDataTime = Date.now();
+      if (raw) {
+        this._lastRawMeta = {
+          devId: raw.devId  ?? null,
+          t:     raw.t      ?? null,
+          cid:   raw.cid    ?? null,
+          uid:   raw.uid    ?? null,
+        };
+      }
       this.log('Raw DPS received:', JSON.stringify(dps));
       this._handleDps(dps).catch((err) => this.log('Error handling DPS:', err.message));
     });
@@ -294,8 +360,13 @@ class DehumidifierDevice extends Homey.Device {
     } else if (changedKeys.includes('polling_interval')) {
       this.log('Polling interval changed, restarting polling');
       this._startPolling();
-    } else if (changedKeys.includes('dp_temperature')) {
+    } else if (changedKeys.some((k) => [
+      'dp_temperature', 'dp_anion', 'dp_child_lock',
+      'dp_countdown_timer', 'dp_countdown_left', 'dp_water_full',
+    ].includes(k))) {
       await this._syncOptionalCapabilities();
+    } else if (changedKeys.some((k) => ['mode_values', 'fan_speed_values'].includes(k))) {
+      await this._syncEnumCapabilities();
     }
   }
 

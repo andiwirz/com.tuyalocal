@@ -106,6 +106,16 @@
     <div id="dpMeta"></div>
   </div>
 
+  <!-- ── Raw Data ──────────────────────────────────────────────────────── -->
+  <div class="section">
+    <h2>Raw Data</h2>
+    <p>Complete unprocessed DPS payload for the selected device.</p>
+    <div class="bar">
+      <button id="btnCopyRaw">&#128203; Copy</button>
+    </div>
+    <pre id="rawOutput">Select a device above to see raw data.</pre>
+  </div>
+
   <script type="text/javascript">
     function escHtml(s) {
       return String(s)
@@ -183,6 +193,32 @@
         if (current && snapshot[current]) sel.value = current;
       }
 
+      function renderRaw(entry) {
+        var raw = document.getElementById('rawOutput');
+        if (!entry) {
+          raw.textContent = 'Select a device above to see raw data.';
+          return;
+        }
+        // Sort DPS keys numerically
+        var dps    = entry.dps || {};
+        var sorted = {};
+        Object.keys(dps).map(Number).sort(function(a, b) { return a - b; }).forEach(function(k) {
+          sorted[String(k)] = dps[String(k)];
+        });
+        var meta = entry.rawMeta || {};
+        // Build complete payload object mirroring the TuyAPI wire format
+        var output = {
+          devId:      meta.devId  || null,
+          uid:        meta.uid    || null,
+          t:          meta.t      || null,
+          t_local:    meta.t      ? new Date(meta.t * 1000).toLocaleString() : null,
+          cid:        meta.cid    || null,
+          updatedAt:  new Date(entry.updatedAt).toLocaleString(),
+          dps:        sorted,
+        };
+        raw.textContent = JSON.stringify(output, null, 2);
+      }
+
       function renderDps() {
         var sel      = document.getElementById('deviceSelect');
         var deviceId = sel.value;
@@ -192,7 +228,9 @@
         if (!deviceId || !snapshot[deviceId]) {
           content.innerHTML = '<div id="dpPlaceholder">Select a device above to see its DPs.</div>';
           meta.textContent  = '';
+          renderRaw(null);
           return;
+
         }
 
         var entry = snapshot[deviceId];
@@ -202,6 +240,7 @@
         if (keys.length === 0) {
           content.innerHTML = '<div id="dpPlaceholder">No data received yet for this device.</div>';
           meta.textContent  = '';
+          renderRaw(entry);
           return;
         }
 
@@ -231,6 +270,8 @@
 
         var d = new Date(entry.updatedAt);
         meta.textContent = 'Last update: ' + d.toLocaleTimeString() + ' · ' + keys.length + ' DPs';
+
+        renderRaw(entry);
       }
 
       function refreshDp() {
@@ -252,6 +293,19 @@
           btn.classList.remove('active');
           clearInterval(autoTimer);
           autoTimer = null;
+        }
+      });
+
+      document.getElementById('btnCopyRaw').addEventListener('click', function() {
+        var text = document.getElementById('rawOutput').textContent;
+        if (!text || text.startsWith('Select')) return;
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(text).then(function() {
+            var btn = document.getElementById('btnCopyRaw');
+            var orig = btn.textContent;
+            btn.textContent = '✓ Copied';
+            setTimeout(function() { btn.textContent = orig; }, 1500);
+          });
         }
       });
 
