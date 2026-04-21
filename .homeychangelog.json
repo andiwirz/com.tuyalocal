@@ -4,5 +4,8 @@
   },
   "1.0.1": {
     "en": "debug options"
+  },
+  "1.0.2": {
+    "en": "extens value options for humidifier device"
   }
 }

@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -41,6 +41,41 @@
           "title": {
             "en": "Laundry",
             "de": "Wäsche"
+          }
+        },
+        {
+          "id": "auto",
+          "title": {
+            "en": "Auto",
+            "de": "Auto"
+          }
+        },
+        {
+          "id": "continuous",
+          "title": {
+            "en": "Continuous",
+            "de": "Dauerbetrieb"
+          }
+        },
+        {
+          "id": "smart",
+          "title": {
+            "en": "Smart",
+            "de": "Smart"
+          }
+        },
+        {
+          "id": "sleep",
+          "title": {
+            "en": "Sleep",
+            "de": "Schlaf"
+          }
+        },
+        {
+          "id": "drying",
+          "title": {
+            "en": "Drying",
+            "de": "Trocknen"
           }
         }
       ],
@@ -286,10 +321,38 @@
           }
         },
         {
+          "id": "medium",
+          "title": {
+            "en": "Medium",
+            "de": "Mittel"
+          }
+        },
+        {
+          "id": "middle",
+          "title": {
+            "en": "Middle",
+            "de": "Mittel"
+          }
+        },
+        {
           "id": "high",
           "title": {
             "en": "High",
             "de": "Hoch"
+          }
+        },
+        {
+          "id": "auto",
+          "title": {
+            "en": "Auto",
+            "de": "Auto"
+          }
+        },
+        {
+          "id": "turbo",
+          "title": {
+            "en": "Turbo",
+            "de": "Turbo"
           }
         }
       ],
@@ -1240,8 +1303,21 @@
               },
               "value": 4,
               "hint": {
-                "en": "DP number for operating mode (manual/laundry)",
-                "de": "DP-Nummer für den Betriebsmodus (manuell/Wäsche)"
+                "en": "DP number for operating mode",
+                "de": "DP-Nummer für den Betriebsmodus"
+              }
+            },
+            {
+              "id": "mode_values",
+              "type": "text",
+              "label": {
+                "en": "Mode values (comma-separated)",
+                "de": "Modus-Werte (kommagetrennt)"
+              },
+              "value": "manual,laundry",
+              "hint": {
+                "en": "Exact values your device sends for mode. Check Raw Data in app settings to find them. Example: manual,laundry,continuous,smart",
+                "de": "Genaue Werte, die das Gerät für den Modus sendet. Raw Data in den App-Einstellungen zeigt sie. Beispiel: manual,laundry,continuous,smart"
               }
             },
             {
@@ -1292,8 +1368,21 @@
               },
               "value": 5,
               "hint": {
-                "en": "DP number for fan speed (low/high)",
-                "de": "DP-Nummer für die Lüftergeschwindigkeit (niedrig/hoch)"
+                "en": "DP number for fan speed",
+                "de": "DP-Nummer für die Lüftergeschwindigkeit"
+              }
+            },
+            {
+              "id": "fan_speed_values",
+              "type": "text",
+              "label": {
+                "en": "Fan speed values (comma-separated)",
+                "de": "Lüftergeschwindigkeit-Werte (kommagetrennt)"
+              },
+              "value": "low,high",
+              "hint": {
+                "en": "Exact values your device sends for fan speed. Check Raw Data in app settings to find them. Example: low,medium,high",
+                "de": "Genaue Werte, die das Gerät für die Lüftergeschwindigkeit sendet. Beispiel: low,medium,high"
               }
             },
             {
