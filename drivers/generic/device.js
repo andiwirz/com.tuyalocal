@@ -288,6 +288,9 @@ class GenericDevice extends Homey.Device {
     this._conn.on('connected', () => {
       this._appLog('Connected', 'info');
       this._lastDataTime = Date.now();
+      // Clear dedup cache so the first data packet after (re)connect always
+      // writes fresh capability values and refreshes Homey's "last updated" timestamp.
+      this._lastDps = {};
       this.setAvailable().catch(() => {});
       this._triggerDeviceConnected.trigger(this).catch(() => {});
       this._updateStatusSettings('Connected');
