@@ -6,13 +6,15 @@ const TuyaConnection = require('../../lib/TuyaConnection');
 // Maps settings keys → Homey capabilities.
 // settable: false = read-only, no capability listener registered.
 const DP_PROFILE = [
-  { settingKey: 'dp_switch',       capability: 'onoff',           transform: (v)      => Boolean(v),                        settable: true  },
-  { settingKey: 'dp_voltage',      capability: 'measure_voltage', transform: (v)      => Number(v) * 0.1,                   settable: false },
-  { settingKey: 'dp_current',      capability: 'measure_current', transform: (v)      => Number(v) * 0.001,                 settable: false },
-  { settingKey: 'dp_energy',       capability: 'meter_power',     transform: (v)      => Number(v) * 0.001,                 settable: false },
-  { settingKey: 'dp_fault',        capability: 'alarm_generic',   transform: (v)      => Number(v) > 0,                     settable: false },
-  { settingKey: 'dp_relay_status', capability: 'relay_status',    transform: (v)      => String(v),                         settable: true  },
-  { settingKey: 'dp_power',        capability: 'measure_power',   transform: (v, dev) => Number(v) * dev._getPowerScale(),  settable: false },
+  { settingKey: 'dp_switch',        capability: 'onoff',           transform: (v)      => Boolean(v),                        settable: true  },
+  { settingKey: 'dp_voltage',       capability: 'measure_voltage', transform: (v)      => Number(v) * 0.1,                   settable: false },
+  { settingKey: 'dp_current',       capability: 'measure_current', transform: (v)      => Number(v) * 0.001,                 settable: false },
+  { settingKey: 'dp_energy',        capability: 'meter_power',     transform: (v)      => Number(v) * 0.001,                 settable: false },
+  { settingKey: 'dp_fault',         capability: 'alarm_generic',   transform: (v)      => Number(v) > 0,                     settable: false },
+  { settingKey: 'dp_relay_status',  capability: 'relay_status',    transform: (v)      => String(v),                         settable: true  },
+  { settingKey: 'dp_power',         capability: 'measure_power',   transform: (v, dev) => Number(v) * dev._getPowerScale(),  settable: false },
+  // Optional: power factor (DP 21 on most power-monitoring plugs, 0–100 %)
+  { settingKey: 'dp_power_factor',  capability: 'power_factor',    transform: (v)      => Number(v),                         settable: false },
 ];
 
 class SmartPlugDevice extends Homey.Device {
@@ -84,6 +86,7 @@ class SmartPlugDevice extends Homey.Device {
     const optionals = [
       { setting: 'dp_fault',        capability: 'alarm_generic' },
       { setting: 'dp_relay_status', capability: 'relay_status'  },
+      { setting: 'dp_power_factor', capability: 'power_factor'  },
     ];
 
     for (const { setting, capability } of optionals) {
@@ -199,7 +202,9 @@ class SmartPlugDevice extends Homey.Device {
         const rawNum = Number(value);
         if (rawNum > 2000) {
           this._detectedPowerScale = 0.1;
-        } else if (rawNum >= 0 && rawNum <= 2000 && !this._powerScaleDetected) {
+        } else if (rawNum > 0 && rawNum <= 2000 && !this._powerScaleDetected) {
+          // Only lock ×1 scale on a non-zero reading; a reading of 0 (device on
+          // but no load) must not permanently lock out the ×0.1 detection path.
           this._detectedPowerScale  = 1;
           this._powerScaleDetected  = true;
         }
@@ -283,6 +288,14 @@ class SmartPlugDevice extends Homey.Device {
     await this._connect();
   }
 
+  // Public – called by the "plug_set_countdown" flow action.
+  // seconds = 0 cancels any active countdown.
+  async setCountdown(seconds) {
+    const dp = this.getSetting('dp_countdown');
+    if (!dp || dp <= 0) throw new Error('Countdown DP not configured (set dp_countdown in device settings)');
+    await this._conn?.set(dp, Math.round(seconds));
+  }
+
   // ── Homey lifecycle ────────────────────────────────────────────────────────
 
   async onSettings({ changedKeys }) {
@@ -296,7 +309,7 @@ class SmartPlugDevice extends Homey.Device {
       this.log('Polling interval changed, restarting polling');
       this._startPolling();
     }
-    if (changedKeys.some((k) => ['dp_fault', 'dp_relay_status'].includes(k))) {
+    if (changedKeys.some((k) => ['dp_fault', 'dp_relay_status', 'dp_power_factor'].includes(k))) {
       await this._syncOptionalCapabilities();
     }
   }

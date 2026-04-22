@@ -250,13 +250,15 @@
 
       // rowDefs: [rowKey, settingKey, initialDp, label]
       var rowDefs = [
-        ['switch',  'dp_switch',       s.dp_switch       || 0, Homey.__('pair.list_devices.smart_plug.switch')  || 'On/Off (Switch)'],
-        ['power',   'dp_power',        s.dp_power        || 0, Homey.__('pair.list_devices.smart_plug.power')   || 'Power (W)'],
-        ['voltage', 'dp_voltage',      s.dp_voltage      || 0, Homey.__('pair.list_devices.smart_plug.voltage') || 'Voltage (V)'],
-        ['current', 'dp_current',      s.dp_current      || 0, Homey.__('pair.list_devices.smart_plug.current') || 'Current (A)'],
-        ['energy',  'dp_energy',       s.dp_energy       || 0, Homey.__('pair.list_devices.smart_plug.energy')  || 'Energy (kWh)'],
-        ['fault',   'dp_fault',        s.dp_fault        || 0, Homey.__('pair.list_devices.smart_plug.fault')   || 'Fault Alarm (0 = disabled)'],
-        ['relay',   'dp_relay_status', s.dp_relay_status || 0, Homey.__('pair.list_devices.smart_plug.relay')   || 'Relay Status (0 = disabled)'],
+        ['switch',       'dp_switch',        s.dp_switch        || 0, Homey.__('pair.list_devices.smart_plug.switch')       || 'On/Off (Switch)'],
+        ['power',        'dp_power',         s.dp_power         || 0, Homey.__('pair.list_devices.smart_plug.power')        || 'Power (W)'],
+        ['voltage',      'dp_voltage',       s.dp_voltage       || 0, Homey.__('pair.list_devices.smart_plug.voltage')      || 'Voltage (V)'],
+        ['current',      'dp_current',       s.dp_current       || 0, Homey.__('pair.list_devices.smart_plug.current')      || 'Current (A)'],
+        ['energy',       'dp_energy',        s.dp_energy        || 0, Homey.__('pair.list_devices.smart_plug.energy')       || 'Energy (kWh)'],
+        ['fault',        'dp_fault',         s.dp_fault         || 0, Homey.__('pair.list_devices.smart_plug.fault')        || 'Fault Alarm (0 = disabled)'],
+        ['relay',        'dp_relay_status',  s.dp_relay_status  || 0, Homey.__('pair.list_devices.smart_plug.relay')        || 'Relay Status (0 = disabled)'],
+        ['powerFactor',  'dp_power_factor',  s.dp_power_factor  || 0, Homey.__('pair.list_devices.smart_plug.powerFactor')  || 'Power Factor % (0 = disabled)'],
+        ['countdown',    'dp_countdown',     s.dp_countdown     || 0, Homey.__('pair.list_devices.smart_plug.countdown')    || 'Countdown Timer s (0 = disabled)'],
       ];
 
       var tbody = document.getElementById('dp-tbody');

@@ -82,7 +82,7 @@ class GenericDriver extends Homey.Driver {
       }
 
       pendingDevice = {
-        name: `${this.homey.__('device.defaultName') || 'Tuya Device'} (${ip})`,
+        name: this.homey.__('device.defaultName.generic'),
         data: { id: deviceId },
         settings: {
           ip,

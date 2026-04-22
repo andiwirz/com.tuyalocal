@@ -1,6 +1,10 @@
 {
   "device": {
-    "defaultName": "Dehumidifier"
+    "defaultName": {
+      "dehumidifier": "Dehumidifier",
+      "smart_plug":   "Smart Plug",
+      "generic":      "Tuya Device"
+    }
   },
   "notifications": {
     "waterFull": "Water tank is full — please empty it.",
@@ -57,13 +61,15 @@
       "error": "Error: ",
       "deviceName": "Device name",
       "smart_plug": {
-        "switch":  "On / Off",
-        "power":   "Power (W)",
-        "voltage": "Voltage (V)",
-        "current": "Current (A)",
-        "energy":  "Energy (kWh)",
-        "fault":   "Fault Alarm  (0 = disabled)",
-        "relay":   "Relay Power-on Behavior  (0 = disabled)"
+        "switch":       "On / Off",
+        "power":        "Power (W)",
+        "voltage":      "Voltage (V)",
+        "current":      "Current (A)",
+        "energy":       "Energy (kWh)",
+        "fault":        "Fault Alarm  (0 = disabled)",
+        "relay":        "Relay Power-on Behavior  (0 = disabled)",
+        "powerFactor":  "Power Factor %  (0 = disabled)",
+        "countdown":    "Countdown Timer s  (0 = disabled)"
       }
     }
   },

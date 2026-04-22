@@ -158,7 +158,7 @@ class DehumidifierDriver extends Homey.Driver {
       }
 
       pendingDevice = {
-        name: `${this.homey.__('device.defaultName')} (${ip})`,
+        name: this.homey.__('device.defaultName.dehumidifier'),
         data: { id: deviceId },
         settings: {
           ip,

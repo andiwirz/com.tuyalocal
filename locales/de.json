@@ -1,6 +1,10 @@
 {
   "device": {
-    "defaultName": "Entfeuchter"
+    "defaultName": {
+      "dehumidifier": "Entfeuchter",
+      "smart_plug":   "Smart Plug",
+      "generic":      "Tuya-Gerät"
+    }
   },
   "notifications": {
     "waterFull": "Wassertank ist voll — bitte leeren.",
@@ -57,13 +61,15 @@
       "error": "Fehler: ",
       "deviceName": "Gerätename",
       "smart_plug": {
-        "switch":  "Ein / Aus",
-        "power":   "Leistung (W)",
-        "voltage": "Spannung (V)",
-        "current": "Strom (A)",
-        "energy":  "Energie (kWh)",
-        "fault":   "Fehleralarm  (0 = deaktiviert)",
-        "relay":   "Relais-Einschaltverhalten  (0 = deaktiviert)"
+        "switch":       "Ein / Aus",
+        "power":        "Leistung (W)",
+        "voltage":      "Spannung (V)",
+        "current":      "Strom (A)",
+        "energy":       "Energie (kWh)",
+        "fault":        "Fehleralarm  (0 = deaktiviert)",
+        "relay":        "Relais-Einschaltverhalten  (0 = deaktiviert)",
+        "powerFactor":  "Leistungsfaktor %  (0 = deaktiviert)",
+        "countdown":    "Countdown-Timer s  (0 = deaktiviert)"
       }
     }
   },

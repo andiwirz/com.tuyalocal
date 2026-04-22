@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.5",
+  "version": "1.0.7",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -669,6 +669,26 @@
       "uiComponent": "picker",
       "uiQuickAction": false,
       "insights": false
+    },
+    "power_factor": {
+      "type": "number",
+      "title": {
+        "en": "Power Factor",
+        "de": "Leistungsfaktor"
+      },
+      "units": {
+        "en": "%",
+        "de": "%"
+      },
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "decimals": 0,
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "uiQuickAction": false,
+      "insights": true
     },
     "relay_status": {
       "type": "enum",
@@ -1846,6 +1866,35 @@
             "filter": "driver_id=smart_plug"
           }
         ]
+      },
+      {
+        "id": "plug_set_countdown",
+        "title": {
+          "en": "Set countdown timer",
+          "de": "Countdown-Timer setzen"
+        },
+        "titleFormatted": {
+          "en": "Set auto-off countdown to [[seconds]] s",
+          "de": "Auto-Aus-Countdown auf [[seconds]] s setzen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=smart_plug"
+          },
+          {
+            "name": "seconds",
+            "type": "number",
+            "min": 0,
+            "max": 86400,
+            "step": 60,
+            "title": {
+              "en": "Duration (s, 0 = off)",
+              "de": "Dauer (s, 0 = aus)"
+            }
+          }
+        ]
       }
     ]
   },
@@ -2590,6 +2639,32 @@
               "hint": {
                 "en": "DP for relay power-on behavior (on/off/memory). Set to 0 to disable.",
                 "de": "DP für Relais-Einschaltverhalten (on/off/memory). 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_power_factor",
+              "type": "number",
+              "label": {
+                "en": "Power Factor DP",
+                "de": "Leistungsfaktor DP"
+              },
+              "value": 0,
+              "hint": {
+                "en": "DP for power factor (0–100 %). Typically DP 21. Set to 0 to disable.",
+                "de": "DP für den Leistungsfaktor (0–100 %). Typischerweise DP 21. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_countdown",
+              "type": "number",
+              "label": {
+                "en": "Countdown DP",
+                "de": "Countdown DP"
+              },
+              "value": 9,
+              "hint": {
+                "en": "DP for auto-off countdown timer in seconds (default: 9). Used by the 'Set countdown' flow action. Set to 0 to disable.",
+                "de": "DP für den Auto-Aus-Countdown in Sekunden (Standard: 9). Wird von der Flow-Aktion 'Countdown setzen' verwendet. 0 = deaktiviert."
               }
             },
             {

@@ -45,6 +45,11 @@ class SmartPlugDriver extends Homey.Driver {
       .registerRunListener(async (args) => {
         return args.device.pollNow();
       });
+
+    this.homey.flow.getActionCard('plug_set_countdown')
+      .registerRunListener(async (args) => {
+        return args.device.setCountdown(args.seconds);
+      });
   }
 
   async onPair(session) {
@@ -109,7 +114,7 @@ class SmartPlugDriver extends Homey.Driver {
       }
 
       pendingDevice = {
-        name: `${this.homey.__('device.defaultName')} (${ip})`,
+        name: this.homey.__('device.defaultName.smart_plug'),
         data: { id: deviceId },
         settings: {
           ip,
@@ -146,30 +151,44 @@ class SmartPlugDriver extends Homey.Driver {
   // Auto-detect DP mapping from a raw DPS snapshot
   _detectDps(dps) {
     const result = {
-      dp_switch:       1,
-      dp_power:        19,
-      dp_voltage:      20,
-      dp_current:      18,
-      dp_energy:       17,
-      dp_fault:        0,   // disabled by default
-      dp_relay_status: 0,   // disabled by default
+      dp_switch:        1,
+      dp_power:         19,
+      dp_voltage:       20,
+      dp_current:       18,
+      dp_energy:        17,
+      dp_fault:         0,   // disabled by default
+      dp_relay_status:  0,   // disabled by default
+      dp_power_factor:  0,   // disabled by default
+      dp_countdown:     0,   // disabled by default
     };
+
+    // Collect all boolean DPs first, then prefer DP 1 — the Tuya spec
+    // assigns on/off to DP 1 in the vast majority of devices.
+    const boolDps = Object.entries(dps)
+      .filter(([, v]) => typeof v === 'boolean')
+      .map(([k]) => parseInt(k, 10));
+    if (boolDps.length > 0) {
+      result.dp_switch = boolDps.includes(1) ? 1 : boolDps[0];
+    }
 
     for (const [dpStr, val] of Object.entries(dps)) {
       const dp = parseInt(dpStr, 10);
       if (typeof val === 'boolean') {
-        // Boolean DP → switch (prefer DP 1)
-        if (dp === 1 || result.dp_switch === 1) result.dp_switch = dp;
+        // Already handled above — skip
       } else if (typeof val === 'number') {
+        // Countdown timer: DP 9, integer seconds (0 = inactive)
+        if (dp === 9) result.dp_countdown = dp;
         // Voltage: raw value 1000–2800 (= 100–280 V × 0.1)
-        if (val >= 1000 && val <= 2800) result.dp_voltage = dp;
+        else if (val >= 1000 && val <= 2800) result.dp_voltage = dp;
         // Energy (cumulative, typically small number, DP 17 by convention)
         else if (dp === 17) result.dp_energy = dp;
         // Current (typically 0 when off, DP 18 by convention)
         else if (dp === 18) result.dp_current = dp;
         // Power (typically 0 when off, DP 19 by convention)
         else if (dp === 19) result.dp_power = dp;
-        // Fault bitmap (0 when no fault)
+        // Power factor (0–100 %, typically DP 21)
+        else if (dp === 21 && val >= 0 && val <= 100) result.dp_power_factor = dp;
+        // Fault bitmap (0 when no fault, typically DP 26)
         else if (dp === 26 && val === 0) result.dp_fault = dp;
       } else if (typeof val === 'string') {
         // Relay status enum
