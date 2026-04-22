@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -389,6 +389,321 @@
       "uiComponent": "slider",
       "uiQuickAction": false,
       "insights": true
+    },
+    "generic_sensor_1": {
+      "type": "number",
+      "title": {
+        "en": "Sensor 1",
+        "de": "Sensor 1"
+      },
+      "units": {
+        "en": "",
+        "de": ""
+      },
+      "min": -1000000,
+      "max": 1000000,
+      "step": 0.01,
+      "decimals": 2,
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "uiQuickAction": false,
+      "insights": true
+    },
+    "generic_sensor_2": {
+      "type": "number",
+      "title": {
+        "en": "Sensor 2",
+        "de": "Sensor 2"
+      },
+      "units": {
+        "en": "",
+        "de": ""
+      },
+      "min": -1000000,
+      "max": 1000000,
+      "step": 0.01,
+      "decimals": 2,
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "uiQuickAction": false,
+      "insights": true
+    },
+    "generic_sensor_3": {
+      "type": "number",
+      "title": {
+        "en": "Sensor 3",
+        "de": "Sensor 3"
+      },
+      "units": {
+        "en": "",
+        "de": ""
+      },
+      "min": -1000000,
+      "max": 1000000,
+      "step": 0.01,
+      "decimals": 2,
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "uiQuickAction": false,
+      "insights": true
+    },
+    "generic_sensor_4": {
+      "type": "number",
+      "title": {
+        "en": "Sensor 4",
+        "de": "Sensor 4"
+      },
+      "units": {
+        "en": "",
+        "de": ""
+      },
+      "min": -1000000,
+      "max": 1000000,
+      "step": 0.01,
+      "decimals": 2,
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "uiQuickAction": false,
+      "insights": true
+    },
+    "generic_number_1": {
+      "type": "number",
+      "title": {
+        "en": "Value 1",
+        "de": "Wert 1"
+      },
+      "units": {
+        "en": "",
+        "de": ""
+      },
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "decimals": 0,
+      "getable": true,
+      "setable": true,
+      "uiComponent": "slider",
+      "uiQuickAction": false,
+      "insights": true
+    },
+    "generic_number_2": {
+      "type": "number",
+      "title": {
+        "en": "Value 2",
+        "de": "Wert 2"
+      },
+      "units": {
+        "en": "",
+        "de": ""
+      },
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "decimals": 0,
+      "getable": true,
+      "setable": true,
+      "uiComponent": "slider",
+      "uiQuickAction": false,
+      "insights": true
+    },
+    "generic_switch_1": {
+      "type": "boolean",
+      "title": {
+        "en": "Switch 1",
+        "de": "Schalter 1"
+      },
+      "getable": true,
+      "setable": true,
+      "uiComponent": "toggle",
+      "uiQuickAction": false,
+      "insights": false
+    },
+    "generic_switch_2": {
+      "type": "boolean",
+      "title": {
+        "en": "Switch 2",
+        "de": "Schalter 2"
+      },
+      "getable": true,
+      "setable": true,
+      "uiComponent": "toggle",
+      "uiQuickAction": false,
+      "insights": false
+    },
+    "generic_switch_3": {
+      "type": "boolean",
+      "title": {
+        "en": "Switch 3",
+        "de": "Schalter 3"
+      },
+      "getable": true,
+      "setable": true,
+      "uiComponent": "toggle",
+      "uiQuickAction": false,
+      "insights": false
+    },
+    "generic_switch_4": {
+      "type": "boolean",
+      "title": {
+        "en": "Switch 4",
+        "de": "Schalter 4"
+      },
+      "getable": true,
+      "setable": true,
+      "uiComponent": "toggle",
+      "uiQuickAction": false,
+      "insights": false
+    },
+    "generic_picker_1": {
+      "type": "enum",
+      "title": {
+        "en": "Picker 1",
+        "de": "Auswahl 1"
+      },
+      "values": [
+        {
+          "id": "0",
+          "title": {
+            "en": "0",
+            "de": "0"
+          }
+        },
+        {
+          "id": "1",
+          "title": {
+            "en": "1",
+            "de": "1"
+          }
+        }
+      ],
+      "getable": true,
+      "setable": true,
+      "uiComponent": "picker",
+      "uiQuickAction": false,
+      "insights": false
+    },
+    "generic_picker_2": {
+      "type": "enum",
+      "title": {
+        "en": "Picker 2",
+        "de": "Auswahl 2"
+      },
+      "values": [
+        {
+          "id": "0",
+          "title": {
+            "en": "0",
+            "de": "0"
+          }
+        },
+        {
+          "id": "1",
+          "title": {
+            "en": "1",
+            "de": "1"
+          }
+        }
+      ],
+      "getable": true,
+      "setable": true,
+      "uiComponent": "picker",
+      "uiQuickAction": false,
+      "insights": false
+    },
+    "generic_picker_3": {
+      "type": "enum",
+      "title": {
+        "en": "Picker 3",
+        "de": "Auswahl 3"
+      },
+      "values": [
+        {
+          "id": "0",
+          "title": {
+            "en": "0",
+            "de": "0"
+          }
+        },
+        {
+          "id": "1",
+          "title": {
+            "en": "1",
+            "de": "1"
+          }
+        }
+      ],
+      "getable": true,
+      "setable": true,
+      "uiComponent": "picker",
+      "uiQuickAction": false,
+      "insights": false
+    },
+    "generic_picker_4": {
+      "type": "enum",
+      "title": {
+        "en": "Picker 4",
+        "de": "Auswahl 4"
+      },
+      "values": [
+        {
+          "id": "0",
+          "title": {
+            "en": "0",
+            "de": "0"
+          }
+        },
+        {
+          "id": "1",
+          "title": {
+            "en": "1",
+            "de": "1"
+          }
+        }
+      ],
+      "getable": true,
+      "setable": true,
+      "uiComponent": "picker",
+      "uiQuickAction": false,
+      "insights": false
+    },
+    "relay_status": {
+      "type": "enum",
+      "title": {
+        "en": "Relay Status",
+        "de": "Relaiszustand"
+      },
+      "values": [
+        {
+          "id": "on",
+          "title": {
+            "en": "Always On",
+            "de": "Immer Ein"
+          }
+        },
+        {
+          "id": "off",
+          "title": {
+            "en": "Always Off",
+            "de": "Immer Aus"
+          }
+        },
+        {
+          "id": "memory",
+          "title": {
+            "en": "Last State",
+            "de": "Letzter Zustand"
+          }
+        }
+      ],
+      "getable": true,
+      "setable": true,
+      "uiComponent": "picker",
+      "uiQuickAction": false,
+      "insights": false
     }
   },
   "flow": {
@@ -598,6 +913,228 @@
             "example": "true"
           }
         ]
+      },
+      {
+        "id": "generic_dp_changed",
+        "title": {
+          "en": "A data point changed",
+          "de": "Ein Datenpunkt hat sich geändert"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=generic"
+          }
+        ],
+        "tokens": [
+          {
+            "name": "dp",
+            "type": "string",
+            "title": {
+              "en": "Data Point",
+              "de": "Datenpunkt"
+            },
+            "example": "1"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "title": {
+              "en": "Value",
+              "de": "Wert"
+            },
+            "example": "true"
+          }
+        ]
+      },
+      {
+        "id": "generic_device_connected",
+        "title": {
+          "en": "Device connected",
+          "de": "Gerät verbunden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=generic"
+          }
+        ]
+      },
+      {
+        "id": "generic_device_disconnected",
+        "title": {
+          "en": "Device disconnected",
+          "de": "Gerät getrennt"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=generic"
+          }
+        ]
+      },
+      {
+        "id": "plug_device_connected",
+        "title": {
+          "en": "Device connected",
+          "de": "Gerät verbunden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=smart_plug"
+          }
+        ]
+      },
+      {
+        "id": "plug_device_disconnected",
+        "title": {
+          "en": "Device disconnected",
+          "de": "Gerät getrennt"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=smart_plug"
+          }
+        ]
+      },
+      {
+        "id": "plug_dp_changed",
+        "title": {
+          "en": "A data point changed",
+          "de": "Ein Datenpunkt hat sich geändert"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=smart_plug"
+          }
+        ],
+        "tokens": [
+          {
+            "name": "dp",
+            "type": "string",
+            "title": {
+              "en": "DP",
+              "de": "DP"
+            },
+            "example": "1"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "title": {
+              "en": "Value",
+              "de": "Wert"
+            },
+            "example": "true"
+          }
+        ]
+      },
+      {
+        "id": "plug_power_above",
+        "title": {
+          "en": "Power went above threshold",
+          "de": "Leistung überschreitet Schwellenwert"
+        },
+        "titleFormatted": {
+          "en": "Power went above [[power]] W",
+          "de": "Leistung überschreitet [[power]] W"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=smart_plug"
+          },
+          {
+            "name": "power",
+            "type": "number",
+            "min": 0,
+            "max": 3600,
+            "step": 1,
+            "title": {
+              "en": "Power (W)",
+              "de": "Leistung (W)"
+            }
+          }
+        ],
+        "tokens": [
+          {
+            "name": "power",
+            "type": "number",
+            "title": {
+              "en": "Power (W)",
+              "de": "Leistung (W)"
+            },
+            "example": 150
+          },
+          {
+            "name": "prevPower",
+            "type": "number",
+            "title": {
+              "en": "Previous Power (W)",
+              "de": "Vorherige Leistung (W)"
+            },
+            "example": 90
+          }
+        ]
+      },
+      {
+        "id": "plug_power_below",
+        "title": {
+          "en": "Power dropped below threshold",
+          "de": "Leistung unterschreitet Schwellenwert"
+        },
+        "titleFormatted": {
+          "en": "Power dropped below [[power]] W",
+          "de": "Leistung unterschreitet [[power]] W"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=smart_plug"
+          },
+          {
+            "name": "power",
+            "type": "number",
+            "min": 0,
+            "max": 3600,
+            "step": 1,
+            "title": {
+              "en": "Power (W)",
+              "de": "Leistung (W)"
+            }
+          }
+        ],
+        "tokens": [
+          {
+            "name": "power",
+            "type": "number",
+            "title": {
+              "en": "Power (W)",
+              "de": "Leistung (W)"
+            },
+            "example": 90
+          },
+          {
+            "name": "prevPower",
+            "type": "number",
+            "title": {
+              "en": "Previous Power (W)",
+              "de": "Vorherige Leistung (W)"
+            },
+            "example": 150
+          }
+        ]
       }
     ],
     "conditions": [
@@ -684,6 +1221,77 @@
             "name": "device",
             "type": "device",
             "filter": "driver_id=dehumidifier"
+          }
+        ]
+      },
+      {
+        "id": "generic_device_is_connected",
+        "title": {
+          "en": "Device !{{is|is not}} connected",
+          "de": "Gerät ist !{{verbunden|nicht verbunden}}"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=generic"
+          }
+        ]
+      },
+      {
+        "id": "plug_device_is_connected",
+        "title": {
+          "en": "Device !{{is|is not}} connected",
+          "de": "Gerät ist !{{verbunden|nicht verbunden}}"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=smart_plug"
+          }
+        ]
+      },
+      {
+        "id": "plug_alarm_active",
+        "title": {
+          "en": "Fault alarm !{{is|is not}} active",
+          "de": "Fehleralarm ist !{{aktiv|nicht aktiv}}"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=smart_plug"
+          }
+        ]
+      },
+      {
+        "id": "plug_power_is_above",
+        "title": {
+          "en": "Power !{{is|is not}} above",
+          "de": "Leistung ist !{{über|nicht über}}"
+        },
+        "titleFormatted": {
+          "en": "Power !{{is|is not}} above [[power]] W",
+          "de": "Leistung ist !{{über|nicht über}} [[power]] W"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=smart_plug"
+          },
+          {
+            "name": "power",
+            "type": "number",
+            "min": 0,
+            "max": 3600,
+            "step": 1,
+            "title": {
+              "en": "Power (W)",
+              "de": "Leistung (W)"
+            }
           }
         ]
       },
@@ -1090,6 +1698,48 @@
         ]
       },
       {
+        "id": "set_anion",
+        "title": {
+          "en": "Set ioniser",
+          "de": "Ionisator setzen"
+        },
+        "titleFormatted": {
+          "en": "Set ioniser [[enabled]]",
+          "de": "Ionisator [[enabled]] setzen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=dehumidifier"
+          },
+          {
+            "name": "enabled",
+            "type": "dropdown",
+            "title": {
+              "en": "Ioniser",
+              "de": "Ionisator"
+            },
+            "values": [
+              {
+                "id": "true",
+                "label": {
+                  "en": "On",
+                  "de": "Ein"
+                }
+              },
+              {
+                "id": "false",
+                "label": {
+                  "en": "Off",
+                  "de": "Aus"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
         "id": "force_reconnect",
         "title": {
           "en": "Force reconnect",
@@ -1122,6 +1772,78 @@
             "name": "device",
             "type": "device",
             "filter": "driver_id=dehumidifier"
+          }
+        ]
+      },
+      {
+        "id": "generic_force_reconnect",
+        "title": {
+          "en": "Force reconnect",
+          "de": "Verbindung neu aufbauen"
+        },
+        "titleFormatted": {
+          "en": "Force [[device]] to reconnect",
+          "de": "[[device]] neu verbinden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=generic"
+          }
+        ]
+      },
+      {
+        "id": "generic_refresh_device",
+        "title": {
+          "en": "Refresh device values",
+          "de": "Gerätewerte aktualisieren"
+        },
+        "titleFormatted": {
+          "en": "Refresh values of [[device]]",
+          "de": "Werte von [[device]] aktualisieren"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=generic"
+          }
+        ]
+      },
+      {
+        "id": "plug_force_reconnect",
+        "title": {
+          "en": "Force reconnect",
+          "de": "Verbindung neu aufbauen"
+        },
+        "titleFormatted": {
+          "en": "Force [[device]] to reconnect",
+          "de": "[[device]] neu verbinden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=smart_plug"
+          }
+        ]
+      },
+      {
+        "id": "plug_refresh_device",
+        "title": {
+          "en": "Refresh device values",
+          "de": "Gerätewerte aktualisieren"
+        },
+        "titleFormatted": {
+          "en": "Refresh values of [[device]]",
+          "de": "Werte von [[device]] aktualisieren"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=smart_plug"
           }
         ]
       }
@@ -1487,6 +2209,472 @@
         "small": "/drivers/dehumidifier/assets/images/small.png",
         "large": "/drivers/dehumidifier/assets/images/large.png",
         "xlarge": "/drivers/dehumidifier/assets/images/xlarge.png"
+      }
+    },
+    {
+      "id": "generic",
+      "name": {
+        "en": "Generic Tuya Device",
+        "de": "Generisches Tuya-Gerät"
+      },
+      "class": "other",
+      "capabilities": [],
+      "settings": [
+        {
+          "type": "group",
+          "label": {
+            "en": "Connection",
+            "de": "Verbindung"
+          },
+          "children": [
+            {
+              "id": "ip",
+              "type": "text",
+              "label": {
+                "en": "IP Address",
+                "de": "IP-Adresse"
+              },
+              "value": ""
+            },
+            {
+              "id": "device_id",
+              "type": "text",
+              "label": {
+                "en": "Device ID",
+                "de": "Geräte-ID"
+              },
+              "value": ""
+            },
+            {
+              "id": "local_key",
+              "type": "text",
+              "label": {
+                "en": "Local Key",
+                "de": "Lokaler Schlüssel"
+              },
+              "value": ""
+            },
+            {
+              "id": "version",
+              "type": "dropdown",
+              "label": {
+                "en": "Protocol Version",
+                "de": "Protokollversion"
+              },
+              "value": "3.3",
+              "values": [
+                {
+                  "id": "3.1",
+                  "label": {
+                    "en": "3.1 (legacy)",
+                    "de": "3.1 (veraltet)"
+                  }
+                },
+                {
+                  "id": "3.3",
+                  "label": {
+                    "en": "3.3",
+                    "de": "3.3"
+                  }
+                },
+                {
+                  "id": "3.4",
+                  "label": {
+                    "en": "3.4",
+                    "de": "3.4"
+                  }
+                },
+                {
+                  "id": "3.5",
+                  "label": {
+                    "en": "3.5",
+                    "de": "3.5"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "polling_interval",
+              "type": "number",
+              "label": {
+                "en": "Polling Interval (seconds)",
+                "de": "Abfrageintervall (Sekunden)"
+              },
+              "value": 30,
+              "min": 0,
+              "max": 3600
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "DP Configuration",
+            "de": "DP-Konfiguration"
+          },
+          "children": [
+            {
+              "id": "dp_config",
+              "type": "text",
+              "label": {
+                "en": "DP Mapping (JSON)",
+                "de": "DP-Zuordnung (JSON)"
+              },
+              "value": "[]",
+              "hint": {
+                "en": "JSON array configured during pairing. Each entry: {\"dp\":1,\"cap\":\"onoff\",\"label\":\"Power\",\"settable\":true,\"scale\":1}. After editing, the Tuya Local app must be restarted.",
+                "de": "JSON-Array, das beim Pairing konfiguriert wird. Jeder Eintrag: {\"dp\":1,\"cap\":\"onoff\",\"label\":\"Power\",\"settable\":true,\"scale\":1}. Nach Änderungen die Tuya Local App neu starten."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Status",
+            "de": "Status"
+          },
+          "children": [
+            {
+              "id": "connection_status",
+              "type": "text",
+              "label": {
+                "en": "Connection",
+                "de": "Verbindung"
+              },
+              "value": "—"
+            },
+            {
+              "id": "last_seen",
+              "type": "text",
+              "label": {
+                "en": "Last data received",
+                "de": "Zuletzt Daten empfangen"
+              },
+              "value": "—"
+            }
+          ]
+        }
+      ],
+      "pair": [
+        {
+          "id": "credentials"
+        },
+        {
+          "id": "list_devices"
+        }
+      ],
+      "repair": [
+        {
+          "id": "repair"
+        }
+      ],
+      "images": {
+        "small": "/drivers/generic/assets/images/small.png",
+        "large": "/drivers/generic/assets/images/large.png",
+        "xlarge": "/drivers/generic/assets/images/xlarge.png"
+      }
+    },
+    {
+      "id": "smart_plug",
+      "name": {
+        "en": "Smart Plug",
+        "de": "Smart Plug"
+      },
+      "class": "socket",
+      "capabilities": [
+        "onoff",
+        "measure_power",
+        "measure_voltage",
+        "measure_current",
+        "meter_power"
+      ],
+      "capabilitiesOptions": {
+        "measure_power": {
+          "uiQuickAction": false
+        },
+        "measure_voltage": {
+          "uiQuickAction": false
+        },
+        "measure_current": {
+          "uiQuickAction": false
+        },
+        "meter_power": {
+          "uiQuickAction": false
+        }
+      },
+      "settings": [
+        {
+          "type": "group",
+          "label": {
+            "en": "Connection",
+            "de": "Verbindung"
+          },
+          "children": [
+            {
+              "id": "ip",
+              "type": "text",
+              "label": {
+                "en": "IP Address",
+                "de": "IP-Adresse"
+              },
+              "value": ""
+            },
+            {
+              "id": "device_id",
+              "type": "text",
+              "label": {
+                "en": "Device ID",
+                "de": "Geräte-ID"
+              },
+              "value": ""
+            },
+            {
+              "id": "local_key",
+              "type": "text",
+              "label": {
+                "en": "Local Key",
+                "de": "Lokaler Schlüssel"
+              },
+              "value": ""
+            },
+            {
+              "id": "version",
+              "type": "dropdown",
+              "label": {
+                "en": "Protocol Version",
+                "de": "Protokollversion"
+              },
+              "value": "3.3",
+              "values": [
+                {
+                  "id": "3.1",
+                  "label": {
+                    "en": "3.1 (legacy)",
+                    "de": "3.1 (veraltet)"
+                  }
+                },
+                {
+                  "id": "3.3",
+                  "label": {
+                    "en": "3.3",
+                    "de": "3.3"
+                  }
+                },
+                {
+                  "id": "3.4",
+                  "label": {
+                    "en": "3.4",
+                    "de": "3.4"
+                  }
+                },
+                {
+                  "id": "3.5",
+                  "label": {
+                    "en": "3.5",
+                    "de": "3.5"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "polling_interval",
+              "type": "number",
+              "label": {
+                "en": "Polling Interval (s)",
+                "de": "Abfrageintervall (s)"
+              },
+              "value": 30,
+              "min": 0,
+              "max": 3600,
+              "hint": {
+                "en": "How often to poll for updates. 0 = push only.",
+                "de": "Wie oft Werte abgefragt werden. 0 = nur Push."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Data Points (DPs)",
+            "de": "Datenpunkte (DPs)"
+          },
+          "children": [
+            {
+              "id": "dp_switch",
+              "type": "number",
+              "label": {
+                "en": "On/Off DP",
+                "de": "Ein/Aus DP"
+              },
+              "value": 1,
+              "hint": {
+                "en": "DP for power switch (default: 1)",
+                "de": "DP für Ein/Aus (Standard: 1)"
+              }
+            },
+            {
+              "id": "dp_power",
+              "type": "number",
+              "label": {
+                "en": "Power DP",
+                "de": "Leistung DP"
+              },
+              "value": 19,
+              "hint": {
+                "en": "DP for current power in W (default: 19)",
+                "de": "DP für aktuelle Leistung in W (Standard: 19)"
+              }
+            },
+            {
+              "id": "dp_voltage",
+              "type": "number",
+              "label": {
+                "en": "Voltage DP",
+                "de": "Spannung DP"
+              },
+              "value": 20,
+              "hint": {
+                "en": "DP for voltage × 0.1 = V (default: 20)",
+                "de": "DP für Spannung × 0.1 = V (Standard: 20)"
+              }
+            },
+            {
+              "id": "dp_current",
+              "type": "number",
+              "label": {
+                "en": "Current DP",
+                "de": "Strom DP"
+              },
+              "value": 18,
+              "hint": {
+                "en": "DP for current × 0.001 = A (default: 18)",
+                "de": "DP für Strom × 0.001 = A (Standard: 18)"
+              }
+            },
+            {
+              "id": "dp_energy",
+              "type": "number",
+              "label": {
+                "en": "Energy DP",
+                "de": "Energie DP"
+              },
+              "value": 17,
+              "hint": {
+                "en": "DP for total energy × 0.001 = kWh (default: 17)",
+                "de": "DP für Gesamtenergie × 0.001 = kWh (Standard: 17)"
+              }
+            },
+            {
+              "id": "dp_fault",
+              "type": "number",
+              "label": {
+                "en": "Fault DP",
+                "de": "Fehler DP"
+              },
+              "value": 0,
+              "hint": {
+                "en": "DP for fault bitmap alarm. Set to 0 to disable.",
+                "de": "DP für Fehler-Bitmap-Alarm. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_relay_status",
+              "type": "number",
+              "label": {
+                "en": "Relay Status DP",
+                "de": "Relaiszustand DP"
+              },
+              "value": 0,
+              "hint": {
+                "en": "DP for relay power-on behavior (on/off/memory). Set to 0 to disable.",
+                "de": "DP für Relais-Einschaltverhalten (on/off/memory). 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "power_scale",
+              "type": "dropdown",
+              "label": {
+                "en": "Power Scale",
+                "de": "Leistungs-Skalierung"
+              },
+              "value": "auto",
+              "hint": {
+                "en": "How to scale the raw power DP value. 'Auto' detects automatically (raw > 2000 → ×0.1).",
+                "de": "Skalierung des Leistungs-DP-Rohwerts. 'Auto' erkennt automatisch (Rohwert > 2000 → ×0.1)."
+              },
+              "values": [
+                {
+                  "id": "auto",
+                  "label": {
+                    "en": "Auto-detect",
+                    "de": "Automatisch erkennen"
+                  }
+                },
+                {
+                  "id": "0.1",
+                  "label": {
+                    "en": "×0.1 (e.g. raw 1500 = 150 W)",
+                    "de": "×0.1 (z.B. Rohwert 1500 = 150 W)"
+                  }
+                },
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "×1   (e.g. raw 150  = 150 W)",
+                    "de": "×1 (z.B. Rohwert 150 = 150 W)"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Status",
+            "de": "Status"
+          },
+          "children": [
+            {
+              "id": "connection_status",
+              "type": "text",
+              "label": {
+                "en": "Connection",
+                "de": "Verbindung"
+              },
+              "value": "—"
+            },
+            {
+              "id": "last_seen",
+              "type": "text",
+              "label": {
+                "en": "Last data received",
+                "de": "Zuletzt Daten empfangen"
+              },
+              "value": "—"
+            }
+          ]
+        }
+      ],
+      "pair": [
+        {
+          "id": "credentials"
+        },
+        {
+          "id": "list_devices"
+        }
+      ],
+      "repair": [
+        {
+          "id": "repair"
+        }
+      ],
+      "images": {
+        "small": "/drivers/smart_plug/assets/images/small.png",
+        "large": "/drivers/smart_plug/assets/images/large.png",
+        "xlarge": "/drivers/smart_plug/assets/images/xlarge.png"
       }
     }
   ],
