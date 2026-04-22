@@ -19,5 +19,8 @@
   },
   "1.0.7": {
     "en": "Smart Plug: fix power-scale auto-detect locking on zero load; add Power Factor (DP 21) capability; add \"Set countdown timer\" flow action (DP 9)."
+  },
+  "1.0.8": {
+    "en": "fix TuyaConnection"
   }
 }
