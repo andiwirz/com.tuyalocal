@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 14px;
+      margin: 0;
+      background: #fff;
+    }
+    h2  { font-size: 20px; font-weight: 700; margin: 0 0 4px; }
+    .subtitle { color: #666; margin: 0 0 14px; font-size: 13px; }
+
+    /* Device card */
+    .device-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 14px;
+      border: 2px solid #1a73e8;
+      border-radius: 10px;
+      background: #f0f6ff;
+      margin-bottom: 12px;
+    }
+    .device-name { font-weight: 600; font-size: 15px; }
+    .device-sub  { font-size: 12px; color: #555; margin-top: 2px; }
+
+    /* Name input */
+    .name-input-wrap { margin-bottom: 14px; }
+    .name-input-wrap label { display: block; font-size: 12px; color: #666; margin-bottom: 4px; }
+    .name-input-wrap input {
+      width: 100%;
+      padding: 9px 10px;
+      border: 1px solid #d0d0d0;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    .name-input-wrap input:focus { outline: none; border-color: #1a73e8; }
+
+    /* Section headers */
+    .section-header {
+      font-size: 13px;
+      font-weight: 600;
+      color: #333;
+      margin: 14px 0 8px;
+      padding-bottom: 4px;
+      border-bottom: 2px solid #e8e8e8;
+    }
+
+    /* DP rows */
+    .dp-row {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      background: #fafafa;
+      transition: opacity 0.15s;
+    }
+    .dp-row.excluded {
+      opacity: 0.4;
+    }
+    .dp-row-top {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .dp-badge {
+      display: inline-block;
+      background: #e8f0fe;
+      color: #1a73e8;
+      border-radius: 5px;
+      padding: 2px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .val-badge {
+      display: inline-block;
+      background: #f1f3f4;
+      color: #333;
+      border-radius: 4px;
+      padding: 2px 7px;
+      font-size: 11px;
+      font-family: monospace;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .dp-row-top select {
+      flex: 1;
+      min-width: 160px;
+      padding: 5px 8px;
+      border: 1px solid #d0d0d0;
+      border-radius: 6px;
+      font-size: 13px;
+      background: #fff;
+    }
+    .dp-row-top input[type="text"].label-input {
+      flex: 1;
+      min-width: 100px;
+      padding: 5px 8px;
+      border: 1px solid #d0d0d0;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+    .dp-row-top input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      cursor: pointer;
+      margin: 0;
+    }
+
+    /* Advanced section */
+    .adv-toggle {
+      background: none;
+      border: none;
+      padding: 0;
+      color: #888;
+      font-size: 11px;
+      cursor: pointer;
+      width: auto;
+      margin-top: 6px;
+      font-weight: 500;
+    }
+    .adv-toggle:hover { color: #1a73e8; }
+    .adv-content {
+      display: none;
+      margin-top: 8px;
+      padding: 8px 10px;
+      background: #f1f3f4;
+      border-radius: 6px;
+    }
+    .adv-content.open { display: block; }
+    .adv-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 8px;
+    }
+    .adv-field { display: flex; flex-direction: column; gap: 2px; }
+    .adv-field label { font-size: 11px; color: #666; }
+    .adv-field input, .adv-field select {
+      padding: 4px 7px;
+      border: 1px solid #d0d0d0;
+      border-radius: 5px;
+      font-size: 12px;
+      background: #fff;
+    }
+    .adv-field input:focus, .adv-field select:focus { outline: none; border-color: #1a73e8; }
+    .adv-row-check {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+      font-size: 12px;
+      color: #444;
+    }
+    .adv-row-check input[type="checkbox"] {
+      width: 14px;
+      height: 14px;
+      cursor: pointer;
+    }
+    .field-hidden { display: none !important; }
+
+    /* Unassigned DPs collapsible */
+    .raw-section { margin-bottom: 12px; }
+    .raw-toggle {
+      background: none;
+      border: none;
+      padding: 0;
+      color: #1a73e8;
+      font-size: 12px;
+      cursor: pointer;
+      width: auto;
+      font-weight: 500;
+    }
+    .raw-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      margin-top: 6px;
+      background: #fafafa;
+      border: 1px solid #e8e8e8;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .raw-table th {
+      text-align: left;
+      color: #888;
+      font-weight: 500;
+      padding: 4px 8px;
+      border-bottom: 1px solid #e8e8e8;
+      background: #f1f3f4;
+    }
+    .raw-table td { padding: 3px 8px; border-bottom: 1px solid #f0f0f0; }
+    .raw-table tr:last-child td { border-bottom: none; }
+    .raw-dp { font-weight: 600; color: #1a73e8; }
+
+    /* Status and buttons */
+    .status {
+      margin-bottom: 10px;
+      padding: 8px 10px;
+      border-radius: 5px;
+      font-size: 13px;
+      display: none;
+    }
+    .status.error   { background: #fce8e6; color: #c5221f; display: block; }
+    .status.success { background: #e6f4ea; color: #1e6a34; display: block; }
+
+    button#addBtn {
+      width: 100%;
+      padding: 12px;
+      background: #1a73e8;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    button#addBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+    #loading { color: #888; font-size: 13px; margin-bottom: 14px; }
+  </style>
+</head>
+<body>
+  <h2 id="page-title">Configure Tuya Device</h2>
+  <p class="subtitle" id="page-subtitle">Map each data point to a Homey capability.</p>
+
+  <div id="loading">Loading device data…</div>
+
+  <div id="main-content" style="display:none">
+
+    <div id="device-card" class="device-card">
+      <div>
+        <div class="device-name" id="device-name">—</div>
+        <div class="device-sub"  id="device-sub">—</div>
+      </div>
+    </div>
+
+    <div class="name-input-wrap">
+      <label id="name-label">Device name</label>
+      <input type="text" id="device-name-input" />
+    </div>
+
+    <div class="section-header" id="section-dp-config">DP Configuration</div>
+    <div id="dp-rows-container"></div>
+
+    <div class="raw-section" id="raw-section" style="display:none">
+      <button class="raw-toggle" id="rawToggle">▶ <span id="rawToggleLabel">Unassigned DPs</span></button>
+      <div id="rawContent" style="display:none"></div>
+    </div>
+
+  </div>
+
+  <div id="status" class="status"></div>
+  <button id="addBtn" disabled>Add Device</button>
+
+  <script>
+  (function () {
+    'use strict';
+
+    // ── Capability catalogue ────────────────────────────────────────────────
+    var ALL_CAPS = [
+      { group: 'Standard',
+        caps: [
+          { id: 'onoff',           label: 'On/Off (Switch)',      type: 'boolean', settable: true  },
+          { id: 'alarm_generic',   label: 'Alarm',                type: 'boolean', settable: false }
+        ]
+      },
+      { group: 'Climate',
+        caps: [
+          { id: 'measure_temperature', label: 'Temperature',        type: 'number',  settable: false },
+          { id: 'measure_humidity',    label: 'Humidity',           type: 'number',  settable: false },
+          { id: 'target_temperature',  label: 'Target Temperature', type: 'number',  settable: true  }
+        ]
+      },
+      { group: 'Energy',
+        caps: [
+          { id: 'measure_power',   label: 'Power (W)',   type: 'number',  settable: false },
+          { id: 'measure_voltage', label: 'Voltage (V)', type: 'number',  settable: false },
+          { id: 'measure_current', label: 'Current (A)', type: 'number',  settable: false },
+          { id: 'meter_power',     label: 'Energy (kWh)',type: 'number',  settable: false }
+        ]
+      },
+      { group: 'Light',
+        caps: [
+          { id: 'dim',               label: 'Dimmer (0–100%)',  type: 'number',  settable: true  },
+          { id: 'measure_luminance', label: 'Luminance (lux)', type: 'number',  settable: false }
+        ]
+      },
+      { group: 'Air Quality',
+        caps: [
+          { id: 'measure_co2', label: 'CO₂ (ppm)', type: 'number', settable: false }
+        ]
+      },
+      { group: 'Custom Numeric (read-only)',
+        caps: [
+          { id: 'generic_sensor_1', label: 'Custom Sensor 1', type: 'number', settable: false, generic: true },
+          { id: 'generic_sensor_2', label: 'Custom Sensor 2', type: 'number', settable: false, generic: true },
+          { id: 'generic_sensor_3', label: 'Custom Sensor 3', type: 'number', settable: false, generic: true },
+          { id: 'generic_sensor_4', label: 'Custom Sensor 4', type: 'number', settable: false, generic: true }
+        ]
+      },
+      { group: 'Custom Numeric (read-write)',
+        caps: [
+          { id: 'generic_number_1', label: 'Custom Slider 1', type: 'number', settable: true, generic: true },
+          { id: 'generic_number_2', label: 'Custom Slider 2', type: 'number', settable: true, generic: true }
+        ]
+      },
+      { group: 'Custom Switch',
+        caps: [
+          { id: 'generic_switch_1', label: 'Custom Switch 1', type: 'boolean', settable: true, generic: true },
+          { id: 'generic_switch_2', label: 'Custom Switch 2', type: 'boolean', settable: true, generic: true },
+          { id: 'generic_switch_3', label: 'Custom Switch 3', type: 'boolean', settable: true, generic: true },
+          { id: 'generic_switch_4', label: 'Custom Switch 4', type: 'boolean', settable: true, generic: true }
+        ]
+      },
+      { group: 'Custom Picker',
+        caps: [
+          { id: 'generic_picker_1', label: 'Custom Picker 1', type: 'enum', settable: true, generic: true },
+          { id: 'generic_picker_2', label: 'Custom Picker 2', type: 'enum', settable: true, generic: true },
+          { id: 'generic_picker_3', label: 'Custom Picker 3', type: 'enum', settable: true, generic: true },
+          { id: 'generic_picker_4', label: 'Custom Picker 4', type: 'enum', settable: true, generic: true }
+        ]
+      }
+    ];
+
+    // Flat map for quick lookup
+    var capById = {};
+    ALL_CAPS.forEach(function (grp) {
+      grp.caps.forEach(function (c) { capById[c.id] = c; });
+    });
+
+    // Track assigned capabilities (cap id → dp number)
+    var assignedCaps = {};
+
+    var pendingDevice = null;
+    var rawDps        = {};
+
+    // ── Helpers ─────────────────────────────────────────────────────────────
+
+    function t(key, fallback) {
+      try {
+        var v = Homey.__(key);
+        return (v && v !== key) ? v : fallback;
+      } catch (e) {
+        return fallback;
+      }
+    }
+
+    function showStatus(msg, type) {
+      var el = document.getElementById('status');
+      el.textContent = msg;
+      el.className = 'status ' + type;
+    }
+
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // ── Auto-suggestion logic ────────────────────────────────────────────────
+
+    // Known DP patterns for common Tuya device types
+    // Each entry: { codes: [...], cap, scale, label }
+    var DP_PATTERNS = [
+      // Energy monitoring smart plug
+      { codes: ['cur_voltage'],    cap: 'measure_voltage', scale: 0.1,   label: 'Voltage (V)'     },
+      { codes: ['cur_power'],      cap: 'measure_power',   scale: 0.1,   label: 'Power (W)'        },
+      { codes: ['cur_current'],    cap: 'measure_current', scale: 0.001, label: 'Current (A)'      },
+      { codes: ['add_ele', 'electricity_statistics'], cap: 'meter_power', scale: 0.001, label: 'Energy (kWh)' },
+      { codes: ['relay_status'],   cap: 'generic_picker_1', scale: 1,    label: 'Relay Status'     },
+      { codes: ['switch_1','switch','power'], cap: 'onoff', scale: 1,    label: 'On/Off'           },
+      { codes: ['countdown_1','countdown'],  cap: 'generic_number_1', scale: 1, label: 'Countdown (s)' },
+      { codes: ['fault'],          cap: 'alarm_generic',   scale: 1,     label: 'Fault'            },
+      // Temp/humidity sensors
+      { codes: ['va_temperature','temp_current'], cap: 'measure_temperature', scale: 0.1, label: 'Temperature (°C)' },
+      { codes: ['va_humidity','humidity_value'],  cap: 'measure_humidity',    scale: 1,   label: 'Humidity (%)'     },
+      // CO2 / air quality
+      { codes: ['co2_value'],      cap: 'measure_co2',     scale: 1,     label: 'CO₂ (ppm)'       },
+      // Dimmer
+      { codes: ['bright_value','bright_value_v2'], cap: 'dim', scale: 0.01, label: 'Brightness' },
+    ];
+
+    // Try to match a DP by code name (passed alongside raw DPS from Tuya cloud)
+    // In LAN mode we don't have codes, so this is a best-effort heuristic.
+    function matchPattern(dpNum, value) {
+      // No code info in LAN DPS — skip code matching
+      return null;
+    }
+
+    function suggestCap(dpNum, value) {
+      var used = Object.keys(assignedCaps);
+
+      // Try known pattern match first (code-based, populated when available)
+      var pattern = matchPattern(dpNum, value);
+      if (pattern && !used.includes(pattern.cap)) return pattern.cap;
+
+      if (typeof value === 'boolean') {
+        if (!used.includes('onoff'))           return 'onoff';
+        for (var i = 1; i <= 4; i++) {
+          if (!used.includes('generic_switch_' + i)) return 'generic_switch_' + i;
+        }
+        return '';
+      }
+
+      if (typeof value === 'string') {
+        for (var j = 1; j <= 4; j++) {
+          if (!used.includes('generic_picker_' + j)) return 'generic_picker_' + j;
+        }
+        return '';
+      }
+
+      if (typeof value === 'number') {
+        // Voltage range: 1000–2800 (100–280 V with scale 0.1)
+        if (value >= 1000 && value <= 2800 && !used.includes('measure_voltage')) return 'measure_voltage';
+        // Power range > 600 and not already voltage: likely energy/power
+        if (value > 600) {
+          if (!used.includes('meter_power'))     return 'meter_power';
+          if (!used.includes('measure_power'))   return 'measure_power';
+          for (var n = 1; n <= 4; n++) {
+            if (!used.includes('generic_sensor_' + n)) return 'generic_sensor_' + n;
+          }
+          return '';
+        }
+        // Temperature range: 101–600 (10.1–60.0 °C with scale 0.1)
+        if (value > 100 && value <= 600) {
+          if (!used.includes('measure_temperature')) return 'measure_temperature';
+          for (var l = 1; l <= 4; l++) {
+            if (!used.includes('generic_sensor_' + l)) return 'generic_sensor_' + l;
+          }
+          return '';
+        }
+        // 0–100: humidity, then generic sensors
+        if (!used.includes('measure_humidity')) return 'measure_humidity';
+        for (var k = 1; k <= 4; k++) {
+          if (!used.includes('generic_sensor_' + k)) return 'generic_sensor_' + k;
+        }
+        return '';
+      }
+
+      return '';
+    }
+
+    function suggestLabel(capId, dpNum) {
+      var c = capById[capId];
+      if (c) return c.label;
+      return 'DP ' + dpNum;
+    }
+
+    function suggestScale(capId, value) {
+      if (capId === 'measure_temperature' && typeof value === 'number' && value > 100 && value <= 600) return 0.1;
+      if (capId === 'measure_voltage'     && typeof value === 'number' && value >= 1000)               return 0.1;
+      if (capId === 'measure_power'       && typeof value === 'number' && value > 0)                   return 0.1;
+      if (capId === 'measure_current'     && typeof value === 'number')                                return 0.001;
+      if (capId === 'meter_power'         && typeof value === 'number')                                return 0.001;
+      return 1;
+    }
+
+    // ── Build capability selector HTML ───────────────────────────────────────
+
+    function buildCapSelect(selectId, selectedCap, excludedCaps) {
+      var html = '<select id="' + escHtml(selectId) + '" class="cap-select">';
+      html += '<option value="">— ' + t('pair.list_devices.selectCap', 'Select capability') + ' —</option>';
+      ALL_CAPS.forEach(function (grp) {
+        html += '<optgroup label="' + escHtml(grp.group) + '">';
+        grp.caps.forEach(function (c) {
+          var disabled = (excludedCaps.indexOf(c.id) !== -1 && c.id !== selectedCap) ? ' disabled' : '';
+          var selected = (c.id === selectedCap) ? ' selected' : '';
+          html += '<option value="' + escHtml(c.id) + '"' + disabled + selected + '>' + escHtml(c.label) + '</option>';
+        });
+        html += '</optgroup>';
+      });
+      html += '</select>';
+      return html;
+    }
+
+    // ── Build advanced section HTML ──────────────────────────────────────────
+
+    function buildAdvHtml(rowId, cap, value, scale) {
+      var capInfo   = capById[cap] || {};
+      var isNumber  = capInfo.type === 'number';
+      var isEnum    = capInfo.type === 'enum';
+      var isGeneric = !!capInfo.generic;
+      var isSettable = capInfo.settable !== false;
+
+      var scaleHidden   = isNumber ? '' : ' field-hidden';
+      var unitHidden    = (isNumber && isGeneric) ? '' : ' field-hidden';
+      var rangeHidden   = (isNumber && isSettable) ? '' : ' field-hidden';
+      var optionsHidden = isEnum ? '' : ' field-hidden';
+      var settableHidden = isGeneric ? '' : ' field-hidden';
+
+      var html = '<div class="adv-grid">';
+
+      html += '<div class="adv-field' + scaleHidden + '" id="field-scale-' + rowId + '">' +
+        '<label>' + t('pair.list_devices.scale', 'Scale') + '</label>' +
+        '<input type="number" id="adv-scale-' + rowId + '" value="' + (scale || 1) + '" step="0.001" min="0.0001">' +
+      '</div>';
+
+      html += '<div class="adv-field' + unitHidden + '" id="field-unit-' + rowId + '">' +
+        '<label>' + t('pair.list_devices.unit', 'Unit') + '</label>' +
+        '<input type="text" id="adv-unit-' + rowId + '" value="" placeholder="e.g. %">' +
+      '</div>';
+
+      html += '<div class="adv-field' + rangeHidden + '" id="field-min-' + rowId + '">' +
+        '<label>' + t('pair.list_devices.min', 'Min') + '</label>' +
+        '<input type="number" id="adv-min-' + rowId + '" value="0">' +
+      '</div>';
+
+      html += '<div class="adv-field' + rangeHidden + '" id="field-max-' + rowId + '">' +
+        '<label>' + t('pair.list_devices.max', 'Max') + '</label>' +
+        '<input type="number" id="adv-max-' + rowId + '" value="100">' +
+      '</div>';
+
+      html += '<div class="adv-field' + rangeHidden + '" id="field-step-' + rowId + '">' +
+        '<label>' + t('pair.list_devices.step', 'Step') + '</label>' +
+        '<input type="number" id="adv-step-' + rowId + '" value="1" min="0.001">' +
+      '</div>';
+
+      html += '<div class="adv-field' + optionsHidden + '" id="field-options-' + rowId + '" style="grid-column: 1 / -1">' +
+        '<label>' + t('pair.list_devices.options', 'Options (comma-separated)') + '</label>' +
+        '<input type="text" id="adv-options-' + rowId + '" value="" placeholder="e.g. manual,auto,sleep">' +
+      '</div>';
+
+      html += '</div>'; // adv-grid
+
+      html += '<div class="adv-row-check' + settableHidden + '" id="field-settable-' + rowId + '">' +
+        '<input type="checkbox" id="adv-settable-' + rowId + '"' + (isSettable ? ' checked' : '') + '>' +
+        '<label for="adv-settable-' + rowId + '">' + t('pair.list_devices.settable', 'Settable (two-way control)') + '</label>' +
+      '</div>';
+
+      return html;
+    }
+
+    // ── Update advanced fields visibility when capability changes ─────────────
+
+    function updateAdvVisibility(rowId, capId) {
+      var capInfo   = capById[capId] || {};
+      var isNumber  = capInfo.type === 'number';
+      var isEnum    = capInfo.type === 'enum';
+      var isGeneric = !!capInfo.generic;
+      var isSettable = capInfo.settable !== false;
+
+      function setHidden(id, hide) {
+        var el = document.getElementById(id);
+        if (el) el.classList.toggle('field-hidden', hide);
+      }
+
+      setHidden('field-scale-'    + rowId, !isNumber);
+      setHidden('field-unit-'     + rowId, !(isNumber && isGeneric));
+      setHidden('field-min-'      + rowId, !(isNumber && isSettable));
+      setHidden('field-max-'      + rowId, !(isNumber && isSettable));
+      setHidden('field-step-'     + rowId, !(isNumber && isSettable));
+      setHidden('field-options-'  + rowId, !isEnum);
+      setHidden('field-settable-' + rowId, !isGeneric);
+
+      // Update settable checkbox default
+      var settableEl = document.getElementById('adv-settable-' + rowId);
+      if (settableEl && isGeneric) {
+        settableEl.checked = !!capInfo.settable;
+      }
+    }
+
+    // ── Update the global assignedCaps map ────────────────────────────────────
+
+    function rebuildAssignedCaps() {
+      assignedCaps = {};
+      var selects = document.querySelectorAll('.cap-select');
+      selects.forEach(function (sel) {
+        var rowId = sel.id.replace('cap-select-', '');
+        var chk   = document.getElementById('include-' + rowId);
+        if (chk && !chk.checked) return;
+        if (sel.value) assignedCaps[sel.value] = rowId;
+      });
+    }
+
+    // Re-render disabled state of all options in all selects
+    function refreshSelectDisabledStates(changedRowId) {
+      rebuildAssignedCaps();
+      var selects = document.querySelectorAll('.cap-select');
+      selects.forEach(function (sel) {
+        var currentVal = sel.value;
+        var options    = sel.querySelectorAll('option');
+        options.forEach(function (opt) {
+          if (!opt.value) return; // placeholder
+          var assignedTo = assignedCaps[opt.value];
+          opt.disabled = !!(assignedTo && assignedTo !== sel.id.replace('cap-select-', ''));
+        });
+      });
+    }
+
+    // ── Render DP rows ────────────────────────────────────────────────────────
+
+    function renderDpRows(dps) {
+      var container = document.getElementById('dp-rows-container');
+      container.innerHTML = '';
+
+      // Sort DPs numerically
+      var dpNums = Object.keys(dps).map(Number).sort(function (a, b) { return a - b; });
+
+      // First pass: build suggestions (before assignedCaps is populated)
+      var suggestions = {};
+      dpNums.forEach(function (dpNum) {
+        var val    = dps[String(dpNum)];
+        var cap    = suggestCap(dpNum, val);
+        suggestions[dpNum] = cap;
+        if (cap) assignedCaps[cap] = String(dpNum);
+      });
+
+      dpNums.forEach(function (dpNum, idx) {
+        var val      = dps[String(dpNum)];
+        var rowId    = 'dp' + dpNum;
+        var sugCap   = suggestions[dpNum] || '';
+        var sugLabel = suggestLabel(sugCap, dpNum);
+        var sugScale = suggestScale(sugCap, val);
+
+        // Capabilities already assigned to other DPs (for disabling options)
+        var excludedCaps = Object.keys(assignedCaps).filter(function (c) {
+          return assignedCaps[c] !== String(dpNum);
+        });
+
+        var row = document.createElement('div');
+        row.className = 'dp-row';
+        row.id = 'row-' + rowId;
+
+        row.innerHTML =
+          '<div class="dp-row-top">' +
+            '<input type="checkbox" id="include-' + rowId + '" checked title="' + t('pair.list_devices.include', 'Include this DP') + '">' +
+            '<span class="dp-badge">DP ' + dpNum + '</span>' +
+            '<span class="val-badge">' + escHtml(String(val)) + '</span>' +
+            buildCapSelect('cap-select-' + rowId, sugCap, excludedCaps) +
+            '<input type="text" class="label-input" id="label-' + rowId + '" value="' + escHtml(sugLabel) + '" placeholder="' + t('pair.list_devices.labelPlaceholder', 'Label') + '">' +
+          '</div>' +
+          '<div>' +
+            '<button class="adv-toggle" type="button" id="adv-toggle-' + rowId + '">▶ ' + t('pair.list_devices.advanced', 'Advanced') + '</button>' +
+            '<div class="adv-content" id="adv-content-' + rowId + '">' +
+              buildAdvHtml(rowId, sugCap, val, sugScale) +
+            '</div>' +
+          '</div>';
+
+        container.appendChild(row);
+
+        // ── Event listeners for this row ──
+        var includeChk = document.getElementById('include-' + rowId);
+        includeChk.addEventListener('change', function () {
+          row.classList.toggle('excluded', !this.checked);
+          refreshSelectDisabledStates(rowId);
+        });
+
+        var capSelect = document.getElementById('cap-select-' + rowId);
+        capSelect.addEventListener('change', function () {
+          var newCap      = this.value;
+          var newCapInfo  = capById[newCap] || {};
+          // Update label suggestion
+          var labelEl = document.getElementById('label-' + rowId);
+          if (labelEl && newCap) labelEl.value = newCapInfo.label || ('DP ' + dpNum);
+          // Update scale suggestion
+          var scaleEl = document.getElementById('adv-scale-' + rowId);
+          if (scaleEl && newCap) {
+            scaleEl.value = suggestScale(newCap, val);
+          }
+          updateAdvVisibility(rowId, newCap);
+          refreshSelectDisabledStates(rowId);
+          // Show advanced section automatically when a cap is selected
+          if (newCap) {
+            var content = document.getElementById('adv-content-' + rowId);
+            var toggle  = document.getElementById('adv-toggle-' + rowId);
+            if (content && !content.classList.contains('open')) {
+              content.classList.add('open');
+              if (toggle) toggle.textContent = '▼ ' + t('pair.list_devices.advanced', 'Advanced');
+            }
+          }
+        });
+
+        var advToggle = document.getElementById('adv-toggle-' + rowId);
+        var advContent = document.getElementById('adv-content-' + rowId);
+        advToggle.addEventListener('click', function () {
+          var open = advContent.classList.toggle('open');
+          this.textContent = (open ? '▼ ' : '▶ ') + t('pair.list_devices.advanced', 'Advanced');
+        });
+      });
+    }
+
+    // ── Unassigned DPs section ────────────────────────────────────────────────
+
+    function renderUnassignedSection(dps) {
+      var dpNums      = Object.keys(dps).map(Number).sort(function (a, b) { return a - b; });
+      var unassigned  = dpNums.filter(function (dp) {
+        var chk = document.getElementById('include-dp' + dp);
+        // A DP is "unassigned" if no capability selected, or excluded
+        var sel = document.getElementById('cap-select-dp' + dp);
+        if (!chk || !chk.checked) return false;
+        return sel && !sel.value;
+      });
+
+      if (unassigned.length === 0) {
+        document.getElementById('raw-section').style.display = 'none';
+        return;
+      }
+
+      var rows = unassigned.map(function (dp) {
+        return '<tr>' +
+          '<td><span class="raw-dp">DP ' + dp + '</span></td>' +
+          '<td><span class="val-badge">' + escHtml(String(dps[String(dp)])) + '</span></td>' +
+          '</tr>';
+      }).join('');
+
+      document.getElementById('rawContent').innerHTML =
+        '<table class="raw-table">' +
+        '<thead><tr>' +
+          '<th>DP</th>' +
+          '<th>' + t('pair.list_devices.currentValue', 'Value') + '</th>' +
+        '</tr></thead>' +
+        '<tbody>' + rows + '</tbody></table>';
+
+      document.getElementById('raw-section').style.display = 'block';
+    }
+
+    // ── Collect mappings from the form ────────────────────────────────────────
+
+    function collectMappings(dps) {
+      var mappings = [];
+      var dpNums   = Object.keys(dps).map(Number);
+
+      dpNums.forEach(function (dpNum) {
+        var rowId  = 'dp' + dpNum;
+        var chk    = document.getElementById('include-' + rowId);
+        var sel    = document.getElementById('cap-select-' + rowId);
+
+        if (!chk || !chk.checked) return;
+        if (!sel || !sel.value)   return;
+
+        var cap      = sel.value;
+        var capInfo  = capById[cap] || {};
+        var label    = (document.getElementById('label-' + rowId) || {}).value || cap;
+
+        var mapping = { dp: dpNum, cap: cap, label: label };
+
+        // Settable
+        if (capInfo.generic) {
+          var settableEl = document.getElementById('adv-settable-' + rowId);
+          mapping.settable = settableEl ? settableEl.checked : !!capInfo.settable;
+        } else {
+          mapping.settable = capInfo.settable !== false;
+        }
+
+        // Scale
+        if (capInfo.type === 'number') {
+          var scaleEl = document.getElementById('adv-scale-' + rowId);
+          var scale   = scaleEl ? parseFloat(scaleEl.value) : 1;
+          if (!isNaN(scale) && scale !== 1) mapping.scale = scale;
+        }
+
+        // Unit
+        if (capInfo.type === 'number' && capInfo.generic) {
+          var unitEl = document.getElementById('adv-unit-' + rowId);
+          if (unitEl && unitEl.value.trim()) mapping.unit = unitEl.value.trim();
+        }
+
+        // Min / Max / Step
+        if (capInfo.type === 'number' && mapping.settable) {
+          var minEl  = document.getElementById('adv-min-'  + rowId);
+          var maxEl  = document.getElementById('adv-max-'  + rowId);
+          var stepEl = document.getElementById('adv-step-' + rowId);
+          if (minEl  && minEl.value  !== '')  mapping.min  = parseFloat(minEl.value);
+          if (maxEl  && maxEl.value  !== '')  mapping.max  = parseFloat(maxEl.value);
+          if (stepEl && stepEl.value !== '')  mapping.step = parseFloat(stepEl.value);
+        }
+
+        // Options (enum)
+        if (capInfo.type === 'enum') {
+          var optEl = document.getElementById('adv-options-' + rowId);
+          if (optEl && optEl.value.trim()) mapping.options = optEl.value.trim();
+        }
+
+        mappings.push(mapping);
+      });
+
+      return mappings;
+    }
+
+    // ── Load data ─────────────────────────────────────────────────────────────
+
+    var devicesResult = null;
+    var rawDpsResult  = null;
+    var pending       = 2;
+
+    function onBothLoaded() {
+      document.getElementById('loading').style.display = 'none';
+
+      if (!devicesResult || devicesResult.length === 0) {
+        showStatus(t('pair.list_devices.noDevice', 'No device found.'), 'error');
+        return;
+      }
+
+      pendingDevice = devicesResult[0];
+      rawDps        = rawDpsResult || {};
+      var s         = pendingDevice.settings || {};
+
+      document.getElementById('device-name').textContent = pendingDevice.name || 'Tuya Device';
+      document.getElementById('device-sub').textContent  = s.ip || '';
+      document.getElementById('device-name-input').value = pendingDevice.name || 'Tuya Device';
+
+      document.getElementById('device-name-input').addEventListener('input', function () {
+        document.getElementById('device-name').textContent = this.value || 'Tuya Device';
+      });
+
+      // Render DP rows if we have DPS data
+      if (Object.keys(rawDps).length > 0) {
+        renderDpRows(rawDps);
+        refreshSelectDisabledStates(null);
+        renderUnassignedSection(rawDps);
+      } else {
+        document.getElementById('dp-rows-container').innerHTML =
+          '<p style="color:#888;font-size:13px;">' +
+          t('pair.list_devices.noDpsDetected', 'No data points were detected. You can configure dp_config manually in device settings after adding.') +
+          '</p>';
+      }
+
+      document.getElementById('main-content').style.display = 'block';
+      document.getElementById('addBtn').disabled = false;
+
+      // Unassigned DPs toggle
+      document.getElementById('rawToggle').addEventListener('click', function () {
+        var content = document.getElementById('rawContent');
+        var hidden  = content.style.display === 'none';
+        content.style.display = hidden ? 'block' : 'none';
+        this.querySelector('#rawToggleLabel').textContent =
+          (hidden ? '' : '') + t('pair.list_devices.unassignedDps', 'Unassigned DPs');
+        this.firstChild.textContent = hidden ? '▼ ' : '▶ ';
+      });
+    }
+
+    Homey.emit('list_devices', null, function (err, devices) {
+      devicesResult = (!err && devices) ? devices : [];
+      if (--pending === 0) onBothLoaded();
+    });
+
+    Homey.emit('raw_dps', null, function (err, dps) {
+      rawDpsResult = (!err && dps) ? dps : {};
+      if (--pending === 0) onBothLoaded();
+    });
+
+    // ── Add Device ────────────────────────────────────────────────────────────
+
+    document.getElementById('addBtn').addEventListener('click', function () {
+      if (!pendingDevice) return;
+      var btn = document.getElementById('addBtn');
+      btn.disabled    = true;
+      btn.textContent = t('pair.list_devices.adding', 'Adding…');
+
+      var mappings    = collectMappings(rawDps);
+      var dpConfigJson = JSON.stringify(mappings);
+
+      var nameInput = document.getElementById('device-name-input').value.trim();
+      if (nameInput) pendingDevice.name = nameInput;
+      pendingDevice.settings.dp_config = dpConfigJson;
+
+      // Notify server of name and config (fire-and-forget; createDevice carries the full object)
+      Homey.emit('set_dp_config', dpConfigJson, function () {});
+      Homey.emit('set_device_name', pendingDevice.name, function () {});
+
+      Homey.createDevice(pendingDevice)
+        .then(function () {
+          showStatus(t('pair.list_devices.added', 'Device added!'), 'success');
+          btn.textContent = '✓ ' + t('pair.list_devices.added', 'Added!');
+          setTimeout(function () { Homey.done(); }, 1000);
+        })
+        .catch(function (err) {
+          btn.disabled    = false;
+          btn.textContent = t('pair.list_devices.addBtn', 'Add Device');
+          showStatus((t('pair.list_devices.error', 'Error: ')) + (err.message || String(err)), 'error');
+        });
+    });
+
+    // ── i18n init ─────────────────────────────────────────────────────────────
+    function initText() {
+      document.getElementById('page-title').textContent    = t('pair.list_devices.generic.title',    'Configure Tuya Device');
+      document.getElementById('page-subtitle').textContent = t('pair.list_devices.generic.subtitle', 'Map each data point to a Homey capability.');
+      document.getElementById('loading').textContent       = t('pair.list_devices.loading',          'Loading device data…');
+      document.getElementById('addBtn').textContent        = t('pair.list_devices.addBtn',            'Add Device');
+      document.getElementById('name-label').textContent    = t('pair.list_devices.deviceName',        'Device name');
+      document.getElementById('section-dp-config').textContent = t('pair.list_devices.generic.dpConfig', 'DP Configuration');
+      document.getElementById('rawToggleLabel').textContent    = t('pair.list_devices.unassignedDps',    'Unassigned DPs');
+    }
+
+    if (typeof Homey !== 'undefined') {
+      initText();
+      Homey.ready(function () {});
+    }
+
+  }());
+  </script>
+</body>
+</html>

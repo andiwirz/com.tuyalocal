@@ -3,7 +3,8 @@
     "defaultName": "Dehumidifier"
   },
   "notifications": {
-    "waterFull": "Water tank is full — please empty it."
+    "waterFull": "Water tank is full — please empty it.",
+    "faultAlarm": "Fault detected — please check the device."
   },
   "pair": {
     "credentials": {
@@ -54,7 +55,16 @@
       "adding": "Adding…",
       "added": "Device added successfully!",
       "error": "Error: ",
-      "deviceName": "Device name"
+      "deviceName": "Device name",
+      "smart_plug": {
+        "switch":  "On / Off",
+        "power":   "Power (W)",
+        "voltage": "Voltage (V)",
+        "current": "Current (A)",
+        "energy":  "Energy (kWh)",
+        "fault":   "Fault Alarm  (0 = disabled)",
+        "relay":   "Relay Power-on Behavior  (0 = disabled)"
+      }
     }
   },
   "flow": {

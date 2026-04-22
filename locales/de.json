@@ -3,7 +3,8 @@
     "defaultName": "Entfeuchter"
   },
   "notifications": {
-    "waterFull": "Wassertank ist voll — bitte leeren."
+    "waterFull": "Wassertank ist voll — bitte leeren.",
+    "faultAlarm": "Fehler erkannt — bitte Gerät prüfen."
   },
   "pair": {
     "credentials": {
@@ -54,7 +55,16 @@
       "adding": "Wird hinzugefügt…",
       "added": "Gerät erfolgreich hinzugefügt!",
       "error": "Fehler: ",
-      "deviceName": "Gerätename"
+      "deviceName": "Gerätename",
+      "smart_plug": {
+        "switch":  "Ein / Aus",
+        "power":   "Leistung (W)",
+        "voltage": "Spannung (V)",
+        "current": "Strom (A)",
+        "energy":  "Energie (kWh)",
+        "fault":   "Fehleralarm  (0 = deaktiviert)",
+        "relay":   "Relais-Einschaltverhalten  (0 = deaktiviert)"
+      }
     }
   },
   "flow": {

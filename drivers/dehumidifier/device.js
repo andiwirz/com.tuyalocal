@@ -26,12 +26,11 @@ class DehumidifierDevice extends Homey.Device {
   async onInit() {
     this.log('Device initialized:', this.getName());
 
-    this._conn           = null;
-    this._pollTimer      = null;
-    this._lastDps        = {};
-    this._lastRawMeta    = null;
-    this._lastDataTime   = null;
-    this._debounceTimers = {};
+    this._conn         = null;
+    this._pollTimer    = null;
+    this._lastDps      = {};
+    this._lastRawMeta  = null;
+    this._lastDataTime = null;
 
     // Restore last known DPS from store — prevents redundant updates on first poll.
     try {
@@ -47,16 +46,9 @@ class DehumidifierDevice extends Homey.Device {
     await this._syncEnumCapabilities();
 
     // ── Flow trigger cards ───────────────────────────────────────────────────
-    this._triggerHumidityAbove = this.homey.flow.getDeviceTriggerCard('humidity_above');
-    this._triggerHumidityAbove.registerRunListener(async (args, state) =>
-      state.prevHumidity <= args.humidity && state.humidity > args.humidity
-    );
-
-    this._triggerHumidityBelow = this.homey.flow.getDeviceTriggerCard('humidity_below');
-    this._triggerHumidityBelow.registerRunListener(async (args, state) =>
-      state.prevHumidity >= args.humidity && state.humidity < args.humidity
-    );
-
+    // RunListeners for humidity_above/below are registered once in driver.js onInit.
+    this._triggerHumidityAbove      = this.homey.flow.getDeviceTriggerCard('humidity_above');
+    this._triggerHumidityBelow      = this.homey.flow.getDeviceTriggerCard('humidity_below');
     this._triggerWaterFull          = this.homey.flow.getDeviceTriggerCard('water_tank_full');
     this._triggerWaterEmptied       = this.homey.flow.getDeviceTriggerCard('water_tank_emptied');
     this._triggerDeviceConnected    = this.homey.flow.getDeviceTriggerCard('device_connected');
@@ -357,15 +349,19 @@ class DehumidifierDevice extends Homey.Device {
     if (changedKeys.some((k) => connectionKeys.includes(k))) {
       this.log('Connection settings changed, reconnecting');
       await this._connect();
-    } else if (changedKeys.includes('polling_interval')) {
+      return; // reconnect picks up everything else
+    }
+    if (changedKeys.includes('polling_interval')) {
       this.log('Polling interval changed, restarting polling');
       this._startPolling();
-    } else if (changedKeys.some((k) => [
+    }
+    if (changedKeys.some((k) => [
       'dp_temperature', 'dp_anion', 'dp_child_lock',
       'dp_countdown_timer', 'dp_countdown_left', 'dp_water_full',
     ].includes(k))) {
       await this._syncOptionalCapabilities();
-    } else if (changedKeys.some((k) => ['mode_values', 'fan_speed_values'].includes(k))) {
+    }
+    if (changedKeys.some((k) => ['mode_values', 'fan_speed_values'].includes(k))) {
       await this._syncEnumCapabilities();
     }
   }
