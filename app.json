@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -1895,6 +1895,24 @@
             }
           }
         ]
+      },
+      {
+        "id": "plug_reset_energy",
+        "title": {
+          "en": "Reset energy meter",
+          "de": "Energiemesser zurücksetzen"
+        },
+        "titleFormatted": {
+          "en": "Reset energy meter of [[device]]",
+          "de": "Energiemesser von [[device]] zurücksetzen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=smart_plug"
+          }
+        ]
       }
     ]
   },
@@ -2611,8 +2629,8 @@
               },
               "value": 17,
               "hint": {
-                "en": "DP for total energy × 0.001 = kWh (default: 17)",
-                "de": "DP für Gesamtenergie × 0.001 = kWh (Standard: 17)"
+                "en": "DP for energy counter (default: 17). Many Tuya plugs send this as a resetting delta — the Tuya cloud accumulates the deltas, but locally the value appears stuck. Set to 0 to disable and let the app compute kWh from power readings instead (persisted across restarts).",
+                "de": "DP für den Energiezähler (Standard: 17). Viele Tuya-Stecker senden diesen Wert als zurücksetzenden Delta-Wert — die Tuya-Cloud summiert die Deltas, lokal erscheint der Wert jedoch eingefroren. Auf 0 setzen, um ihn zu deaktivieren und die kWh stattdessen aus den Leistungswerten berechnen zu lassen (wird nach App-Neustart beibehalten)."
               }
             },
             {

@@ -28,5 +28,8 @@
   },
   "1.0.10": {
     "en": "Dehumidifier: suppress spurious \"water tank full/emptied\" notifications triggered by the transient alarm pulse the device emits during reconnect — alarm now only fires if it stays active for 5 seconds"
+  },
+  "1.0.11": {
+    "en": "Smart plug: energy meter now works on devices where DP 17 is frozen — set Energy DP to 0 to let the app compute kWh from live power readings instead (persisted across restarts, resettable via flow action)."
   }
 }
