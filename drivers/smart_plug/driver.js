@@ -121,7 +121,7 @@ class SmartPlugDriver extends Homey.Driver {
           device_id:       deviceId,
           local_key:       localKey,
           version:         String(version),
-          power_scale:     'auto',
+          power_scale:     '0.1',
           polling_interval: 30,
           ...(detectedDps || {}),
         },
@@ -186,8 +186,8 @@ class SmartPlugDriver extends Homey.Driver {
         else if (dp === 18) result.dp_current = dp;
         // Power (typically 0 when off, DP 19 by convention)
         else if (dp === 19) result.dp_power = dp;
-        // Power factor (0–100 %, typically DP 21)
-        else if (dp === 21 && val >= 0 && val <= 100) result.dp_power_factor = dp;
+        // DP 21 is 'test_bit' on most power-monitoring plugs (factory QA flag, always 1).
+        // Real power-factor DPs use a different code — do NOT auto-detect DP 21.
         // Fault bitmap (0 when no fault, typically DP 26)
         else if (dp === 26 && val === 0) result.dp_fault = dp;
       } else if (typeof val === 'string') {

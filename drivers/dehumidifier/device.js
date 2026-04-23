@@ -26,11 +26,13 @@ class DehumidifierDevice extends Homey.Device {
   async onInit() {
     this.log('Device initialized:', this.getName());
 
-    this._conn         = null;
-    this._pollTimer    = null;
-    this._lastDps      = {};
-    this._lastRawMeta  = null;
-    this._lastDataTime = null;
+    this._conn                = null;
+    this._pollTimer           = null;
+    this._lastDps             = {};
+    this._lastRawMeta         = null;
+    this._lastDataTime        = null;
+    this._waterAlarmTimer     = null;  // debounce: prevents spurious reconnect triggers
+    this._waterAlarmConfirmed = false; // true only after alarm stayed true for 5 s
 
     // Restore last known DPS from store — prevents redundant updates on first poll.
     try {
@@ -275,14 +277,32 @@ class DehumidifierDevice extends Homey.Device {
       if (entry.capability === 'alarm_water') {
         const prevWater = this.getCapabilityValue('alarm_water');
         await this.setCapabilityValue('alarm_water', converted).catch(() => {});
+
         if (!prevWater && converted) {
-          this._triggerWaterFull.trigger(this).catch(() => {});
-          this.homey.notifications.createNotification({
-            excerpt: `${this.getName()}: ${this.homey.__('notifications.waterFull')}`,
-          }).catch(() => {});
+          // Debounce: Tuya devices often send alarm_water = true momentarily on
+          // reconnect as an initialisation artifact, followed immediately by false.
+          // Only fire "water full" if the alarm stays true for 5 seconds.
+          clearTimeout(this._waterAlarmTimer);
+          this._waterAlarmConfirmed = false;
+          this._waterAlarmTimer = setTimeout(() => {
+            if (this.getCapabilityValue('alarm_water') === true) {
+              this._waterAlarmConfirmed = true;
+              this._triggerWaterFull.trigger(this).catch(() => {});
+              this.homey.notifications.createNotification({
+                excerpt: `${this.getName()}: ${this.homey.__('notifications.waterFull')}`,
+              }).catch(() => {});
+            }
+          }, 5000);
         }
+
         if (prevWater && !converted) {
-          this._triggerWaterEmptied.trigger(this).catch(() => {});
+          clearTimeout(this._waterAlarmTimer);
+          // Only fire "water emptied" if "water full" was genuinely confirmed,
+          // so the false that follows a spurious true is silently swallowed.
+          if (this._waterAlarmConfirmed) {
+            this._triggerWaterEmptied.trigger(this).catch(() => {});
+          }
+          this._waterAlarmConfirmed = false;
         }
         continue;
       }
@@ -371,6 +391,7 @@ class DehumidifierDevice extends Homey.Device {
 
   async onDeleted() {
     this._stopPolling();
+    clearTimeout(this._waterAlarmTimer);
     if (this._conn) {
       this._conn.removeAllListeners();
       this._conn.disconnect();

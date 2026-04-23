@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.8",
+  "version": "1.0.10",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -2674,31 +2674,31 @@
                 "en": "Power Scale",
                 "de": "Leistungs-Skalierung"
               },
-              "value": "auto",
+              "value": "0.1",
               "hint": {
-                "en": "How to scale the raw power DP value. 'Auto' detects automatically (raw > 2000 → ×0.1).",
-                "de": "Skalierung des Leistungs-DP-Rohwerts. 'Auto' erkennt automatisch (Rohwert > 2000 → ×0.1)."
+                "en": "Tuya standard (cur_power, scale=1) defines raw ÷ 10 = W, so ×0.1 is correct for all standard devices. Only change to ×1 if your device reports whole watts directly.",
+                "de": "Der Tuya-Standard (cur_power, scale=1) definiert Rohwert ÷ 10 = W, daher ist ×0.1 für alle Standardgeräte korrekt. Nur auf ×1 ändern, wenn das Gerät direkt ganze Watt meldet."
               },
               "values": [
                 {
-                  "id": "auto",
-                  "label": {
-                    "en": "Auto-detect",
-                    "de": "Automatisch erkennen"
-                  }
-                },
-                {
                   "id": "0.1",
                   "label": {
-                    "en": "×0.1 (e.g. raw 1500 = 150 W)",
-                    "de": "×0.1 (z.B. Rohwert 1500 = 150 W)"
+                    "en": "×0.1  (standard — raw 4420 = 442 W)",
+                    "de": "×0.1  (Standard — Rohwert 4420 = 442 W)"
                   }
                 },
                 {
                   "id": "1",
                   "label": {
-                    "en": "×1   (e.g. raw 150  = 150 W)",
-                    "de": "×1 (z.B. Rohwert 150 = 150 W)"
+                    "en": "×1    (legacy — raw 442 = 442 W)",
+                    "de": "×1    (veraltet — Rohwert 442 = 442 W)"
+                  }
+                },
+                {
+                  "id": "auto",
+                  "label": {
+                    "en": "Auto-detect (raw > 2000 → ×0.1)",
+                    "de": "Automatisch (Rohwert > 2000 → ×0.1)"
                   }
                 }
               ]

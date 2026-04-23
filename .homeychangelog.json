@@ -22,5 +22,11 @@
   },
   "1.0.8": {
     "en": "fix TuyaConnection"
+  },
+  "1.0.9": {
+    "en": "Fix frozen \"last updated\" timestamps after reconnect; correct power scale default to ×0.1 (Tuya standard); fix auto-detect locking on zero load; remove false Power Factor (DP 21 = test_bit); add countdown timer flow action."
+  },
+  "1.0.10": {
+    "en": "Dehumidifier: suppress spurious \"water tank full/emptied\" notifications triggered by the transient alarm pulse the device emits during reconnect — alarm now only fires if it stays active for 5 seconds"
   }
 }
