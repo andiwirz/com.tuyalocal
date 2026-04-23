@@ -50,6 +50,11 @@ class SmartPlugDriver extends Homey.Driver {
       .registerRunListener(async (args) => {
         return args.device.setCountdown(args.seconds);
       });
+
+    this.homey.flow.getActionCard('plug_reset_energy')
+      .registerRunListener(async (args) => {
+        return args.device.resetEnergy();
+      });
   }
 
   async onPair(session) {

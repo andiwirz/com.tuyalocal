@@ -28,6 +28,9 @@ class SmartPlugDevice extends Homey.Device {
     this._lastDataTime       = null;
     this._detectedPowerScale = 0.1;   // default scale until auto-detected
     this._powerScaleDetected = false; // set to true once scale is locked in
+    this._lastPowerTime      = null;  // timestamp of last measure_power reading
+    this._lastPowerWatts     = 0;     // watts at last reading (for integration)
+    this._energyAccum        = 0;     // accumulated kWh (computed from power)
 
     // Restore last known DPS from store — prevents redundant updates on first poll.
     try {
@@ -35,6 +38,15 @@ class SmartPlugDevice extends Homey.Device {
       if (stored && typeof stored === 'object') {
         this._lastDps = stored;
         this._writeDpSnapshot();
+      }
+    } catch (e) {}
+
+    // Restore accumulated energy so meter_power survives app restarts.
+    try {
+      const storedEnergy = this.getStoreValue('energyAccum');
+      if (typeof storedEnergy === 'number' && storedEnergy > 0) {
+        this._energyAccum = storedEnergy;
+        this.setCapabilityValue('meter_power', Math.round(this._energyAccum * 1000) / 1000).catch(() => {});
       }
     } catch (e) {}
 
@@ -140,6 +152,9 @@ class SmartPlugDevice extends Homey.Device {
       // Clear dedup cache so the first data packet after (re)connect always
       // writes fresh capability values and refreshes Homey's "last updated" timestamp.
       this._lastDps = {};
+      // Reset power-integration baseline — avoids a giant energy spike if the
+      // device was offline for an extended period.
+      this._lastPowerTime = null;
       this.setAvailable().catch(() => {});
       this._triggerDeviceConnected.trigger(this).catch(() => {});
       this._updateStatusSettings('Connected');
@@ -219,8 +234,30 @@ class SmartPlugDevice extends Homey.Device {
       // threshold-crossing triggers so the run-listener can filter by args.power.
       if (entry.settingKey === 'dp_power') {
         const prevPower = this.getCapabilityValue('measure_power') ?? 0;
-        await this.setCapabilityValue(entry.capability, converted).catch(() => {});
-        const powerTokens = { power: converted, prevPower };
+        const watts     = converted;
+        const now       = Date.now();
+
+        // ── Power-integration energy accumulator ─────────────────────────────
+        // Many Tuya plugs send add_ele (DP 17) as a resetting delta counter
+        // that the Tuya cloud accumulates — but the local protocol only sees
+        // the current-cycle value, which appears stuck.  When dp_energy = 0
+        // (disabled), we integrate measure_power × elapsed time ourselves.
+        if (settings.dp_energy <= 0 && this._lastPowerTime !== null) {
+          const elapsedH = (now - this._lastPowerTime) / 3_600_000;
+          // Cap at 10 minutes — prevents a huge spike after a long outage/reconnect.
+          if (elapsedH > 0 && elapsedH < (10 / 60)) {
+            this._energyAccum += (this._lastPowerWatts * elapsedH) / 1000;
+            this.setStoreValue('energyAccum', this._energyAccum).catch(() => {});
+            await this.setCapabilityValue('meter_power',
+              Math.round(this._energyAccum * 1000) / 1000).catch(() => {});
+          }
+        }
+        this._lastPowerTime  = now;
+        this._lastPowerWatts = watts;
+        // ─────────────────────────────────────────────────────────────────────
+
+        await this.setCapabilityValue(entry.capability, watts).catch(() => {});
+        const powerTokens = { power: watts, prevPower };
         this._triggerPowerAbove.trigger(this, powerTokens, powerTokens).catch(() => {});
         this._triggerPowerBelow.trigger(this, powerTokens, powerTokens).catch(() => {});
       } else if (entry.capability === 'alarm_generic') {
@@ -289,6 +326,16 @@ class SmartPlugDevice extends Homey.Device {
   async forceReconnect() {
     this._appLog('Force reconnect requested', 'info');
     await this._connect();
+  }
+
+  // Public – called by the "plug_reset_energy" flow action.
+  async resetEnergy() {
+    this._energyAccum    = 0;
+    this._lastPowerTime  = null;
+    this._lastPowerWatts = 0;
+    await this.setStoreValue('energyAccum', 0).catch(() => {});
+    await this.setCapabilityValue('meter_power', 0).catch(() => {});
+    this._appLog('Energy accumulator reset', 'info');
   }
 
   // Public – called by the "plug_set_countdown" flow action.
