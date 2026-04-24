@@ -1,6 +1,6 @@
 # Tuya Local — Homey App
 
-**Version 1.0.4** · Local control of Tuya smart devices — no cloud, no internet dependency.
+**Version 1.0.12** · Local control of Tuya smart devices — no cloud, no internet dependency.
 
 All communication happens over your local network via the Tuya LAN protocol. Three built-in drivers cover the most common device types; a fully generic driver handles anything else.
 
@@ -26,6 +26,7 @@ All communication happens over your local network via the Tuya LAN protocol. Thr
 - **Inline DP editor** — every DP number can be adjusted in the pairing screen before adding the device
 - **Optional capabilities** — tiles are added or removed dynamically based on your DP settings; set a DP to `0` to hide the tile
 - **Repair flow** — update IP address or Local Key at any time without re-pairing
+- **Computed energy metering** — kWh accumulated from live power readings using trapezoidal integration; persisted across restarts
 - **Push notifications** — Homey notification when the water tank is full (Dehumidifier) or a fault is detected (Smart Plug)
 - **Diagnostic tools** — in-app log buffer, live DP debug panel and raw payload viewer
 - **Bilingual** — full English and German UI
@@ -115,19 +116,19 @@ homey app install
 
 #### Data Points
 
-| Setting | Capability | Default DP | Optional |
-|---|---|---|---|
-| `dp_onoff` | On / Off | 1 | — |
-| `dp_current_humidity` | Current humidity (%) | 16 | — |
-| `dp_target_humidity` | Target humidity setpoint (%) | 2 | — |
-| `dp_mode` | Operating mode | 4 | — |
-| `dp_fan_speed` | Fan speed | 5 | — |
-| `dp_child_lock` | Child lock | 14 | ✓ `0` = disabled |
-| `dp_countdown_timer` | Countdown timer | 17 | ✓ `0` = disabled |
-| `dp_countdown_left` | Timer remaining — read-only | 18 | ✓ `0` = disabled |
-| `dp_water_full` | Water tank full alarm | 19 | ✓ `0` = disabled |
-| `dp_temperature` | Temperature — raw ÷ 10 = °C | 0 | ✓ `0` = disabled |
-| `dp_anion` | Ioniser (anion) | 0 | ✓ `0` = disabled |
+| Setting | Capability | Type | EN Name | DE Name | Default DP | Optional |
+|---|---|---|---|---|---|---|
+| `dp_onoff` | `onoff` | boolean | On / Off | Ein / Aus | 1 | — |
+| `dp_current_humidity` | `measure_humidity` | number | Humidity | Luftfeuchtigkeit | 16 | — |
+| `dp_target_humidity` | `target_humidity` | number | Target Humidity | Ziel-Luftfeuchtigkeit | 2 | — |
+| `dp_mode` | `mode` | enum | Mode | Modus | 4 | — |
+| `dp_fan_speed` | `fan_speed` | enum | Fan Speed | Lüftergeschwindigkeit | 5 | — |
+| `dp_child_lock` | `child_lock` | boolean | Child Lock | Kindersicherung | 14 | ✓ `0` = disabled |
+| `dp_countdown_timer` | `countdown_timer` | enum | Timer | Timer | 17 | ✓ `0` = disabled |
+| `dp_countdown_left` | `countdown_left` | number | Timer Remaining | Verbleibende Zeit | 18 | ✓ `0` = disabled |
+| `dp_water_full` | `alarm_water` | boolean | Water Tank Full | Wassertank voll | 19 | ✓ `0` = disabled |
+| `dp_temperature` | `measure_temperature` | number | Temperature (raw ÷ 10 = °C) | Temperatur | 0 | ✓ `0` = disabled |
+| `dp_anion` | `anion` | boolean | Ioniser | Ionisator | 0 | ✓ `0` = disabled |
 
 #### Mode & Fan Speed Values
 
@@ -151,25 +152,47 @@ Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polli
 
 #### Data Points
 
-| Setting | Capability | Default DP | Optional |
-|---|---|---|---|
-| `dp_switch` | On / Off | 1 | — |
-| `dp_power` | Power — raw × scale = W | 19 | — |
-| `dp_voltage` | Voltage — raw × 0.1 = V | 20 | — |
-| `dp_current` | Current — raw × 0.001 = A | 18 | — |
-| `dp_energy` | Total energy — raw × 0.001 = kWh | 17 | — |
-| `dp_fault` | Fault bitmap alarm | 0 | ✓ `0` = disabled |
-| `dp_relay_status` | Relay power-on behavior (on / off / memory) | 0 | ✓ `0` = disabled |
+| Setting | Capability | Type | EN Name | DE Name | Default DP | Optional |
+|---|---|---|---|---|---|---|
+| `dp_switch` | `onoff` | boolean | On / Off | Ein / Aus | 1 | — |
+| `dp_power` | `measure_power` | number | Power | Leistung | 19 | — |
+| `dp_voltage` | `measure_voltage` | number | Voltage | Spannung | 20 | — |
+| `dp_current` | `measure_current` | number | Current | Strom | 18 | — |
+| `dp_energy` | `meter_power` | number | Energy | Energie | **0** | ✓ see below |
+| `dp_relay_status` | `relay_status` | enum | Turn On Behavior | Einschaltverhalten | 38 | ✓ `0` = disabled |
+| `dp_fault` | `alarm_generic` | boolean | Alarm | Alarm | 0 | ✓ `0` = disabled |
+| `dp_power_factor` | `power_factor` | number | Power Factor | Leistungsfaktor | 0 | ✓ `0` = disabled |
+| `dp_countdown` | *(flow only)* | number | — | — | 0 | ✓ `0` = disabled |
+
+#### Energy Metering
+
+Most Tuya plugs send the energy counter (DP 17, `add_ele`) as a **resetting delta** — the Tuya cloud accumulates the deltas into a lifetime total, but locally the value appears frozen.
+
+When `dp_energy = 0` (default), the app computes kWh itself by integrating live power readings using **trapezoidal averaging** — the mean of the previous and current power reading multiplied by elapsed time. The result is monotonically increasing and persisted across app restarts.
+
+Set `dp_energy = 17` only if your device provides a reliable cumulative local energy counter.
+
+The energy accumulator can be reset via the **Reset energy meter** flow action.
+
+#### Turn On Behavior Values
+
+Controls what the device does when mains power is restored after an outage. The `relay_status_values` setting restricts the picker to the subset your device supports.
+
+| Value | Meaning |
+|---|---|
+| `off` | Always Off — device stays off when power is restored |
+| `on` | Always On — device turns on when power is restored |
+| `memory` | Last State — device resumes its previous state |
+
+Default: `off,on,memory` (all three options shown).
 
 #### Power Scale
 
-Some plugs send power in milliwatts (raw 1500 = 150 W), others in watts (raw 150 = 150 W).
-
 | Setting | Behavior |
 |---|---|
-| **Auto-detect** *(default)* | Raw value > 2000 → ×0.1; first value ≤ 2000 → ×1 |
-| **×0.1** | Always multiply raw value by 0.1 |
-| **×1** | Always use raw value directly |
+| **×0.1** *(default)* | Multiply raw value by 0.1 — standard for Tuya plugs (`cur_power` scale = 1, raw ÷ 10 = W) |
+| **×1** | Use raw value directly |
+| **Auto-detect** | Raw > 2000 → ×0.1; first non-zero value ≤ 2000 → ×1 (legacy, not recommended) |
 
 ---
 
@@ -225,6 +248,8 @@ Each entry in the `dp_config` JSON array supports the following fields:
 | Device disconnected | — | — |
 | A data point changed | — | `dp` (string), `value` (string) |
 
+> Water tank triggers are debounced — the alarm must stay active for 5 seconds before firing, suppressing the transient pulse the device emits on reconnect.
+
 #### Conditions
 
 | Condition |
@@ -274,10 +299,12 @@ Threshold triggers fire only on the exact crossing moment — not on every updat
 
 #### Actions
 
-| Action |
-|---|
-| Refresh device state |
-| Force reconnect |
+| Action | Notes |
+|---|---|
+| Refresh device state | Triggers an immediate GET request |
+| Force reconnect | Drops and re-establishes the TCP connection |
+| Set countdown timer | 0–86400 s; `0` cancels. Requires `dp_countdown` > 0 |
+| Reset energy meter | Resets the computed kWh accumulator to zero |
 
 ---
 
@@ -310,7 +337,7 @@ Threshold triggers fire only on the exact crossing moment — not on every updat
 
 | Event | Driver | Condition |
 |---|---|---|
-| Water tank is full | Dehumidifier | `alarm_water` transitions from `false` → `true` |
+| Water tank is full | Dehumidifier | Alarm active for > 5 s (debounced to suppress reconnect artifacts) |
 | Fault detected | Smart Plug | `alarm_generic` transitions from `false` → `true` |
 
 ---
@@ -353,9 +380,11 @@ Full unprocessed payload for the selected device:
 |---|---|---|
 | Device stays unavailable | Wrong IP, Device ID or Local Key | Use **Repair** to update credentials |
 | Device connects but values are wrong | Incorrect DP numbers | Adjust DPs in device settings |
-| Power reading is 10× too high or low | Wrong power scale | Change **Power Scale** setting to ×0.1 or ×1 |
+| Power reading is 10× too high or low | Wrong power scale | Change **Power Scale** setting to ×0.1 |
+| Energy (kWh) shows `—` or never updates | `dp_energy` set to 17 but device sends delta locally | Set `dp_energy = 0` — app will compute kWh from power readings |
 | Mode / fan picker shows wrong options | `mode_values` / `fan_speed_values` mismatch | Update values, then restart the Tuya Local app |
 | Picker still shows old options after saving | Homey caches capability options | Restart the Tuya Local app |
+| Spurious water alarm notifications every hour | Reconnect artifact — device sends transient alarm on connect | Fixed in v1.0.9 — update to latest version |
 | Generic device shows raw key as label | Missing locale key | Labels are set via the `label` field in the dp_config mapping |
 
 ---

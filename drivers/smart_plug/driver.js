@@ -160,9 +160,9 @@ class SmartPlugDriver extends Homey.Driver {
       dp_power:         19,
       dp_voltage:       20,
       dp_current:       18,
-      dp_energy:        17,
+      dp_energy:        0,   // disabled by default — app computes kWh from power
       dp_fault:         0,   // disabled by default
-      dp_relay_status:  0,   // disabled by default
+      dp_relay_status:  38,  // DP 38 is the Tuya standard for relay power-on behavior
       dp_power_factor:  0,   // disabled by default
       dp_countdown:     0,   // disabled by default
     };
@@ -185,8 +185,9 @@ class SmartPlugDriver extends Homey.Driver {
         if (dp === 9) result.dp_countdown = dp;
         // Voltage: raw value 1000–2800 (= 100–280 V × 0.1)
         else if (val >= 1000 && val <= 2800) result.dp_voltage = dp;
-        // Energy (cumulative, typically small number, DP 17 by convention)
-        else if (dp === 17) result.dp_energy = dp;
+        // Energy counter (DP 17 by convention) — kept at 0 (disabled) because
+        // most Tuya plugs send add_ele as a resetting delta that appears frozen
+        // locally; the app computes kWh from power readings instead.
         // Current (typically 0 when off, DP 18 by convention)
         else if (dp === 18) result.dp_current = dp;
         // Power (typically 0 when off, DP 19 by convention)
@@ -233,7 +234,7 @@ class SmartPlugDriver extends Homey.Driver {
           version: String(version),
           issueGetOnConnect: true,
         });
-        testDev.on('error', () => {});
+        testDev.on('error', (err) => { this.log('Repair test error:', err.message); });
         await Promise.race([
           testDev.connect(),
           new Promise((_, rej) => setTimeout(() => rej(new Error('Connection timed out')), 8000)),

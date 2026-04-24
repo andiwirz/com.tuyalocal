@@ -4,17 +4,48 @@
   <meta charset="utf-8">
   <script type="text/javascript" src="/homey.js" data-origin="settings"></script>
   <style>
-    body { font-family: -apple-system, sans-serif; padding: 16px; font-size: 13px; background: #f5f6f7; margin: 0; }
-    h2   { margin: 0 0 4px; font-size: 16px; }
-    p    { color: #666; margin: 0 0 14px; font-size: 12px; }
-    .section { margin-bottom: 28px; }
+    body { font-family: -apple-system, sans-serif; font-size: 13px; background: #f5f6f7; margin: 0; }
+
+    /* ── Tabs ── */
+    .tab-bar {
+      display: flex;
+      gap: 0;
+      background: #fff;
+      border-bottom: 2px solid #e0e0e0;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .tab-btn {
+      padding: 11px 18px;
+      border: none;
+      background: none;
+      font-size: 13px;
+      font-weight: 500;
+      color: #666;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      border-radius: 0;
+    }
+    .tab-btn:hover  { color: #1a73e8; background: #f8f9fa; }
+    .tab-btn.active { color: #1a73e8; border-bottom-color: #1a73e8; }
+
+    /* ── Content ── */
+    .tab-panel { display: none; padding: 16px; }
+    .tab-panel.active { display: block; }
+
+    h2   { margin: 0 0 4px; font-size: 15px; }
+    h3   { margin: 18px 0 6px; font-size: 13px; font-weight: 600; color: #333; }
+    p    { color: #666; margin: 0 0 12px; font-size: 12px; line-height: 1.5; }
+    .section { margin-bottom: 24px; }
     .bar { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; }
-    button { padding: 7px 14px; border: none; border-radius: 6px; font-size: 13px; cursor: pointer; }
-    #btnRefresh    { background: #1a73e8; color: #fff; }
-    #btnClear      { background: #f1f3f4; color: #c5221f; }
-    #btnDpRefresh  { background: #1a73e8; color: #fff; }
-    #autoToggle    { background: #f1f3f4; color: #333; }
+
+    button { padding: 7px 14px; border: none; border-radius: 6px; font-size: 13px; cursor: pointer; background: #f1f3f4; color: #333; }
+    button.primary { background: #1a73e8; color: #fff; }
+    button.danger  { color: #c5221f; }
     #autoToggle.active { background: #e6f4ea; color: #1e6a34; }
+
     select {
       padding: 7px 10px;
       border: 1px solid #d0d0d0;
@@ -34,89 +65,194 @@
       margin: 0;
       line-height: 1.6;
     }
-    #count    { margin-top: 6px; font-size: 11px; color: #888; text-align: right; }
-    #dpMeta   { margin-top: 6px; font-size: 11px; color: #888; }
+    #output { max-height: 320px; overflow-y: auto; }
+    #count  { margin-top: 6px; font-size: 11px; color: #888; text-align: right; }
+    #dpMeta { margin-top: 6px; font-size: 11px; color: #888; }
     .lvl-warn  { color: #b45309; }
     .lvl-error { color: #c5221f; }
     .lvl-info  { color: #333; }
 
-    /* DP debug table */
-    .dp-debug-table {
-      width: 100%;
-      border-collapse: collapse;
-      background: #fff;
-      border: 1px solid #e0e0e0;
-      border-radius: 8px;
-      overflow: hidden;
-      font-size: 12px;
-    }
-    .dp-debug-table th {
-      text-align: left;
-      color: #666;
-      font-weight: 500;
-      padding: 7px 12px;
-      border-bottom: 1px solid #e8e8e8;
-      background: #f8f9fa;
-    }
-    .dp-debug-table td {
-      padding: 6px 12px;
-      border-bottom: 1px solid #f0f0f0;
-    }
+    /* ── DP debug table ── */
+    .dp-debug-table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; font-size: 12px; }
+    .dp-debug-table th { text-align: left; color: #666; font-weight: 500; padding: 7px 12px; border-bottom: 1px solid #e8e8e8; background: #f8f9fa; }
+    .dp-debug-table td { padding: 6px 12px; border-bottom: 1px solid #f0f0f0; }
     .dp-debug-table tr:last-child td { border-bottom: none; }
-    .dp-num  { font-weight: 600; color: #1a73e8; }
+    .dp-num { font-weight: 600; color: #1a73e8; }
     .val-bool-true  { color: #1e6a34; font-weight: 500; }
     .val-bool-false { color: #c5221f; font-weight: 500; }
-    .val-num    { color: #7c4dff; }
-    .val-str    { color: #b45309; }
-    .type-badge {
-      display: inline-block;
-      font-size: 10px;
-      padding: 1px 5px;
-      border-radius: 3px;
-      background: #f1f3f4;
-      color: #666;
-    }
+    .val-num { color: #7c4dff; }
+    .val-str { color: #b45309; }
+    .type-badge { display: inline-block; font-size: 10px; padding: 1px 5px; border-radius: 3px; background: #f1f3f4; color: #666; }
     #dpPlaceholder { color: #999; font-size: 12px; padding: 16px 0; }
+
+    /* ── Help tab ── */
+    .help-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 14px; }
+    .help-table th { text-align: left; background: #f8f9fa; color: #555; font-weight: 500; padding: 6px 10px; border: 1px solid #e8e8e8; }
+    .help-table td { padding: 5px 10px; border: 1px solid #e8e8e8; vertical-align: top; color: #333; line-height: 1.5; }
+    .help-table td:first-child { font-family: monospace; font-size: 11px; white-space: nowrap; color: #1a73e8; }
+    .help-badge { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 3px; font-weight: 500; }
+    .badge-rw   { background: #e8f0fe; color: #1a73e8; }
+    .badge-ro   { background: #f1f3f4; color: #666; }
+    .note { background: #fef9e7; border-left: 3px solid #f9ab00; padding: 8px 10px; border-radius: 0 6px 6px 0; font-size: 12px; color: #555; margin-bottom: 14px; line-height: 1.5; }
+    .help-link { color: #1a73e8; text-decoration: none; }
+    .help-link:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
 
-  <!-- ── Diagnostic Logs ─────────────────────────────────────────────── -->
-  <div class="section">
-    <h2>Diagnostic Logs</h2>
-    <p>Persistent log buffer (max 500 entries).</p>
-    <div class="bar">
-      <button id="btnRefresh">&#8635; Refresh</button>
-      <button id="btnClear">&#128465; Clear</button>
-    </div>
-    <pre id="output">Loading…</pre>
-    <div id="count"></div>
+  <!-- ── Tab bar ──────────────────────────────────────────────────────── -->
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="help">❓ Help</button>
+    <button class="tab-btn"        data-tab="logs">📋 Logs</button>
+    <button class="tab-btn"        data-tab="dp">🔍 DP Debug</button>
   </div>
 
-  <!-- ── DP Debug ────────────────────────────────────────────────────── -->
-  <div class="section">
-    <h2>DP Debug</h2>
-    <p>Live data points received from each device. Updated on every data push.</p>
-    <div class="bar">
-      <select id="deviceSelect"><option value="">— select device —</option></select>
-      <button id="btnDpRefresh">&#8635; Refresh</button>
-      <button id="autoToggle">Auto-refresh: off</button>
+  <!-- ── Help ─────────────────────────────────────────────────────────── -->
+  <div class="tab-panel active" id="tab-help">
+
+    <div class="section">
+      <h2>Getting started</h2>
+      <p>You need three things from each device: <strong>IP address</strong>, <strong>Device ID</strong>, and <strong>Local Key</strong>.</p>
+      <div class="note">
+        The Local Key changes every time you reset or re-pair a device in the Tuya / Smart Life app. If a device stops connecting, get the new key.
+      </div>
+      <h3>Get Device ID &amp; Local Key</h3>
+      <p>Run the tuya-cli wizard on any computer with Node.js ≥ 16:</p>
+      <pre style="max-height:none">npx @tuyapi/cli wizard</pre>
+      <p style="margin-top:8px">It logs into the Tuya IoT Platform, links your Smart Life account, and lists every device with its ID and Local Key.</p>
+      <h3>Find the IP address</h3>
+      <p>Use <strong>Scan Network</strong> in the pairing wizard (UDP broadcast + TCP subnet scan, ~10 s), or check your router's DHCP table. Assign a static IP / DHCP reservation so it never changes.</p>
     </div>
-    <div id="dpContent"><div id="dpPlaceholder">Select a device above to see its DPs.</div></div>
-    <div id="dpMeta"></div>
+
+    <div class="section">
+      <h2>Smart Plug — DP reference</h2>
+      <table class="help-table">
+        <thead><tr><th>Setting</th><th>Default DP</th><th>Capability</th><th>Transform</th><th>R/W</th></tr></thead>
+        <tbody>
+          <tr><td>dp_switch</td>       <td>1</td>  <td>On / Off</td>                <td>boolean</td>               <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_power</td>        <td>19</td> <td>Power (W)</td>               <td>raw × 0.1</td>             <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_voltage</td>      <td>20</td> <td>Voltage (V)</td>             <td>raw × 0.1</td>             <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_current</td>      <td>18</td> <td>Current (A)</td>             <td>raw × 0.001</td>           <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_energy</td>       <td>0</td>  <td>Energy (kWh)</td>            <td>computed from power</td>   <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_relay_status</td> <td>38</td> <td>Turn On Behavior</td>        <td>off / on / memory</td>     <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_fault</td>        <td>0</td>  <td>Fault Alarm</td>             <td>raw &gt; 0 = alarm</td>    <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_power_factor</td> <td>0</td>  <td>Power Factor (%)</td>        <td>raw as-is</td>             <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_countdown</td>    <td>0</td>  <td>Flow action only</td>        <td>seconds</td>               <td><span class="help-badge badge-rw">Write</span></td></tr>
+        </tbody>
+      </table>
+      <div class="note"><strong>Energy metering:</strong> Most Tuya plugs send DP 17 as a resetting delta that appears frozen locally. Leave <em>dp_energy = 0</em> (default) — the app computes kWh from power readings instead and persists the total across restarts. Use the <em>Reset energy meter</em> flow action to zero it.</div>
+    </div>
+
+    <div class="section">
+      <h2>Dehumidifier — DP reference</h2>
+      <table class="help-table">
+        <thead><tr><th>Setting</th><th>Typical DP</th><th>Capability</th><th>R/W</th></tr></thead>
+        <tbody>
+          <tr><td>dp_onoff</td>            <td>1</td>  <td>On / Off</td>               <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_current_humidity</td> <td>16</td> <td>Humidity (%)</td>           <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_target_humidity</td>  <td>2</td>  <td>Target Humidity (%)</td>    <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_mode</td>             <td>4</td>  <td>Mode</td>                   <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_fan_speed</td>        <td>5</td>  <td>Fan Speed</td>              <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_child_lock</td>       <td>14</td> <td>Child Lock</td>             <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_countdown_timer</td>  <td>17</td> <td>Timer</td>                  <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_countdown_left</td>   <td>18</td> <td>Timer Remaining</td>        <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_water_full</td>       <td>19</td> <td>Water Tank Full</td>        <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_temperature</td>      <td>0</td>  <td>Temperature (°C)</td>       <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_anion</td>            <td>0</td>  <td>Ioniser</td>                <td><span class="help-badge badge-rw">R/W</span></td></tr>
+        </tbody>
+      </table>
+      <p>Set any optional DP to <strong>0</strong> to hide the tile. Use the <strong>DP Debug</strong> and <strong>Raw Data</strong> tabs to find the correct DP numbers for your device.</p>
+    </div>
+
+    <div class="section">
+      <h2>Troubleshooting</h2>
+      <table class="help-table">
+        <thead><tr><th>Symptom</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr><td>Device stays unavailable</td>          <td>Wrong IP, Device ID or Local Key — use Repair to update</td></tr>
+          <tr><td>Values are wrong / 10× off</td>        <td>Incorrect DP numbers or power scale — adjust in device settings</td></tr>
+          <tr><td>Energy (kWh) never updates</td>        <td>Set dp_energy = 0 — app computes kWh from power readings</td></tr>
+          <tr><td>Mode picker shows wrong options</td>   <td>Update mode_values / fan_speed_values, then restart the app</td></tr>
+          <tr><td>Picker still shows old options</td>    <td>Restart the Tuya Local app to clear Homey's capability cache</td></tr>
+          <tr><td>Spurious water alarm every hour</td>   <td>Fixed in v1.0.9 — update to the latest version</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>Support the project</h2>
+      <p>If this app saves you time or just works nicely, a small donation is always appreciated. 🙏</p>
+      <button onclick="openUrl('https://paypal.me/AndiWirz')"
+         style="display:inline-flex;align-items:center;gap:8px;background:#009cde;color:#fff;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:500;border:none;cursor:pointer;">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.607-.541c-.013.076-.026.175-.041.254-.93 4.778-4.005 7.201-9.138 7.201h-2.19a.563.563 0 0 0-.556.479l-1.187 7.527h-.506l-.24 1.516a.56.56 0 0 0 .554.647h3.882c.46 0 .85-.334.922-.788.06-.26.76-4.852.816-5.09a.932.932 0 0 1 .923-.788h.58c3.76 0 6.705-1.528 7.565-5.946.36-1.847.174-3.388-.777-4.471z"/></svg>
+        Donate via PayPal
+      </button>
+    </div>
+
+    <div style="margin-top:32px;padding-top:12px;border-top:1px solid #e0e0e0;color:#aaa;font-size:11px;">
+      Tuya Local <span id="appVersion"></span> &nbsp;·&nbsp;
+      <a href="#" onclick="openUrl('https://community.homey.app/t/154077'); return false;" style="color:#aaa;">Community forum</a>
+      &nbsp;·&nbsp;
+      <a href="#" onclick="openUrl('https://github.com/andiwirz/com.tuya.local/issues'); return false;" style="color:#aaa;">Report an issue</a>
+    </div>
+
   </div>
 
-  <!-- ── Raw Data ──────────────────────────────────────────────────────── -->
-  <div class="section">
-    <h2>Raw Data</h2>
-    <p>Complete unprocessed DPS payload for the selected device.</p>
-    <div class="bar">
-      <button id="btnCopyRaw">&#128203; Copy</button>
+  <!-- ── Logs ─────────────────────────────────────────────────────────── -->
+  <div class="tab-panel" id="tab-logs">
+    <div class="section">
+      <h2>Diagnostic Logs</h2>
+      <p>Persistent log buffer — max 500 entries, newest first.</p>
+      <div class="bar">
+        <button id="btnRefresh" class="primary">&#8635; Refresh</button>
+        <select id="logFilter">
+          <option value="all">All levels</option>
+          <option value="warn">Warnings &amp; Errors</option>
+          <option value="error">Errors only</option>
+        </select>
+        <button id="btnCopyLog">&#128203; Copy</button>
+        <button id="btnClear" class="danger">&#128465; Clear</button>
+      </div>
+      <pre id="output">Loading…</pre>
+      <div id="count"></div>
     </div>
-    <pre id="rawOutput">Select a device above to see raw data.</pre>
+  </div>
+
+  <!-- ── DP Debug + Raw Data ───────────────────────────────────────────── -->
+  <div class="tab-panel" id="tab-dp">
+    <div class="section">
+      <h2>DP Debug</h2>
+      <p>Live data points received from each device. Updated on every data push.</p>
+      <div class="bar">
+        <select id="deviceSelect"><option value="">— select device —</option></select>
+        <button id="btnDpRefresh" class="primary">&#8635; Refresh</button>
+        <button id="autoToggle">Auto-refresh: off</button>
+      </div>
+      <div id="dpContent"><div id="dpPlaceholder">Select a device above to see its DPs.</div></div>
+      <div id="dpMeta"></div>
+    </div>
+
+    <div class="section">
+      <h2>Raw Data</h2>
+      <p>Complete unprocessed DPS payload for the selected device.</p>
+      <div class="bar">
+        <button id="btnCopyRaw">&#128203; Copy</button>
+      </div>
+      <pre id="rawOutput">Select a device above to see raw data.</pre>
+    </div>
   </div>
 
   <script type="text/javascript">
+    // ── Tab switching ──────────────────────────────────────────────────
+    document.querySelectorAll('.tab-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+        document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+      });
+    });
+
     function escHtml(s) {
       return String(s)
         .replace(/&/g, '&amp;')
@@ -124,51 +260,124 @@
         .replace(/>/g, '&gt;');
     }
 
+    function copyText(text, btn) {
+      var orig = btn.textContent;
+      var done = function() {
+        btn.textContent = '✓ Copied';
+        setTimeout(function() { btn.textContent = orig; }, 1500);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(fallback);
+      } else {
+        fallback();
+      }
+      function fallback() {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        try { document.execCommand('copy'); done(); } catch(e) {}
+        document.body.removeChild(ta);
+      }
+    }
+
+    // openUrl is called by inline onclick handlers before Homey SDK is ready,
+    // so we swap in Homey.openURL once it becomes available.
+    var openUrl = function(url) { window.open(url, '_blank'); };
+
     function onHomeyReady(Homey) {
       Homey.ready();
+      openUrl = function(url) { Homey.openURL(url); };
 
-      // ── Logs ────────────────────────────────────────────────────────
+      // ── App version badge ──────────────────────────────────────────────
+      Homey.get('app_version', function(err, val) {
+        var el = document.getElementById('appVersion');
+        if (el && val) el.textContent = 'v' + val;
+      });
+
+      // ── Logs ──────────────────────────────────────────────────────────
+      var allLogEntries = [];   // raw entries, newest first
+
+      function renderLogs(filter) {
+        filter = filter || document.getElementById('logFilter').value || 'all';
+        var out = document.getElementById('output');
+
+        if (allLogEntries.length === 0) {
+          out.innerHTML = 'No entries yet.';
+          document.getElementById('count').textContent = '';
+          return;
+        }
+
+        var filtered = allLogEntries.filter(function(e) {
+          var lvl = (e.level || 'info');
+          if (filter === 'error') return lvl === 'error';
+          if (filter === 'warn')  return lvl === 'error' || lvl === 'warn';
+          return true;
+        });
+
+        var html = filtered.map(function(e) {
+          var t     = e.time ? new Date(e.time).toLocaleString([], { dateStyle: 'short', timeStyle: 'medium' }) : '';
+          var lvl   = (e.level || 'info');
+          var badge = lvl === 'error' ? '[ERR]' : lvl === 'warn' ? '[WRN]' : '[INF]';
+          var line  = t + '  ' + badge + '  [' + (e.source || '?') + ']  ' + (e.message || '');
+          return '<span class="lvl-' + lvl + '">' + escHtml(line) + '</span>';
+        }).join('\n');
+
+        out.innerHTML = html || 'No entries match the selected filter.';
+
+        var countEl = document.getElementById('count');
+        if (filtered.length === allLogEntries.length) {
+          countEl.textContent = allLogEntries.length + ' entries';
+        } else {
+          countEl.textContent = filtered.length + ' of ' + allLogEntries.length + ' entries';
+        }
+      }
 
       function loadLogs() {
         Homey.get('diagnostic_logs', function(err, val) {
-          var logs = Array.isArray(val) ? val : [];
-          var out  = document.getElementById('output');
-          if (logs.length === 0) {
-            out.innerHTML = 'No entries yet.';
-            document.getElementById('count').textContent = '';
-            return;
-          }
-          var html = logs.slice().reverse().map(function(e) {
-            var t     = (e.time || '').replace('T', ' ').slice(0, 19);
-            var lvl   = (e.level || 'info');
-            var badge = lvl === 'error' ? '[ERR]' : lvl === 'warn' ? '[WRN]' : '[INF]';
-            var cls   = 'lvl-' + lvl;
-            return '<span class="' + cls + '">'
-              + escHtml(t) + '  ' + badge + '  ['
-              + escHtml(e.source  || '?') + ']  '
-              + escHtml(e.message || '')
-              + '</span>';
-          }).join('\n');
-          out.innerHTML = html;
-          document.getElementById('count').textContent = logs.length + ' entries';
+          allLogEntries = Array.isArray(val) ? val.slice().reverse() : [];
+          renderLogs();
         });
       }
 
+      document.getElementById('logFilter').addEventListener('change', function() {
+        renderLogs(this.value);
+      });
+
       document.getElementById('btnRefresh').addEventListener('click', loadLogs);
+      document.getElementById('btnCopyLog').addEventListener('click', function() {
+        var filter = document.getElementById('logFilter').value || 'all';
+        var filtered = allLogEntries.filter(function(e) {
+          var lvl = (e.level || 'info');
+          if (filter === 'error') return lvl === 'error';
+          if (filter === 'warn')  return lvl === 'error' || lvl === 'warn';
+          return true;
+        });
+        var text = filtered.map(function(e) {
+          var t     = e.time ? new Date(e.time).toLocaleString([], { dateStyle: 'short', timeStyle: 'medium' }) : '';
+          var lvl   = (e.level || 'info');
+          var badge = lvl === 'error' ? '[ERR]' : lvl === 'warn' ? '[WRN]' : '[INF]';
+          return t + '  ' + badge + '  [' + (e.source || '?') + ']  ' + (e.message || '');
+        }).join('\n');
+        if (!text) return;
+        copyText(text, this);
+      });
       document.getElementById('btnClear').addEventListener('click', function() {
         if (!confirm('Clear all logs?')) return;
         Homey.set('diagnostic_logs', [], function() {
+          allLogEntries = [];
           document.getElementById('output').innerHTML = 'Cleared.';
           document.getElementById('count').textContent = '';
         });
       });
       loadLogs();
 
-      // ── DP Debug ────────────────────────────────────────────────────
-
-      var snapshot    = {};
-      var autoTimer   = null;
-      var isAuto      = false;
+      // ── DP Debug ──────────────────────────────────────────────────────
+      var snapshot  = {};
+      var autoTimer = null;
+      var isAuto    = false;
 
       function loadSnapshot(cb) {
         Homey.get('dp_snapshot', function(err, val) {
@@ -181,42 +390,34 @@
       function populateDeviceSelect() {
         var sel     = document.getElementById('deviceSelect');
         var current = sel.value;
-        // Keep placeholder option, rebuild the rest
         while (sel.options.length > 1) sel.remove(1);
         Object.keys(snapshot).forEach(function(id) {
-          var opt   = document.createElement('option');
+          var opt = document.createElement('option');
           opt.value = id;
           opt.textContent = snapshot[id].name || id;
           sel.appendChild(opt);
         });
-        // Restore selection if device still exists
         if (current && snapshot[current]) sel.value = current;
       }
 
       function renderRaw(entry) {
         var raw = document.getElementById('rawOutput');
-        if (!entry) {
-          raw.textContent = 'Select a device above to see raw data.';
-          return;
-        }
-        // Sort DPS keys numerically
+        if (!entry) { raw.textContent = 'Select a device above to see raw data.'; return; }
         var dps    = entry.dps || {};
         var sorted = {};
         Object.keys(dps).map(Number).sort(function(a, b) { return a - b; }).forEach(function(k) {
           sorted[String(k)] = dps[String(k)];
         });
         var meta = entry.rawMeta || {};
-        // Build complete payload object mirroring the TuyAPI wire format
-        var output = {
-          devId:      meta.devId  || null,
-          uid:        meta.uid    || null,
-          t:          meta.t      || null,
-          t_local:    meta.t      ? new Date(meta.t * 1000).toLocaleString() : null,
-          cid:        meta.cid    || null,
-          updatedAt:  new Date(entry.updatedAt).toLocaleString(),
-          dps:        sorted,
-        };
-        raw.textContent = JSON.stringify(output, null, 2);
+        raw.textContent = JSON.stringify({
+          devId:     meta.devId  || null,
+          uid:       meta.uid    || null,
+          t:         meta.t      || null,
+          t_local:   meta.t ? new Date(meta.t * 1000).toLocaleString() : null,
+          cid:       meta.cid    || null,
+          updatedAt: new Date(entry.updatedAt).toLocaleString(),
+          dps:       sorted,
+        }, null, 2);
       }
 
       function renderDps() {
@@ -230,7 +431,6 @@
           meta.textContent  = '';
           renderRaw(null);
           return;
-
         }
 
         var entry = snapshot[deviceId];
@@ -245,8 +445,8 @@
         }
 
         var rows = keys.map(function(dp) {
-          var val     = dps[String(dp)];
-          var type    = typeof val;
+          var val  = dps[String(dp)];
+          var type = typeof val;
           var valHtml;
           if (type === 'boolean') {
             valHtml = '<span class="' + (val ? 'val-bool-true' : 'val-bool-false') + '">' + val + '</span>';
@@ -255,42 +455,33 @@
           } else {
             valHtml = '<span class="val-str">&quot;' + escHtml(String(val)) + '&quot;</span>';
           }
-          return '<tr>'
-            + '<td><span class="dp-num">DP ' + dp + '</span></td>'
-            + '<td>' + valHtml + '</td>'
-            + '<td><span class="type-badge">' + type + '</span></td>'
-            + '</tr>';
+          return '<tr><td><span class="dp-num">DP ' + dp + '</span></td><td>' + valHtml + '</td>'
+            + '<td><span class="type-badge">' + type + '</span></td></tr>';
         }).join('');
 
         content.innerHTML =
-          '<table class="dp-debug-table">'
-          + '<thead><tr><th>DP</th><th>Value</th><th>Type</th></tr></thead>'
-          + '<tbody>' + rows + '</tbody>'
-          + '</table>';
+          '<table class="dp-debug-table"><thead><tr><th>DP</th><th>Value</th><th>Type</th></tr></thead>'
+          + '<tbody>' + rows + '</tbody></table>';
 
-        var d = new Date(entry.updatedAt);
-        meta.textContent = 'Last update: ' + d.toLocaleTimeString() + ' · ' + keys.length + ' DPs';
+        meta.textContent = 'Last update: ' + new Date(entry.updatedAt).toLocaleTimeString()
+          + ' · ' + keys.length + ' DPs';
 
         renderRaw(entry);
       }
 
-      function refreshDp() {
-        loadSnapshot(renderDps);
-      }
+      function refreshDp() { loadSnapshot(renderDps); }
 
       document.getElementById('deviceSelect').addEventListener('change', renderDps);
       document.getElementById('btnDpRefresh').addEventListener('click', refreshDp);
-
       document.getElementById('autoToggle').addEventListener('click', function() {
         isAuto = !isAuto;
-        var btn = document.getElementById('autoToggle');
         if (isAuto) {
-          btn.textContent = 'Auto-refresh: on (5 s)';
-          btn.classList.add('active');
+          this.textContent = 'Auto-refresh: on (5 s)';
+          this.classList.add('active');
           autoTimer = setInterval(refreshDp, 5000);
         } else {
-          btn.textContent = 'Auto-refresh: off';
-          btn.classList.remove('active');
+          this.textContent = 'Auto-refresh: off';
+          this.classList.remove('active');
           clearInterval(autoTimer);
           autoTimer = null;
         }
@@ -299,14 +490,7 @@
       document.getElementById('btnCopyRaw').addEventListener('click', function() {
         var text = document.getElementById('rawOutput').textContent;
         if (!text || text.startsWith('Select')) return;
-        if (navigator.clipboard) {
-          navigator.clipboard.writeText(text).then(function() {
-            var btn = document.getElementById('btnCopyRaw');
-            var orig = btn.textContent;
-            btn.textContent = '✓ Copied';
-            setTimeout(function() { btn.textContent = orig; }, 1500);
-          });
-        }
+        copyText(text, this);
       });
 
       loadSnapshot(renderDps);

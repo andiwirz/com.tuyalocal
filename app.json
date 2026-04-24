@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -15,12 +15,14 @@
     "de": "Tuya-Geräte über lokales LAN steuern"
   },
   "category": [
-    "climate"
+    "appliances"
   ],
   "permissions": [],
   "author": {
-    "name": "Andi"
+    "name": "Andi Wirz",
+    "email": "andi@wirzfamily.ch"
   },
+  "homeyCommunityTopicId": 154077,
   "capabilities": {
     "mode": {
       "type": "enum",
@@ -693,22 +695,26 @@
     "relay_status": {
       "type": "enum",
       "title": {
-        "en": "Relay Status",
-        "de": "Relaiszustand"
+        "en": "Turn On Behavior",
+        "de": "Einschaltverhalten"
+      },
+      "desc": {
+        "en": "Sets how the device reacts when power is restored after an outage. Applies to all channels.",
+        "de": "Legt fest, wie das Gerät nach einem Stromausfall reagiert. Gilt für alle Kanäle."
       },
       "values": [
-        {
-          "id": "on",
-          "title": {
-            "en": "Always On",
-            "de": "Immer Ein"
-          }
-        },
         {
           "id": "off",
           "title": {
             "en": "Always Off",
             "de": "Immer Aus"
+          }
+        },
+        {
+          "id": "on",
+          "title": {
+            "en": "Always On",
+            "de": "Immer Ein"
           }
         },
         {
@@ -2627,10 +2633,10 @@
                 "en": "Energy DP",
                 "de": "Energie DP"
               },
-              "value": 17,
+              "value": 0,
               "hint": {
-                "en": "DP for energy counter (default: 17). Many Tuya plugs send this as a resetting delta — the Tuya cloud accumulates the deltas, but locally the value appears stuck. Set to 0 to disable and let the app compute kWh from power readings instead (persisted across restarts).",
-                "de": "DP für den Energiezähler (Standard: 17). Viele Tuya-Stecker senden diesen Wert als zurücksetzenden Delta-Wert — die Tuya-Cloud summiert die Deltas, lokal erscheint der Wert jedoch eingefroren. Auf 0 setzen, um ihn zu deaktivieren und die kWh stattdessen aus den Leistungswerten berechnen zu lassen (wird nach App-Neustart beibehalten)."
+                "en": "DP for energy counter (0 = disabled, default). When disabled, the app computes kWh by integrating power readings — persisted across restarts. Set to 17 only if your device provides a reliable cumulative energy counter on that DP.",
+                "de": "DP für den Energiezähler (0 = deaktiviert, Standard). Bei 0 berechnet die App die kWh aus den Leistungswerten — wird nach App-Neustart beibehalten. Nur auf 17 setzen, wenn das Gerät einen zuverlässigen kumulativen Zähler auf diesem DP bereitstellt."
               }
             },
             {
@@ -2650,13 +2656,26 @@
               "id": "dp_relay_status",
               "type": "number",
               "label": {
-                "en": "Relay Status DP",
-                "de": "Relaiszustand DP"
+                "en": "Turn On Behavior DP",
+                "de": "Einschaltverhalten DP"
               },
-              "value": 0,
+              "value": 38,
               "hint": {
-                "en": "DP for relay power-on behavior (on/off/memory). Set to 0 to disable.",
-                "de": "DP für Relais-Einschaltverhalten (on/off/memory). 0 = deaktiviert."
+                "en": "DP for relay power-on behavior (default: 38). Set to 0 to disable. Controls what the device does when power is restored after an outage.",
+                "de": "DP für Relais-Einschaltverhalten (Standard: 38). 0 = deaktiviert. Legt fest, was das Gerät beim Wiederherstellen der Stromversorgung tut."
+              }
+            },
+            {
+              "id": "relay_status_values",
+              "type": "text",
+              "label": {
+                "en": "Turn On Behavior — values",
+                "de": "Einschaltverhalten — Werte"
+              },
+              "value": "off,on,memory",
+              "hint": {
+                "en": "Comma-separated list of values your device supports (e.g. off,on,memory). Each value must match one of the options defined in the app: off, on, memory.",
+                "de": "Kommagetrennte Liste der vom Gerät unterstützten Werte (z.B. off,on,memory). Jeder Wert muss einer der App-Optionen entsprechen: off, on, memory."
               }
             },
             {

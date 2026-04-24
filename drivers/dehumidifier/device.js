@@ -32,7 +32,9 @@ class DehumidifierDevice extends Homey.Device {
     this._lastRawMeta         = null;
     this._lastDataTime        = null;
     this._waterAlarmTimer     = null;  // debounce: prevents spurious reconnect triggers
-    this._waterAlarmConfirmed = false; // true only after alarm stayed true for 5 s
+    this._waterAlarmConfirmed = false; // true only after alarm stayed true for debounce period
+    this._justReconnected     = false; // true for 30 s after each connect — extends alarm debounce
+    this._connecting          = false; // guard against simultaneous _connect() calls
 
     // Restore last known DPS from store — prevents redundant updates on first poll.
     try {
@@ -181,6 +183,19 @@ class DehumidifierDevice extends Homey.Device {
   }
 
   async _connect() {
+    if (this._connecting) {
+      this._appLog('Connection already in progress — skipping duplicate call', 'warn');
+      return;
+    }
+    this._connecting = true;
+    try {
+      await this._connectInner();
+    } finally {
+      this._connecting = false;
+    }
+  }
+
+  async _connectInner() {
     if (this._conn) {
       this._conn.removeAllListeners();
       this._conn.disconnect();
@@ -201,6 +216,12 @@ class DehumidifierDevice extends Homey.Device {
       // Clear dedup cache so the first data packet after (re)connect always
       // writes fresh capability values and refreshes Homey's "last updated" timestamp.
       this._lastDps = {};
+      // Grace period: Tuya devices reconnect roughly every hour and send a
+      // transient alarm_water = true as initial state. Extend the alarm debounce
+      // to 30 s for the first 30 s after each connect so the correcting false
+      // has enough time to arrive before we fire the notification.
+      this._justReconnected = true;
+      setTimeout(() => { this._justReconnected = false; }, 30000);
       this.setAvailable().catch(() => {});
       this._triggerDeviceConnected.trigger(this).catch(() => {});
       this._updateStatusSettings('Connected');
@@ -279,9 +300,13 @@ class DehumidifierDevice extends Homey.Device {
         await this.setCapabilityValue('alarm_water', converted).catch(() => {});
 
         if (!prevWater && converted) {
-          // Debounce: Tuya devices often send alarm_water = true momentarily on
-          // reconnect as an initialisation artifact, followed immediately by false.
-          // Only fire "water full" if the alarm stays true for 5 seconds.
+          // Debounce: Tuya devices send alarm_water = true as an initialisation
+          // artifact on every reconnect (roughly hourly), followed by false —
+          // but the correcting false can arrive several seconds later.
+          // During the 30 s grace window after a connect, use a 30 s timeout so
+          // the false always has time to arrive. Outside the grace window (genuine
+          // mid-session alarm), 5 s is enough.
+          const debounceMs = this._justReconnected ? 30000 : 5000;
           clearTimeout(this._waterAlarmTimer);
           this._waterAlarmConfirmed = false;
           this._waterAlarmTimer = setTimeout(() => {
@@ -292,7 +317,7 @@ class DehumidifierDevice extends Homey.Device {
                 excerpt: `${this.getName()}: ${this.homey.__('notifications.waterFull')}`,
               }).catch(() => {});
             }
-          }, 5000);
+          }, debounceMs);
         }
 
         if (prevWater && !converted) {

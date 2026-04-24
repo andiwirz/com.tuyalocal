@@ -15,11 +15,13 @@ class GenericDevice extends Homey.Device {
   async onInit() {
     this.log('GenericDevice initialized:', this.getName());
 
-    this._conn         = null;
-    this._pollTimer    = null;
-    this._lastDps      = {};
-    this._lastRawMeta  = null;
-    this._lastDataTime = null;
+    this._conn            = null;
+    this._pollTimer       = null;
+    this._lastDps         = {};
+    this._lastRawMeta     = null;
+    this._lastDataTime    = null;
+    this._debounceTimers  = new Map(); // keyed by capability id — cleared on each _registerListeners()
+    this._connecting      = false;     // guard against simultaneous _connect() calls
 
     // Restore last known DPS from store — prevents redundant updates on first poll
     try {
@@ -50,10 +52,26 @@ class GenericDevice extends Homey.Device {
       const raw = this.getSetting('dp_config');
       if (!raw || raw.trim() === '') return [];
       const arr = JSON.parse(raw);
-      if (!Array.isArray(arr)) return [];
-      return arr;
+      if (!Array.isArray(arr)) {
+        this._appLog('dp_config is not a JSON array — ignoring', 'warn');
+        return [];
+      }
+      // Validate each entry: must have a positive integer dp and a non-empty cap string.
+      const valid = [];
+      for (const entry of arr) {
+        if (typeof entry.dp !== 'number' || entry.dp <= 0 || !Number.isInteger(entry.dp)) {
+          this._appLog(`dp_config entry skipped — invalid dp: ${JSON.stringify(entry)}`, 'warn');
+          continue;
+        }
+        if (typeof entry.cap !== 'string' || entry.cap.trim() === '') {
+          this._appLog(`dp_config entry skipped — missing cap: ${JSON.stringify(entry)}`, 'warn');
+          continue;
+        }
+        valid.push(entry);
+      }
+      return valid;
     } catch (e) {
-      this.log('Failed to parse dp_config:', e.message);
+      this._appLog(`dp_config JSON parse failed: ${e.message}`, 'warn');
       return [];
     }
   }
@@ -145,7 +163,13 @@ class GenericDevice extends Homey.Device {
 
   _registerListeners() {
     const DEBOUNCE_MS = 300;
-    const mappings    = this._getMappings();
+
+    // Clear any pending debounce timers from the previous registration pass.
+    // This prevents stale timers from firing after a dp_config change.
+    for (const timer of this._debounceTimers.values()) clearTimeout(timer);
+    this._debounceTimers.clear();
+
+    const mappings = this._getMappings();
 
     for (const mapping of mappings) {
       if (!mapping.settable) continue;
@@ -157,21 +181,19 @@ class GenericDevice extends Homey.Device {
         || (mapping.min !== undefined && mapping.max !== undefined);
 
       if (needsDebounce) {
-        let timer = null;
-        // Re-registering is harmless; Homey overwrites the previous listener.
+        // Store timers in the shared Map so they can be cancelled on re-registration.
         this.registerCapabilityListener(mapping.cap, (value) => {
-          clearTimeout(timer);
+          clearTimeout(this._debounceTimers.get(mapping.cap));
           // Resolve immediately so Homey UI stays responsive; command is delayed.
           return new Promise((resolve) => {
-            timer = setTimeout(() => {
+            this._debounceTimers.set(mapping.cap, setTimeout(() => {
               const dpValue = this._capToDP(value, mapping);
               this._conn?.set(mapping.dp, dpValue)
                 .then(resolve).catch(resolve);
-            }, DEBOUNCE_MS);
+            }, DEBOUNCE_MS));
           });
         });
       } else {
-        // Re-registering is harmless; Homey overwrites the previous listener.
         this.registerCapabilityListener(mapping.cap, async (value) => {
           const dpValue = this._capToDP(value, mapping);
           await this._conn?.set(mapping.dp, dpValue);
@@ -193,7 +215,9 @@ class GenericDevice extends Homey.Device {
             ? JSON.parse(mapping.writeMap)
             : mapping.writeMap;
           if (wm && wm[value] !== undefined) return wm[value];
-        } catch (e) {}
+        } catch (e) {
+          this._appLog(`writeMap parse failed for DP ${mapping.dp}: ${e.message}`, 'warn');
+        }
       }
       return value;
     }
@@ -217,7 +241,9 @@ class GenericDevice extends Homey.Device {
           ? JSON.parse(mapping.readMap)
           : mapping.readMap;
         if (rm && rm[rawValue] !== undefined) return rm[rawValue];
-      } catch (e) {}
+      } catch (e) {
+        this._appLog(`readMap parse failed for DP ${mapping.dp}: ${e.message}`, 'warn');
+      }
       return rawValue;
     }
 
@@ -271,6 +297,19 @@ class GenericDevice extends Homey.Device {
   // ── Connection ─────────────────────────────────────────────────────────────
 
   async _connect() {
+    if (this._connecting) {
+      this._appLog('Connection already in progress — skipping duplicate call', 'warn');
+      return;
+    }
+    this._connecting = true;
+    try {
+      await this._connectInner();
+    } finally {
+      this._connecting = false;
+    }
+  }
+
+  async _connectInner() {
     if (this._conn) {
       this._conn.removeAllListeners();
       this._conn.disconnect();
@@ -414,6 +453,8 @@ class GenericDevice extends Homey.Device {
 
   async onDeleted() {
     this._stopPolling();
+    for (const timer of this._debounceTimers.values()) clearTimeout(timer);
+    this._debounceTimers.clear();
     if (this._conn) {
       this._conn.removeAllListeners();
       this._conn.disconnect();

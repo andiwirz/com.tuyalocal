@@ -1,38 +1,62 @@
 {
   "1.0.0": {
-    "en": "initial version"
+    "en": "Initial release — Dehumidifier driver with local Tuya LAN control.",
+    "de": "Erstveröffentlichung — Luftentfeuchter-Treiber mit lokalem Tuya-LAN-Zugriff."
   },
   "1.0.1": {
-    "en": "debug options"
+    "en": "Added Smart Plug driver with power and energy monitoring. Diagnostic log panel added to app settings.",
+    "de": "Smart-Plug-Treiber mit Leistungs- und Energiemessung hinzugefügt. Diagnose-Log in den App-Einstellungen ergänzt."
   },
   "1.0.2": {
-    "en": "extens value options for humidifier device"
+    "en": "Added Generic Tuya Device driver for any Tuya device not covered by the built-in drivers.",
+    "de": "Generischer Tuya-Treiber für beliebige Tuya-Geräte hinzugefügt."
   },
   "1.0.3": {
-    "en": "allow to disable additional DPS"
+    "en": "Added network scanner (UDP broadcast + TCP subnet scan), auto-DP detection and inline DP editor in the pairing wizard.",
+    "de": "Netzwerkscanner (UDP-Broadcast + TCP-Subnet-Scan), automatische DP-Erkennung und DP-Editor im Pairing-Assistenten hinzugefügt."
   },
   "1.0.4": {
-    "en": "new devices"
+    "en": "Repair flow added — update IP address or Local Key at any time without re-pairing the device.",
+    "de": "Reparatur-Flow hinzugefügt — IP-Adresse oder Local Key jederzeit ohne erneutes Pairing aktualisierbar."
   },
   "1.0.5": {
-    "en": "update readme"
+    "en": "DP debug panel and raw payload viewer added to app settings. Bilingual UI (English and German).",
+    "de": "DP-Debug-Panel und Roh-Payload-Ansicht in den App-Einstellungen hinzugefügt. Zweisprachige Benutzeroberfläche (Englisch und Deutsch)."
+  },
+  "1.0.6": {
+    "en": "Smart Plug: computed energy metering — kWh integrated from live power readings when Energy DP is set to 0. Energy accumulator is persisted across restarts and resettable via flow action.",
+    "de": "Smart Plug: berechnete Energiemessung — kWh werden aus Live-Leistungswerten integriert wenn Energie-DP auf 0 gesetzt ist. Zähler bleibt nach Neustart erhalten und ist per Flow-Aktion zurücksetzbar."
   },
   "1.0.7": {
-    "en": "Smart Plug: fix power-scale auto-detect locking on zero load; add Power Factor (DP 21) capability; add \"Set countdown timer\" flow action (DP 9)."
+    "en": "Smart Plug: energy integration upgraded to trapezoidal averaging for more accurate kWh on dynamic loads. Fixed power-scale auto-detect locking incorrectly on zero load. Added Power Factor capability (optional).",
+    "de": "Smart Plug: Energieintegration auf trapezförmige Mittelung umgestellt für genauere kWh bei dynamischen Lasten. Fehler bei der automatischen Leistungsskalen-Erkennung bei Null-Last behoben. Leistungsfaktor-Capability hinzugefügt (optional)."
   },
   "1.0.8": {
-    "en": "fix TuyaConnection"
+    "en": "Smart Plug: added relay_status (Turn On Behavior) picker — Always Off / Always On / Last State. Configurable via relay_status_values setting.",
+    "de": "Smart Plug: Picker für Einschaltverhalten hinzugefügt — Immer Aus / Immer Ein / Letzter Zustand. Konfigurierbar über relay_status_values-Einstellung."
   },
   "1.0.9": {
-    "en": "Fix frozen \"last updated\" timestamps after reconnect; correct power scale default to ×0.1 (Tuya standard); fix auto-detect locking on zero load; remove false Power Factor (DP 21 = test_bit); add countdown timer flow action."
+    "en": "Dehumidifier: fixed spurious water-full and water-emptied notifications triggered every hour by a transient alarm pulse the device emits on reconnect. Alarm now requires 30 s confirmation after reconnect, 5 s otherwise.",
+    "de": "Luftentfeuchter: stündliche Falschmeldungen \"Wassertank voll/geleert\" behoben. Der Alarm wird jetzt erst nach 30 s Bestätigung nach Reconnect ausgelöst, sonst nach 5 s."
   },
   "1.0.10": {
-    "en": "Dehumidifier: suppress spurious \"water tank full/emptied\" notifications triggered by the transient alarm pulse the device emits during reconnect — alarm now only fires if it stays active for 5 seconds"
+    "en": "App settings redesigned with tab navigation: Help, Logs, DP Debug. Raw Data view moved under DP Debug. PayPal donation link added.",
+    "de": "App-Einstellungen mit Tab-Navigation neu gestaltet: Hilfe, Logs, DP-Debug. Roh-Daten-Ansicht unter DP-Debug verschoben. PayPal-Spendenlink hinzugefügt."
   },
   "1.0.11": {
-    "en": "Smart plug: energy meter now works on devices where DP 17 is frozen — set Energy DP to 0 to let the app compute kWh from live power readings instead (persisted across restarts, resettable via flow action)."
+    "en": "Diagnostic log: timestamps now show local time instead of UTC. Log is scrollable, copyable and filterable by level (All / Warnings & Errors / Errors only).",
+    "de": "Diagnose-Log: Zeitstempel zeigen nun Ortszeit statt UTC. Log ist scrollbar, kopierbar und nach Level filterbar (Alle / Warnungen & Fehler / Nur Fehler)."
+  },
+  "1.0.12": {
+    "en": "App category changed to Appliances. App version is now logged on startup. Donation button fixed for Homey web interface.",
+    "de": "App-Kategorie auf Haushaltsgeräte geändert. App-Version wird beim Start geloggt. Spendenbutton für Homey-Weboberfläche korrigiert."
   },
   "1.0.13": {
-    "en": "Smart plug: energy integration upgraded to trapezoidal averaging — averages power at the start and end of each poll interval for more accurate kWh on dynamic loads"
+    "en": "Smart Plug: fault alarm now debounced (suppresses spurious notifications on reconnect, same as dehumidifier water alarm). All drivers: added reentrancy guard to prevent simultaneous reconnect calls. Generic device: fixed zombie listeners on dp_config change; dp_config entries are now validated and invalid entries logged as warnings; readMap/writeMap JSON errors are now visible in the diagnostic log.",
+    "de": "Smart Plug: Fehleralarm wird jetzt entprellt (unterdrückt Falschmeldungen beim Reconnect, analog zum Wasseralarm des Luftentfeuchters). Alle Treiber: Schutz gegen gleichzeitige Verbindungsaufrufe hinzugefügt. Generisches Gerät: Zombie-Listener bei dp_config-Änderung behoben; dp_config-Einträge werden validiert und ungültige Einträge als Warnung geloggt; readMap/writeMap-JSON-Fehler erscheinen jetzt im Diagnose-Log."
+  },
+  "1.0.14": {
+    "en": "Settings: log level filter added (All / Warnings & Errors / Errors only). App version now shown in the Help tab footer. Repair connection errors are now visible in the diagnostic log. Fixed blank error message when device settings are incomplete.",
+    "de": "Einstellungen: Log-Level-Filter hinzugefügt (Alle / Warnungen & Fehler / Nur Fehler). App-Version wird jetzt in der Fusszeile des Hilfe-Tabs angezeigt. Verbindungsfehler beim Reparatur-Test erscheinen jetzt im Diagnose-Log. Leere Fehlermeldung bei unvollständigen Geräteeinstellungen behoben."
   }
 }

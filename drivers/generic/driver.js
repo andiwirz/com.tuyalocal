@@ -152,7 +152,7 @@ class GenericDriver extends Homey.Driver {
           version: String(version),
           issueGetOnConnect: true,
         });
-        testDev.on('error', () => {});
+        testDev.on('error', (err) => { this.log('Repair test error:', err.message); });
         await Promise.race([
           testDev.connect(),
           new Promise((_, rej) => setTimeout(() => rej(new Error('Connection timed out')), 8000)),

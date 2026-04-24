@@ -66,6 +66,7 @@
         "voltage":      "Spannung (V)",
         "current":      "Strom (A)",
         "energy":       "Energie (kWh)",
+        "energyNote":   "0 = App berechnet kWh aus Leistungswerten (empfohlen). Nur auf 17 setzen, wenn das Gerät einen zuverlässigen lokalen Energiezähler bereitstellt.",
         "fault":        "Fehleralarm  (0 = deaktiviert)",
         "relay":        "Relais-Einschaltverhalten  (0 = deaktiviert)",
         "powerFactor":  "Leistungsfaktor %  (0 = deaktiviert)",
@@ -87,6 +88,9 @@
     "saving": "Speichern…",
     "success": "Einstellungen gespeichert! Verbinde neu…",
     "fillAll": "Bitte IP-Adresse und Lokalen Schlüssel ausfüllen."
+  },
+  "errors": {
+    "missing_settings": "Geräteeinstellungen unvollständig — IP-Adresse, Geräte-ID und Local Key prüfen."
   },
   "settings": {
     "logs": {

@@ -66,6 +66,7 @@
         "voltage":      "Voltage (V)",
         "current":      "Current (A)",
         "energy":       "Energy (kWh)",
+        "energyNote":   "0 = app computes kWh from power readings (recommended). Set to 17 only if your device provides a reliable local energy counter.",
         "fault":        "Fault Alarm  (0 = disabled)",
         "relay":        "Relay Power-on Behavior  (0 = disabled)",
         "powerFactor":  "Power Factor %  (0 = disabled)",
@@ -87,6 +88,9 @@
     "saving": "Saving…",
     "success": "Settings saved! Reconnecting…",
     "fillAll": "Please fill in IP address and Local Key."
+  },
+  "errors": {
+    "missing_settings": "Device settings incomplete — check IP address, Device ID and Local Key."
   },
   "settings": {
     "logs": {

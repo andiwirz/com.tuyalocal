@@ -4,7 +4,7 @@ const Homey = require('homey');
 
 const LOG_MAX = 500;
 
-class TuyaDehumidifierApp extends Homey.App {
+class TuyaLocalApp extends Homey.App {
   async onInit() {
     this._logs = [];
     this._flushTimer = null;
@@ -15,7 +15,11 @@ class TuyaDehumidifierApp extends Homey.App {
       if (Array.isArray(stored)) this._logs = stored;
     } catch (e) {}
 
-    this.log('Tuya Dehumidifier App initialized');
+    const version = this.homey.manifest?.version ?? '?';
+    this.addLog('App', `Started — v${version}`, 'info');
+    this.log(`Tuya Local App v${version} initialized`);
+    // Persist version so the settings page can display it without a build-time template.
+    try { this.homey.settings.set('app_version', version); } catch (e) {}
   }
 
   addLog(source, message, level = 'info') {
@@ -40,4 +44,4 @@ class TuyaDehumidifierApp extends Homey.App {
   }
 }
 
-module.exports = TuyaDehumidifierApp;
+module.exports = TuyaLocalApp;
