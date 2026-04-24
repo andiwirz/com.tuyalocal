@@ -31,5 +31,8 @@
   },
   "1.0.11": {
     "en": "Smart plug: energy meter now works on devices where DP 17 is frozen — set Energy DP to 0 to let the app compute kWh from live power readings instead (persisted across restarts, resettable via flow action)."
+  },
+  "1.0.13": {
+    "en": "Smart plug: energy integration upgraded to trapezoidal averaging — averages power at the start and end of each poll interval for more accurate kWh on dynamic loads"
   }
 }
