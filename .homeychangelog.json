@@ -58,5 +58,9 @@
   "1.0.14": {
     "en": "Settings: log level filter added (All / Warnings & Errors / Errors only). App version now shown in the Help tab footer. Repair connection errors are now visible in the diagnostic log. Fixed blank error message when device settings are incomplete.",
     "de": "Einstellungen: Log-Level-Filter hinzugefügt (Alle / Warnungen & Fehler / Nur Fehler). App-Version wird jetzt in der Fusszeile des Hilfe-Tabs angezeigt. Verbindungsfehler beim Reparatur-Test erscheinen jetzt im Diagnose-Log. Leere Fehlermeldung bei unvollständigen Geräteeinstellungen behoben."
+  },
+  "1.0.15": {
+    "en": "Smart Plug: Turn On Behavior moved from device tile to device settings — the dropdown updates automatically when the device reports its state and sends the command immediately when changed. A warning is logged if the device uses an unknown value.",
+    "de": "Smart Plug: Einschaltverhalten von der Gerätekachel in die Geräteeinstellungen verschoben — das Dropdown aktualisiert sich automatisch wenn das Gerät seinen Zustand meldet und sendet den Befehl sofort bei Änderung. Eine Warnung wird geloggt wenn das Gerät einen unbekannten Wert meldet."
   }
 }

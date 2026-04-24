@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -704,17 +704,17 @@
       },
       "values": [
         {
-          "id": "off",
-          "title": {
-            "en": "Always Off",
-            "de": "Immer Aus"
-          }
-        },
-        {
           "id": "on",
           "title": {
             "en": "Always On",
             "de": "Immer Ein"
+          }
+        },
+        {
+          "id": "off",
+          "title": {
+            "en": "Always Off",
+            "de": "Immer Aus"
           }
         },
         {
@@ -2661,22 +2661,45 @@
               },
               "value": 38,
               "hint": {
-                "en": "DP for relay power-on behavior (default: 38). Set to 0 to disable. Controls what the device does when power is restored after an outage.",
-                "de": "DP für Relais-Einschaltverhalten (Standard: 38). 0 = deaktiviert. Legt fest, was das Gerät beim Wiederherstellen der Stromversorgung tut."
+                "en": "DP for relay power-on behavior (default: 38). Set to 0 to disable.",
+                "de": "DP für Relais-Einschaltverhalten (Standard: 38). 0 = deaktiviert."
               }
             },
             {
-              "id": "relay_status_values",
-              "type": "text",
+              "id": "relay_status",
+              "type": "dropdown",
               "label": {
-                "en": "Turn On Behavior — values",
-                "de": "Einschaltverhalten — Werte"
+                "en": "Turn On Behavior",
+                "de": "Einschaltverhalten"
               },
-              "value": "off,on,memory",
+              "value": "on",
               "hint": {
-                "en": "Comma-separated list of values your device supports (e.g. off,on,memory). Each value must match one of the options defined in the app: off, on, memory.",
-                "de": "Kommagetrennte Liste der vom Gerät unterstützten Werte (z.B. off,on,memory). Jeder Wert muss einer der App-Optionen entsprechen: off, on, memory."
-              }
+                "en": "What the device does when mains power is restored after an outage. The device reports the current value automatically and changes are sent immediately — requires Turn On Behavior DP to be set (not 0).",
+                "de": "Was das Gerät tut, wenn die Stromversorgung nach einem Ausfall wiederhergestellt wird. Das Gerät meldet den Wert automatisch, Änderungen werden sofort gesendet — setzt voraus, dass Einschaltverhalten DP gesetzt ist (nicht 0)."
+              },
+              "values": [
+                {
+                  "id": "on",
+                  "label": {
+                    "en": "Always On",
+                    "de": "Immer Ein"
+                  }
+                },
+                {
+                  "id": "off",
+                  "label": {
+                    "en": "Always Off",
+                    "de": "Immer Aus"
+                  }
+                },
+                {
+                  "id": "memory",
+                  "label": {
+                    "en": "Last State",
+                    "de": "Letzter Zustand"
+                  }
+                }
+              ]
             },
             {
               "id": "dp_power_factor",

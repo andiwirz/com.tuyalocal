@@ -11,7 +11,6 @@ const DP_PROFILE = [
   { settingKey: 'dp_current',       capability: 'measure_current', transform: (v)      => Number(v) * 0.001,                 settable: false },
   { settingKey: 'dp_energy',        capability: 'meter_power',     transform: (v)      => Number(v) * 0.001,                 settable: false },
   { settingKey: 'dp_fault',         capability: 'alarm_generic',   transform: (v)      => Number(v) > 0,                     settable: false },
-  { settingKey: 'dp_relay_status',  capability: 'relay_status',    transform: (v)      => String(v),                         settable: true  },
   { settingKey: 'dp_power',         capability: 'measure_power',   transform: (v, dev) => Number(v) * dev._getPowerScale(),  settable: false },
   // Optional: power factor (DP 21 on most power-monitoring plugs, 0–100 %)
   { settingKey: 'dp_power_factor',  capability: 'power_factor',    transform: (v)      => Number(v),                         settable: false },
@@ -57,7 +56,6 @@ class SmartPlugDevice extends Homey.Device {
 
     await this._migrateCapabilities();
     await this._syncOptionalCapabilities();
-    await this._syncRelayStatusOptions();
 
     // ── Flow trigger cards ───────────────────────────────────────────────────
     this._triggerDeviceConnected    = this.homey.flow.getDeviceTriggerCard('plug_device_connected');
@@ -86,53 +84,18 @@ class SmartPlugDevice extends Homey.Device {
     return this._detectedPowerScale || 0.1;
   }
 
-  // Placeholder for capability renames across app versions.
+  // Capability migrations across app versions.
   async _migrateCapabilities() {
-    const migrations = [
-      // { from: 'old_capability_id', to: 'new_capability_id' }
-    ];
-    for (const { from, to } of migrations) {
-      if (this.hasCapability(from) && !this.hasCapability(to)) {
-        await this.addCapability(to).catch(() => {});
-        await this.removeCapability(from).catch(() => {});
-        this.log(`Migrated capability: ${from} → ${to}`);
-      }
-    }
-  }
-
-  async _syncRelayStatusOptions() {
-    if (!this.hasCapability('relay_status')) return;
-    const LABELS = {
-      off:    { en: 'Always Off',  de: 'Immer Aus'          },
-      on:     { en: 'Always On',   de: 'Immer Ein'          },
-      memory: { en: 'Last State',  de: 'Letzter Zustand'    },
-    };
-    const csv  = this.getSetting('relay_status_values') || 'off,on,memory';
-    const opts = csv.split(',').map((v) => v.trim()).filter(Boolean)
-      .map((v) => ({
-        id:    v,
-        title: LABELS[v] || { en: v.charAt(0).toUpperCase() + v.slice(1), de: v.charAt(0).toUpperCase() + v.slice(1) },
-      }));
-    if (opts.length === 0) return;
-
-    const current = this.getCapabilityValue('relay_status');
-    if (current !== null && current !== undefined && !opts.some((o) => o.id === current)) {
-      this._appLog(
-        `relay_status: cannot restrict options — current value "${current}" not in [${opts.map((o) => o.id).join(', ')}]. ` +
-        `Update the device first or include "${current}" in the setting.`, 'warn');
-      return;
-    }
-    try {
-      await this.setCapabilityOptions('relay_status', { values: opts });
-    } catch (err) {
-      this._appLog(`setCapabilityOptions(relay_status) failed: ${err.message}`, 'warn');
+    // relay_status was a capability tile in ≤ v1.0.14 — now it lives in device settings.
+    if (this.hasCapability('relay_status')) {
+      await this.removeCapability('relay_status').catch(() => {});
+      this.log('Migrated: relay_status capability removed (now a device setting)');
     }
   }
 
   async _syncOptionalCapabilities() {
     const optionals = [
       { setting: 'dp_fault',        capability: 'alarm_generic' },
-      { setting: 'dp_relay_status', capability: 'relay_status'  },
       { setting: 'dp_power_factor', capability: 'power_factor'  },
     ];
 
@@ -263,6 +226,23 @@ class SmartPlugDevice extends Homey.Device {
       this._triggerDpChanged
         .trigger(this, { dp: dpStr, value: String(value) })
         .catch(() => {});
+
+      // relay_status is stored as a device setting (not a capability tile).
+      if (settings.dp_relay_status > 0 && dp === settings.dp_relay_status) {
+        const KNOWN = ['on', 'off', 'memory'];
+        const strVal = String(value);
+        if (KNOWN.includes(strVal)) {
+          this.setSettings({ relay_status: strVal }).catch(() => {});
+        } else {
+          this._appLog(
+            `relay_status: device reported unknown value "${strVal}". ` +
+            `Known values are: ${KNOWN.join(', ')}. ` +
+            `If your device uses a different string, please report it via the community forum.`,
+            'warn',
+          );
+        }
+        continue;
+      }
 
       if (!entry) {
         this.log(`Unknown DP ${dp}:`, value);
@@ -438,12 +418,18 @@ class SmartPlugDevice extends Homey.Device {
       this.log('Polling interval changed, restarting polling');
       this._startPolling();
     }
-    if (changedKeys.some((k) => ['dp_fault', 'dp_relay_status', 'dp_power_factor'].includes(k))) {
+    if (changedKeys.some((k) => ['dp_fault', 'dp_power_factor'].includes(k))) {
       await this._syncOptionalCapabilities();
-      await this._syncRelayStatusOptions();
     }
-    if (changedKeys.includes('relay_status_values')) {
-      await this._syncRelayStatusOptions();
+    // User changed the Turn On Behavior dropdown → send command to device immediately.
+    if (changedKeys.includes('relay_status')) {
+      const dp = this.getSetting('dp_relay_status');
+      if (dp > 0) {
+        await this._conn?.set(dp, this.getSetting('relay_status'))
+          .catch((err) => this._appLog(`relay_status set failed: ${err.message}`, 'warn'));
+      } else {
+        this._appLog('Turn On Behavior changed but dp_relay_status = 0 — no command sent. Set the DP number first.', 'warn');
+      }
     }
   }
 
