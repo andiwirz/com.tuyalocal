@@ -190,6 +190,7 @@ class SmartPlugDevice extends Homey.Device {
 
     this._conn.on('data', (dps, raw) => {
       this._lastDataTime = Date.now();
+      this._updateLastSeen();
       if (raw) {
         this._lastRawMeta = {
           devId: raw.devId  ?? null,
@@ -317,13 +318,18 @@ class SmartPlugDevice extends Homey.Device {
     }
   }
 
-  _updateStatusSettings(status) {
+  _updateLastSeen() {
     const lastSeen = new Date().toLocaleString(this.homey.i18n.getLanguage(), {
       dateStyle: 'short',
       timeStyle: 'medium',
       timeZone:  this.homey.clock.getTimezone(),
     });
-    this.setSettings({ connection_status: status, last_seen: lastSeen }).catch(() => {});
+    this.setSettings({ last_seen: lastSeen }).catch(() => {});
+  }
+
+  _updateStatusSettings(status) {
+    this._updateLastSeen();
+    this.setSettings({ connection_status: status }).catch(() => {});
   }
 
   // ── Polling ────────────────────────────────────────────────────────────────

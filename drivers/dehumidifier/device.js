@@ -33,7 +33,7 @@ class DehumidifierDevice extends Homey.Device {
     this._lastDataTime        = null;
     this._waterAlarmTimer     = null;  // debounce: prevents spurious reconnect triggers
     this._waterAlarmConfirmed = false; // true only after alarm stayed true for debounce period
-    this._justReconnected     = false; // true for 30 s after each connect — extends alarm debounce
+    this._connectedAt         = null;  // timestamp of last successful connect — used for grace period
     this._connecting          = false; // guard against simultaneous _connect() calls
 
     // Restore last known DPS from store — prevents redundant updates on first poll.
@@ -213,20 +213,24 @@ class DehumidifierDevice extends Homey.Device {
     this._conn.on('connected', () => {
       this._appLog('Connected', 'info');
       this._lastDataTime = Date.now();
+      this._connectedAt  = Date.now();
       // Clear dedup cache so the first data packet after (re)connect always
       // writes fresh capability values and refreshes Homey's "last updated" timestamp.
       this._lastDps = {};
-      // Grace period: Tuya devices reconnect roughly every hour and send a
-      // transient alarm_water = true as initial state. Extend the alarm debounce
-      // to 30 s for the first 30 s after each connect so the correcting false
-      // has enough time to arrive before we fire the notification.
-      this._justReconnected = true;
-      setTimeout(() => { this._justReconnected = false; }, 30000);
+      // Clear any pending alarm timer from the previous connection cycle.
+      // A stale timer could fire after reconnect and see the artifact 'true'
+      // as a genuine alarm.
+      clearTimeout(this._waterAlarmTimer);
+      this._waterAlarmTimer     = null;
+      this._waterAlarmConfirmed = false;
       this.setAvailable().catch(() => {});
       this._triggerDeviceConnected.trigger(this).catch(() => {});
       this._updateStatusSettings('Connected');
       // Initial full state fetch after a short settle delay.
       setTimeout(() => this._conn?.get().catch(() => {}), 500);
+      // Force a second GET at T+60 s to pull the definitive alarm state in case
+      // the correcting false never arrives as a pushed update.
+      setTimeout(() => this._conn?.get().catch(() => {}), 60000);
       this._startPolling();
     });
 
@@ -240,6 +244,7 @@ class DehumidifierDevice extends Homey.Device {
 
     this._conn.on('data', (dps, raw) => {
       this._lastDataTime = Date.now();
+      this._updateLastSeen();
       if (raw) {
         this._lastRawMeta = {
           devId: raw.devId  ?? null,
@@ -300,13 +305,30 @@ class DehumidifierDevice extends Homey.Device {
         await this.setCapabilityValue('alarm_water', converted).catch(() => {});
 
         if (!prevWater && converted) {
-          // Debounce: Tuya devices send alarm_water = true as an initialisation
-          // artifact on every reconnect (roughly hourly), followed by false —
-          // but the correcting false can arrive several seconds later.
-          // During the 30 s grace window after a connect, use a 30 s timeout so
-          // the false always has time to arrive. Outside the grace window (genuine
-          // mid-session alarm), 5 s is enough.
-          const debounceMs = this._justReconnected ? 30000 : 5000;
+          // Debounce: Tuya devices send alarm_water = true as a reconnect artifact,
+          // followed by a correcting false — but the false can take many seconds
+          // (device-dependent, sometimes > 30 s).
+          //
+          // Strategy: compute how much of the 90 s grace window remains from the
+          // last connect. The debounce covers the rest of that window + 5 s.
+          // This means:
+          //   - Artifact at T+2 s  → debounce 93 s (timer fires at T+95 s)
+          //   - Artifact at T+85 s → debounce  10 s (timer fires at T+95 s)
+          //   - Genuine alarm at T+120 s → debounce 5 s (normal behaviour)
+          // The correcting false cancels the timer whenever it arrives.
+          const GRACE_MS   = 90_000;
+          const elapsed    = this._connectedAt ? Date.now() - this._connectedAt : GRACE_MS;
+          const remaining  = Math.max(0, GRACE_MS - elapsed);
+          const debounceMs = remaining + 5_000;
+
+          if (remaining > 0) {
+            this._appLog(
+              `alarm_water: true received ${Math.round(elapsed / 1000)} s after connect — ` +
+              `applying ${Math.round(debounceMs / 1000)} s debounce (reconnect grace period)`,
+              'info',
+            );
+          }
+
           clearTimeout(this._waterAlarmTimer);
           this._waterAlarmConfirmed = false;
           this._waterAlarmTimer = setTimeout(() => {
@@ -342,13 +364,18 @@ class DehumidifierDevice extends Homey.Device {
     }
   }
 
-  _updateStatusSettings(status) {
+  _updateLastSeen() {
     const lastSeen = new Date().toLocaleString(this.homey.i18n.getLanguage(), {
       dateStyle: 'short',
       timeStyle: 'medium',
       timeZone:  this.homey.clock.getTimezone(),
     });
-    this.setSettings({ connection_status: status, last_seen: lastSeen }).catch(() => {});
+    this.setSettings({ last_seen: lastSeen }).catch(() => {});
+  }
+
+  _updateStatusSettings(status) {
+    this._updateLastSeen();
+    this.setSettings({ connection_status: status }).catch(() => {});
   }
 
   // ── Polling ────────────────────────────────────────────────────────────────

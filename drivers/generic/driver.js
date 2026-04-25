@@ -1,7 +1,8 @@
 'use strict';
 
-const Homey  = require('homey');
-const TuyAPI = require('tuyapi');
+const Homey                     = require('homey');
+const TuyAPI                    = require('tuyapi');
+const { detectProtocolVersion } = require('../../lib/autoDetect');
 
 class GenericDriver extends Homey.Driver {
   async onInit() {
@@ -47,35 +48,37 @@ class GenericDriver extends Homey.Driver {
         throw new Error(this.homey.__('pair.credentials.invalidKey') || 'Invalid local key length');
       }
 
-      let connected    = false;
+      let connected      = false;
+      let actualVersion  = String(version);
       const collectedDps = {};
 
       try {
-        const device = new TuyAPI({
-          id: deviceId,
-          key: localKey,
-          ip,
-          version: String(version),
-          issueGetOnConnect: true,
-        });
-
-        device.on('error', (err) => {
-          this.log('Connection test error:', err.message);
-        });
-        device.on('data', (payload) => {
-          if (payload && payload.dps) Object.assign(collectedDps, payload.dps);
-        });
-
-        await Promise.race([
-          device.connect(),
-          new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Connection timed out')), 8000)
-          ),
-        ]);
-
-        // Collect DPS for 4 seconds
-        await new Promise((resolve) => setTimeout(resolve, 4000));
-        device.disconnect();
+        let rawDps;
+        if (version === 'auto') {
+          const result = await detectProtocolVersion({ ip, deviceId, localKey });
+          actualVersion = result.version;
+          rawDps        = result.dps;
+          this.log(`Auto-detected protocol version: ${actualVersion}`);
+        } else {
+          const device = new TuyAPI({
+            id: deviceId, key: localKey, ip,
+            version: actualVersion,
+            issueGetOnConnect: true,
+          });
+          device.on('error', (err) => { this.log('Connection test error:', err.message); });
+          const tmpDps = {};
+          device.on('data', (payload) => {
+            if (payload?.dps) Object.assign(tmpDps, payload.dps);
+          });
+          await Promise.race([
+            device.connect(),
+            new Promise((_, rej) => setTimeout(() => rej(new Error('Connection timed out')), 8000)),
+          ]);
+          await new Promise((resolve) => setTimeout(resolve, 4000));
+          device.disconnect();
+          rawDps = tmpDps;
+        }
+        Object.assign(collectedDps, rawDps);
         connected = true;
       } catch (err) {
         this.log('Connection test failed:', err.message);
@@ -88,7 +91,7 @@ class GenericDriver extends Homey.Driver {
           ip,
           device_id:        deviceId,
           local_key:        localKey,
-          version:          String(version),
+          version:          actualVersion,
           dp_config:        '[]',
           polling_interval: 30,
         },
@@ -96,7 +99,7 @@ class GenericDriver extends Homey.Driver {
 
       pendingRawDps = collectedDps;
 
-      return { connected };
+      return { connected, detectedVersion: actualVersion };
     });
 
     // ── List devices ──────────────────────────────────────────────────────────
@@ -143,32 +146,38 @@ class GenericDriver extends Homey.Driver {
         throw new Error(this.homey.__('pair.credentials.invalidKey') || 'Invalid local key length');
       }
 
-      let connected = false;
+      let connected     = false;
+      let actualVersion = String(version);
       try {
-        const testDev = new TuyAPI({
-          id: device.getSetting('device_id'),
-          key: local_key,
-          ip,
-          version: String(version),
-          issueGetOnConnect: true,
-        });
-        testDev.on('error', (err) => { this.log('Repair test error:', err.message); });
-        await Promise.race([
-          testDev.connect(),
-          new Promise((_, rej) => setTimeout(() => rej(new Error('Connection timed out')), 8000)),
-        ]);
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        testDev.disconnect();
+        if (version === 'auto') {
+          const result = await detectProtocolVersion({ ip, deviceId: device.getSetting('device_id'), localKey: local_key });
+          actualVersion = result.version;
+          this.log(`Repair: auto-detected protocol version: ${actualVersion}`);
+        } else {
+          const testDev = new TuyAPI({
+            id: device.getSetting('device_id'),
+            key: local_key, ip,
+            version: actualVersion,
+            issueGetOnConnect: true,
+          });
+          testDev.on('error', (err) => { this.log('Repair test error:', err.message); });
+          await Promise.race([
+            testDev.connect(),
+            new Promise((_, rej) => setTimeout(() => rej(new Error('Connection timed out')), 8000)),
+          ]);
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+          testDev.disconnect();
+        }
         connected = true;
       } catch (err) {
         this.log('Repair connection test failed:', err.message);
       }
 
       if (connected) {
-        await device.setSettings({ ip, local_key, version: String(version) });
+        await device.setSettings({ ip, local_key, version: actualVersion });
       }
 
-      return { connected };
+      return { connected, detectedVersion: actualVersion };
     });
   }
 

@@ -62,5 +62,13 @@
   "1.0.15": {
     "en": "Smart Plug: Turn On Behavior moved from device tile to device settings — the dropdown updates automatically when the device reports its state and sends the command immediately when changed. A warning is logged if the device uses an unknown value.",
     "de": "Smart Plug: Einschaltverhalten von der Gerätekachel in die Geräteeinstellungen verschoben — das Dropdown aktualisiert sich automatisch wenn das Gerät seinen Zustand meldet und sendet den Befehl sofort bei Änderung. Eine Warnung wird geloggt wenn das Gerät einen unbekannten Wert meldet."
+  },
+  "1.0.16": {
+    "en": "Dehumidifier: water alarm debounce completely reworked — uses a 90 s rolling grace window from connect time instead of a fixed 30 s flag. Stale timers are now cleared on every reconnect, and a forced state refresh at T+60 s closes the window even if the device never pushes the correcting false. Eliminates the remaining hourly spurious notifications. All drivers: \"Last data received\" timestamp now updates on every incoming data packet, not only on reconnect.",
+    "de": "Luftentfeuchter: Wasseralarm-Entprellung vollständig überarbeitet — verwendet ein gleitendes 90-s-Grenzfenster ab dem Verbindungszeitpunkt statt eines festen 30-s-Flags. Veraltete Timer werden bei jedem Reconnect geleert, und ein erzwungenes Status-Update nach 60 s schließt das Fenster auch wenn das Gerät kein korrigierendes false sendet. Behebt die verbleibenden stündlichen Falschmeldungen. Alle Treiber: Zeitstempel \"Zuletzt Daten empfangen\" wird nun bei jedem eingehenden Datenpaket aktualisiert, nicht nur beim Reconnect."
+  },
+  "1.0.17": {
+    "en": "All drivers: protocol version auto-detection — pairing and repair now default to Auto-detect, which tries 3.3 → 3.4 → 3.1 → 3.5 in order and saves the working version automatically. No more manual trial-and-error. ECONNRESET errors now include a clear hint about protocol version mismatch in the diagnostic log.",
+    "de": "Alle Treiber: Automatische Protokollversionserkennung — Pairing und Reparatur verwenden jetzt standardmäßig Auto-Erkennung, die 3.3 → 3.4 → 3.1 → 3.5 der Reihe nach versucht und die funktionierende Version automatisch speichert. Kein manuelles Ausprobieren mehr. ECONNRESET-Fehler enthalten jetzt einen klaren Hinweis auf mögliche Protokollversionsfehler im Diagnose-Log."
   }
 }
