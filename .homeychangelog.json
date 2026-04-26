@@ -1,4 +1,12 @@
 {
+  "1.0.24": {
+    "en": "All drivers: immediate full-state refresh after any unsolicited push — when the device proactively sends a data packet (e.g. AC pushing power state), Homey now immediately follows up with a GET so all other DPs (mode, temperature, fan speed) update at once instead of waiting for the next poll cycle.",
+    "de": "Alle Treiber: sofortige Vollzustandsabfrage nach jedem Push — wenn das Gerät proaktiv ein Datenpaket sendet (z.B. Klimaanlage meldet Einschaltzustand), sendet Homey sofort ein GET nach, sodass alle anderen DPs (Modus, Temperatur, Lüftergeschwindigkeit) sofort aktualisiert werden, anstatt auf den nächsten Poll-Zyklus zu warten."
+  },
+  "1.0.23": {
+    "en": "Repair dialog fixed for all drivers — the form now correctly loads current settings and shows an error if loading fails. Root cause: Homey SDK v3 serves repair views from drivers/{id}/repair/, not drivers/{id}/pair/. All four drivers now have the correct repair view location.",
+    "de": "Reparatur-Dialog für alle Treiber behoben — das Formular lädt jetzt korrekt die aktuellen Einstellungen und zeigt eine Fehlermeldung wenn das Laden fehlschlägt. Ursache: Homey SDK v3 sucht Reparatur-Ansichten unter drivers/{id}/repair/, nicht drivers/{id}/pair/. Alle vier Treiber haben jetzt den korrekten Speicherort."
+  },
   "1.0.0": {
     "en": "Initial release — Dehumidifier driver with local Tuya LAN control.",
     "de": "Erstveröffentlichung — Luftentfeuchter-Treiber mit lokalem Tuya-LAN-Zugriff."
