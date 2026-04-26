@@ -1,7 +1,6 @@
 'use strict';
 
-const Homey          = require('homey');
-const TuyaConnection = require('../../lib/TuyaConnection');
+const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 
 // Maps settings keys → Homey capabilities.
 // settable: false = read-only, no capability listener registered.
@@ -16,34 +15,28 @@ const DP_PROFILE = [
   { settingKey: 'dp_power_factor',  capability: 'power_factor',    transform: (v)      => Number(v),                         settable: false },
 ];
 
-class SmartPlugDevice extends Homey.Device {
+class SmartPlugDevice extends BaseTuyaDevice {
   async onInit() {
     this.log('Device initialized:', this.getName());
 
-    this._conn               = null;
-    this._pollTimer          = null;
-    this._lastDps            = {};
-    this._lastRawMeta        = null;
-    this._lastDataTime       = null;
-    this._detectedPowerScale = 0.1;   // default scale until auto-detected
-    this._powerScaleDetected = false; // set to true once scale is locked in
-    this._lastPowerTime      = null;  // timestamp of last poll-timer tick
-    this._lastPowerWatts     = 0;     // most recent watts reading from device
-    this._prevTickPowerWatts = 0;     // watts at the previous poll tick (for trapezoidal averaging)
-    this._energyAccum        = 0;     // accumulated kWh (computed from power)
+    await this._baseInit();
+
+    // Driver-specific state
+    this._detectedPowerScale  = 0.1;   // default scale until auto-detected
+    this._powerScaleDetected  = false; // set to true once scale is locked in
+    this._lastPowerTime       = null;  // timestamp of last poll-timer tick
+    this._lastPowerWatts      = 0;     // most recent watts reading from device
+    this._prevTickPowerWatts  = 0;     // watts at the previous poll tick (for trapezoidal averaging)
+    this._energyAccum         = 0;     // accumulated kWh (computed from power)
     this._faultAlarmTimer     = null;  // debounce: prevents spurious fault notifications on reconnect
     this._faultAlarmConfirmed = false; // true only after alarm stayed true for debounce period
     this._justReconnected     = false; // true for 30 s after each connect — extends alarm debounce
-    this._connecting          = false; // guard against simultaneous _connect() calls
 
-    // Restore last known DPS from store — prevents redundant updates on first poll.
-    try {
-      const stored = this.getStoreValue('lastDps');
-      if (stored && typeof stored === 'object') {
-        this._lastDps = stored;
-        this._writeDpSnapshot();
-      }
-    } catch (e) {}
+    // Remove legacy relay_status capability (moved to device settings in v1.0.14).
+    if (this.hasCapability('relay_status')) {
+      await this.removeCapability('relay_status').catch(() => {});
+      this.log('Migrated: relay_status capability removed (now a device setting)');
+    }
 
     // Restore accumulated energy so meter_power survives app restarts.
     try {
@@ -54,8 +47,10 @@ class SmartPlugDevice extends Homey.Device {
       }
     } catch (e) {}
 
-    await this._migrateCapabilities();
-    await this._syncOptionalCapabilities();
+    await this._syncOptionalCapabilities([
+      { setting: 'dp_fault',        capability: 'alarm_generic' },
+      { setting: 'dp_power_factor', capability: 'power_factor'  },
+    ]);
 
     // ── Flow trigger cards ───────────────────────────────────────────────────
     this._triggerDeviceConnected    = this.homey.flow.getDeviceTriggerCard('plug_device_connected');
@@ -76,6 +71,51 @@ class SmartPlugDevice extends Homey.Device {
     await this._connect();
   }
 
+  // ── Hook overrides ───────────────────────────────────────────────────────────
+
+  /** Reset power-integration baseline and grace-period flag on every (re)connect. */
+  _onConnected() {
+    // Reset power-integration baseline — avoids a giant energy spike if the
+    // device was offline for an extended period.
+    this._lastPowerTime      = null;
+    this._prevTickPowerWatts = 0;
+    // Grace period: Tuya devices reconnect roughly every hour and can send a
+    // transient fault = true as initial state. Extend the alarm debounce to 30 s
+    // so the correcting false has time to arrive before we fire a notification.
+    this._justReconnected = true;
+    setTimeout(() => { this._justReconnected = false; }, 30000);
+  }
+
+  /**
+   * Trapezoidal energy integration — runs every poll tick so stable power
+   * (unchanged DP value, blocked by dedup) still accumulates correctly.
+   * Only active when dp_energy = 0 (hardware energy counter disabled).
+   */
+  async _onPollTick() {
+    if (this.getSetting('dp_energy') <= 0 && this._lastPowerTime !== null) {
+      const intervalSec = this._pollIntervalMs / 1000;
+      const now         = Date.now();
+      const elapsedH    = (now - this._lastPowerTime) / 3_600_000;
+      // Cap at 2× poll interval — guards against a spike after a long outage.
+      if (elapsedH > 0 && elapsedH < (intervalSec * 2) / 3600) {
+        const avgWatts = (this._prevTickPowerWatts + this._lastPowerWatts) / 2;
+        // Guard against negative readings from a misbehaving device.
+        if (avgWatts > 0) this._energyAccum += (avgWatts * elapsedH) / 1000;
+        this.setStoreValue('energyAccum', this._energyAccum).catch(() => {});
+        this.setCapabilityValue('meter_power',
+          Math.round(this._energyAccum * 1000) / 1000).catch(() => {});
+      }
+      this._prevTickPowerWatts = this._lastPowerWatts;
+      this._lastPowerTime      = now;
+    }
+  }
+
+  async _onDeleted() {
+    clearTimeout(this._faultAlarmTimer);
+  }
+
+  // ── Power-scale helper ───────────────────────────────────────────────────────
+
   _getPowerScale() {
     const s = this.getSetting('power_scale');
     if (s === '1')   return 1;
@@ -84,129 +124,7 @@ class SmartPlugDevice extends Homey.Device {
     return this._detectedPowerScale || 0.1;
   }
 
-  // Capability migrations across app versions.
-  async _migrateCapabilities() {
-    // relay_status was a capability tile in ≤ v1.0.14 — now it lives in device settings.
-    if (this.hasCapability('relay_status')) {
-      await this.removeCapability('relay_status').catch(() => {});
-      this.log('Migrated: relay_status capability removed (now a device setting)');
-    }
-  }
-
-  async _syncOptionalCapabilities() {
-    const optionals = [
-      { setting: 'dp_fault',        capability: 'alarm_generic' },
-      { setting: 'dp_power_factor', capability: 'power_factor'  },
-    ];
-
-    for (const { setting, capability } of optionals) {
-      const dp = this.getSetting(setting);
-      if (dp > 0) {
-        if (!this.hasCapability(capability))
-          await this.addCapability(capability).catch(() => {});
-      } else {
-        if (this.hasCapability(capability))
-          await this.removeCapability(capability).catch(() => {});
-      }
-    }
-  }
-
-  _writeDpSnapshot() {
-    try {
-      const snapshot = this.homey.settings.get('dp_snapshot') || {};
-      snapshot[this.getData().id] = {
-        name:      this.getName(),
-        dps:       { ...this._lastDps },
-        rawMeta:   this._lastRawMeta,
-        updatedAt: Date.now(),
-      };
-      this.homey.settings.set('dp_snapshot', snapshot);
-    } catch (e) {}
-  }
-
-  _appLog(message, level = 'info') {
-    this.log(message);
-    try { this.homey.app.addLog(this.getName(), message, level); } catch (e) {}
-  }
-
-  async _connect() {
-    if (this._connecting) {
-      this._appLog('Connection already in progress — skipping duplicate call', 'warn');
-      return;
-    }
-    this._connecting = true;
-    try {
-      await this._connectInner();
-    } finally {
-      this._connecting = false;
-    }
-  }
-
-  async _connectInner() {
-    if (this._conn) {
-      this._conn.removeAllListeners();
-      this._conn.disconnect();
-      this._conn = null;
-    }
-
-    const { ip, device_id, local_key, version } = this.getSettings();
-    if (!ip || !device_id || !local_key) {
-      this.setUnavailable(this.homey.__('errors.missing_settings')).catch(() => {});
-      return;
-    }
-
-    this._conn = new TuyaConnection({ id: device_id, key: local_key, ip, version });
-
-    this._conn.on('connected', () => {
-      this._appLog('Connected', 'info');
-      this._lastDataTime = Date.now();
-      // Clear dedup cache so the first data packet after (re)connect always
-      // writes fresh capability values and refreshes Homey's "last updated" timestamp.
-      this._lastDps = {};
-      // Reset power-integration baseline — avoids a giant energy spike if the
-      // device was offline for an extended period.
-      this._lastPowerTime      = null;
-      this._prevTickPowerWatts = 0;
-      // Grace period: Tuya devices reconnect roughly every hour and can send a
-      // transient fault = true as initial state. Extend the alarm debounce to 30 s
-      // so the correcting false has time to arrive before we fire a notification.
-      this._justReconnected = true;
-      setTimeout(() => { this._justReconnected = false; }, 30000);
-      this.setAvailable().catch(() => {});
-      this._triggerDeviceConnected.trigger(this).catch(() => {});
-      this._updateStatusSettings('Connected');
-      // Initial full state fetch after a short settle delay.
-      setTimeout(() => this._conn?.get().catch(() => {}), 500);
-      this._startPolling();
-    });
-
-    this._conn.on('disconnected', (reason) => {
-      this._appLog(reason ? `Disconnected: ${reason}` : 'Disconnected', 'warn');
-      this._stopPolling();
-      this.setUnavailable(reason || 'Device disconnected').catch(() => {});
-      this._triggerDeviceDisconnected.trigger(this).catch(() => {});
-      this._updateStatusSettings('Disconnected');
-    });
-
-    this._conn.on('data', (dps, raw) => {
-      this._lastDataTime = Date.now();
-      this._updateLastSeen();
-      if (raw) {
-        this._lastRawMeta = {
-          devId: raw.devId  ?? null,
-          t:     raw.t      ?? null,
-          cid:   raw.cid    ?? null,
-          uid:   raw.uid    ?? null,
-        };
-      }
-      this.log('Raw DPS received:', JSON.stringify(dps));
-      this._handleDps(dps).catch((err) => this.log('Error handling DPS:', err.message));
-    });
-
-    this._conn.on('log', ({ message, level }) => this._appLog(message, level));
-
-    await this._conn.connect();
-  }
+  // ── DPS handling ─────────────────────────────────────────────────────────────
 
   async _handleDps(dps) {
     const settings = this.getSettings();
@@ -273,7 +191,7 @@ class SmartPlugDevice extends Homey.Device {
 
         // Keep the latest wattage so the poll-timer energy integrator can use it.
         // Anchor _lastPowerTime on the first reading so the integrator knows when
-        // to start; subsequent time-stepping is handled entirely in _startPolling.
+        // to start; subsequent time-stepping is handled entirely in _onPollTick.
         this._lastPowerWatts = watts;
         if (this._lastPowerTime === null) this._lastPowerTime = Date.now();
 
@@ -311,87 +229,14 @@ class SmartPlugDevice extends Homey.Device {
       }
     }
 
-    // Persist updated DPS snapshot so _lastDps survives an app restart.
+    // Debounced persistence — avoids hammering storage on every DPS packet.
     if (changed) {
-      this.setStoreValue('lastDps', this._lastDps).catch(() => {});
+      this._scheduleStoreSave();
       this._writeDpSnapshot();
     }
   }
 
-  _updateLastSeen() {
-    const lastSeen = new Date().toLocaleString(this.homey.i18n.getLanguage(), {
-      dateStyle: 'short',
-      timeStyle: 'medium',
-      timeZone:  this.homey.clock.getTimezone(),
-    });
-    this.setSettings({ last_seen: lastSeen }).catch(() => {});
-  }
-
-  _updateStatusSettings(status) {
-    this._updateLastSeen();
-    this.setSettings({ connection_status: status }).catch(() => {});
-  }
-
-  // ── Polling ────────────────────────────────────────────────────────────────
-
-  _startPolling() {
-    this._stopPolling();
-    const intervalSec = this.getSetting('polling_interval') ?? 30;
-    if (!intervalSec || intervalSec <= 0) return;
-    this.log(`Polling every ${intervalSec}s`);
-
-    const intervalMs = intervalSec * 1000;
-    this._pollTimer  = setInterval(async () => {
-      // ── Energy integration (trapezoidal) ──────────────────────────────────
-      // Runs every tick so stable power (unchanged DP value, blocked by dedup)
-      // still accumulates correctly.  Only active when dp_energy = 0 (disabled).
-      // Trapezoidal formula: (P_prev + P_curr) / 2 × elapsed — averages the
-      // power at the start and end of each interval, smoothing load spikes.
-      if (this.getSetting('dp_energy') <= 0 && this._lastPowerTime !== null) {
-        const now      = Date.now();
-        const elapsedH = (now - this._lastPowerTime) / 3_600_000;
-        // Cap at 2× poll interval — guards against a spike after a long outage.
-        if (elapsedH > 0 && elapsedH < (intervalSec * 2) / 3600) {
-          const avgWatts = (this._prevTickPowerWatts + this._lastPowerWatts) / 2;
-          // Guard against negative readings from a misbehaving device.
-          if (avgWatts > 0) this._energyAccum += (avgWatts * elapsedH) / 1000;
-          this.setStoreValue('energyAccum', this._energyAccum).catch(() => {});
-          this.setCapabilityValue('meter_power',
-            Math.round(this._energyAccum * 1000) / 1000).catch(() => {});
-        }
-        this._prevTickPowerWatts = this._lastPowerWatts;
-        this._lastPowerTime      = now;
-      }
-      // ──────────────────────────────────────────────────────────────────────
-
-      // If connected but no data received for 3× the poll interval, force reconnect.
-      if (this._conn?.connected && this._lastDataTime
-          && Date.now() - this._lastDataTime > intervalMs * 3) {
-        this._appLog('No data received for extended period — reconnecting', 'warn');
-        await this._connect();
-        return;
-      }
-      this._conn?.get().catch((err) => this.log('Poll failed:', err.message));
-    }, intervalMs);
-  }
-
-  _stopPolling() {
-    if (this._pollTimer) {
-      clearInterval(this._pollTimer);
-      this._pollTimer = null;
-    }
-  }
-
-  // Public – called by the "plug_refresh_device" flow action.
-  async pollNow() {
-    await this._conn?.get();
-  }
-
-  // Public – called by the "plug_force_reconnect" flow action.
-  async forceReconnect() {
-    this._appLog('Force reconnect requested', 'info');
-    await this._connect();
-  }
+  // ── Public actions ───────────────────────────────────────────────────────────
 
   // Public – called by the "plug_reset_energy" flow action.
   async resetEnergy() {
@@ -411,7 +256,7 @@ class SmartPlugDevice extends Homey.Device {
     await this._conn?.set(dp, Math.round(seconds));
   }
 
-  // ── Homey lifecycle ────────────────────────────────────────────────────────
+  // ── Homey lifecycle ──────────────────────────────────────────────────────────
 
   async onSettings({ changedKeys }) {
     const connectionKeys = ['ip', 'device_id', 'local_key', 'version'];
@@ -425,7 +270,10 @@ class SmartPlugDevice extends Homey.Device {
       this._startPolling();
     }
     if (changedKeys.some((k) => ['dp_fault', 'dp_power_factor'].includes(k))) {
-      await this._syncOptionalCapabilities();
+      await this._syncOptionalCapabilities([
+        { setting: 'dp_fault',        capability: 'alarm_generic' },
+        { setting: 'dp_power_factor', capability: 'power_factor'  },
+      ]);
     }
     // User changed the Turn On Behavior dropdown → send command to device immediately.
     if (changedKeys.includes('relay_status')) {
@@ -437,17 +285,6 @@ class SmartPlugDevice extends Homey.Device {
         this._appLog('Turn On Behavior changed but dp_relay_status = 0 — no command sent. Set the DP number first.', 'warn');
       }
     }
-  }
-
-  async onDeleted() {
-    this._stopPolling();
-    clearTimeout(this._faultAlarmTimer);
-    if (this._conn) {
-      this._conn.removeAllListeners();
-      this._conn.disconnect();
-      this._conn = null;
-    }
-    this.log('Device deleted');
   }
 }
 

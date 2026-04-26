@@ -1,7 +1,6 @@
 'use strict';
 
-const Homey          = require('homey');
-const TuyaConnection = require('../../lib/TuyaConnection');
+const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 
 // Capabilities that are boolean in nature — used in _dpToCap to coerce to boolean
 const BOOLEAN_CAPS = new Set([
@@ -11,28 +10,17 @@ const BOOLEAN_CAPS = new Set([
 ]);
 const GENERIC_SWITCH_RE = /^generic_switch_\d+$/;
 
-class GenericDevice extends Homey.Device {
+class GenericDevice extends BaseTuyaDevice {
   async onInit() {
     this.log('GenericDevice initialized:', this.getName());
 
-    this._conn            = null;
-    this._pollTimer       = null;
-    this._lastDps         = {};
-    this._lastRawMeta     = null;
-    this._lastDataTime    = null;
+    await this._baseInit();
+
+    // Driver-specific state
     this._debounceTimers  = new Map(); // keyed by capability id — cleared on each _registerListeners()
-    this._connecting      = false;     // guard against simultaneous _connect() calls
+    this._mappingsCache   = null;      // parsed dp_config — invalidated on settings change (#3)
 
-    // Restore last known DPS from store — prevents redundant updates on first poll
-    try {
-      const stored = this.getStoreValue('lastDps');
-      if (stored && typeof stored === 'object') {
-        this._lastDps = stored;
-        this._writeDpSnapshot();
-      }
-    } catch (e) {}
-
-    await this._migrateCapabilities();
+    await this._migrateCapabilities([]);
     await this._syncCapabilities();
 
     // ── Flow trigger cards ───────────────────────────────────────────────────
@@ -45,16 +33,34 @@ class GenericDevice extends Homey.Device {
     await this._connect();
   }
 
+  // ── Hook overrides ───────────────────────────────────────────────────────────
+
+  async _onDeleted() {
+    for (const timer of this._debounceTimers.values()) clearTimeout(timer);
+    this._debounceTimers.clear();
+  }
+
   // ── DP config helpers ──────────────────────────────────────────────────────
 
+  /**
+   * Returns the parsed dp_config array. Caches the result so JSON.parse is
+   * not called on every incoming DPS packet. Cache is invalidated in onSettings
+   * whenever dp_config changes.
+   */
   _getMappings() {
+    if (this._mappingsCache !== null) return this._mappingsCache;
+
     try {
       const raw = this.getSetting('dp_config');
-      if (!raw || raw.trim() === '') return [];
+      if (!raw || raw.trim() === '') {
+        this._mappingsCache = [];
+        return this._mappingsCache;
+      }
       const arr = JSON.parse(raw);
       if (!Array.isArray(arr)) {
         this._appLog('dp_config is not a JSON array — ignoring', 'warn');
-        return [];
+        this._mappingsCache = [];
+        return this._mappingsCache;
       }
       // Validate each entry: must have a positive integer dp and a non-empty cap string.
       const valid = [];
@@ -69,16 +75,23 @@ class GenericDevice extends Homey.Device {
         }
         valid.push(entry);
       }
-      return valid;
+      this._mappingsCache = valid;
     } catch (e) {
       this._appLog(`dp_config JSON parse failed: ${e.message}`, 'warn');
-      return [];
+      this._mappingsCache = [];
     }
+
+    return this._mappingsCache;
+  }
+
+  /** Force re-parse on next _getMappings() call. */
+  _invalidateMappingsCache() {
+    this._mappingsCache = null;
   }
 
   async _syncCapabilities() {
-    const mappings = this._getMappings();
-    const mappedCaps = new Set(mappings.map((m) => m.cap));
+    const mappings    = this._getMappings();
+    const mappedCaps  = new Set(mappings.map((m) => m.cap));
 
     // Add capabilities that are in the mapping but not yet on the device
     for (const mapping of mappings) {
@@ -127,13 +140,16 @@ class GenericDevice extends Homey.Device {
       opts.step = mapping.step;
     }
 
-    // Build enum values from options CSV
+    // Build enum values from options CSV, with optional display labels.
     if (mapping.options && typeof mapping.options === 'string') {
-      const vals = mapping.options.split(',').map((v) => v.trim()).filter(Boolean);
+      const vals   = mapping.options.split(',').map((v) => v.trim()).filter(Boolean);
+      const labels = mapping.labels
+        ? mapping.labels.split(',').map((l) => l.trim())
+        : [];
       if (vals.length > 0) {
-        opts.values = vals.map((v) => ({
-          id: v,
-          title: { en: v, de: v },
+        opts.values = vals.map((v, i) => ({
+          id:    v,
+          title: { en: labels[i] || v, de: labels[i] || v },
         }));
       }
     }
@@ -144,20 +160,6 @@ class GenericDevice extends Homey.Device {
       await this.setCapabilityOptions(mapping.cap, opts);
     } catch (err) {
       this.log(`setCapabilityOptions(${mapping.cap}) failed: ${err.message}`);
-    }
-  }
-
-  // Placeholder for capability renames across app versions.
-  async _migrateCapabilities() {
-    const migrations = [
-      // { from: 'old_capability_id', to: 'new_capability_id' }
-    ];
-    for (const { from, to } of migrations) {
-      if (this.hasCapability(from) && !this.hasCapability(to)) {
-        await this.addCapability(to).catch(() => {});
-        await this.removeCapability(from).catch(() => {});
-        this.log(`Migrated capability: ${from} → ${to}`);
-      }
     }
   }
 
@@ -267,7 +269,7 @@ class GenericDevice extends Homey.Device {
       this._lastDps[dpStr] = rawValue;
       changed = true;
 
-      const dpNum  = parseInt(dpStr, 10);
+      const dpNum   = parseInt(dpStr, 10);
       const mapping = mappings.find((m) => m.dp === dpNum);
 
       // Always trigger dp_changed flow card
@@ -288,153 +290,11 @@ class GenericDevice extends Homey.Device {
       });
     }
 
+    // Debounced persistence — avoids hammering storage on every DPS packet.
     if (changed) {
-      this.setStoreValue('lastDps', this._lastDps).catch(() => {});
+      this._scheduleStoreSave();
       this._writeDpSnapshot();
     }
-  }
-
-  // ── Connection ─────────────────────────────────────────────────────────────
-
-  async _connect() {
-    if (this._connecting) {
-      this._appLog('Connection already in progress — skipping duplicate call', 'warn');
-      return;
-    }
-    this._connecting = true;
-    try {
-      await this._connectInner();
-    } finally {
-      this._connecting = false;
-    }
-  }
-
-  async _connectInner() {
-    if (this._conn) {
-      this._conn.removeAllListeners();
-      this._conn.disconnect();
-      this._conn = null;
-    }
-
-    const { ip, device_id, local_key, version } = this.getSettings();
-    if (!ip || !device_id || !local_key) {
-      this.setUnavailable(this.homey.__('errors.missing_settings') || 'Missing settings').catch(() => {});
-      return;
-    }
-
-    this._conn = new TuyaConnection({ id: device_id, key: local_key, ip, version });
-
-    this._conn.on('connected', () => {
-      this._appLog('Connected', 'info');
-      this._lastDataTime = Date.now();
-      // Clear dedup cache so the first data packet after (re)connect always
-      // writes fresh capability values and refreshes Homey's "last updated" timestamp.
-      this._lastDps = {};
-      this.setAvailable().catch(() => {});
-      this._triggerDeviceConnected.trigger(this).catch(() => {});
-      this._updateStatusSettings('Connected');
-      setTimeout(() => this._conn?.get().catch(() => {}), 500);
-      this._startPolling();
-    });
-
-    this._conn.on('disconnected', (reason) => {
-      this._appLog(reason ? `Disconnected: ${reason}` : 'Disconnected', 'warn');
-      this._stopPolling();
-      this.setUnavailable(reason || 'Device disconnected').catch(() => {});
-      this._triggerDeviceDisconnected.trigger(this).catch(() => {});
-      this._updateStatusSettings('Disconnected');
-    });
-
-    this._conn.on('data', (dps, raw) => {
-      this._lastDataTime = Date.now();
-      this._updateLastSeen();
-      if (raw) {
-        this._lastRawMeta = {
-          devId: raw.devId ?? null,
-          t:     raw.t     ?? null,
-          cid:   raw.cid   ?? null,
-          uid:   raw.uid   ?? null,
-        };
-      }
-      this.log('Raw DPS received:', JSON.stringify(dps));
-      this._handleDps(dps).catch((err) => this.log('Error handling DPS:', err.message));
-    });
-
-    this._conn.on('log', ({ message, level }) => this._appLog(message, level));
-
-    await this._conn.connect();
-  }
-
-  // ── Polling ────────────────────────────────────────────────────────────────
-
-  _startPolling() {
-    this._stopPolling();
-    const intervalSec = this.getSetting('polling_interval') ?? 30;
-    if (!intervalSec || intervalSec <= 0) return;
-    this.log(`Polling every ${intervalSec}s`);
-
-    const intervalMs = intervalSec * 1000;
-    this._pollTimer  = setInterval(async () => {
-      if (this._conn?.connected && this._lastDataTime
-          && Date.now() - this._lastDataTime > intervalMs * 3) {
-        this._appLog('No data received for extended period — reconnecting', 'warn');
-        await this._connect();
-        return;
-      }
-      this._conn?.get().catch((err) => this.log('Poll failed:', err.message));
-    }, intervalMs);
-  }
-
-  _stopPolling() {
-    if (this._pollTimer) {
-      clearInterval(this._pollTimer);
-      this._pollTimer = null;
-    }
-  }
-
-  // Public – called by the "generic_refresh_device" flow action
-  async pollNow() {
-    await this._conn?.get();
-  }
-
-  // Public – called by the "generic_force_reconnect" flow action
-  async forceReconnect() {
-    this._appLog('Force reconnect requested', 'info');
-    await this._connect();
-  }
-
-  // ── Utilities ──────────────────────────────────────────────────────────────
-
-  _writeDpSnapshot() {
-    try {
-      const snapshot = this.homey.settings.get('dp_snapshot') || {};
-      snapshot[this.getData().id] = {
-        name:      this.getName(),
-        dps:       { ...this._lastDps },
-        rawMeta:   this._lastRawMeta,
-        updatedAt: Date.now(),
-      };
-      this.homey.settings.set('dp_snapshot', snapshot);
-    } catch (e) {}
-  }
-
-  _appLog(message, level = 'info') {
-    this.log(message);
-    try { this.homey.app.addLog(this.getName(), message, level); } catch (e) {}
-  }
-
-  _updateLastSeen() {
-    const lastSeen = new Date().toLocaleString(this.homey.i18n.getLanguage(), {
-      dateStyle: 'short',
-      timeStyle: 'medium',
-      timeZone:  this.homey.clock.getTimezone(),
-    });
-    this.setSettings({ last_seen: lastSeen }).catch(() => {});
-  }
-
-  _updateStatusSettings(status) {
-    this._updateLastSeen();
-    this.setSettings({ connection_status: status }).catch(() => {});
   }
 
   // ── Homey lifecycle ────────────────────────────────────────────────────────
@@ -452,21 +312,10 @@ class GenericDevice extends Homey.Device {
     }
     if (changedKeys.includes('dp_config')) {
       this.log('DP config changed, syncing capabilities and listeners');
+      this._invalidateMappingsCache();
       await this._syncCapabilities();
       this._registerListeners();
     }
-  }
-
-  async onDeleted() {
-    this._stopPolling();
-    for (const timer of this._debounceTimers.values()) clearTimeout(timer);
-    this._debounceTimers.clear();
-    if (this._conn) {
-      this._conn.removeAllListeners();
-      this._conn.disconnect();
-      this._conn = null;
-    }
-    this.log('Device deleted');
   }
 }
 

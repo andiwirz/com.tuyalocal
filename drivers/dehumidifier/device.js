@@ -1,7 +1,6 @@
 'use strict';
 
-const Homey          = require('homey');
-const TuyaConnection = require('../../lib/TuyaConnection');
+const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 
 const DEBOUNCE_MS = 300; // debounce delay for slider capabilities
 
@@ -9,45 +8,44 @@ const DEBOUNCE_MS = 300; // debounce delay for slider capabilities
 // settable: false = read-only, no capability listener registered.
 // debounce: true  = delay physical command to avoid rapid-fire sends (e.g. sliders).
 const DP_PROFILE = [
-  { settingKey: 'dp_onoff',            capability: 'onoff',            transform: (v) => Boolean(v),  settable: true              },
-  { settingKey: 'dp_current_humidity', capability: 'measure_humidity', transform: (v) => Number(v),   settable: false             },
-  { settingKey: 'dp_target_humidity',  capability: 'target_humidity',  transform: (v) => Number(v),   settable: true, debounce: true },
-  { settingKey: 'dp_fan_speed',        capability: 'fan_speed',        transform: (v) => String(v),   settable: true              },
-  { settingKey: 'dp_mode',             capability: 'mode',             transform: (v) => String(v),   settable: true              },
-  { settingKey: 'dp_countdown_left',   capability: 'countdown_left',   transform: (v) => Number(v),   settable: false             },
-  { settingKey: 'dp_countdown_timer',  capability: 'countdown_timer',  transform: (v) => String(v),   settable: true              },
-  { settingKey: 'dp_child_lock',       capability: 'child_lock',       transform: (v) => Boolean(v),  settable: true              },
-  { settingKey: 'dp_water_full',       capability: 'alarm_water',      transform: (v) => Boolean(v),  settable: false             },
-  { settingKey: 'dp_temperature',      capability: 'measure_temperature', transform: (v) => Number(v) / 10, settable: false            },
-  { settingKey: 'dp_anion',            capability: 'anion',               transform: (v) => Boolean(v),     settable: true             },
+  { settingKey: 'dp_onoff',            capability: 'onoff',               transform: (v) => Boolean(v),     settable: true               },
+  { settingKey: 'dp_current_humidity', capability: 'measure_humidity',    transform: (v) => Number(v),      settable: false              },
+  { settingKey: 'dp_target_humidity',  capability: 'target_humidity',     transform: (v) => Number(v),      settable: true, debounce: true },
+  { settingKey: 'dp_fan_speed',        capability: 'fan_speed',           transform: (v) => String(v),      settable: true               },
+  { settingKey: 'dp_mode',             capability: 'mode',                transform: (v) => String(v),      settable: true               },
+  { settingKey: 'dp_countdown_left',   capability: 'countdown_left',      transform: (v) => Number(v),      settable: false              },
+  { settingKey: 'dp_countdown_timer',  capability: 'countdown_timer',     transform: (v) => String(v),      settable: true               },
+  { settingKey: 'dp_child_lock',       capability: 'child_lock',          transform: (v) => Boolean(v),     settable: true               },
+  { settingKey: 'dp_water_full',       capability: 'alarm_water',         transform: (v) => Boolean(v),     settable: false              },
+  { settingKey: 'dp_temperature',      capability: 'measure_temperature', transform: (v) => Number(v) / 10, settable: false              },
+  { settingKey: 'dp_anion',            capability: 'anion',               transform: (v) => Boolean(v),     settable: true               },
 ];
 
-class DehumidifierDevice extends Homey.Device {
+const OPTIONAL_CAPABILITIES = [
+  { setting: 'dp_temperature',     capability: 'measure_temperature' },
+  { setting: 'dp_anion',           capability: 'anion'               },
+  { setting: 'dp_child_lock',      capability: 'child_lock'          },
+  { setting: 'dp_countdown_timer', capability: 'countdown_timer'     },
+  { setting: 'dp_countdown_left',  capability: 'countdown_left'      },
+  { setting: 'dp_water_full',      capability: 'alarm_water'         },
+];
+
+class DehumidifierDevice extends BaseTuyaDevice {
   async onInit() {
     this.log('Device initialized:', this.getName());
 
-    this._conn                = null;
-    this._pollTimer           = null;
-    this._lastDps             = {};
-    this._lastRawMeta         = null;
-    this._lastDataTime        = null;
+    await this._baseInit();
+
+    // Driver-specific state
     this._waterAlarmTimer     = null;  // debounce: prevents spurious reconnect triggers
     this._waterAlarmConfirmed = false; // true only after alarm stayed true for debounce period
     this._connectedAt         = null;  // timestamp of last successful connect — used for grace period
-    this._connecting          = false; // guard against simultaneous _connect() calls
+    this._alarmFalseSince     = null;  // when alarm_water last transitioned to false
 
-    // Restore last known DPS from store — prevents redundant updates on first poll.
-    try {
-      const stored = this.getStoreValue('lastDps');
-      if (stored && typeof stored === 'object') {
-        this._lastDps = stored;
-        this._writeDpSnapshot();
-      }
-    } catch (e) {}
-
-    await this._migrateCapabilities();
-    await this._syncOptionalCapabilities();
-    await this._syncEnumCapabilities();
+    await this._migrateCapabilities([]);
+    await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
+    await this._syncEnumOptions('mode',      this.getSetting('mode_values'));
+    await this._syncEnumOptions('fan_speed', this.getSetting('fan_speed_values'));
 
     // ── Flow trigger cards ───────────────────────────────────────────────────
     // RunListeners for humidity_above/below are registered once in driver.js onInit.
@@ -85,182 +83,30 @@ class DehumidifierDevice extends Homey.Device {
     await this._connect();
   }
 
-  async _syncEnumCapabilities() {
-    const capitalize = (v) => v.charAt(0).toUpperCase() + v.slice(1).replace(/_/g, ' ');
-    const toOptions  = (csv) =>
-      (csv || '').split(',').map((v) => v.trim()).filter(Boolean)
-        .map((v) => ({ id: v, title: { en: capitalize(v), de: capitalize(v) } }));
+  // ── Hook overrides ───────────────────────────────────────────────────────────
 
-    const apply = async (capabilityId, csv) => {
-      if (!this.hasCapability(capabilityId)) return;
-      const opts = toOptions(csv);
-      if (opts.length === 0) return;
-
-      // If the capability's current value is not in the new option list, Homey will
-      // reject the call. Skip and warn rather than silently fail.
-      const currentValue = this.getCapabilityValue(capabilityId);
-      if (currentValue !== null && currentValue !== undefined
-          && !opts.some((o) => o.id === currentValue)) {
-        this._appLog(
-          `${capabilityId}: cannot restrict options to [${opts.map((o) => o.id).join(', ')}] — ` +
-          `current value "${currentValue}" is not in that list. ` +
-          `Update the device to a supported value first, or include "${currentValue}" in the setting.`,
-          'warn',
-        );
-        return;
-      }
-
-      try {
-        await this.setCapabilityOptions(capabilityId, { values: opts });
-        this._appLog(`${capabilityId} options → ${opts.map((o) => o.id).join(', ')}`, 'info');
-      } catch (err) {
-        // Homey rejects values not in the app.json superset — log clearly so the user can debug
-        this._appLog(
-          `setCapabilityOptions(${capabilityId}) failed: ${err.message}. ` +
-          `Attempted values: [${opts.map((o) => o.id).join(', ')}]. ` +
-          `Each value must exist in the capability's superset defined in app.json.`,
-          'warn',
-        );
-      }
-    };
-
-    await apply('mode',      this.getSetting('mode_values'));
-    await apply('fan_speed', this.getSetting('fan_speed_values'));
-  }
-
-  async _syncOptionalCapabilities() {
-    const optionals = [
-      { setting: 'dp_temperature',     capability: 'measure_temperature' },
-      { setting: 'dp_anion',           capability: 'anion'               },
-      { setting: 'dp_child_lock',      capability: 'child_lock'          },
-      { setting: 'dp_countdown_timer', capability: 'countdown_timer'     },
-      { setting: 'dp_countdown_left',  capability: 'countdown_left'      },
-      { setting: 'dp_water_full',      capability: 'alarm_water'         },
-    ];
-
-    for (const { setting, capability } of optionals) {
-      const dp = this.getSetting(setting);
-      if (dp > 0) {
-        if (!this.hasCapability(capability))
-          await this.addCapability(capability).catch(() => {});
-      } else {
-        if (this.hasCapability(capability))
-          await this.removeCapability(capability).catch(() => {});
-      }
+  /** Reset alarm state on (re)connect. */
+  _onConnected() {
+    this._connectedAt = Date.now();
+    // Clear any pending alarm timer from the previous connection cycle.
+    clearTimeout(this._waterAlarmTimer);
+    this._waterAlarmTimer     = null;
+    this._waterAlarmConfirmed = false;
+    // If alarm was not active before reconnect, start the suppression window now.
+    // This prevents the GET-response artifact (device sends true right after connect)
+    // from immediately re-arming the debounce timer.
+    if (!this.getCapabilityValue('alarm_water')) {
+      this._alarmFalseSince = Date.now();
     }
+    // Note: no T+60 s scheduled GET — regular 30 s polling handles state sync,
+    // and the extra GET was bypassing dedup and re-triggering the alarm cycle.
   }
 
-  // Placeholder for future capability renames across app versions.
-  async _migrateCapabilities() {
-    const migrations = [
-      // { from: 'old_capability_id', to: 'new_capability_id' }
-    ];
-    for (const { from, to } of migrations) {
-      if (this.hasCapability(from) && !this.hasCapability(to)) {
-        await this.addCapability(to).catch(() => {});
-        await this.removeCapability(from).catch(() => {});
-        this.log(`Migrated capability: ${from} → ${to}`);
-      }
-    }
+  async _onDeleted() {
+    clearTimeout(this._waterAlarmTimer);
   }
 
-  _writeDpSnapshot() {
-    try {
-      const snapshot = this.homey.settings.get('dp_snapshot') || {};
-      snapshot[this.getData().id] = {
-        name:      this.getName(),
-        dps:       { ...this._lastDps },
-        rawMeta:   this._lastRawMeta,
-        updatedAt: Date.now(),
-      };
-      this.homey.settings.set('dp_snapshot', snapshot);
-    } catch (e) {}
-  }
-
-  _appLog(message, level = 'info') {
-    this.log(message);
-    try { this.homey.app.addLog(this.getName(), message, level); } catch (e) {}
-  }
-
-  async _connect() {
-    if (this._connecting) {
-      this._appLog('Connection already in progress — skipping duplicate call', 'warn');
-      return;
-    }
-    this._connecting = true;
-    try {
-      await this._connectInner();
-    } finally {
-      this._connecting = false;
-    }
-  }
-
-  async _connectInner() {
-    if (this._conn) {
-      this._conn.removeAllListeners();
-      this._conn.disconnect();
-      this._conn = null;
-    }
-
-    const { ip, device_id, local_key, version } = this.getSettings();
-    if (!ip || !device_id || !local_key) {
-      this.setUnavailable(this.homey.__('errors.missing_settings')).catch(() => {});
-      return;
-    }
-
-    this._conn = new TuyaConnection({ id: device_id, key: local_key, ip, version });
-
-    this._conn.on('connected', () => {
-      this._appLog('Connected', 'info');
-      this._lastDataTime = Date.now();
-      this._connectedAt  = Date.now();
-      // Clear dedup cache so the first data packet after (re)connect always
-      // writes fresh capability values and refreshes Homey's "last updated" timestamp.
-      this._lastDps = {};
-      // Clear any pending alarm timer from the previous connection cycle.
-      // A stale timer could fire after reconnect and see the artifact 'true'
-      // as a genuine alarm.
-      clearTimeout(this._waterAlarmTimer);
-      this._waterAlarmTimer     = null;
-      this._waterAlarmConfirmed = false;
-      this.setAvailable().catch(() => {});
-      this._triggerDeviceConnected.trigger(this).catch(() => {});
-      this._updateStatusSettings('Connected');
-      // Initial full state fetch after a short settle delay.
-      setTimeout(() => this._conn?.get().catch(() => {}), 500);
-      // Force a second GET at T+60 s to pull the definitive alarm state in case
-      // the correcting false never arrives as a pushed update.
-      setTimeout(() => this._conn?.get().catch(() => {}), 60000);
-      this._startPolling();
-    });
-
-    this._conn.on('disconnected', (reason) => {
-      this._appLog(reason ? `Disconnected: ${reason}` : 'Disconnected', 'warn');
-      this._stopPolling();
-      this.setUnavailable(reason || 'Device disconnected').catch(() => {});
-      this._triggerDeviceDisconnected.trigger(this).catch(() => {});
-      this._updateStatusSettings('Disconnected');
-    });
-
-    this._conn.on('data', (dps, raw) => {
-      this._lastDataTime = Date.now();
-      this._updateLastSeen();
-      if (raw) {
-        this._lastRawMeta = {
-          devId: raw.devId  ?? null,
-          t:     raw.t      ?? null,
-          cid:   raw.cid    ?? null,
-          uid:   raw.uid    ?? null,
-        };
-      }
-      this.log('Raw DPS received:', JSON.stringify(dps));
-      this._handleDps(dps).catch((err) => this.log('Error handling DPS:', err.message));
-    });
-
-    this._conn.on('log', ({ message, level }) => this._appLog(message, level));
-
-    await this._conn.connect();
-  }
+  // ── DPS handling ─────────────────────────────────────────────────────────────
 
   async _handleDps(dps) {
     const settings = this.getSettings();
@@ -305,29 +151,37 @@ class DehumidifierDevice extends Homey.Device {
         await this.setCapabilityValue('alarm_water', converted).catch(() => {});
 
         if (!prevWater && converted) {
-          // Debounce: Tuya devices send alarm_water = true as a reconnect artifact,
-          // followed by a correcting false — but the false can take many seconds
-          // (device-dependent, sometimes > 30 s).
-          //
-          // Strategy: compute how much of the 90 s grace window remains from the
-          // last connect. The debounce covers the rest of that window + 5 s.
-          // This means:
-          //   - Artifact at T+2 s  → debounce 93 s (timer fires at T+95 s)
-          //   - Artifact at T+85 s → debounce  10 s (timer fires at T+95 s)
-          //   - Genuine alarm at T+120 s → debounce 5 s (normal behaviour)
-          // The correcting false cancels the timer whenever it arrives.
-          const GRACE_MS   = 90_000;
-          const elapsed    = this._connectedAt ? Date.now() - this._connectedAt : GRACE_MS;
-          const remaining  = Math.max(0, GRACE_MS - elapsed);
-          const debounceMs = remaining + 5_000;
-
-          if (remaining > 0) {
+          // ── Oscillation guard ────────────────────────────────────────────────
+          // Some devices cycle alarm_water true/false every few minutes even when
+          // the tank is not actually full (firmware bug).  Require the alarm to
+          // have been continuously false for at least MIN_FALSE_MS before we even
+          // start the confirmation debounce.  If the device oscillates faster than
+          // this window, the alarm is permanently suppressed — exactly what we want.
+          const MIN_FALSE_MS = 5 * 60 * 1000; // 5 minutes
+          const now          = Date.now();
+          if (this._alarmFalseSince !== null && now - this._alarmFalseSince < MIN_FALSE_MS) {
             this._appLog(
-              `alarm_water: true received ${Math.round(elapsed / 1000)} s after connect — ` +
-              `applying ${Math.round(debounceMs / 1000)} s debounce (reconnect grace period)`,
+              `alarm_water: suppressed — was false for only ` +
+              `${Math.round((now - this._alarmFalseSince) / 1000)} s (< ${MIN_FALSE_MS / 60000} min)`,
               'info',
             );
+            continue;
           }
+
+          // ── Confirmation debounce ────────────────────────────────────────────
+          // Alarm must stay true continuously for MIN_CONFIRM_MS before we fire.
+          // This absorbs both reconnect artifacts (short true burst on connect) and
+          // firmware bounces (true→false→true within seconds).
+          const MIN_CONFIRM_MS = 2 * 60 * 1000; // 2 minutes minimum, always
+          const GRACE_MS       = 90_000;
+          const elapsed        = this._connectedAt ? now - this._connectedAt : GRACE_MS;
+          const remaining      = Math.max(0, GRACE_MS - elapsed);
+          const debounceMs     = Math.max(MIN_CONFIRM_MS, remaining + 5_000);
+
+          this._appLog(
+            `alarm_water: true — waiting ${Math.round(debounceMs / 1000)} s for confirmation`,
+            'info',
+          );
 
           clearTimeout(this._waterAlarmTimer);
           this._waterAlarmConfirmed = false;
@@ -344,6 +198,7 @@ class DehumidifierDevice extends Homey.Device {
 
         if (prevWater && !converted) {
           clearTimeout(this._waterAlarmTimer);
+          this._alarmFalseSince = Date.now(); // restart oscillation guard window
           // Only fire "water emptied" if "water full" was genuinely confirmed,
           // so the false that follows a spurious true is silently swallowed.
           if (this._waterAlarmConfirmed) {
@@ -357,67 +212,14 @@ class DehumidifierDevice extends Homey.Device {
       await this.setCapabilityValue(entry.capability, converted).catch(() => {});
     }
 
-    // Persist updated DPS snapshot so _lastDps survives an app restart.
+    // Debounced persistence — avoids hammering storage on every DPS packet.
     if (changed) {
-      this.setStoreValue('lastDps', this._lastDps).catch(() => {});
+      this._scheduleStoreSave();
       this._writeDpSnapshot();
     }
   }
 
-  _updateLastSeen() {
-    const lastSeen = new Date().toLocaleString(this.homey.i18n.getLanguage(), {
-      dateStyle: 'short',
-      timeStyle: 'medium',
-      timeZone:  this.homey.clock.getTimezone(),
-    });
-    this.setSettings({ last_seen: lastSeen }).catch(() => {});
-  }
-
-  _updateStatusSettings(status) {
-    this._updateLastSeen();
-    this.setSettings({ connection_status: status }).catch(() => {});
-  }
-
-  // ── Polling ────────────────────────────────────────────────────────────────
-
-  _startPolling() {
-    this._stopPolling();
-    const intervalSec = this.getSetting('polling_interval') ?? 30;
-    if (!intervalSec || intervalSec <= 0) return;
-    this.log(`Polling every ${intervalSec}s`);
-
-    const intervalMs = intervalSec * 1000;
-    this._pollTimer  = setInterval(async () => {
-      // If connected but no data received for 3× the poll interval, force reconnect.
-      if (this._conn?.connected && this._lastDataTime
-          && Date.now() - this._lastDataTime > intervalMs * 3) {
-        this._appLog('No data received for extended period — reconnecting', 'warn');
-        await this._connect();
-        return;
-      }
-      this._conn?.get().catch((err) => this.log('Poll failed:', err.message));
-    }, intervalMs);
-  }
-
-  _stopPolling() {
-    if (this._pollTimer) {
-      clearInterval(this._pollTimer);
-      this._pollTimer = null;
-    }
-  }
-
-  // Public – called by the "refresh_device" flow action.
-  async pollNow() {
-    await this._conn?.get();
-  }
-
-  // Public – called by the "force_reconnect" flow action.
-  async forceReconnect() {
-    this._appLog('Force reconnect requested', 'info');
-    await this._connect();
-  }
-
-  // ── Homey lifecycle ────────────────────────────────────────────────────────
+  // ── Homey lifecycle ──────────────────────────────────────────────────────────
 
   async onSettings({ changedKeys }) {
     const connectionKeys = ['ip', 'device_id', 'local_key', 'version'];
@@ -430,26 +232,13 @@ class DehumidifierDevice extends Homey.Device {
       this.log('Polling interval changed, restarting polling');
       this._startPolling();
     }
-    if (changedKeys.some((k) => [
-      'dp_temperature', 'dp_anion', 'dp_child_lock',
-      'dp_countdown_timer', 'dp_countdown_left', 'dp_water_full',
-    ].includes(k))) {
-      await this._syncOptionalCapabilities();
+    if (changedKeys.some((k) => OPTIONAL_CAPABILITIES.map((o) => o.setting).includes(k))) {
+      await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
     }
     if (changedKeys.some((k) => ['mode_values', 'fan_speed_values'].includes(k))) {
-      await this._syncEnumCapabilities();
+      await this._syncEnumOptions('mode',      this.getSetting('mode_values'));
+      await this._syncEnumOptions('fan_speed', this.getSetting('fan_speed_values'));
     }
-  }
-
-  async onDeleted() {
-    this._stopPolling();
-    clearTimeout(this._waterAlarmTimer);
-    if (this._conn) {
-      this._conn.removeAllListeners();
-      this._conn.disconnect();
-      this._conn = null;
-    }
-    this.log('Device deleted');
   }
 }
 

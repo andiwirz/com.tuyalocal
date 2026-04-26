@@ -1,9 +1,10 @@
 {
   "device": {
     "defaultName": {
-      "dehumidifier": "Entfeuchter",
-      "smart_plug":   "Smart Plug",
-      "generic":      "Tuya-Gerät"
+      "dehumidifier":    "Entfeuchter",
+      "smart_plug":      "Smart Plug",
+      "generic":         "Tuya-Gerät",
+      "air_conditioner": "Klimaanlage"
     }
   },
   "notifications": {
@@ -63,6 +64,16 @@
       "added": "Gerät erfolgreich hinzugefügt!",
       "error": "Fehler: ",
       "deviceName": "Gerätename",
+      "ac": {
+        "sectionCore":     "— Grundfunktionen —",
+        "sectionOptional": "— Optional (0 = deaktiviert) —",
+        "targetTemp":      "Zieltemperatur",
+        "currentTemp":     "Aktuelle Temperatur",
+        "swing":           "Lamellen-Schwenkung",
+        "sleep":           "Schlafmodus",
+        "eco":             "ECO-Modus",
+        "fault":           "Fehleralarm"
+      },
       "smart_plug": {
         "switch":       "Ein / Aus",
         "power":        "Leistung (W)",

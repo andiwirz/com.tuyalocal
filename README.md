@@ -1,8 +1,8 @@
 # Tuya Local — Homey App
 
-**Version 1.0.12** · Local control of Tuya smart devices — no cloud, no internet dependency.
+**Version 1.0.18** · Local control of Tuya smart devices — no cloud, no internet dependency.
 
-All communication happens over your local network via the Tuya LAN protocol. Three built-in drivers cover the most common device types; a fully generic driver handles anything else.
+All communication happens over your local network via the Tuya LAN protocol. Four built-in drivers cover the most common device types; a fully generic driver handles anything else.
 
 ---
 
@@ -12,6 +12,7 @@ All communication happens over your local network via the Tuya LAN protocol. Thr
 |---|---|---|
 | [Dehumidifier](#dehumidifier-1) | Dehumidifiers, air dryers | Dehumidifier |
 | [Smart Plug](#smart-plug-1) | Smart plugs with energy monitoring | Socket |
+| [Air Conditioner](#air-conditioner-1) | Any Tuya local LAN air conditioner | Thermostat |
 | [Generic Tuya Device](#generic-tuya-device-1) | Any Tuya device not covered above | Other |
 
 ---
@@ -21,13 +22,14 @@ All communication happens over your local network via the Tuya LAN protocol. Thr
 - **Cloud-free** — all traffic stays on your local network
 - **Real-time push** — instant state updates without polling (polling is optional and configurable)
 - **Automatic reconnect** — exponential back-off with jitter; watchdog detects stale connections and reconnects
+- **Protocol auto-detect** — pairing and repair default to *Auto-detect*, which tries 3.3 → 3.4 → 3.1 → 3.5 in order and saves the working version automatically
 - **Network scanner** — finds Tuya devices via UDP broadcast (ports 6666 / 6667) and a full TCP subnet scan (port 6668)
 - **Auto DP detection** — on pairing, the app connects to the device, collects live data points and maps them to capabilities automatically
 - **Inline DP editor** — every DP number can be adjusted in the pairing screen before adding the device
 - **Optional capabilities** — tiles are added or removed dynamically based on your DP settings; set a DP to `0` to hide the tile
 - **Repair flow** — update IP address or Local Key at any time without re-pairing
 - **Computed energy metering** — kWh accumulated from live power readings using trapezoidal integration; persisted across restarts
-- **Push notifications** — Homey notification when the water tank is full (Dehumidifier) or a fault is detected (Smart Plug)
+- **Push notifications** — Homey notification when the water tank is full (Dehumidifier) or a fault is detected (Smart Plug / Air Conditioner)
 - **Diagnostic tools** — in-app log buffer, live DP debug panel and raw payload viewer
 - **Bilingual** — full English and German UI
 
@@ -91,12 +93,13 @@ homey app install
 ## Pairing
 
 1. Homey app → **Devices** → **+** → **Tuya Local** → choose your driver.
-2. **Scan Network** to auto-discover devices, or enter IP / Device ID / Local Key / Protocol Version manually.
-3. Click **Test & Connect** — the app connects, waits 4 seconds for live data, then shows a summary screen.
-4. Review the detected DP mapping. Adjust DP numbers directly in the table if needed.  
+2. **Scan Network** to auto-discover devices, or enter IP / Device ID / Local Key manually.
+3. Leave **Protocol Version** on **Auto-detect** (default) — the app tries 3.3 → 3.4 → 3.1 → 3.5 and saves the working version automatically. Select a specific version only if auto-detect fails.
+4. Click **Test & Connect** — the app connects, collects live data, then shows a summary screen.
+5. Review the detected DP mapping. Adjust DP numbers directly in the table if needed.  
    *Generic:* the full DP mapper opens — assign each data point to a capability and configure scale, unit, options.
-5. Expand **Show all detected DPs** to inspect the raw snapshot from the device.
-6. Optionally rename the device, then click **Add Device**.
+6. Expand **Show all detected DPs** to inspect the raw snapshot from the device.
+7. Optionally rename the device, then click **Add Device**.
 
 ---
 
@@ -111,36 +114,33 @@ homey app install
 | IP Address | Local IP of the device | — |
 | Device ID | Tuya device identifier | — |
 | Local Key | LAN encryption key (16 or 32 chars) | — |
-| Protocol Version | 3.1 / 3.3 / 3.4 / 3.5 | 3.3 |
+| Protocol Version | Auto-detect / 3.1 / 3.3 / 3.4 / 3.5 | Auto-detect |
 | Polling Interval (s) | Active poll cadence — `0` disables polling | 30 |
 
 #### Data Points
 
-| Setting | Capability | Type | EN Name | DE Name | Default DP | Optional |
-|---|---|---|---|---|---|---|
-| `dp_onoff` | `onoff` | boolean | On / Off | Ein / Aus | 1 | — |
-| `dp_current_humidity` | `measure_humidity` | number | Humidity | Luftfeuchtigkeit | 16 | — |
-| `dp_target_humidity` | `target_humidity` | number | Target Humidity | Ziel-Luftfeuchtigkeit | 2 | — |
-| `dp_mode` | `mode` | enum | Mode | Modus | 4 | — |
-| `dp_fan_speed` | `fan_speed` | enum | Fan Speed | Lüftergeschwindigkeit | 5 | — |
-| `dp_child_lock` | `child_lock` | boolean | Child Lock | Kindersicherung | 14 | ✓ `0` = disabled |
-| `dp_countdown_timer` | `countdown_timer` | enum | Timer | Timer | 17 | ✓ `0` = disabled |
-| `dp_countdown_left` | `countdown_left` | number | Timer Remaining | Verbleibende Zeit | 18 | ✓ `0` = disabled |
-| `dp_water_full` | `alarm_water` | boolean | Water Tank Full | Wassertank voll | 19 | ✓ `0` = disabled |
-| `dp_temperature` | `measure_temperature` | number | Temperature (raw ÷ 10 = °C) | Temperatur | 0 | ✓ `0` = disabled |
-| `dp_anion` | `anion` | boolean | Ioniser | Ionisator | 0 | ✓ `0` = disabled |
+| Setting | Capability | Type | Default DP | Optional |
+|---|---|---|---|---|
+| `dp_onoff` | `onoff` | boolean | 1 | — |
+| `dp_current_humidity` | `measure_humidity` | number | 16 | — |
+| `dp_target_humidity` | `target_humidity` | number | 2 | — |
+| `dp_mode` | `mode` | enum | 4 | — |
+| `dp_fan_speed` | `fan_speed` | enum | 5 | — |
+| `dp_child_lock` | `child_lock` | boolean | 14 | ✓ `0` = disabled |
+| `dp_countdown_timer` | `countdown_timer` | enum | 17 | ✓ `0` = disabled |
+| `dp_countdown_left` | `countdown_left` | number | 18 | ✓ `0` = disabled |
+| `dp_water_full` | `alarm_water` | boolean | 19 | ✓ `0` = disabled |
+| `dp_temperature` | `measure_temperature` | number | 0 | ✓ `0` = disabled |
+| `dp_anion` | `anion` | boolean | 0 | ✓ `0` = disabled |
 
 #### Mode & Fan Speed Values
-
-The exact strings your device uses can differ between manufacturers. Set only the values your device actually supports; the picker will show only those options.
 
 | Setting | Default (full superset) |
 |---|---|
 | `mode_values` | `manual,laundry,auto,continuous,smart,sleep,drying` |
 | `fan_speed_values` | `low,medium,middle,high,auto,turbo` |
 
-To find the exact strings your device sends, check the **Raw Data** panel in app settings.  
-After saving, **restart the Tuya Local app** for the picker to reflect the updated options.
+The exact strings vary by manufacturer. Check the **Raw Data** panel in app settings to find what your device sends. After saving, **restart the Tuya Local app** for the picker to reflect the updated options.
 
 ---
 
@@ -152,17 +152,17 @@ Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polli
 
 #### Data Points
 
-| Setting | Capability | Type | EN Name | DE Name | Default DP | Optional |
-|---|---|---|---|---|---|---|
-| `dp_switch` | `onoff` | boolean | On / Off | Ein / Aus | 1 | — |
-| `dp_power` | `measure_power` | number | Power | Leistung | 19 | — |
-| `dp_voltage` | `measure_voltage` | number | Voltage | Spannung | 20 | — |
-| `dp_current` | `measure_current` | number | Current | Strom | 18 | — |
-| `dp_energy` | `meter_power` | number | Energy | Energie | **0** | ✓ see below |
-| `dp_relay_status` | `relay_status` | enum | Turn On Behavior | Einschaltverhalten | 38 | ✓ `0` = disabled |
-| `dp_fault` | `alarm_generic` | boolean | Alarm | Alarm | 0 | ✓ `0` = disabled |
-| `dp_power_factor` | `power_factor` | number | Power Factor | Leistungsfaktor | 0 | ✓ `0` = disabled |
-| `dp_countdown` | *(flow only)* | number | — | — | 0 | ✓ `0` = disabled |
+| Setting | Capability | Type | Default DP | Optional |
+|---|---|---|---|---|
+| `dp_switch` | `onoff` | boolean | 1 | — |
+| `dp_power` | `measure_power` | number | 19 | — |
+| `dp_voltage` | `measure_voltage` | number | 20 | — |
+| `dp_current` | `measure_current` | number | 18 | — |
+| `dp_energy` | `meter_power` | number | **0** | ✓ see below |
+| `dp_relay_status` | `relay_status` | enum | 38 | ✓ `0` = disabled |
+| `dp_fault` | `alarm_generic` | boolean | 0 | ✓ `0` = disabled |
+| `dp_power_factor` | `power_factor` | number | 0 | ✓ `0` = disabled |
+| `dp_countdown` | *(flow only)* | number | 0 | ✓ `0` = disabled |
 
 #### Energy Metering
 
@@ -190,9 +190,47 @@ Default: `off,on,memory` (all three options shown).
 
 | Setting | Behavior |
 |---|---|
-| **×0.1** *(default)* | Multiply raw value by 0.1 — standard for Tuya plugs (`cur_power` scale = 1, raw ÷ 10 = W) |
+| **×0.1** *(default)* | Multiply raw value by 0.1 — standard for Tuya plugs |
 | **×1** | Use raw value directly |
 | **Auto-detect** | Raw > 2000 → ×0.1; first non-zero value ≤ 2000 → ×1 (legacy, not recommended) |
+
+---
+
+### Air Conditioner
+
+#### Connection
+
+Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polling Interval).
+
+#### Data Points
+
+| Setting | Capability | Type | Default DP | Optional |
+|---|---|---|---|---|
+| `dp_onoff` | `onoff` | boolean | 1 | — |
+| `dp_target_temp` | `target_temperature` | number | 2 | — |
+| `dp_current_temp` | `measure_temperature` | number | 3 | — |
+| `dp_mode` | `ac_mode` | enum | 4 | — |
+| `dp_fan_speed` | `ac_fan_speed` | enum | 5 | — |
+| `dp_swing` | `ac_swing` | boolean | 0 | ✓ `0` = disabled |
+| `dp_sleep` | `ac_sleep` | boolean | 0 | ✓ `0` = disabled |
+| `dp_eco` | `ac_eco` | boolean | 0 | ✓ `0` = disabled |
+| `dp_child_lock` | `child_lock` | boolean | 0 | ✓ `0` = disabled |
+| `dp_countdown_timer` | `countdown_timer` | number | 0 | ✓ `0` = disabled |
+| `dp_countdown_left` | `countdown_left` | number | 0 | ✓ `0` = disabled |
+| `dp_fault` | `alarm_generic` | boolean | 20 | ✓ `0` = disabled |
+
+#### Temperature Scaling
+
+Some AC units send temperatures multiplied by 10 (e.g. `220` = 22.0 °C). The driver auto-detects this during pairing. If the displayed temperature is still 10× too high, set **`temp_divisor = 10`** in device settings.
+
+#### Mode & Fan Speed Values
+
+| Setting | Default |
+|---|---|
+| `mode_values` | `cool,heat,auto,dry,fan` |
+| `fan_speed_values` | `auto,low,medium,high,turbo` |
+
+The allowed strings vary by manufacturer. Check the **DP Debug** panel while operating the device manually, then update these settings to match. After saving, **restart the Tuya Local app**.
 
 ---
 
@@ -248,7 +286,7 @@ Each entry in the `dp_config` JSON array supports the following fields:
 | Device disconnected | — | — |
 | A data point changed | — | `dp` (string), `value` (string) |
 
-> Water tank triggers are debounced — the alarm must stay active for 5 seconds before firing, suppressing the transient pulse the device emits on reconnect.
+> Water tank triggers are debounced — the alarm must stay active for 5 seconds (30 s after reconnect) before firing, suppressing the transient pulse the device emits on reconnect.
 
 #### Conditions
 
@@ -308,6 +346,40 @@ Threshold triggers fire only on the exact crossing moment — not on every updat
 
 ---
 
+### Air Conditioner
+
+#### Triggers
+
+| Trigger | Flow tokens |
+|---|---|
+| AC connected | — |
+| AC disconnected | — |
+| AC fault alarm triggered | — |
+| AC data point changed | `dp` (string), `value` (string) |
+
+> The fault alarm trigger is debounced — the alarm must stay active for 5 seconds (30 s after reconnect) before firing.
+
+#### Conditions
+
+| Condition |
+|---|
+| AC is / is not connected |
+| AC mode is / is not [mode] |
+
+#### Actions
+
+| Action | Notes |
+|---|---|
+| Set AC mode | cool / heat / auto / dry / fan (from `mode_values`) |
+| Set AC fan speed | auto / low / medium / high / turbo (from `fan_speed_values`) |
+| Set AC target temperature | 16–35 °C |
+| Set AC swing | on / off — requires `dp_swing` > 0 |
+| Set AC sleep mode | on / off — requires `dp_sleep` > 0 |
+| Force AC reconnect | Drops and re-establishes the TCP connection |
+| Refresh AC device | Triggers an immediate GET request |
+
+---
+
 ### Generic Tuya Device
 
 #### Triggers
@@ -339,6 +411,7 @@ Threshold triggers fire only on the exact crossing moment — not on every updat
 |---|---|---|
 | Water tank is full | Dehumidifier | Alarm active for > 5 s (debounced to suppress reconnect artifacts) |
 | Fault detected | Smart Plug | `alarm_generic` transitions from `false` → `true` |
+| Fault detected | Air Conditioner | `alarm_generic` transitions from `false` → `true` (debounced, 30 s grace on reconnect) |
 
 ---
 
@@ -354,7 +427,7 @@ Timestamped in-memory buffer (max 500 entries, cleared on app restart):
 |---|---|
 | `[INF]` | Normal events: connect, disconnect, capability updates |
 | `[WRN]` | Warnings: reconnect attempts, stale connection, rejected capability option values |
-| `[ERR]` | Errors |
+| `[ERR]` | Errors — includes ECONNRESET hint when a protocol version mismatch is likely |
 
 ### DP Debug Panel
 
@@ -378,14 +451,16 @@ Full unprocessed payload for the selected device:
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| Device stays unavailable | Wrong IP, Device ID or Local Key | Use **Repair** to update credentials |
+| Device stays unavailable | Wrong IP, Device ID or Local Key | Use **Repair** to update credentials; check the Logs tab for the exact error |
+| ECONNRESET on every connect | Protocol version mismatch | Use *Auto-detect* in Repair, or manually try 3.3, 3.4, 3.1, 3.5 |
 | Device connects but values are wrong | Incorrect DP numbers | Adjust DPs in device settings |
-| Power reading is 10× too high or low | Wrong power scale | Change **Power Scale** setting to ×0.1 |
+| Smart Plug power reading is 10× off | Wrong power scale | Change **Power Scale** setting to ×0.1 |
 | Energy (kWh) shows `—` or never updates | `dp_energy` set to 17 but device sends delta locally | Set `dp_energy = 0` — app will compute kWh from power readings |
-| Mode / fan picker shows wrong options | `mode_values` / `fan_speed_values` mismatch | Update values, then restart the Tuya Local app |
+| AC temperature is 10× too high | Device sends ×10 scaled values | Set `temp_divisor = 10` in AC device settings |
+| AC mode / fan picker shows wrong options | `mode_values` / `fan_speed_values` mismatch | Update values in device settings, then restart the Tuya Local app |
 | Picker still shows old options after saving | Homey caches capability options | Restart the Tuya Local app |
-| Spurious water alarm notifications every hour | Reconnect artifact — device sends transient alarm on connect | Fixed in v1.0.9 — update to latest version |
-| Generic device shows raw key as label | Missing locale key | Labels are set via the `label` field in the dp_config mapping |
+| Spurious water / fault alarm after reconnect | Reconnect artifact — device sends transient alarm on connect | Built-in debounce suppresses these; if they persist check the Logs tab |
+| Generic device shows raw key as label | Missing locale key | Set labels via the `label` field in the dp_config mapping |
 
 ---
 

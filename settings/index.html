@@ -165,16 +165,46 @@
     </div>
 
     <div class="section">
+      <h2>Air Conditioner — DP reference</h2>
+      <table class="help-table">
+        <thead><tr><th>Setting</th><th>Default DP</th><th>Capability</th><th>Notes</th><th>R/W</th></tr></thead>
+        <tbody>
+          <tr><td>dp_onoff</td>           <td>1</td>  <td>On / Off</td>               <td></td>                                                                           <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_target_temp</td>     <td>2</td>  <td>Target Temperature</td>    <td>divided by <em>temp_divisor</em></td>                                            <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_current_temp</td>    <td>3</td>  <td>Current Temperature</td>   <td>divided by <em>temp_divisor</em></td>                                            <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_mode</td>            <td>4</td>  <td>Mode (picker)</td>          <td>Set <em>mode_values</em> to the strings your device sends, e.g. <code>cold,heat,wind,dry,auto</code></td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_fan_speed</td>       <td>5</td>  <td>Fan Speed (picker)</td>    <td>Set <em>fan_speed_values</em> to match your device, e.g. <code>low,middle,high,auto</code></td>           <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_swing</td>           <td>0</td>  <td>Swing / Louver (picker)</td> <td>Enum type — common: 8 or 15. Set <em>swing_values</em> e.g. <code>off,on</code></td>               <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_swing_h</td>         <td>0</td>  <td>Horizontal Swing</td>      <td>0 = disabled. Common: 110</td>                                                  <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_anion</td>           <td>0</td>  <td>Ioniser</td>               <td>0 = disabled. Common: 11</td>                                                   <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_sleep</td>           <td>0</td>  <td>Sleep Mode</td>            <td>0 = disabled. Common: 9 or 103</td>                                             <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_eco</td>             <td>0</td>  <td>ECO Mode</td>              <td>0 = disabled. Common: 6</td>                                                    <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_child_lock</td>      <td>0</td>  <td>Child Lock</td>            <td>0 = disabled. Common: 7</td>                                                    <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_countdown_timer</td> <td>0</td>  <td>Timer</td>                 <td>0 = disabled. Common: 10</td>                                                   <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_countdown_left</td>  <td>0</td>  <td>Timer Remaining</td>       <td>0 = disabled. Common: 11</td>                                                   <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_fault</td>           <td>20</td> <td>Fault Alarm</td>           <td>raw &gt; 0 = alarm active; 0 = disabled</td>                                    <td><span class="help-badge badge-ro">Read</span></td></tr>
+        </tbody>
+      </table>
+      <div class="note"><strong>Temperature scaling:</strong> Some AC units send temperatures multiplied by 10 (e.g. 220 = 22.0 °C). If your displayed temperature is 10× too high, set <em>temp_divisor = 10</em> in device settings. Auto-detection recognises this during pairing.</div>
+      <div class="note"><strong>Mode, fan &amp; swing values:</strong> The allowed strings vary by manufacturer. Check the DP Debug tab while operating the device manually, then update <em>mode_values</em>, <em>fan_speed_values</em> and <em>swing_values</em> in device settings. After saving, restart the app to apply the new picker options.</div>
+      <div class="note"><strong>Auto-detect at pairing:</strong> The pairing wizard automatically detects DP 1 (power), DP 2/3 (temperatures), DP 4 (mode), DP 5 (fan speed), DP 11 (ioniser), DP 15 (swing), DP 20 (fault), DP 103 (sleep) and DP 110 (horizontal swing). Only <em>mode_values</em> and <em>fan_speed_values</em> need to be adjusted manually after pairing.</div>
+    </div>
+
+    <div class="section">
       <h2>Troubleshooting</h2>
       <table class="help-table">
         <thead><tr><th>Symptom</th><th>Fix</th></tr></thead>
         <tbody>
-          <tr><td>Device stays unavailable</td>          <td>Wrong IP, Device ID or Local Key — use Repair to update</td></tr>
-          <tr><td>Values are wrong / 10× off</td>        <td>Incorrect DP numbers or power scale — adjust in device settings</td></tr>
-          <tr><td>Energy (kWh) never updates</td>        <td>Set dp_energy = 0 — app computes kWh from power readings</td></tr>
-          <tr><td>Mode picker shows wrong options</td>   <td>Update mode_values / fan_speed_values, then restart the app</td></tr>
-          <tr><td>Picker still shows old options</td>    <td>Restart the Tuya Local app to clear Homey's capability cache</td></tr>
-          <tr><td>Spurious water alarm every hour</td>   <td>Fixed in v1.0.9 — update to the latest version</td></tr>
+          <tr><td>Device stays unavailable</td>                   <td>Wrong IP, Device ID or Local Key — use Repair to update. Check the Logs tab for the exact error.</td></tr>
+          <tr><td>Scan finds no devices</td>                     <td>Tuya devices only accept one TCP connection at a time. If the device is already added, the scan cannot reach it. Enter the IP address manually during pairing instead.</td></tr>
+          <tr><td>ECONNRESET on every connect</td>                <td>Protocol version mismatch — use <em>Auto-detect</em> in the device Repair screen.</td></tr>
+          <tr><td>Smart Plug values are 10× off</td>              <td>Incorrect DP numbers or wrong power scale — adjust in device settings.</td></tr>
+          <tr><td>Energy (kWh) never updates</td>                 <td>Set dp_energy = 0 — app computes kWh from power readings.</td></tr>
+          <tr><td>AC temperature is 10× too high</td>             <td>Set <em>temp_divisor = 10</em> in AC device settings.</td></tr>
+          <tr><td>AC mode / fan picker shows wrong options</td>   <td>Update <em>mode_values</em> / <em>fan_speed_values</em> in device settings to match the strings your device sends, then restart the app.</td></tr>
+          <tr><td>AC swing picker shows wrong options</td>       <td>Update <em>swing_values</em> in device settings (e.g. <em>off,on,updown</em>) to match what the device actually sends. Check the DP Debug tab while toggling swing manually.</td></tr>
+          <tr><td>Picker still shows old options after edit</td>  <td>Restart the Tuya Local app to clear Homey's capability cache.</td></tr>
+          <tr><td>Spurious water / fault alarm after reconnect</td><td>Built-in debounce suppresses these. If they persist, check the Logs tab for the exact DP value and timing.</td></tr>
         </tbody>
       </table>
     </div>
@@ -364,14 +394,36 @@
         if (!text) return;
         copyText(text, this);
       });
-      document.getElementById('btnClear').addEventListener('click', function() {
-        if (!confirm('Clear all logs?')) return;
-        Homey.set('diagnostic_logs', [], function() {
-          allLogEntries = [];
-          document.getElementById('output').innerHTML = 'Cleared.';
-          document.getElementById('count').textContent = '';
+      (function() {
+        var clearBtn   = document.getElementById('btnClear');
+        var clearArmed = false;
+        var clearTimer = null;
+        var origLabel  = clearBtn.textContent;
+        clearBtn.addEventListener('click', function() {
+          if (!clearArmed) {
+            clearArmed = true;
+            clearBtn.textContent = 'Sure? Click again';
+            clearBtn.style.color = '#c5221f';
+            clearTimer = setTimeout(function() {
+              clearArmed = false;
+              clearBtn.textContent = origLabel;
+              clearBtn.style.color = '';
+            }, 3000);
+          } else {
+            clearTimeout(clearTimer);
+            clearArmed = false;
+            clearBtn.textContent = origLabel;
+            clearBtn.style.color = '';
+            Homey.set('diagnostic_logs', [])
+              .then(function() {
+                allLogEntries = [];
+                document.getElementById('output').innerHTML = 'Cleared.';
+                document.getElementById('count').textContent = '';
+              })
+              .catch(function() {});
+          }
         });
-      });
+      }());
       loadLogs();
 
       // ── DP Debug ──────────────────────────────────────────────────────

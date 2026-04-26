@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.17",
+  "version": "1.0.22",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -17,6 +17,28 @@
   "category": [
     "appliances"
   ],
+  "changelog": {
+    "1.0.22": {
+      "en": "AC driver: added flow cards — Trigger: 'AC mode changed' (tokens: new mode, previous mode). Conditions: 'AC fan speed is', 'AC sleep mode is on', 'AC fault alarm is active'. Actions: set ECO mode, set ioniser, set horizontal swing, set child lock.",
+      "de": "Klimaanlage: Flow-Karten hinzugefügt — Auslöser: 'Klimaanlage: Modus geändert' (Tags: neuer Modus, vorheriger Modus). Bedingungen: Lüftergeschwindigkeit ist, Schlafmodus ist aktiv, Fehleralarm ist aktiv. Aktionen: ECO-Modus, Ionisator, horizontale Schwenkung, Kindersicherung setzen."
+    },
+    "1.0.21": {
+      "en": "AC driver: swing picker now correctly seeds its value list with the detected swing position when it is not covered by the default 'off,on' (e.g. 'updown'). Late optional-DP discovery: if sleep (DP 103), ioniser (DP 11) or horizontal swing (DP 110) were missing at pairing time because the AC was in a mode where it does not report them, they are now automatically configured the first time those DPs appear in a data packet after each reconnect.",
+      "de": "Klimaanlage: Swing-Picker übernimmt den erkannten Swing-Wert korrekt in die Werteliste, wenn er nicht in den Standardwerten 'off,on' enthalten ist (z.B. 'updown'). Nachträgliche Erkennung optionaler DPs: Wenn Sleep (DP 103), Ionisator (DP 11) oder horizontaler Swing (DP 110) beim Pairing fehlten, weil die Klimaanlage sie in diesem Betriebsmodus nicht meldet, werden sie jetzt automatisch konfiguriert, sobald diese DPs nach einem Reconnect im ersten Datenpaket auftauchen."
+    },
+    "1.0.20": {
+      "en": "AC driver: mode and fan speed pickers now show all common options immediately after pairing (no longer seeded with current value only). Added configurable target temperature step, min and max (device settings). Added fault code token to the 'AC fault alarm triggered' flow card. Repair dialog now shows an error message instead of silently showing an empty form.",
+      "de": "Klimaanlage: Modus- und Lüftergeschwindigkeits-Picker zeigen nach dem Pairing sofort alle gängigen Optionen (nicht mehr nur den aktuellen Wert). Konfigurierbarer Temperaturschritt sowie Min/Max für die Zieltemperatur hinzugefügt (Geräteeinstellungen). Fehlercode-Tag zum Flow-Karten 'Klimaanlage: Fehleralarm ausgelöst' hinzugefügt. Reparatur-Dialog zeigt jetzt eine Fehlermeldung statt eines leeren Formulars."
+    },
+    "1.0.19": {
+      "en": "AC driver: swing changed to enum picker with configurable values; added horizontal swing (DP 110) and ioniser (DP 11) support; improved auto-detect at pairing. Dehumidifier: fixed spurious water-full alarm loop caused by firmware oscillation (5-min stable-false guard + 2-min confirmation debounce). Updated README and Help tab.",
+      "de": "Klimaanlage: Swing jetzt als Enum-Picker mit konfigurierbaren Werten; horizontaler Swing (DP 110) und Ionisator (DP 11) hinzugefügt; Auto-Erkennung beim Einrichten verbessert. Entfeuchter: Endlosschleife bei falschem Wassertank-Alarm behoben (5-Minuten-Stabil-Schutz + 2-Minuten-Bestätigungsdebounce). README und Hilfe-Tab aktualisiert."
+    },
+    "1.0.18": {
+      "en": "Initial public release.",
+      "de": "Erste öffentliche Version."
+    }
+  },
   "permissions": [],
   "author": {
     "name": "Andi Wirz",
@@ -730,6 +752,160 @@
       "uiComponent": "picker",
       "uiQuickAction": false,
       "insights": false
+    },
+    "ac_mode": {
+      "type": "enum",
+      "title": {
+        "en": "Mode",
+        "de": "Betriebsmodus"
+      },
+      "values": [
+        {
+          "id": "cool",
+          "title": {
+            "en": "Cool",
+            "de": "Kühlen"
+          }
+        },
+        {
+          "id": "heat",
+          "title": {
+            "en": "Heat",
+            "de": "Heizen"
+          }
+        },
+        {
+          "id": "auto",
+          "title": {
+            "en": "Auto",
+            "de": "Auto"
+          }
+        },
+        {
+          "id": "dry",
+          "title": {
+            "en": "Dry",
+            "de": "Entfeuchten"
+          }
+        },
+        {
+          "id": "fan",
+          "title": {
+            "en": "Fan Only",
+            "de": "Nur Lüfter"
+          }
+        }
+      ],
+      "getable": true,
+      "setable": true,
+      "uiComponent": "picker",
+      "uiQuickAction": false,
+      "insights": true
+    },
+    "ac_fan_speed": {
+      "type": "enum",
+      "title": {
+        "en": "Fan Speed",
+        "de": "Lüftergeschwindigkeit"
+      },
+      "values": [
+        {
+          "id": "auto",
+          "title": {
+            "en": "Auto",
+            "de": "Auto"
+          }
+        },
+        {
+          "id": "low",
+          "title": {
+            "en": "Low",
+            "de": "Niedrig"
+          }
+        },
+        {
+          "id": "medium",
+          "title": {
+            "en": "Medium",
+            "de": "Mittel"
+          }
+        },
+        {
+          "id": "high",
+          "title": {
+            "en": "High",
+            "de": "Hoch"
+          }
+        },
+        {
+          "id": "turbo",
+          "title": {
+            "en": "Turbo",
+            "de": "Turbo"
+          }
+        }
+      ],
+      "getable": true,
+      "setable": true,
+      "uiComponent": "picker",
+      "uiQuickAction": false,
+      "insights": false
+    },
+    "ac_swing": {
+      "type": "enum",
+      "title": {
+        "en": "Swing / Louver",
+        "de": "Lamellen-Schwenkung"
+      },
+      "values": [
+        { "id": "off",              "title": { "en": "Off",            "de": "Aus"             } },
+        { "id": "on",               "title": { "en": "On",             "de": "Ein"             } },
+        { "id": "updown",           "title": { "en": "Up / Down",      "de": "Auf / Ab"        } },
+        { "id": "leftright",        "title": { "en": "Left / Right",   "de": "Links / Rechts"  } },
+        { "id": "updown_leftright", "title": { "en": "All directions", "de": "Alle Richtungen" } },
+        { "id": "fixed",            "title": { "en": "Fixed",          "de": "Fixiert"         } }
+      ],
+      "getable": true,
+      "setable": true,
+      "uiComponent": "picker",
+      "uiQuickAction": false,
+      "insights": false
+    },
+    "ac_swing_h": {
+      "type": "boolean",
+      "title": {
+        "en": "Horizontal Swing",
+        "de": "Horizontale Schwenkung"
+      },
+      "getable": true,
+      "setable": true,
+      "uiComponent": "toggle",
+      "uiQuickAction": false,
+      "insights": false
+    },
+    "ac_sleep": {
+      "type": "boolean",
+      "title": {
+        "en": "Sleep Mode",
+        "de": "Schlafmodus"
+      },
+      "getable": true,
+      "setable": true,
+      "uiComponent": "toggle",
+      "uiQuickAction": false,
+      "insights": false
+    },
+    "ac_eco": {
+      "type": "boolean",
+      "title": {
+        "en": "ECO Mode",
+        "de": "ECO-Modus"
+      },
+      "getable": true,
+      "setable": true,
+      "uiComponent": "toggle",
+      "uiQuickAction": false,
+      "insights": false
     }
   },
   "flow": {
@@ -1161,6 +1337,125 @@
             "example": 150
           }
         ]
+      },
+      {
+        "id": "ac_device_connected",
+        "title": {
+          "en": "AC connected",
+          "de": "Klimaanlage verbunden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_conditioner"
+          }
+        ]
+      },
+      {
+        "id": "ac_device_disconnected",
+        "title": {
+          "en": "AC disconnected",
+          "de": "Klimaanlage getrennt"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_conditioner"
+          }
+        ]
+      },
+      {
+        "id": "ac_dp_changed",
+        "title": {
+          "en": "AC data point changed",
+          "de": "Klimaanlage: Datenpunkt geändert"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_conditioner"
+          }
+        ],
+        "tokens": [
+          {
+            "name": "dp",
+            "type": "string",
+            "title": {
+              "en": "DP number",
+              "de": "DP-Nummer"
+            }
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "title": {
+              "en": "Value",
+              "de": "Wert"
+            }
+          }
+        ]
+      },
+      {
+        "id": "ac_fault_alarm_on",
+        "title": {
+          "en": "AC fault alarm triggered",
+          "de": "Klimaanlage: Fehleralarm ausgelöst"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_conditioner"
+          }
+        ],
+        "tokens": [
+          {
+            "name": "fault_code",
+            "type": "number",
+            "title": {
+              "en": "Fault code",
+              "de": "Fehlercode"
+            },
+            "example": 4
+          }
+        ]
+      },
+      {
+        "id": "ac_mode_changed",
+        "title": {
+          "en": "AC mode changed",
+          "de": "Klimaanlage: Modus geändert"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_conditioner"
+          }
+        ],
+        "tokens": [
+          {
+            "name": "mode",
+            "type": "string",
+            "title": {
+              "en": "New mode",
+              "de": "Neuer Modus"
+            },
+            "example": "cool"
+          },
+          {
+            "name": "prev_mode",
+            "type": "string",
+            "title": {
+              "en": "Previous mode",
+              "de": "Vorheriger Modus"
+            },
+            "example": "heat"
+          }
+        ]
       }
     ],
     "conditions": [
@@ -1360,6 +1655,144 @@
                 }
               }
             ]
+          }
+        ]
+      },
+      {
+        "id": "ac_device_is_connected",
+        "title": {
+          "en": "AC !{{is|is not}} connected",
+          "de": "Klimaanlage !{{ist|ist nicht}} verbunden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_conditioner"
+          }
+        ]
+      },
+      {
+        "id": "ac_mode_is",
+        "title": {
+          "en": "AC mode !{{is|is not}}",
+          "de": "Klimaanlage-Modus !{{ist|ist nicht}}"
+        },
+        "titleFormatted": {
+          "en": "AC mode !{{is|is not}} [[mode]]",
+          "de": "Klimaanlage-Modus !{{ist|ist nicht}} [[mode]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_conditioner"
+          },
+          {
+            "name": "mode",
+            "type": "dropdown",
+            "title": {
+              "en": "Mode",
+              "de": "Modus"
+            },
+            "values": [
+              {
+                "id": "cool",
+                "label": {
+                  "en": "Cool",
+                  "de": "Kühlen"
+                }
+              },
+              {
+                "id": "heat",
+                "label": {
+                  "en": "Heat",
+                  "de": "Heizen"
+                }
+              },
+              {
+                "id": "auto",
+                "label": {
+                  "en": "Auto",
+                  "de": "Auto"
+                }
+              },
+              {
+                "id": "dry",
+                "label": {
+                  "en": "Dry",
+                  "de": "Entfeuchten"
+                }
+              },
+              {
+                "id": "fan",
+                "label": {
+                  "en": "Fan Only",
+                  "de": "Nur Lüfter"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ac_fan_speed_is",
+        "title": {
+          "en": "AC fan speed !{{is|is not}}",
+          "de": "Klimaanlage-Lüftergeschwindigkeit !{{ist|ist nicht}}"
+        },
+        "titleFormatted": {
+          "en": "AC fan speed !{{is|is not}} [[fan_speed]]",
+          "de": "Klimaanlage-Lüftergeschwindigkeit !{{ist|ist nicht}} [[fan_speed]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_conditioner"
+          },
+          {
+            "name": "fan_speed",
+            "type": "dropdown",
+            "title": {
+              "en": "Fan speed",
+              "de": "Lüftergeschwindigkeit"
+            },
+            "values": [
+              { "id": "auto",   "label": { "en": "Auto",   "de": "Automatisch" } },
+              { "id": "low",    "label": { "en": "Low",    "de": "Niedrig"     } },
+              { "id": "medium", "label": { "en": "Medium", "de": "Mittel"      } },
+              { "id": "high",   "label": { "en": "High",   "de": "Hoch"        } },
+              { "id": "turbo",  "label": { "en": "Turbo",  "de": "Turbo"       } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ac_sleep_is_on",
+        "title": {
+          "en": "AC sleep mode !{{is on|is off}}",
+          "de": "Klimaanlage-Schlafmodus !{{ist aktiv|ist inaktiv}}"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_conditioner"
+          }
+        ]
+      },
+      {
+        "id": "ac_fault_is_active",
+        "title": {
+          "en": "AC fault alarm !{{is|is not}} active",
+          "de": "Klimaanlage-Fehleralarm !{{ist|ist nicht}} aktiv"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_conditioner"
           }
         ]
       }
@@ -1917,6 +2350,373 @@
             "name": "device",
             "type": "device",
             "filter": "driver_id=smart_plug"
+          }
+        ]
+      },
+      {
+        "id": "ac_set_mode",
+        "title": {
+          "en": "Set AC mode",
+          "de": "Klimaanlage-Modus setzen"
+        },
+        "titleFormatted": {
+          "en": "Set AC mode to [[mode]]",
+          "de": "Klimaanlage-Modus auf [[mode]] setzen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_conditioner"
+          },
+          {
+            "name": "mode",
+            "type": "dropdown",
+            "title": {
+              "en": "Mode",
+              "de": "Modus"
+            },
+            "values": [
+              {
+                "id": "cool",
+                "label": {
+                  "en": "Cool",
+                  "de": "Kühlen"
+                }
+              },
+              {
+                "id": "heat",
+                "label": {
+                  "en": "Heat",
+                  "de": "Heizen"
+                }
+              },
+              {
+                "id": "auto",
+                "label": {
+                  "en": "Auto",
+                  "de": "Auto"
+                }
+              },
+              {
+                "id": "dry",
+                "label": {
+                  "en": "Dry",
+                  "de": "Entfeuchten"
+                }
+              },
+              {
+                "id": "fan",
+                "label": {
+                  "en": "Fan Only",
+                  "de": "Nur Lüfter"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ac_set_fan_speed",
+        "title": {
+          "en": "Set AC fan speed",
+          "de": "Klimaanlage-Lüftergeschwindigkeit setzen"
+        },
+        "titleFormatted": {
+          "en": "Set AC fan speed to [[fan_speed]]",
+          "de": "Klimaanlage-Lüftergeschwindigkeit auf [[fan_speed]] setzen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_conditioner"
+          },
+          {
+            "name": "fan_speed",
+            "type": "dropdown",
+            "title": {
+              "en": "Fan Speed",
+              "de": "Lüftergeschwindigkeit"
+            },
+            "values": [
+              {
+                "id": "auto",
+                "label": {
+                  "en": "Auto",
+                  "de": "Auto"
+                }
+              },
+              {
+                "id": "low",
+                "label": {
+                  "en": "Low",
+                  "de": "Niedrig"
+                }
+              },
+              {
+                "id": "medium",
+                "label": {
+                  "en": "Medium",
+                  "de": "Mittel"
+                }
+              },
+              {
+                "id": "high",
+                "label": {
+                  "en": "High",
+                  "de": "Hoch"
+                }
+              },
+              {
+                "id": "turbo",
+                "label": {
+                  "en": "Turbo",
+                  "de": "Turbo"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ac_set_target_temp",
+        "title": {
+          "en": "Set AC target temperature",
+          "de": "Klimaanlage-Zieltemperatur setzen"
+        },
+        "titleFormatted": {
+          "en": "Set AC target temperature to [[temperature]] °C",
+          "de": "Klimaanlage-Zieltemperatur auf [[temperature]] °C setzen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_conditioner"
+          },
+          {
+            "name": "temperature",
+            "type": "number",
+            "min": 16,
+            "max": 35,
+            "step": 0.5,
+            "title": {
+              "en": "Temperature (°C)",
+              "de": "Temperatur (°C)"
+            }
+          }
+        ]
+      },
+      {
+        "id": "ac_set_swing",
+        "title": {
+          "en": "Set AC swing",
+          "de": "Klimaanlage-Schwenkung setzen"
+        },
+        "titleFormatted": {
+          "en": "Set AC swing to [[swing]]",
+          "de": "Klimaanlage-Schwenkung auf [[swing]] setzen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_conditioner"
+          },
+          {
+            "name": "swing",
+            "type": "dropdown",
+            "title": {
+              "en": "Swing",
+              "de": "Schwenkung"
+            },
+            "values": [
+              { "id": "off",              "label": { "en": "Off",            "de": "Aus"             } },
+              { "id": "on",               "label": { "en": "On",             "de": "Ein"             } },
+              { "id": "updown",           "label": { "en": "Up / Down",      "de": "Auf / Ab"        } },
+              { "id": "leftright",        "label": { "en": "Left / Right",   "de": "Links / Rechts"  } },
+              { "id": "updown_leftright", "label": { "en": "All directions", "de": "Alle Richtungen" } },
+              { "id": "fixed",            "label": { "en": "Fixed",          "de": "Fixiert"         } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ac_set_sleep",
+        "title": {
+          "en": "Set AC sleep mode",
+          "de": "Klimaanlage-Schlafmodus setzen"
+        },
+        "titleFormatted": {
+          "en": "Set AC sleep mode [[enabled]]",
+          "de": "Klimaanlage-Schlafmodus [[enabled]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_conditioner"
+          },
+          {
+            "name": "enabled",
+            "type": "dropdown",
+            "title": {
+              "en": "Sleep",
+              "de": "Schlaf"
+            },
+            "values": [
+              {
+                "id": "true",
+                "label": {
+                  "en": "On",
+                  "de": "Ein"
+                }
+              },
+              {
+                "id": "false",
+                "label": {
+                  "en": "Off",
+                  "de": "Aus"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ac_set_eco",
+        "title": {
+          "en": "Set AC ECO mode",
+          "de": "Klimaanlage-ECO-Modus setzen"
+        },
+        "titleFormatted": {
+          "en": "Set AC ECO mode [[enabled]]",
+          "de": "Klimaanlage-ECO-Modus [[enabled]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_conditioner"
+          },
+          {
+            "name": "enabled",
+            "type": "dropdown",
+            "title": { "en": "ECO", "de": "ECO" },
+            "values": [
+              { "id": "true",  "label": { "en": "On",  "de": "Ein" } },
+              { "id": "false", "label": { "en": "Off", "de": "Aus" } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ac_set_anion",
+        "title": {
+          "en": "Set AC ioniser",
+          "de": "Klimaanlage-Ionisator setzen"
+        },
+        "titleFormatted": {
+          "en": "Set AC ioniser [[enabled]]",
+          "de": "Klimaanlage-Ionisator [[enabled]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_conditioner"
+          },
+          {
+            "name": "enabled",
+            "type": "dropdown",
+            "title": { "en": "Ioniser", "de": "Ionisator" },
+            "values": [
+              { "id": "true",  "label": { "en": "On",  "de": "Ein" } },
+              { "id": "false", "label": { "en": "Off", "de": "Aus" } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ac_set_swing_h",
+        "title": {
+          "en": "Set AC horizontal swing",
+          "de": "Klimaanlage-Horizontalschwenkung setzen"
+        },
+        "titleFormatted": {
+          "en": "Set AC horizontal swing [[enabled]]",
+          "de": "Klimaanlage-Horizontalschwenkung [[enabled]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_conditioner"
+          },
+          {
+            "name": "enabled",
+            "type": "dropdown",
+            "title": { "en": "Horizontal swing", "de": "Horizontalschwenkung" },
+            "values": [
+              { "id": "true",  "label": { "en": "On",  "de": "Ein" } },
+              { "id": "false", "label": { "en": "Off", "de": "Aus" } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ac_set_child_lock",
+        "title": {
+          "en": "Set AC child lock",
+          "de": "Klimaanlage-Kindersicherung setzen"
+        },
+        "titleFormatted": {
+          "en": "Set AC child lock [[enabled]]",
+          "de": "Klimaanlage-Kindersicherung [[enabled]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_conditioner"
+          },
+          {
+            "name": "enabled",
+            "type": "dropdown",
+            "title": { "en": "Child lock", "de": "Kindersicherung" },
+            "values": [
+              { "id": "true",  "label": { "en": "On",  "de": "Ein" } },
+              { "id": "false", "label": { "en": "Off", "de": "Aus" } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ac_force_reconnect",
+        "title": {
+          "en": "Force AC reconnect",
+          "de": "Klimaanlage: Verbindung neu aufbauen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_conditioner"
+          }
+        ]
+      },
+      {
+        "id": "ac_refresh_device",
+        "title": {
+          "en": "Refresh AC device",
+          "de": "Klimaanlage: Daten aktualisieren"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_conditioner"
           }
         ]
       }
@@ -2810,6 +3610,491 @@
         "small": "/drivers/smart_plug/assets/images/small.png",
         "large": "/drivers/smart_plug/assets/images/large.png",
         "xlarge": "/drivers/smart_plug/assets/images/xlarge.png"
+      }
+    },
+    {
+      "id": "air_conditioner",
+      "name": {
+        "en": "Air Conditioner",
+        "de": "Klimaanlage"
+      },
+      "class": "airconditioning",
+      "capabilities": [
+        "onoff",
+        "target_temperature",
+        "measure_temperature",
+        "ac_mode",
+        "ac_fan_speed"
+      ],
+      "capabilitiesOptions": {
+        "target_temperature": {
+          "min": 16,
+          "max": 35,
+          "step": 0.5,
+          "title": {
+            "en": "Target Temperature",
+            "de": "Zieltemperatur"
+          }
+        },
+        "measure_temperature": {
+          "uiQuickAction": true
+        },
+        "alarm_generic": {
+          "title": {
+            "en": "Fault Alarm",
+            "de": "Fehleralarm"
+          },
+          "insightsTitleTrue": {
+            "en": "Fault alarm triggered",
+            "de": "Fehleralarm ausgelöst"
+          },
+          "insightsTitleFalse": {
+            "en": "Fault alarm cleared",
+            "de": "Fehleralarm gelöscht"
+          }
+        }
+      },
+      "settings": [
+        {
+          "type": "group",
+          "label": {
+            "en": "Connection",
+            "de": "Verbindung"
+          },
+          "children": [
+            {
+              "id": "ip",
+              "type": "text",
+              "label": {
+                "en": "IP Address",
+                "de": "IP-Adresse"
+              },
+              "value": "",
+              "hint": {
+                "en": "Enter the local IP address of your device. Tip: assign a static IP in your router.",
+                "de": "Lokale IP-Adresse des Geräts. Tipp: Statische IP im Router vergeben."
+              }
+            },
+            {
+              "id": "device_id",
+              "type": "text",
+              "label": {
+                "en": "Device ID",
+                "de": "Geräte-ID"
+              },
+              "value": ""
+            },
+            {
+              "id": "local_key",
+              "type": "text",
+              "label": {
+                "en": "Local Key",
+                "de": "Lokaler Schlüssel"
+              },
+              "value": ""
+            },
+            {
+              "id": "version",
+              "type": "dropdown",
+              "label": {
+                "en": "Protocol Version",
+                "de": "Protokollversion"
+              },
+              "value": "3.3",
+              "values": [
+                {
+                  "id": "3.1",
+                  "label": {
+                    "en": "3.1 (legacy)",
+                    "de": "3.1 (veraltet)"
+                  }
+                },
+                {
+                  "id": "3.3",
+                  "label": {
+                    "en": "3.3",
+                    "de": "3.3"
+                  }
+                },
+                {
+                  "id": "3.4",
+                  "label": {
+                    "en": "3.4",
+                    "de": "3.4"
+                  }
+                },
+                {
+                  "id": "3.5",
+                  "label": {
+                    "en": "3.5",
+                    "de": "3.5"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "polling_interval",
+              "type": "number",
+              "label": {
+                "en": "Polling Interval (seconds)",
+                "de": "Abfrageintervall (Sekunden)"
+              },
+              "value": 30,
+              "hint": {
+                "en": "How often to actively request current values. Set to 0 to disable polling (push-only). Default: 30 s.",
+                "de": "Wie oft die aktuellen Werte aktiv abgefragt werden. 0 = kein Polling. Standard: 30 s."
+              },
+              "min": 0,
+              "max": 3600
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Data Points (DPs)",
+            "de": "Datenpunkte (DPs)"
+          },
+          "children": [
+            {
+              "id": "dp_onoff",
+              "type": "number",
+              "label": {
+                "en": "On/Off DP",
+                "de": "Ein/Aus DP"
+              },
+              "value": 1,
+              "hint": {
+                "en": "DP number for power on/off (default: 1)",
+                "de": "DP-Nummer für Ein/Aus (Standard: 1)"
+              }
+            },
+            {
+              "id": "dp_target_temp",
+              "type": "number",
+              "label": {
+                "en": "Target Temperature DP",
+                "de": "Zieltemperatur DP"
+              },
+              "value": 2,
+              "hint": {
+                "en": "DP number for temperature setpoint (default: 2)",
+                "de": "DP-Nummer für den Temperatursollwert (Standard: 2)"
+              }
+            },
+            {
+              "id": "dp_current_temp",
+              "type": "number",
+              "label": {
+                "en": "Current Temperature DP",
+                "de": "Aktuelle Temperatur DP"
+              },
+              "value": 3,
+              "hint": {
+                "en": "DP number for indoor temperature reading. Set to 0 if not available (default: 3)",
+                "de": "DP-Nummer für die Innentemperatur. 0 = nicht vorhanden (Standard: 3)"
+              }
+            },
+            {
+              "id": "dp_mode",
+              "type": "number",
+              "label": {
+                "en": "Mode DP",
+                "de": "Modus DP"
+              },
+              "value": 4,
+              "hint": {
+                "en": "DP number for operating mode (default: 4)",
+                "de": "DP-Nummer für den Betriebsmodus (Standard: 4)"
+              }
+            },
+            {
+              "id": "mode_values",
+              "type": "text",
+              "label": {
+                "en": "Mode values (comma-separated)",
+                "de": "Modus-Werte (kommagetrennt)"
+              },
+              "value": "cool,heat,auto,dry,fan",
+              "hint": {
+                "en": "Supported values: cool, heat, auto, dry, fan. Remove values your device does not support. Check Raw Data in app settings for the actual strings your device sends.",
+                "de": "Unterstützte Werte: cool, heat, auto, dry, fan. Nicht unterstützte Werte entfernen. Im Raw-Data-Panel der App-Einstellungen stehen die tatsächlichen Strings des Geräts."
+              }
+            },
+            {
+              "id": "dp_fan_speed",
+              "type": "number",
+              "label": {
+                "en": "Fan Speed DP",
+                "de": "Lüftergeschwindigkeit DP"
+              },
+              "value": 5,
+              "hint": {
+                "en": "DP number for fan speed (default: 5)",
+                "de": "DP-Nummer für die Lüftergeschwindigkeit (Standard: 5)"
+              }
+            },
+            {
+              "id": "fan_speed_values",
+              "type": "text",
+              "label": {
+                "en": "Fan speed values (comma-separated)",
+                "de": "Lüftergeschwindigkeits-Werte (kommagetrennt)"
+              },
+              "value": "auto,low,medium,high,turbo",
+              "hint": {
+                "en": "Typical values: auto, low, medium, high, turbo. Some devices use numbers (1, 2, 3). Check Raw Data in app settings.",
+                "de": "Typische Werte: auto, low, medium, high, turbo. Manche Geräte verwenden Zahlen (1, 2, 3). Raw Data in den App-Einstellungen prüfen."
+              }
+            },
+            {
+              "id": "temp_divisor",
+              "type": "number",
+              "label": {
+                "en": "Temperature Divisor",
+                "de": "Temperaturdivisor"
+              },
+              "value": 1,
+              "hint": {
+                "en": "Divide raw device temperature by this value to get °C. Use 1 for most devices (e.g. 22 → 22 °C). Use 10 if your device sends e.g. 220 for 22.0 °C.",
+                "de": "Rohen Temperaturwert durch diesen Wert teilen um °C zu erhalten. Bei den meisten Geräten: 1 (z.B. 22 → 22 °C). Bei manchen: 10 (z.B. 220 → 22,0 °C)."
+              },
+              "min": 1,
+              "max": 100
+            },
+            {
+              "id": "temp_step",
+              "type": "number",
+              "label": {
+                "en": "Temperature Step (°C)",
+                "de": "Temperaturschritt (°C)"
+              },
+              "value": 1,
+              "min": 0.5,
+              "max": 2,
+              "step": 0.5,
+              "hint": {
+                "en": "Step size for the target temperature slider. Use 1 for most AC units (integer steps). Use 0.5 if your unit supports half-degree steps.",
+                "de": "Schrittgröße für den Zieltemperatur-Regler. Bei den meisten Klimaanlagen: 1 (ganzzahlige Schritte). Bei 0,5-Grad-Geräten: 0,5."
+              }
+            },
+            {
+              "id": "temp_min",
+              "type": "number",
+              "label": {
+                "en": "Min Target Temperature (°C)",
+                "de": "Mindest-Zieltemperatur (°C)"
+              },
+              "value": 16,
+              "min": 5,
+              "max": 25,
+              "step": 1,
+              "hint": {
+                "en": "Lowest temperature the slider allows. Typical range: 16–18 °C.",
+                "de": "Kleinste einstellbare Zieltemperatur. Typisch: 16–18 °C."
+              }
+            },
+            {
+              "id": "temp_max",
+              "type": "number",
+              "label": {
+                "en": "Max Target Temperature (°C)",
+                "de": "Höchste Zieltemperatur (°C)"
+              },
+              "value": 30,
+              "min": 20,
+              "max": 40,
+              "step": 1,
+              "hint": {
+                "en": "Highest temperature the slider allows. Typical range: 30–32 °C.",
+                "de": "Höchste einstellbare Zieltemperatur. Typisch: 30–32 °C."
+              }
+            },
+            {
+              "id": "dp_swing",
+              "type": "number",
+              "label": {
+                "en": "Swing / Louver DP (0 = disabled)",
+                "de": "Lamellen-Schwenkung DP (0 = deaktiviert)"
+              },
+              "value": 0,
+              "hint": {
+                "en": "DP number for louver / swing. Common: 8 or 15. Set to 0 to hide.",
+                "de": "DP-Nummer für die Lamellen-Schwenkung. Üblich: 8 oder 15. 0 = ausblenden."
+              }
+            },
+            {
+              "id": "swing_values",
+              "type": "text",
+              "label": {
+                "en": "Swing values (comma-separated)",
+                "de": "Schwenkung-Werte (kommagetrennt)"
+              },
+              "value": "off,on",
+              "hint": {
+                "en": "Valid swing values for your device. Common: off,on or off,updown,leftright,updown_leftright. Leave at default if unsure.",
+                "de": "Gültige Schwenkungswerte. Üblich: off,on oder off,updown,leftright,updown_leftright."
+              }
+            },
+            {
+              "id": "dp_sleep",
+              "type": "number",
+              "label": {
+                "en": "Sleep Mode DP (0 = disabled)",
+                "de": "Schlafmodus DP (0 = deaktiviert)"
+              },
+              "value": 0,
+              "hint": {
+                "en": "DP number for sleep mode. Common: 9. Set to 0 to hide.",
+                "de": "DP-Nummer für den Schlafmodus. Üblich: 9. 0 = ausblenden."
+              }
+            },
+            {
+              "id": "dp_eco",
+              "type": "number",
+              "label": {
+                "en": "ECO Mode DP (0 = disabled)",
+                "de": "ECO-Modus DP (0 = deaktiviert)"
+              },
+              "value": 0,
+              "hint": {
+                "en": "DP number for ECO mode. Common: 6. Set to 0 to hide.",
+                "de": "DP-Nummer für den ECO-Modus. Üblich: 6. 0 = ausblenden."
+              }
+            },
+            {
+              "id": "dp_child_lock",
+              "type": "number",
+              "label": {
+                "en": "Child Lock DP (0 = disabled)",
+                "de": "Kindersicherung DP (0 = deaktiviert)"
+              },
+              "value": 0,
+              "hint": {
+                "en": "DP number for child lock. Common: 7. Set to 0 to hide.",
+                "de": "DP-Nummer für die Kindersicherung. Üblich: 7. 0 = ausblenden."
+              }
+            },
+            {
+              "id": "dp_countdown_timer",
+              "type": "number",
+              "label": {
+                "en": "Timer DP (0 = disabled)",
+                "de": "Timer DP (0 = deaktiviert)"
+              },
+              "value": 0,
+              "hint": {
+                "en": "DP number for off-timer (hours). Common: 10. Set to 0 to hide.",
+                "de": "DP-Nummer für den Ausschalttimer (Stunden). Üblich: 10. 0 = ausblenden."
+              }
+            },
+            {
+              "id": "dp_countdown_left",
+              "type": "number",
+              "label": {
+                "en": "Countdown Remaining DP (0 = disabled)",
+                "de": "Countdown verbleibend DP (0 = deaktiviert)"
+              },
+              "value": 0,
+              "hint": {
+                "en": "DP number for remaining countdown (read-only). Common: 11. Set to 0 to hide.",
+                "de": "DP-Nummer für den verbleibenden Countdown (nur lesen). Üblich: 11. 0 = ausblenden."
+              }
+            },
+            {
+              "id": "dp_anion",
+              "type": "number",
+              "label": {
+                "en": "Ioniser DP (0 = disabled)",
+                "de": "Ionisator DP (0 = deaktiviert)"
+              },
+              "value": 0,
+              "hint": {
+                "en": "DP number for the ioniser / anion generator. Common: 11. Set to 0 to hide.",
+                "de": "DP-Nummer für den Ionisator / Anionen-Generator. Üblich: 11. 0 = ausblenden."
+              }
+            },
+            {
+              "id": "dp_swing_h",
+              "type": "number",
+              "label": {
+                "en": "Horizontal Swing DP (0 = disabled)",
+                "de": "Horizontale Schwenkung DP (0 = deaktiviert)"
+              },
+              "value": 0,
+              "hint": {
+                "en": "DP number for horizontal swing / louver. Common: 110. Set to 0 to hide.",
+                "de": "DP-Nummer für die horizontale Lamellen-Schwenkung. Üblich: 110. 0 = ausblenden."
+              }
+            },
+            {
+              "id": "dp_fault",
+              "type": "number",
+              "label": {
+                "en": "Fault Alarm DP (0 = disabled)",
+                "de": "Fehleralarm DP (0 = deaktiviert)"
+              },
+              "value": 20,
+              "hint": {
+                "en": "DP number for fault / error bitmap. Common: 20. Set to 0 to disable.",
+                "de": "DP-Nummer für den Fehler-Bitmap. Üblich: 20. 0 = deaktivieren."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Status",
+            "de": "Status"
+          },
+          "children": [
+            {
+              "id": "connection_status",
+              "type": "text",
+              "label": {
+                "en": "Connection",
+                "de": "Verbindung"
+              },
+              "value": "—",
+              "hint": {
+                "en": "Updated automatically by the app. Do not edit.",
+                "de": "Wird automatisch aktualisiert. Nicht bearbeiten."
+              }
+            },
+            {
+              "id": "last_seen",
+              "type": "text",
+              "label": {
+                "en": "Last data received",
+                "de": "Zuletzt Daten empfangen"
+              },
+              "value": "—",
+              "hint": {
+                "en": "Updated automatically by the app. Do not edit.",
+                "de": "Wird automatisch aktualisiert. Nicht bearbeiten."
+              }
+            }
+          ]
+        }
+      ],
+      "pair": [
+        {
+          "id": "credentials"
+        },
+        {
+          "id": "list_devices"
+        }
+      ],
+      "repair": [
+        {
+          "id": "repair"
+        }
+      ],
+      "images": {
+        "small": "/drivers/air_conditioner/assets/images/small.png",
+        "large": "/drivers/air_conditioner/assets/images/large.png",
+        "xlarge": "/drivers/air_conditioner/assets/images/xlarge.png"
       }
     }
   ],

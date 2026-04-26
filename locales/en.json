@@ -1,9 +1,10 @@
 {
   "device": {
     "defaultName": {
-      "dehumidifier": "Dehumidifier",
-      "smart_plug":   "Smart Plug",
-      "generic":      "Tuya Device"
+      "dehumidifier":    "Dehumidifier",
+      "smart_plug":      "Smart Plug",
+      "generic":         "Tuya Device",
+      "air_conditioner": "Air Conditioner"
     }
   },
   "notifications": {
@@ -63,6 +64,16 @@
       "added": "Device added successfully!",
       "error": "Error: ",
       "deviceName": "Device name",
+      "ac": {
+        "sectionCore":     "— Core —",
+        "sectionOptional": "— Optional (0 = disabled) —",
+        "targetTemp":      "Target Temperature",
+        "currentTemp":     "Current Temperature",
+        "swing":           "Swing / Louver",
+        "sleep":           "Sleep Mode",
+        "eco":             "ECO Mode",
+        "fault":           "Fault Alarm"
+      },
       "smart_plug": {
         "switch":       "On / Off",
         "power":        "Power (W)",

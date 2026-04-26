@@ -485,30 +485,21 @@
     // ── Build advanced section HTML ──────────────────────────────────────────
 
     function buildAdvHtml(rowId, cap, value, scale) {
-      var capInfo   = capById[cap] || {};
-      var isNumber  = capInfo.type === 'number';
-      var isEnum    = capInfo.type === 'enum';
-      var isGeneric = !!capInfo.generic;
+      var capInfo    = capById[cap] || {};
+      var isNumber   = capInfo.type === 'number';
+      var isEnum     = capInfo.type === 'enum';
+      var isGeneric  = !!capInfo.generic;
       var isSettable = capInfo.settable !== false;
 
-      var scaleHidden   = isNumber ? '' : ' field-hidden';
-      var unitHidden    = (isNumber && isGeneric) ? '' : ' field-hidden';
-      var rangeHidden   = (isNumber && isSettable) ? '' : ' field-hidden';
-      var optionsHidden = isEnum ? '' : ' field-hidden';
+      var rangeHidden    = (isNumber && isSettable) ? '' : ' field-hidden';
+      var scaleHidden    = isNumber ? '' : ' field-hidden';
+      var unitHidden     = (isNumber && isGeneric) ? '' : ' field-hidden';
+      var enumHidden     = isEnum ? '' : ' field-hidden';
       var settableHidden = isGeneric ? '' : ' field-hidden';
 
       var html = '<div class="adv-grid">';
 
-      html += '<div class="adv-field' + scaleHidden + '" id="field-scale-' + rowId + '">' +
-        '<label>' + t('pair.list_devices.scale', 'Scale') + '</label>' +
-        '<input type="number" id="adv-scale-' + rowId + '" value="' + (scale || 1) + '" step="0.001" min="0.0001">' +
-      '</div>';
-
-      html += '<div class="adv-field' + unitHidden + '" id="field-unit-' + rowId + '">' +
-        '<label>' + t('pair.list_devices.unit', 'Unit') + '</label>' +
-        '<input type="text" id="adv-unit-' + rowId + '" value="" placeholder="e.g. %">' +
-      '</div>';
-
+      // Min / Max — most commonly needed, shown first
       html += '<div class="adv-field' + rangeHidden + '" id="field-min-' + rowId + '">' +
         '<label>' + t('pair.list_devices.min', 'Min') + '</label>' +
         '<input type="number" id="adv-min-' + rowId + '" value="0">' +
@@ -519,18 +510,38 @@
         '<input type="number" id="adv-max-' + rowId + '" value="100">' +
       '</div>';
 
+      // Step / Scale
       html += '<div class="adv-field' + rangeHidden + '" id="field-step-' + rowId + '">' +
         '<label>' + t('pair.list_devices.step', 'Step') + '</label>' +
         '<input type="number" id="adv-step-' + rowId + '" value="1" min="0.001">' +
       '</div>';
 
-      html += '<div class="adv-field' + optionsHidden + '" id="field-options-' + rowId + '" style="grid-column: 1 / -1">' +
-        '<label>' + t('pair.list_devices.options', 'Options (comma-separated)') + '</label>' +
-        '<input type="text" id="adv-options-' + rowId + '" value="" placeholder="e.g. manual,auto,sleep">' +
+      html += '<div class="adv-field' + scaleHidden + '" id="field-scale-' + rowId + '">' +
+        '<label>' + t('pair.list_devices.scale', 'Scale') + '</label>' +
+        '<input type="number" id="adv-scale-' + rowId + '" value="' + (scale || 1) + '" step="0.001" min="0.0001">' +
+      '</div>';
+
+      // Unit
+      html += '<div class="adv-field' + unitHidden + '" id="field-unit-' + rowId + '">' +
+        '<label>' + t('pair.list_devices.unit', 'Unit') + '</label>' +
+        '<input type="text" id="adv-unit-' + rowId + '" value="" placeholder="e.g. %">' +
       '</div>';
 
       html += '</div>'; // adv-grid
 
+      // Labels — display names for enum picker options (full-width, below grid)
+      html += '<div class="adv-field' + enumHidden + '" id="field-labels-' + rowId + '" style="margin-top:6px">' +
+        '<label>' + t('pair.list_devices.labels', 'Labels (display names, comma-separated)') + '</label>' +
+        '<input type="text" id="adv-labels-' + rowId + '" value="" placeholder="e.g. Manual, Auto, Sleep">' +
+      '</div>';
+
+      // Options — raw device values for enum picker (full-width)
+      html += '<div class="adv-field' + enumHidden + '" id="field-options-' + rowId + '" style="margin-top:6px">' +
+        '<label>' + t('pair.list_devices.options', 'Options / raw values (comma-separated)') + '</label>' +
+        '<input type="text" id="adv-options-' + rowId + '" value="" placeholder="e.g. manual,auto,sleep">' +
+      '</div>';
+
+      // Settable checkbox
       html += '<div class="adv-row-check' + settableHidden + '" id="field-settable-' + rowId + '">' +
         '<input type="checkbox" id="adv-settable-' + rowId + '"' + (isSettable ? ' checked' : '') + '>' +
         '<label for="adv-settable-' + rowId + '">' + t('pair.list_devices.settable', 'Settable (two-way control)') + '</label>' +
@@ -553,11 +564,12 @@
         if (el) el.classList.toggle('field-hidden', hide);
       }
 
-      setHidden('field-scale-'    + rowId, !isNumber);
-      setHidden('field-unit-'     + rowId, !(isNumber && isGeneric));
       setHidden('field-min-'      + rowId, !(isNumber && isSettable));
       setHidden('field-max-'      + rowId, !(isNumber && isSettable));
       setHidden('field-step-'     + rowId, !(isNumber && isSettable));
+      setHidden('field-scale-'    + rowId, !isNumber);
+      setHidden('field-unit-'     + rowId, !(isNumber && isGeneric));
+      setHidden('field-labels-'   + rowId, !isEnum);
       setHidden('field-options-'  + rowId, !isEnum);
       setHidden('field-settable-' + rowId, !isGeneric);
 
@@ -774,10 +786,12 @@
           if (stepEl && stepEl.value !== '')  mapping.step = parseFloat(stepEl.value);
         }
 
-        // Options (enum)
+        // Options + Labels (enum)
         if (capInfo.type === 'enum') {
-          var optEl = document.getElementById('adv-options-' + rowId);
-          if (optEl && optEl.value.trim()) mapping.options = optEl.value.trim();
+          var optEl    = document.getElementById('adv-options-' + rowId);
+          var labelsEl = document.getElementById('adv-labels-'  + rowId);
+          if (optEl    && optEl.value.trim())    mapping.options = optEl.value.trim();
+          if (labelsEl && labelsEl.value.trim()) mapping.labels  = labelsEl.value.trim();
         }
 
         mappings.push(mapping);
