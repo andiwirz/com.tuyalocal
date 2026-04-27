@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.24",
+  "version": "1.0.26",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -18,6 +18,14 @@
     "appliances"
   ],
   "changelog": {
+    "1.0.26": {
+      "en": "Dehumidifier: water alarm oscillation guard reworked again — oscillation window increased from 5 minutes to 2 hours (configurable via new 'Alarm guard window' device setting, default 2 h, range 0.5–24 h) and confirmation debounce increased from 2 minutes to 10 minutes. The guard timestamp is now persisted across Homey restarts so a reboot no longer resets the window. Eliminates hourly spurious notifications caused by devices that emit a periodic alarm pulse every ~60 minutes.",
+      "de": "Entfeuchter: Wasseralarm-Entprellung erneut überarbeitet — Schwingungsschutzfenster von 5 Minuten auf 2 Stunden erhöht (konfigurierbar über neues Gerätesetting 'Alarm-Schutzfenster', Standard 2 h, Bereich 0,5–24 h) und Bestätigungsdebounce von 2 Minuten auf 10 Minuten erhöht. Der Zeitstempel wird jetzt über Homey-Neustarts hinweg gespeichert, sodass ein Neustart das Fenster nicht mehr zurücksetzt. Behebt stündliche Fehlmeldungen bei Geräten, die alle ~60 Minuten einen periodischen Alarm-Puls senden."
+    },
+    "1.0.25": {
+      "en": "Repair dialog: connection test result is now correctly reflected — saving fails with an error message if the device cannot be reached, instead of silently reporting success. Settings are only updated when the connection test actually passes.",
+      "de": "Reparatur-Dialog: Ergebnis des Verbindungstests wird jetzt korrekt angezeigt — Speichern schlägt mit Fehlermeldung fehl wenn das Gerät nicht erreichbar ist, statt fälschlicherweise Erfolg zu melden. Einstellungen werden nur gespeichert wenn der Verbindungstest tatsächlich erfolgreich war."
+    },
     "1.0.24": {
       "en": "All drivers: immediate full-state refresh after any unsolicited push — when the device proactively sends a data packet (e.g. AC pushing power state), Homey now immediately follows up with a GET so all other DPs (mode, temperature, fan speed) update at once instead of waiting for the next poll cycle.",
       "de": "Alle Treiber: sofortige Vollzustandsabfrage nach jedem Push — wenn das Gerät proaktiv ein Datenpaket sendet (z.B. Klimaanlage meldet Einschaltzustand), sendet Homey sofort ein GET nach, sodass alle anderen DPs (Modus, Temperatur, Lüftergeschwindigkeit) sofort aktualisiert werden, anstatt auf den nächsten Poll-Zyklus zu warten."
@@ -3007,6 +3015,22 @@
               "hint": {
                 "en": "DP number for water tank full alarm. Set to 0 to disable.",
                 "de": "DP-Nummer für den Wassertank-Alarm. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "alarm_guard_hours",
+              "type": "number",
+              "label": {
+                "en": "Alarm guard window (hours)",
+                "de": "Alarm-Schutzfenster (Stunden)"
+              },
+              "value": 2,
+              "min": 0.5,
+              "max": 24,
+              "step": 0.5,
+              "hint": {
+                "en": "Minimum time the water alarm must have been inactive (false) before a new 'tank full' notification is allowed. Increase if you still receive spurious hourly notifications; decrease if your tank can fill up in less than 2 hours after emptying.",
+                "de": "Mindestzeit, die der Wassertank-Alarm inaktiv (false) gewesen sein muss, bevor eine neue 'Tank voll'-Benachrichtigung erlaubt wird. Erhöhen wenn weiterhin stündliche Fehlmeldungen erscheinen; verringern wenn der Tank weniger als 2 Stunden nach dem Leeren bereits wieder voll sein kann."
               }
             },
             {

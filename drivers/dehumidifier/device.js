@@ -40,7 +40,14 @@ class DehumidifierDevice extends BaseTuyaDevice {
     this._waterAlarmTimer     = null;  // debounce: prevents spurious reconnect triggers
     this._waterAlarmConfirmed = false; // true only after alarm stayed true for debounce period
     this._connectedAt         = null;  // timestamp of last successful connect — used for grace period
-    this._alarmFalseSince     = null;  // when alarm_water last transitioned to false
+
+    // Restore _alarmFalseSince from the device store so the oscillation guard survives
+    // Homey restarts.  Without persistence, a restart resets the timestamp to "now",
+    // allowing the next hourly firmware pulse to pass the guard immediately.
+    try {
+      const stored = this.getStoreValue('alarmFalseSince');
+      this._alarmFalseSince = (typeof stored === 'number') ? stored : null;
+    } catch (e) { this._alarmFalseSince = null; }
 
     await this._migrateCapabilities([]);
     await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
@@ -92,18 +99,23 @@ class DehumidifierDevice extends BaseTuyaDevice {
     clearTimeout(this._waterAlarmTimer);
     this._waterAlarmTimer     = null;
     this._waterAlarmConfirmed = false;
-    // If alarm was not active before reconnect, start the suppression window now.
-    // This prevents the GET-response artifact (device sends true right after connect)
-    // from immediately re-arming the debounce timer.
-    if (!this.getCapabilityValue('alarm_water')) {
-      this._alarmFalseSince = Date.now();
+    // Seed _alarmFalseSince only if we have no stored value.  The persisted
+    // timestamp is far more accurate (could be hours old) — overwriting it with
+    // "now" on every reconnect was resetting the oscillation guard and allowing
+    // the next hourly firmware pulse to pass through.
+    if (!this.getCapabilityValue('alarm_water') && this._alarmFalseSince === null) {
+      this._setAlarmFalseSince(Date.now());
     }
-    // Note: no T+60 s scheduled GET — regular 30 s polling handles state sync,
-    // and the extra GET was bypassing dedup and re-triggering the alarm cycle.
   }
 
   async _onDeleted() {
     clearTimeout(this._waterAlarmTimer);
+  }
+
+  /** Update _alarmFalseSince and persist it so the oscillation guard survives restarts. */
+  _setAlarmFalseSince(time) {
+    this._alarmFalseSince = time;
+    this.setStoreValue('alarmFalseSince', time).catch(() => {});
   }
 
   // ── DPS handling ─────────────────────────────────────────────────────────────
@@ -152,17 +164,19 @@ class DehumidifierDevice extends BaseTuyaDevice {
 
         if (!prevWater && converted) {
           // ── Oscillation guard ────────────────────────────────────────────────
-          // Some devices cycle alarm_water true/false every few minutes even when
-          // the tank is not actually full (firmware bug).  Require the alarm to
-          // have been continuously false for at least MIN_FALSE_MS before we even
-          // start the confirmation debounce.  If the device oscillates faster than
-          // this window, the alarm is permanently suppressed — exactly what we want.
-          const MIN_FALSE_MS = 5 * 60 * 1000; // 5 minutes
+          // Some devices emit a spurious alarm_water=true pulse periodically (e.g.
+          // every hour on reconnect or firmware heartbeat).  Require the alarm to
+          // have been continuously false for MIN_FALSE_MS before we even start the
+          // confirmation debounce.  The window is long enough to outlast the device's
+          // pulse interval — if the pulse repeats every ~60 min the false period is
+          // ~57 min, so a 2-hour guard will always suppress it.
+          const guardHours   = this.getSetting('alarm_guard_hours') ?? 2;
+          const MIN_FALSE_MS = guardHours * 60 * 60 * 1000;
           const now          = Date.now();
           if (this._alarmFalseSince !== null && now - this._alarmFalseSince < MIN_FALSE_MS) {
             this._appLog(
               `alarm_water: suppressed — was false for only ` +
-              `${Math.round((now - this._alarmFalseSince) / 1000)} s (< ${MIN_FALSE_MS / 60000} min)`,
+              `${Math.round((now - this._alarmFalseSince) / 60000)} min (< ${MIN_FALSE_MS / 60000} min)`,
               'info',
             );
             continue;
@@ -170,9 +184,9 @@ class DehumidifierDevice extends BaseTuyaDevice {
 
           // ── Confirmation debounce ────────────────────────────────────────────
           // Alarm must stay true continuously for MIN_CONFIRM_MS before we fire.
-          // This absorbs both reconnect artifacts (short true burst on connect) and
-          // firmware bounces (true→false→true within seconds).
-          const MIN_CONFIRM_MS = 2 * 60 * 1000; // 2 minutes minimum, always
+          // 10 minutes absorbs short firmware pulses that pass the oscillation guard
+          // (e.g. because the device was genuinely false for > 2 h before the pulse).
+          const MIN_CONFIRM_MS = 10 * 60 * 1000; // 10 minutes
           const GRACE_MS       = 90_000;
           const elapsed        = this._connectedAt ? now - this._connectedAt : GRACE_MS;
           const remaining      = Math.max(0, GRACE_MS - elapsed);
@@ -198,7 +212,7 @@ class DehumidifierDevice extends BaseTuyaDevice {
 
         if (prevWater && !converted) {
           clearTimeout(this._waterAlarmTimer);
-          this._alarmFalseSince = Date.now(); // restart oscillation guard window
+          this._setAlarmFalseSince(Date.now()); // persist — survives Homey restarts
           // Only fire "water emptied" if "water full" was genuinely confirmed,
           // so the false that follows a spurious true is silently swallowed.
           if (this._waterAlarmConfirmed) {

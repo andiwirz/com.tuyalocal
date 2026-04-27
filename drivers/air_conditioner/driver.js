@@ -395,11 +395,11 @@ class AirConditionerDriver extends Homey.Driver {
         this.log('Repair connection test failed:', err.message);
       }
 
-      if (connected) {
-        await device.setSettings({ ip, local_key, version: actualVersion });
+      if (!connected) {
+        throw new Error(this.homey.__('pair.credentials.failed'));
       }
-
-      return { connected, detectedVersion: actualVersion };
+      await device.setSettings({ ip, local_key, version: actualVersion });
+      return { detectedVersion: actualVersion };
     });
   }
 
