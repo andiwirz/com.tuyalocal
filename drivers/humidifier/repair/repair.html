@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      padding: 20px 16px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 14px;
+    }
+    h2  { font-size: 18px; font-weight: 700; margin: 0 0 4px; }
+    .subtitle { color: #666; font-size: 13px; margin: 0 0 20px; }
+    .form-group { margin-bottom: 14px; }
+    label { display: block; margin-bottom: 4px; font-weight: 500; }
+    input, select {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    button {
+      width: 100%;
+      padding: 11px;
+      background: #1a73e8;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+    button:disabled { opacity: 0.55; cursor: not-allowed; }
+    .status {
+      margin-top: 10px;
+      padding: 8px 10px;
+      border-radius: 5px;
+      font-size: 13px;
+      display: none;
+    }
+    .status.success { background: #e6f4ea; color: #1e6a34; display: block; }
+    .status.error   { background: #fce8e6; color: #c5221f; display: block; }
+  </style>
+</head>
+<body>
+  <h2 id="title">Update Connection</h2>
+  <p class="subtitle" id="subtitle">Update the connection settings for this device.</p>
+
+  <div class="form-group">
+    <label for="ip" id="label-ip">IP Address</label>
+    <input type="text" id="ip" placeholder="e.g. 192.168.1.56">
+  </div>
+
+  <div class="form-group">
+    <label for="localKey" id="label-localKey">Local Key</label>
+    <input type="text" id="localKey" placeholder="16-character local key">
+  </div>
+
+  <div class="form-group">
+    <label for="version" id="label-version">Protocol Version</label>
+    <select id="version">
+      <option value="3.3">3.3 (most common)</option>
+      <option value="3.4">3.4</option>
+      <option value="3.5">3.5</option>
+      <option value="3.1">3.1 (legacy)</option>
+    </select>
+  </div>
+
+  <button id="saveBtn">Save &amp; Reconnect</button>
+  <div id="status" class="status"></div>
+
+  <script>
+    function showStatus(msg, type) {
+      var el = document.getElementById('status');
+      el.textContent = msg;
+      el.className = 'status ' + type;
+    }
+
+    function initText() {
+      document.getElementById('title').textContent       = Homey.__('pair.repair.title')     || 'Update Connection';
+      document.getElementById('subtitle').textContent    = Homey.__('pair.repair.subtitle')  || 'Update the connection settings for this device.';
+      document.getElementById('label-ip').textContent    = Homey.__('pair.credentials.ip')   || 'IP Address';
+      document.getElementById('label-localKey').textContent = Homey.__('pair.credentials.localKey') || 'Local Key';
+      document.getElementById('label-version').textContent  = Homey.__('pair.credentials.version')  || 'Protocol Version';
+      document.getElementById('saveBtn').textContent     = Homey.__('pair.repair.save')      || 'Save & Reconnect';
+    }
+    document.getElementById('saveBtn').addEventListener('click', function() {
+      var btn      = document.getElementById('saveBtn');
+      var ip       = document.getElementById('ip').value.trim();
+      var localKey = document.getElementById('localKey').value.trim();
+      var version  = document.getElementById('version').value;
+
+      if (!ip || !localKey) {
+        showStatus(Homey.__('pair.repair.fillAll') || 'Please fill in all fields.', 'error');
+        return;
+      }
+
+      btn.disabled    = true;
+      btn.textContent = Homey.__('pair.repair.saving') || 'Saving…';
+
+      Homey.emit('save_settings', { ip: ip, local_key: localKey, version: version }, function(err) {
+        btn.disabled = false;
+        btn.textContent = Homey.__('pair.repair.save') || 'Save & Reconnect';
+        if (err) {
+          showStatus((Homey.__('pair.credentials.error') || 'Error: ') + (err.message || err), 'error');
+          return;
+        }
+        showStatus(Homey.__('pair.repair.success') || 'Settings saved! Reconnecting…', 'success');
+        setTimeout(function() { Homey.done(); }, 1500);
+      });
+    });
+
+    Homey.ready(function() {
+      if (typeof initText === 'function') initText();
+      Homey.emit('get_settings', {}, function(err, settings) {
+        if (err || !settings) return;
+        document.getElementById('ip').value       = settings.ip || '';
+        document.getElementById('localKey').value = settings.local_key || '';
+        var sel = document.getElementById('version');
+        for (var i = 0; i < sel.options.length; i++) {
+          if (sel.options[i].value === String(settings.version)) {
+            sel.selectedIndex = i;
+            break;
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>

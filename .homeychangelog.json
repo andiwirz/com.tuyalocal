@@ -1,4 +1,12 @@
 {
+  "1.0.31": {
+    "en": "Added four new drivers: Fan (speed slider + enum speed + oscillation + mode), Humidifier (humidity sensor + target + water-empty alarm), Heater (target/current temperature + mode + fault alarm), and Light (brightness + color temperature + HSV color). All drivers include auto-detection of DPs at pairing time, repair flow, and full flow card support (triggers, conditions, actions).",
+    "de": "Vier neue Treiber hinzugefügt: Lüfter (Geschwindigkeitsregler + Enum-Geschwindigkeit + Schwenkung + Modus), Luftbefeuchter (Luftfeuchtigkeitssensor + Sollwert + Leer-Tank-Alarm), Heizgerät (Soll-/Ist-Temperatur + Modus + Fehleralarm) und Licht (Helligkeit + Farbtemperatur + HSV-Farbe). Alle Treiber enthalten Auto-Erkennung der DPs beim Einrichten, Reparatur-Dialog und vollständige Flow-Karten-Unterstützung."
+  },
+  "1.0.30": {
+    "en": "Reduced diagnostic log spam: repeated identical error messages (e.g. 'connection timed out' during offline periods) are now shown in full for the first 3 occurrences, then suppressed with a summary every 10th repeat. A 'suppressed N more times' notice appears when the message changes. Log counter resets on successful reconnect.",
+    "de": "Diagnose-Log-Spam reduziert: Wiederholte identische Fehlermeldungen (z.B. 'connection timed out' bei Offline-Phasen) werden jetzt für die ersten 3 Vorkommen vollständig angezeigt, danach unterdrückt und jede 10. Wiederholung zusammengefasst. Bei Nachrichtenwechsel erscheint ein Hinweis 'N-mal unterdrückt'. Zähler wird bei erfolgreichem Reconnect zurückgesetzt."
+  },
   "1.0.29": {
     "en": "Fixed root cause of HMAC mismatch app crash: after auto-detect or reconnect strips a TuyAPI instance's event listeners, any in-flight socket data could trigger an unhandled error event and crash the app. A no-op error handler is now attached before disconnect in both autoDetect.js and TuyaConnection.js to absorb residual errors during socket teardown.",
     "de": "Grundursache des HMAC-Mismatch-App-Absturzes behoben: Wenn Auto-Erkennung oder Reconnect die Event-Listener einer TuyAPI-Instanz entfernt, konnte eingehende Socket-Daten ein unbehandeltes Error-Event auslösen und die App abstürzen. Vor dem Disconnect wird jetzt in autoDetect.js und TuyaConnection.js ein No-Op-Fehlerhandler registriert, der Restfehler beim Socket-Abbau absorbiert."

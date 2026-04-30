@@ -4,11 +4,16 @@
       "dehumidifier":    "Entfeuchter",
       "smart_plug":      "Smart Plug",
       "generic":         "Tuya-Gerät",
-      "air_conditioner": "Klimaanlage"
+      "air_conditioner": "Klimaanlage",
+      "fan":             "Lüfter",
+      "humidifier":      "Luftbefeuchter",
+      "heater":          "Heizgerät",
+      "light":           "Licht"
     }
   },
   "notifications": {
-    "waterFull": "Wassertank ist voll — bitte leeren.",
+    "waterFull":  "Wassertank ist voll — bitte leeren.",
+    "waterEmpty": "Wassertank ist leer — bitte befüllen.",
     "faultAlarm": "Fehler erkannt — bitte Gerät prüfen."
   },
   "pair": {

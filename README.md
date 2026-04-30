@@ -1,8 +1,8 @@
 # Tuya Local — Homey App
 
-**Version 1.0.18** · Local control of Tuya smart devices — no cloud, no internet dependency.
+**Version 1.0.31** · Local control of Tuya smart devices — no cloud, no internet dependency.
 
-All communication happens over your local network via the Tuya LAN protocol. Four built-in drivers cover the most common device types; a fully generic driver handles anything else.
+All communication happens over your local network via the Tuya LAN protocol. Eight built-in drivers cover the most common device types; a fully generic driver handles anything else.
 
 ---
 
@@ -13,6 +13,10 @@ All communication happens over your local network via the Tuya LAN protocol. Fou
 | [Dehumidifier](#dehumidifier-1) | Dehumidifiers, air dryers | Dehumidifier |
 | [Smart Plug](#smart-plug-1) | Smart plugs with energy monitoring | Socket |
 | [Air Conditioner](#air-conditioner-1) | Any Tuya local LAN air conditioner | Thermostat |
+| [Fan](#fan-1) | Ceiling fans, table fans, tower fans | Fan |
+| [Humidifier](#humidifier-1) | Humidifiers, aroma diffusers | Humidifier |
+| [Heater](#heater-1) | Panel heaters, convectors, oil radiators | Heater |
+| [Light](#light-1) | Bulbs, LED strips, ceiling lights | Light |
 | [Generic Tuya Device](#generic-tuya-device-1) | Any Tuya device not covered above | Other |
 
 ---
@@ -29,7 +33,7 @@ All communication happens over your local network via the Tuya LAN protocol. Fou
 - **Optional capabilities** — tiles are added or removed dynamically based on your DP settings; set a DP to `0` to hide the tile
 - **Repair flow** — update IP address or Local Key at any time without re-pairing
 - **Computed energy metering** — kWh accumulated from live power readings using trapezoidal integration; persisted across restarts
-- **Push notifications** — Homey notification when the water tank is full (Dehumidifier) or a fault is detected (Smart Plug / Air Conditioner)
+- **Push notifications** — Homey notifications for water tank events, fault alarms and other device alerts
 - **Diagnostic tools** — in-app log buffer, live DP debug panel and raw payload viewer
 - **Bilingual** — full English and German UI
 
@@ -176,7 +180,7 @@ The energy accumulator can be reset via the **Reset energy meter** flow action.
 
 #### Turn On Behavior Values
 
-Controls what the device does when mains power is restored after an outage. The `relay_status_values` setting restricts the picker to the subset your device supports.
+Controls what the device does when mains power is restored after an outage.
 
 | Value | Meaning |
 |---|---|
@@ -230,7 +234,150 @@ Some AC units send temperatures multiplied by 10 (e.g. `220` = 22.0 °C). The dr
 | `mode_values` | `cool,heat,auto,dry,fan` |
 | `fan_speed_values` | `auto,low,medium,high,turbo` |
 
-The allowed strings vary by manufacturer. Check the **DP Debug** panel while operating the device manually, then update these settings to match. After saving, **restart the Tuya Local app**.
+---
+
+### Fan
+
+#### Connection
+
+Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polling Interval).
+
+#### Data Points
+
+| Setting | Capability | Type | Default DP | Optional |
+|---|---|---|---|---|
+| `dp_onoff` | `onoff` | boolean | 1 | — |
+| `dp_speed` | `dim` (speed slider) | number | 3 | ✓ `0` = disabled |
+| `speed_min` / `speed_max` | Speed range | number | 1 / 100 | — |
+| `dp_fan_speed` | `fan_speed` (enum) | enum | 0 | ✓ `0` = disabled |
+| `dp_oscillate` | `oscillate` | boolean | 0 | ✓ `0` = disabled |
+| `dp_mode` | `fan_mode` | enum | 0 | ✓ `0` = disabled |
+| `dp_child_lock` | `child_lock` | boolean | 0 | ✓ `0` = disabled |
+| `dp_countdown_timer` | `countdown_timer` | enum | 0 | ✓ `0` = disabled |
+| `dp_countdown_left` | `countdown_left` | number | 0 | ✓ `0` = disabled |
+
+The speed slider (`dim`) maps the numeric DP range `speed_min … speed_max` to 0–100 %. Both a numeric speed DP and a string enum DP (`fan_speed`) can be active at the same time.
+
+#### Speed & Mode Values
+
+| Setting | Default |
+|---|---|
+| `fan_speed_values` | `low,medium,high,auto,turbo` |
+| `fan_mode_values` | `normal,sleep,nature,breeze,smart` |
+
+---
+
+### Humidifier
+
+#### Connection
+
+Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polling Interval).
+
+#### Data Points
+
+| Setting | Capability | Type | Default DP | Optional |
+|---|---|---|---|---|
+| `dp_onoff` | `onoff` | boolean | 1 | — |
+| `dp_current_humidity` | `measure_humidity` | number | 14 | — |
+| `dp_target_humidity` | `target_humidity` | number | 13 | — |
+| `dp_mode` | `mode` | enum | 24 | — |
+| `dp_fan_speed` | `fan_speed` | enum | 0 | ✓ `0` = disabled |
+| `dp_child_lock` | `child_lock` | boolean | 0 | ✓ `0` = disabled |
+| `dp_water_empty` | `alarm_water` | boolean | 0 | ✓ `0` = disabled |
+| `dp_countdown_timer` | `countdown_timer` | enum | 0 | ✓ `0` = disabled |
+| `dp_countdown_left` | `countdown_left` | number | 0 | ✓ `0` = disabled |
+| `dp_temperature` | `measure_temperature` | number | 0 | ✓ `0` = disabled |
+| `dp_anion` | `anion` | boolean | 0 | ✓ `0` = disabled |
+
+> **Note:** `alarm_water` for a humidifier indicates that the water tank is **empty** (refill needed), as opposed to the dehumidifier where it means the tank is full.
+
+#### Mode & Fan Speed Values
+
+| Setting | Default |
+|---|---|
+| `mode_values` | `auto,manual,normal,sleep,eco,boost` |
+| `fan_speed_values` | `low,medium,middle,high,auto` |
+
+---
+
+### Heater
+
+#### Connection
+
+Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polling Interval).
+
+#### Data Points
+
+| Setting | Capability | Type | Default DP | Optional |
+|---|---|---|---|---|
+| `dp_onoff` | `onoff` | boolean | 1 | — |
+| `dp_target_temp` | `target_temperature` | number | 2 | — |
+| `dp_current_temp` | `measure_temperature` | number | 0 | ✓ `0` = disabled |
+| `dp_mode` | `mode` | enum | 0 | ✓ `0` = disabled |
+| `dp_oscillate` | `oscillate` | boolean | 0 | ✓ `0` = disabled |
+| `dp_child_lock` | `child_lock` | boolean | 0 | ✓ `0` = disabled |
+| `dp_fault` | `alarm_generic` | boolean | 0 | ✓ `0` = disabled |
+| `dp_countdown_timer` | `countdown_timer` | enum | 0 | ✓ `0` = disabled |
+| `dp_countdown_left` | `countdown_left` | number | 0 | ✓ `0` = disabled |
+
+#### Temperature Settings
+
+| Setting | Description | Default |
+|---|---|---|
+| `temp_divisor` | Divide raw DP value to get °C — use `10` if device sends e.g. `215` for 21.5 °C | 1 |
+| `temp_min` | Minimum target temperature (°C) | 5 |
+| `temp_max` | Maximum target temperature (°C) | 35 |
+| `temp_step` | Step size for the temperature slider (°C) | 1 |
+
+#### Mode Values
+
+| Setting | Default |
+|---|---|
+| `mode_values` | `eco,comfort,boost,away,auto` |
+
+---
+
+### Light
+
+#### Connection
+
+Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polling Interval).
+
+#### Data Points
+
+| Setting | Capability | Type | Default DP | Optional |
+|---|---|---|---|---|
+| `dp_onoff` | `onoff` | boolean | 20 | — |
+| `dp_brightness` | `dim` | number | 22 | — |
+| `dp_color_temp` | `light_temperature` | number | 23 | ✓ `0` = disabled |
+| `dp_color_mode` | `light_mode` | string | 21 | ✓ `0` = disabled |
+| `dp_color` | `light_hue` + `light_saturation` | HSV hex | 24 | ✓ `0` = disabled |
+
+Standard Tuya light DP layout (newer protocol):
+
+| DP | Function |
+|---|---|
+| 20 | On/Off |
+| 21 | Color mode (`white` / `colour`) |
+| 22 | Brightness (0–1000) |
+| 23 | Color temperature (0–1000) |
+| 24 | HSV color (12-char hex `HHHHSSSSBBBB`) |
+
+Older protocol uses DPs 1–5 instead of 20–24.
+
+#### Light Settings
+
+| Setting | Description | Default |
+|---|---|---|
+| `brightness_max` | Maximum raw brightness value | 1000 |
+| `color_temp_max` | Maximum raw color temperature value | 1000 |
+| `color_temp_invert` | Enable if `0` = warm white and max = cool white | false |
+| `color_mode_white_val` | String the device uses for white/CCT mode | `white` |
+| `color_mode_color_val` | String the device uses for color (HSV) mode | `colour` |
+
+#### Color Handling
+
+In **white mode**, the brightness (`dim`) slider writes directly to `dp_brightness`. In **color mode**, the brightness slider updates the V (value) component of the HSV hex string. Hue and saturation are mapped from the Homey `light_hue` / `light_saturation` capabilities.
 
 ---
 
@@ -256,7 +403,7 @@ Each entry in the `dp_config` JSON array supports the following fields:
 | `readMap` | string | | JSON map: raw DP value → capability value (e.g. `{"1":"on","2":"off"}`) |
 | `writeMap` | string | | JSON map: capability value → raw DP value (e.g. `{"on":"1","off":"2"}`) |
 
-**Debounce:** Slider capabilities (`generic_number_*` or any mapping with both `min` and `max` set) are debounced by 300 ms to prevent flooding the device during drag.
+**Debounce:** Slider capabilities are debounced by 300 ms to prevent flooding the device during drag.
 
 #### Available capability pools
 
@@ -285,8 +432,6 @@ Each entry in the `dp_config` JSON array supports the following fields:
 | Device connected | — | — |
 | Device disconnected | — | — |
 | A data point changed | — | `dp` (string), `value` (string) |
-
-> Water tank triggers are debounced — the alarm must stay active for 5 seconds (30 s after reconnect) before firing, suppressing the transient pulse the device emits on reconnect.
 
 #### Conditions
 
@@ -325,8 +470,6 @@ Each entry in the `dp_config` JSON array supports the following fields:
 | Device disconnected | — | — |
 | A data point changed | — | `dp` (string), `value` (string) |
 
-Threshold triggers fire only on the exact crossing moment — not on every update while above/below.
-
 #### Conditions
 
 | Condition |
@@ -354,10 +497,9 @@ Threshold triggers fire only on the exact crossing moment — not on every updat
 |---|---|
 | AC connected | — |
 | AC disconnected | — |
-| AC fault alarm triggered | — |
+| AC fault alarm triggered | `fault_code` (number) |
+| AC mode changed | `mode` (string), `prev_mode` (string) |
 | AC data point changed | `dp` (string), `value` (string) |
-
-> The fault alarm trigger is debounced — the alarm must stay active for 5 seconds (30 s after reconnect) before firing.
 
 #### Conditions
 
@@ -365,18 +507,148 @@ Threshold triggers fire only on the exact crossing moment — not on every updat
 |---|
 | AC is / is not connected |
 | AC mode is / is not [mode] |
+| AC fan speed is / is not [speed] |
+| AC sleep mode is on / is off |
+| AC fault alarm is / is not active |
 
 #### Actions
 
 | Action | Notes |
 |---|---|
-| Set AC mode | cool / heat / auto / dry / fan (from `mode_values`) |
-| Set AC fan speed | auto / low / medium / high / turbo (from `fan_speed_values`) |
-| Set AC target temperature | 16–35 °C |
+| Set AC mode | cool / heat / auto / dry / fan |
+| Set AC fan speed | auto / low / medium / high / turbo |
+| Set AC target temperature | Configurable min/max/step |
 | Set AC swing | on / off — requires `dp_swing` > 0 |
 | Set AC sleep mode | on / off — requires `dp_sleep` > 0 |
+| Set AC ECO mode | on / off — requires `dp_eco` > 0 |
+| Set AC ioniser | on / off — requires `dp_anion` > 0 |
+| Set AC horizontal swing | on / off — requires `dp_swing_h` > 0 |
+| Set AC child lock | on / off — requires `dp_child_lock` > 0 |
 | Force AC reconnect | Drops and re-establishes the TCP connection |
 | Refresh AC device | Triggers an immediate GET request |
+
+---
+
+### Fan
+
+#### Triggers
+
+| Trigger | Flow tokens |
+|---|---|
+| Fan connected | — |
+| Fan disconnected | — |
+| Fan mode changed | `mode` (string) |
+| Fan data point changed | `dp` (string), `value` (string) |
+
+#### Conditions
+
+| Condition |
+|---|
+| Fan is / is not connected |
+| Fan mode is / is not [mode] |
+
+#### Actions
+
+| Action | Notes |
+|---|---|
+| Set fan mode | normal / sleep / nature / breeze / smart |
+| Set fan speed | low / medium / high / auto / turbo |
+| Set fan oscillation | on / off — requires `dp_oscillate` > 0 |
+| Force fan reconnect | Drops and re-establishes the TCP connection |
+| Refresh fan values | Triggers an immediate GET request |
+
+---
+
+### Humidifier
+
+#### Triggers
+
+| Trigger | Filter tokens | Flow tokens |
+|---|---|---|
+| Humidity went above threshold | threshold (%) | `humidity`, `prevHumidity` |
+| Humidity dropped below threshold | threshold (%) | `humidity`, `prevHumidity` |
+| Water tank became empty | — | — |
+| Water tank was refilled | — | — |
+| Humidifier connected | — | — |
+| Humidifier disconnected | — | — |
+| Humidifier data point changed | — | `dp` (string), `value` (string) |
+
+#### Conditions
+
+| Condition |
+|---|
+| Humidifier is / is not connected |
+| Humidity is / is not above [value] % |
+| Humidity is / is not below [value] % |
+| Water tank is / is not empty |
+
+#### Actions
+
+| Action | Notes |
+|---|---|
+| Set target humidity | 25–95 % |
+| Set humidifier mode | auto / manual / normal / sleep / eco / boost |
+| Set humidifier fan speed | low / medium / high / auto |
+| Force humidifier reconnect | Drops and re-establishes the TCP connection |
+| Refresh humidifier values | Triggers an immediate GET request |
+
+---
+
+### Heater
+
+#### Triggers
+
+| Trigger | Flow tokens |
+|---|---|
+| Heater connected | — |
+| Heater disconnected | — |
+| Heater fault alarm triggered | — |
+| Heater data point changed | `dp` (string), `value` (string) |
+
+#### Conditions
+
+| Condition |
+|---|
+| Heater is / is not connected |
+| Heater fault alarm is / is not active |
+| Heater mode is / is not [mode] |
+
+#### Actions
+
+| Action | Notes |
+|---|---|
+| Set heater mode | eco / comfort / boost / away / auto |
+| Set heater target temperature | Configurable min/max/step |
+| Set heater child lock | on / off — requires `dp_child_lock` > 0 |
+| Force heater reconnect | Drops and re-establishes the TCP connection |
+| Refresh heater values | Triggers an immediate GET request |
+
+---
+
+### Light
+
+#### Triggers
+
+| Trigger | Flow tokens |
+|---|---|
+| Light connected | — |
+| Light disconnected | — |
+| Light data point changed | `dp` (string), `value` (string) |
+
+#### Conditions
+
+| Condition |
+|---|
+| Light is / is not connected |
+
+#### Actions
+
+| Action | Notes |
+|---|---|
+| Force light reconnect | Drops and re-establishes the TCP connection |
+| Refresh light values | Triggers an immediate GET request |
+
+> Standard Homey light capabilities (`onoff`, `dim`, `light_hue`, `light_saturation`, `light_temperature`, `light_mode`) are fully accessible via the built-in Homey flow cards.
 
 ---
 
@@ -409,9 +681,11 @@ Threshold triggers fire only on the exact crossing moment — not on every updat
 
 | Event | Driver | Condition |
 |---|---|---|
-| Water tank is full | Dehumidifier | Alarm active for > 5 s (debounced to suppress reconnect artifacts) |
-| Fault detected | Smart Plug | `alarm_generic` transitions from `false` → `true` |
-| Fault detected | Air Conditioner | `alarm_generic` transitions from `false` → `true` (debounced, 30 s grace on reconnect) |
+| Water tank is full | Dehumidifier | Alarm active — debounced to suppress reconnect artifacts |
+| Water tank is empty | Humidifier | `alarm_water` transitions `false` → `true` |
+| Fault detected | Smart Plug | `alarm_generic` transitions `false` → `true` |
+| Fault detected | Air Conditioner | `alarm_generic` transitions `false` → `true` (debounced, 30 s grace on reconnect) |
+| Fault detected | Heater | `alarm_generic` transitions `false` → `true` (debounced, 30 s grace on reconnect) |
 
 ---
 
@@ -428,6 +702,8 @@ Timestamped in-memory buffer (max 500 entries, cleared on app restart):
 | `[INF]` | Normal events: connect, disconnect, capability updates |
 | `[WRN]` | Warnings: reconnect attempts, stale connection, rejected capability option values |
 | `[ERR]` | Errors — includes ECONNRESET hint when a protocol version mismatch is likely |
+
+Repeated identical messages are automatically suppressed: the first 3 occurrences are shown in full, then one summary every 10th repeat, and a final "suppressed N more times" note when the message changes.
 
 ### DP Debug Panel
 
@@ -456,10 +732,12 @@ Full unprocessed payload for the selected device:
 | Device connects but values are wrong | Incorrect DP numbers | Adjust DPs in device settings |
 | Smart Plug power reading is 10× off | Wrong power scale | Change **Power Scale** setting to ×0.1 |
 | Energy (kWh) shows `—` or never updates | `dp_energy` set to 17 but device sends delta locally | Set `dp_energy = 0` — app will compute kWh from power readings |
-| AC temperature is 10× too high | Device sends ×10 scaled values | Set `temp_divisor = 10` in AC device settings |
-| AC mode / fan picker shows wrong options | `mode_values` / `fan_speed_values` mismatch | Update values in device settings, then restart the Tuya Local app |
+| AC / Heater temperature is 10× too high | Device sends ×10 scaled values | Set `temp_divisor = 10` in device settings |
+| Mode / fan picker shows wrong options | `mode_values` / `fan_speed_values` mismatch | Update values in device settings, then restart the Tuya Local app |
 | Picker still shows old options after saving | Homey caches capability options | Restart the Tuya Local app |
-| Spurious water / fault alarm after reconnect | Reconnect artifact — device sends transient alarm on connect | Built-in debounce suppresses these; if they persist check the Logs tab |
+| Light color mode not working | Wrong `color_mode_white_val` / `color_mode_color_val` | Check Raw Data panel for actual strings sent by device (e.g. `white`, `colour`, `color`) |
+| Humidifier water alarm fires on connect | Device sends transient alarm on reconnect | Built-in debounce suppresses these; if they persist increase the alarm guard window |
+| Spurious fault alarm after reconnect | Reconnect artifact | Built-in 30 s grace period on reconnect suppresses these |
 | Generic device shows raw key as label | Missing locale key | Set labels via the `label` field in the dp_config mapping |
 
 ---

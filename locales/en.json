@@ -4,11 +4,16 @@
       "dehumidifier":    "Dehumidifier",
       "smart_plug":      "Smart Plug",
       "generic":         "Tuya Device",
-      "air_conditioner": "Air Conditioner"
+      "air_conditioner": "Air Conditioner",
+      "fan":             "Fan",
+      "humidifier":      "Humidifier",
+      "heater":          "Heater",
+      "light":           "Light"
     }
   },
   "notifications": {
-    "waterFull": "Water tank is full — please empty it.",
+    "waterFull":  "Water tank is full — please empty it.",
+    "waterEmpty": "Water tank is empty — please refill it.",
     "faultAlarm": "Fault detected — please check the device."
   },
   "pair": {

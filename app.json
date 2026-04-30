@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.29",
+  "version": "1.0.31",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -18,6 +18,14 @@
     "appliances"
   ],
   "changelog": {
+    "1.0.31": {
+      "en": "Added four new drivers: Fan (speed slider + enum speed + oscillation + mode), Humidifier (humidity sensor + target + water-empty alarm), Heater (target/current temperature + mode + fault alarm), and Light (brightness + color temperature + HSV color). All drivers include auto-detection of DPs at pairing time, repair flow, and full flow card support (triggers, conditions, actions).",
+      "de": "Vier neue Treiber hinzugefügt: Lüfter (Geschwindigkeitsregler + Enum-Geschwindigkeit + Schwenkung + Modus), Luftbefeuchter (Luftfeuchtigkeitssensor + Sollwert + Leer-Tank-Alarm), Heizgerät (Soll-/Ist-Temperatur + Modus + Fehleralarm) und Licht (Helligkeit + Farbtemperatur + HSV-Farbe). Alle Treiber enthalten Auto-Erkennung der DPs beim Einrichten, Reparatur-Dialog und vollständige Flow-Karten-Unterstützung (Auslöser, Bedingungen, Aktionen)."
+    },
+    "1.0.30": {
+      "en": "Reduced diagnostic log spam: repeated identical error messages (e.g. 'connection timed out' during offline periods) are now shown in full for the first 3 occurrences, then suppressed with a summary every 10th repeat. A 'suppressed N more times' notice appears when the message changes. Log counter resets on successful reconnect.",
+      "de": "Diagnose-Log-Spam reduziert: Wiederholte identische Fehlermeldungen (z.B. 'connection timed out' bei Offline-Phasen) werden jetzt für die ersten 3 Vorkommen vollständig angezeigt, danach unterdrückt und jede 10. Wiederholung zusammengefasst. Bei Nachrichtenwechsel erscheint ein Hinweis 'N-mal unterdrückt'. Zähler wird bei erfolgreichem Reconnect zurückgesetzt."
+    },
     "1.0.29": {
       "en": "Fixed root cause of HMAC mismatch app crash: after auto-detect or reconnect strips a TuyAPI instance's event listeners, any in-flight socket data could trigger an unhandled error event and crash the app. A no-op error handler is now attached before disconnect in both autoDetect.js and TuyaConnection.js to absorb residual errors during socket teardown.",
       "de": "Grundursache des HMAC-Mismatch-App-Absturzes behoben: Wenn Auto-Erkennung oder Reconnect die Event-Listener einer TuyAPI-Instanz entfernt, konnte eingehende Socket-Daten ein unbehandeltes Error-Event auslösen und die App abstürzen. Vor dem Disconnect wird jetzt in autoDetect.js und TuyaConnection.js ein No-Op-Fehlerhandler registriert, der Restfehler beim Socket-Abbau absorbiert."
@@ -934,6 +942,37 @@
       "uiComponent": "toggle",
       "uiQuickAction": false,
       "insights": false
+    },
+    "oscillate": {
+      "type": "boolean",
+      "title": {
+        "en": "Oscillate",
+        "de": "Schwenken"
+      },
+      "getable": true,
+      "setable": true,
+      "uiComponent": "toggle",
+      "uiQuickAction": false,
+      "insights": false
+    },
+    "fan_mode": {
+      "type": "enum",
+      "title": {
+        "en": "Fan Mode",
+        "de": "Lüftermodus"
+      },
+      "values": [
+        { "id": "normal", "title": { "en": "Normal", "de": "Normal" } },
+        { "id": "sleep",  "title": { "en": "Sleep",  "de": "Schlaf" } },
+        { "id": "nature", "title": { "en": "Nature",  "de": "Natur" } },
+        { "id": "breeze", "title": { "en": "Breeze",  "de": "Brise" } },
+        { "id": "smart",  "title": { "en": "Smart",   "de": "Smart" } }
+      ],
+      "getable": true,
+      "setable": true,
+      "uiComponent": "picker",
+      "uiQuickAction": false,
+      "insights": true
     }
   },
   "flow": {
@@ -1484,6 +1523,131 @@
             "example": "heat"
           }
         ]
+      },
+      {
+        "id": "fan_device_connected",
+        "title": { "en": "Fan connected", "de": "Lüfter verbunden" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=fan" }]
+      },
+      {
+        "id": "fan_device_disconnected",
+        "title": { "en": "Fan disconnected", "de": "Lüfter getrennt" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=fan" }]
+      },
+      {
+        "id": "fan_dp_changed",
+        "title": { "en": "Fan data point changed", "de": "Lüfter: Datenpunkt geändert" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=fan" }],
+        "tokens": [
+          { "name": "dp",    "type": "string", "title": { "en": "DP number", "de": "DP-Nummer" }, "example": "1" },
+          { "name": "value", "type": "string", "title": { "en": "Value",     "de": "Wert"      }, "example": "true" }
+        ]
+      },
+      {
+        "id": "fan_mode_changed",
+        "title": { "en": "Fan mode changed", "de": "Lüfter: Modus geändert" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=fan" }],
+        "tokens": [
+          { "name": "mode", "type": "string", "title": { "en": "Mode", "de": "Modus" }, "example": "normal" }
+        ]
+      },
+      {
+        "id": "humidifier_humidity_above",
+        "title": { "en": "Humidity went above threshold", "de": "Luftfeuchtigkeit überschreitet Schwellenwert" },
+        "titleFormatted": { "en": "Humidity went above [[humidity]]%", "de": "Luftfeuchtigkeit überschreitet [[humidity]]%" },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=humidifier" },
+          { "name": "humidity", "type": "number", "min": 0, "max": 100, "step": 1, "title": { "en": "Humidity (%)", "de": "Luftfeuchtigkeit (%)" } }
+        ],
+        "tokens": [
+          { "name": "humidity",     "type": "number", "title": { "en": "Humidity (%)",          "de": "Luftfeuchtigkeit (%)"          }, "example": 65 },
+          { "name": "prevHumidity", "type": "number", "title": { "en": "Previous Humidity (%)", "de": "Vorherige Luftfeuchtigkeit (%)" }, "example": 60 }
+        ]
+      },
+      {
+        "id": "humidifier_humidity_below",
+        "title": { "en": "Humidity dropped below threshold", "de": "Luftfeuchtigkeit unterschreitet Schwellenwert" },
+        "titleFormatted": { "en": "Humidity dropped below [[humidity]]%", "de": "Luftfeuchtigkeit unterschreitet [[humidity]]%" },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=humidifier" },
+          { "name": "humidity", "type": "number", "min": 0, "max": 100, "step": 1, "title": { "en": "Humidity (%)", "de": "Luftfeuchtigkeit (%)" } }
+        ],
+        "tokens": [
+          { "name": "humidity",     "type": "number", "title": { "en": "Humidity (%)",          "de": "Luftfeuchtigkeit (%)"          }, "example": 45 },
+          { "name": "prevHumidity", "type": "number", "title": { "en": "Previous Humidity (%)", "de": "Vorherige Luftfeuchtigkeit (%)" }, "example": 50 }
+        ]
+      },
+      {
+        "id": "humidifier_water_empty",
+        "title": { "en": "Water tank became empty", "de": "Wassertank ist leer" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=humidifier" }]
+      },
+      {
+        "id": "humidifier_water_filled",
+        "title": { "en": "Water tank was refilled", "de": "Wassertank wurde befüllt" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=humidifier" }]
+      },
+      {
+        "id": "humidifier_device_connected",
+        "title": { "en": "Humidifier connected", "de": "Luftbefeuchter verbunden" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=humidifier" }]
+      },
+      {
+        "id": "humidifier_device_disconnected",
+        "title": { "en": "Humidifier disconnected", "de": "Luftbefeuchter getrennt" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=humidifier" }]
+      },
+      {
+        "id": "humidifier_dp_changed",
+        "title": { "en": "Humidifier data point changed", "de": "Luftbefeuchter: Datenpunkt geändert" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=humidifier" }],
+        "tokens": [
+          { "name": "dp",    "type": "string", "title": { "en": "DP number", "de": "DP-Nummer" }, "example": "1" },
+          { "name": "value", "type": "string", "title": { "en": "Value",     "de": "Wert"      }, "example": "true" }
+        ]
+      },
+      {
+        "id": "heater_device_connected",
+        "title": { "en": "Heater connected", "de": "Heizgerät verbunden" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=heater" }]
+      },
+      {
+        "id": "heater_device_disconnected",
+        "title": { "en": "Heater disconnected", "de": "Heizgerät getrennt" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=heater" }]
+      },
+      {
+        "id": "heater_dp_changed",
+        "title": { "en": "Heater data point changed", "de": "Heizgerät: Datenpunkt geändert" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=heater" }],
+        "tokens": [
+          { "name": "dp",    "type": "string", "title": { "en": "DP number", "de": "DP-Nummer" }, "example": "1" },
+          { "name": "value", "type": "string", "title": { "en": "Value",     "de": "Wert"      }, "example": "true" }
+        ]
+      },
+      {
+        "id": "heater_fault_alarm_on",
+        "title": { "en": "Heater fault alarm triggered", "de": "Heizgerät: Fehleralarm ausgelöst" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=heater" }]
+      },
+      {
+        "id": "light_device_connected",
+        "title": { "en": "Light connected", "de": "Licht verbunden" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=light" }]
+      },
+      {
+        "id": "light_device_disconnected",
+        "title": { "en": "Light disconnected", "de": "Licht getrennt" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=light" }]
+      },
+      {
+        "id": "light_dp_changed",
+        "title": { "en": "Light data point changed", "de": "Licht: Datenpunkt geändert" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=light" }],
+        "tokens": [
+          { "name": "dp",    "type": "string", "title": { "en": "DP number", "de": "DP-Nummer" }, "example": "20" },
+          { "name": "value", "type": "string", "title": { "en": "Value",     "de": "Wert"      }, "example": "true" }
+        ]
       }
     ],
     "conditions": [
@@ -1823,6 +1987,90 @@
             "filter": "driver_id=air_conditioner"
           }
         ]
+      },
+      {
+        "id": "fan_device_is_connected",
+        "title": { "en": "Fan !{{is|is not}} connected", "de": "Lüfter !{{ist|ist nicht}} verbunden" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=fan" }]
+      },
+      {
+        "id": "fan_mode_is",
+        "title": { "en": "Fan mode !{{is|is not}}", "de": "Lüftermodus !{{ist|ist nicht}}" },
+        "titleFormatted": { "en": "Fan mode !{{is|is not}} [[mode]]", "de": "Lüftermodus !{{ist|ist nicht}} [[mode]]" },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=fan" },
+          {
+            "name": "mode", "type": "dropdown", "title": { "en": "Mode", "de": "Modus" },
+            "values": [
+              { "id": "normal", "label": { "en": "Normal", "de": "Normal" } },
+              { "id": "sleep",  "label": { "en": "Sleep",  "de": "Schlaf" } },
+              { "id": "nature", "label": { "en": "Nature",  "de": "Natur" } },
+              { "id": "breeze", "label": { "en": "Breeze",  "de": "Brise" } },
+              { "id": "smart",  "label": { "en": "Smart",   "de": "Smart" } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "humidifier_device_is_connected",
+        "title": { "en": "Humidifier !{{is|is not}} connected", "de": "Luftbefeuchter !{{ist|ist nicht}} verbunden" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=humidifier" }]
+      },
+      {
+        "id": "humidifier_humidity_is_above",
+        "title": { "en": "Humidity !{{is|is not}} above", "de": "Luftfeuchtigkeit !{{ist|ist nicht}} über" },
+        "titleFormatted": { "en": "Humidity !{{is|is not}} above [[humidity]]%", "de": "Luftfeuchtigkeit !{{ist|ist nicht}} über [[humidity]]%" },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=humidifier" },
+          { "name": "humidity", "type": "number", "min": 0, "max": 100, "step": 1, "title": { "en": "Humidity (%)", "de": "Luftfeuchtigkeit (%)" } }
+        ]
+      },
+      {
+        "id": "humidifier_humidity_is_below",
+        "title": { "en": "Humidity !{{is|is not}} below", "de": "Luftfeuchtigkeit !{{ist|ist nicht}} unter" },
+        "titleFormatted": { "en": "Humidity !{{is|is not}} below [[humidity]]%", "de": "Luftfeuchtigkeit !{{ist|ist nicht}} unter [[humidity]]%" },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=humidifier" },
+          { "name": "humidity", "type": "number", "min": 0, "max": 100, "step": 1, "title": { "en": "Humidity (%)", "de": "Luftfeuchtigkeit (%)" } }
+        ]
+      },
+      {
+        "id": "humidifier_water_is_empty",
+        "title": { "en": "Water tank !{{is|is not}} empty", "de": "Wassertank !{{ist|ist nicht}} leer" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=humidifier" }]
+      },
+      {
+        "id": "heater_device_is_connected",
+        "title": { "en": "Heater !{{is|is not}} connected", "de": "Heizgerät !{{ist|ist nicht}} verbunden" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=heater" }]
+      },
+      {
+        "id": "heater_fault_is_active",
+        "title": { "en": "Heater fault alarm !{{is|is not}} active", "de": "Heizgerät-Fehleralarm !{{ist|ist nicht}} aktiv" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=heater" }]
+      },
+      {
+        "id": "heater_mode_is",
+        "title": { "en": "Heater mode !{{is|is not}}", "de": "Heizgerät-Modus !{{ist|ist nicht}}" },
+        "titleFormatted": { "en": "Heater mode !{{is|is not}} [[mode]]", "de": "Heizgerät-Modus !{{ist|ist nicht}} [[mode]]" },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=heater" },
+          {
+            "name": "mode", "type": "dropdown", "title": { "en": "Mode", "de": "Modus" },
+            "values": [
+              { "id": "eco",     "label": { "en": "Eco",     "de": "Eco"    } },
+              { "id": "comfort", "label": { "en": "Comfort",  "de": "Komfort" } },
+              { "id": "boost",   "label": { "en": "Boost",   "de": "Boost"  } },
+              { "id": "away",    "label": { "en": "Away",    "de": "Abwesend" } },
+              { "id": "auto",    "label": { "en": "Auto",    "de": "Auto"   } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "light_device_is_connected",
+        "title": { "en": "Light !{{is|is not}} connected", "de": "Licht !{{ist|ist nicht}} verbunden" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=light" }]
       }
     ],
     "actions": [
@@ -2747,6 +2995,184 @@
             "filter": "driver_id=air_conditioner"
           }
         ]
+      },
+      {
+        "id": "fan_set_mode",
+        "title": { "en": "Set fan mode", "de": "Lüftermodus setzen" },
+        "titleFormatted": { "en": "Set fan mode to [[mode]]", "de": "Lüftermodus auf [[mode]] setzen" },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=fan" },
+          {
+            "name": "mode", "type": "dropdown", "title": { "en": "Mode", "de": "Modus" },
+            "values": [
+              { "id": "normal", "label": { "en": "Normal", "de": "Normal" } },
+              { "id": "sleep",  "label": { "en": "Sleep",  "de": "Schlaf" } },
+              { "id": "nature", "label": { "en": "Nature",  "de": "Natur" } },
+              { "id": "breeze", "label": { "en": "Breeze",  "de": "Brise" } },
+              { "id": "smart",  "label": { "en": "Smart",   "de": "Smart" } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "fan_set_fan_speed",
+        "title": { "en": "Set fan speed", "de": "Lüftergeschwindigkeit setzen" },
+        "titleFormatted": { "en": "Set fan speed to [[fan_speed]]", "de": "Lüftergeschwindigkeit auf [[fan_speed]] setzen" },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=fan" },
+          {
+            "name": "fan_speed", "type": "dropdown", "title": { "en": "Fan Speed", "de": "Lüftergeschwindigkeit" },
+            "values": [
+              { "id": "low",    "label": { "en": "Low",    "de": "Niedrig" } },
+              { "id": "medium", "label": { "en": "Medium", "de": "Mittel"  } },
+              { "id": "high",   "label": { "en": "High",   "de": "Hoch"   } },
+              { "id": "auto",   "label": { "en": "Auto",   "de": "Auto"   } },
+              { "id": "turbo",  "label": { "en": "Turbo",  "de": "Turbo"  } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "fan_set_oscillate",
+        "title": { "en": "Set fan oscillation", "de": "Lüfter-Schwenkung setzen" },
+        "titleFormatted": { "en": "Set fan oscillation [[enabled]]", "de": "Lüfter-Schwenkung [[enabled]]" },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=fan" },
+          {
+            "name": "enabled", "type": "dropdown", "title": { "en": "Oscillate", "de": "Schwenken" },
+            "values": [
+              { "id": "true",  "label": { "en": "On",  "de": "Ein" } },
+              { "id": "false", "label": { "en": "Off", "de": "Aus" } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "fan_force_reconnect",
+        "title": { "en": "Force fan reconnect", "de": "Lüfter: Verbindung neu aufbauen" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=fan" }]
+      },
+      {
+        "id": "fan_refresh_device",
+        "title": { "en": "Refresh fan values", "de": "Lüfter: Daten aktualisieren" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=fan" }]
+      },
+      {
+        "id": "humidifier_set_target_humidity",
+        "title": { "en": "Set target humidity", "de": "Ziel-Luftfeuchtigkeit setzen" },
+        "titleFormatted": { "en": "Set target humidity to [[humidity]]%", "de": "Ziel-Luftfeuchtigkeit auf [[humidity]]% setzen" },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=humidifier" },
+          { "name": "humidity", "type": "number", "min": 25, "max": 95, "step": 5, "title": { "en": "Target humidity (%)", "de": "Ziel-Luftfeuchtigkeit (%)" } }
+        ]
+      },
+      {
+        "id": "humidifier_set_mode",
+        "title": { "en": "Set humidifier mode", "de": "Luftbefeuchter-Modus setzen" },
+        "titleFormatted": { "en": "Set humidifier mode to [[mode]]", "de": "Luftbefeuchter-Modus auf [[mode]] setzen" },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=humidifier" },
+          {
+            "name": "mode", "type": "dropdown", "title": { "en": "Mode", "de": "Modus" },
+            "values": [
+              { "id": "auto",   "label": { "en": "Auto",   "de": "Auto"    } },
+              { "id": "manual", "label": { "en": "Manual", "de": "Manuell" } },
+              { "id": "normal", "label": { "en": "Normal", "de": "Normal"  } },
+              { "id": "sleep",  "label": { "en": "Sleep",  "de": "Schlaf"  } },
+              { "id": "eco",    "label": { "en": "Eco",    "de": "Eco"     } },
+              { "id": "boost",  "label": { "en": "Boost",  "de": "Boost"   } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "humidifier_set_fan_speed",
+        "title": { "en": "Set humidifier fan speed", "de": "Luftbefeuchter-Lüftergeschwindigkeit setzen" },
+        "titleFormatted": { "en": "Set humidifier fan speed to [[fan_speed]]", "de": "Luftbefeuchter-Lüftergeschwindigkeit auf [[fan_speed]] setzen" },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=humidifier" },
+          {
+            "name": "fan_speed", "type": "dropdown", "title": { "en": "Fan Speed", "de": "Lüftergeschwindigkeit" },
+            "values": [
+              { "id": "low",    "label": { "en": "Low",    "de": "Niedrig" } },
+              { "id": "medium", "label": { "en": "Medium", "de": "Mittel"  } },
+              { "id": "high",   "label": { "en": "High",   "de": "Hoch"   } },
+              { "id": "auto",   "label": { "en": "Auto",   "de": "Auto"   } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "humidifier_force_reconnect",
+        "title": { "en": "Force humidifier reconnect", "de": "Luftbefeuchter: Verbindung neu aufbauen" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=humidifier" }]
+      },
+      {
+        "id": "humidifier_refresh_device",
+        "title": { "en": "Refresh humidifier values", "de": "Luftbefeuchter: Daten aktualisieren" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=humidifier" }]
+      },
+      {
+        "id": "heater_set_mode",
+        "title": { "en": "Set heater mode", "de": "Heizgerät-Modus setzen" },
+        "titleFormatted": { "en": "Set heater mode to [[mode]]", "de": "Heizgerät-Modus auf [[mode]] setzen" },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=heater" },
+          {
+            "name": "mode", "type": "dropdown", "title": { "en": "Mode", "de": "Modus" },
+            "values": [
+              { "id": "eco",     "label": { "en": "Eco",     "de": "Eco"      } },
+              { "id": "comfort", "label": { "en": "Comfort",  "de": "Komfort"  } },
+              { "id": "boost",   "label": { "en": "Boost",   "de": "Boost"   } },
+              { "id": "away",    "label": { "en": "Away",    "de": "Abwesend" } },
+              { "id": "auto",    "label": { "en": "Auto",    "de": "Auto"    } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "heater_set_target_temp",
+        "title": { "en": "Set heater target temperature", "de": "Heizgerät-Solltemperatur setzen" },
+        "titleFormatted": { "en": "Set heater target temperature to [[temperature]] °C", "de": "Heizgerät-Solltemperatur auf [[temperature]] °C setzen" },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=heater" },
+          { "name": "temperature", "type": "number", "min": 5, "max": 35, "step": 0.5, "title": { "en": "Temperature (°C)", "de": "Temperatur (°C)" } }
+        ]
+      },
+      {
+        "id": "heater_set_child_lock",
+        "title": { "en": "Set heater child lock", "de": "Heizgerät-Kindersicherung setzen" },
+        "titleFormatted": { "en": "Set heater child lock [[enabled]]", "de": "Heizgerät-Kindersicherung [[enabled]]" },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=heater" },
+          {
+            "name": "enabled", "type": "dropdown", "title": { "en": "Child lock", "de": "Kindersicherung" },
+            "values": [
+              { "id": "true",  "label": { "en": "On",  "de": "Ein" } },
+              { "id": "false", "label": { "en": "Off", "de": "Aus" } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "heater_force_reconnect",
+        "title": { "en": "Force heater reconnect", "de": "Heizgerät: Verbindung neu aufbauen" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=heater" }]
+      },
+      {
+        "id": "heater_refresh_device",
+        "title": { "en": "Refresh heater values", "de": "Heizgerät: Daten aktualisieren" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=heater" }]
+      },
+      {
+        "id": "light_force_reconnect",
+        "title": { "en": "Force light reconnect", "de": "Licht: Verbindung neu aufbauen" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=light" }]
+      },
+      {
+        "id": "light_refresh_device",
+        "title": { "en": "Refresh light values", "de": "Licht: Daten aktualisieren" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=light" }]
       }
     ]
   },
@@ -4140,6 +4566,261 @@
         "large": "/drivers/air_conditioner/assets/images/large.png",
         "xlarge": "/drivers/air_conditioner/assets/images/xlarge.png"
       }
+    },
+    {
+      "id": "fan",
+      "name": { "en": "Fan", "de": "Lüfter" },
+      "class": "fan",
+      "capabilities": ["onoff", "dim"],
+      "capabilitiesOptions": {
+        "dim": {
+          "title": { "en": "Fan Speed", "de": "Lüftergeschwindigkeit" },
+          "preventInsights": false
+        }
+      },
+      "settings": [
+        {
+          "type": "group",
+          "label": { "en": "Connection", "de": "Verbindung" },
+          "children": [
+            { "id": "ip",        "type": "text",   "label": { "en": "IP Address",      "de": "IP-Adresse"        }, "value": "", "hint": { "en": "Local IP address of your device.", "de": "Lokale IP-Adresse des Geräts." } },
+            { "id": "device_id", "type": "text",   "label": { "en": "Device ID",       "de": "Geräte-ID"         }, "value": "" },
+            { "id": "local_key", "type": "text",   "label": { "en": "Local Key",       "de": "Lokaler Schlüssel" }, "value": "" },
+            { "id": "version",   "type": "dropdown", "label": { "en": "Protocol Version", "de": "Protokollversion" }, "value": "3.3",
+              "values": [
+                { "id": "3.1", "label": { "en": "3.1 (legacy)", "de": "3.1 (veraltet)" } },
+                { "id": "3.3", "label": { "en": "3.3", "de": "3.3" } },
+                { "id": "3.4", "label": { "en": "3.4", "de": "3.4" } },
+                { "id": "3.5", "label": { "en": "3.5", "de": "3.5" } }
+              ]
+            },
+            { "id": "polling_interval", "type": "number", "label": { "en": "Polling Interval (seconds)", "de": "Abfrageintervall (Sekunden)" }, "value": 30, "min": 0, "max": 3600, "hint": { "en": "Set to 0 to disable polling. Default: 30 s.", "de": "0 = kein Polling. Standard: 30 s." } }
+          ]
+        },
+        {
+          "type": "group",
+          "label": { "en": "Data Points (DPs)", "de": "Datenpunkte (DPs)" },
+          "children": [
+            { "id": "dp_onoff",     "type": "number", "label": { "en": "On/Off DP",   "de": "Ein/Aus DP"   }, "value": 1,   "hint": { "en": "DP for power on/off (default: 1)", "de": "DP für Ein/Aus (Standard: 1)" } },
+            { "id": "dp_speed",     "type": "number", "label": { "en": "Speed DP",    "de": "Geschwindigkeit DP" }, "value": 3, "hint": { "en": "DP for numeric speed (0 = disable). Maps to Homey speed slider.", "de": "DP für numerische Geschwindigkeit (0 = deaktiviert). Wird auf den Homey-Regler gemappt." } },
+            { "id": "speed_min",    "type": "number", "label": { "en": "Speed Min",   "de": "Min-Geschwindigkeit" }, "value": 1,   "min": 0,  "max": 1000 },
+            { "id": "speed_max",    "type": "number", "label": { "en": "Speed Max",   "de": "Max-Geschwindigkeit" }, "value": 100, "min": 1,  "max": 1000 },
+            { "id": "dp_fan_speed", "type": "number", "label": { "en": "Fan Speed Enum DP", "de": "Lüftergeschwindigkeit Enum DP" }, "value": 0, "hint": { "en": "DP for string fan speed (low/medium/high). Set to 0 to disable.", "de": "DP für String-Lüftergeschwindigkeit (low/medium/high). 0 = deaktiviert." } },
+            { "id": "fan_speed_values", "type": "text", "label": { "en": "Fan speed values (comma-separated)", "de": "Lüftergeschwindigkeit-Werte (kommagetrennt)" }, "value": "low,medium,high,auto,turbo", "hint": { "en": "Supported string values for fan speed.", "de": "Unterstützte String-Werte für die Lüftergeschwindigkeit." } },
+            { "id": "dp_oscillate", "type": "number", "label": { "en": "Oscillate DP", "de": "Schwenken DP" }, "value": 0, "hint": { "en": "DP for oscillation toggle. Set to 0 to disable.", "de": "DP für Schwenken. 0 = deaktiviert." } },
+            { "id": "dp_mode",     "type": "number", "label": { "en": "Mode DP",    "de": "Modus DP"    }, "value": 0, "hint": { "en": "DP for fan mode (normal/sleep/nature). Set to 0 to disable.", "de": "DP für Lüftermodus. 0 = deaktiviert." } },
+            { "id": "fan_mode_values", "type": "text", "label": { "en": "Mode values (comma-separated)", "de": "Modus-Werte (kommagetrennt)" }, "value": "normal,sleep,nature,breeze,smart", "hint": { "en": "Supported mode values.", "de": "Unterstützte Modus-Werte." } },
+            { "id": "dp_child_lock",      "type": "number", "label": { "en": "Child Lock DP",      "de": "Kindersicherung DP"   }, "value": 0, "hint": { "en": "Set to 0 to disable.", "de": "0 = deaktiviert." } },
+            { "id": "dp_countdown_timer", "type": "number", "label": { "en": "Timer DP",           "de": "Timer DP"             }, "value": 0, "hint": { "en": "Set to 0 to disable.", "de": "0 = deaktiviert." } },
+            { "id": "dp_countdown_left",  "type": "number", "label": { "en": "Timer Remaining DP", "de": "Verbleibende Zeit DP" }, "value": 0, "hint": { "en": "Read-only. Set to 0 to disable.", "de": "Nur lesen. 0 = deaktiviert." } }
+          ]
+        },
+        {
+          "type": "group",
+          "label": { "en": "Status", "de": "Status" },
+          "children": [
+            { "id": "connection_status", "type": "text", "label": { "en": "Connection",       "de": "Verbindung"           }, "value": "—", "hint": { "en": "Updated automatically by the app. Do not edit.", "de": "Wird automatisch aktualisiert. Nicht bearbeiten." } },
+            { "id": "last_seen",         "type": "text", "label": { "en": "Last data received", "de": "Zuletzt Daten empfangen" }, "value": "—", "hint": { "en": "Updated automatically by the app. Do not edit.", "de": "Wird automatisch aktualisiert. Nicht bearbeiten." } }
+          ]
+        }
+      ],
+      "pair":   [{ "id": "credentials" }, { "id": "list_devices" }],
+      "repair": [{ "id": "repair" }],
+      "images": {
+        "small":  "/drivers/fan/assets/images/small.png",
+        "large":  "/drivers/fan/assets/images/large.png",
+        "xlarge": "/drivers/fan/assets/images/xlarge.png"
+      }
+    },
+    {
+      "id": "humidifier",
+      "name": { "en": "Humidifier", "de": "Luftbefeuchter" },
+      "class": "humidifier",
+      "capabilities": ["onoff", "measure_humidity", "fan_speed", "mode", "target_humidity"],
+      "capabilitiesOptions": {
+        "measure_humidity": { "uiQuickAction": true },
+        "alarm_water": {
+          "title": { "en": "Water Tank Empty", "de": "Wassertank leer" },
+          "insightsTitleTrue":  { "en": "Water tank became empty", "de": "Wassertank wurde leer" },
+          "insightsTitleFalse": { "en": "Water tank refilled",     "de": "Wassertank wurde befüllt" }
+        }
+      },
+      "settings": [
+        {
+          "type": "group",
+          "label": { "en": "Connection", "de": "Verbindung" },
+          "children": [
+            { "id": "ip",        "type": "text",   "label": { "en": "IP Address",      "de": "IP-Adresse"        }, "value": "", "hint": { "en": "Local IP address of your device.", "de": "Lokale IP-Adresse des Geräts." } },
+            { "id": "device_id", "type": "text",   "label": { "en": "Device ID",       "de": "Geräte-ID"         }, "value": "" },
+            { "id": "local_key", "type": "text",   "label": { "en": "Local Key",       "de": "Lokaler Schlüssel" }, "value": "" },
+            { "id": "version",   "type": "dropdown", "label": { "en": "Protocol Version", "de": "Protokollversion" }, "value": "3.3",
+              "values": [
+                { "id": "3.1", "label": { "en": "3.1 (legacy)", "de": "3.1 (veraltet)" } },
+                { "id": "3.3", "label": { "en": "3.3", "de": "3.3" } },
+                { "id": "3.4", "label": { "en": "3.4", "de": "3.4" } },
+                { "id": "3.5", "label": { "en": "3.5", "de": "3.5" } }
+              ]
+            },
+            { "id": "polling_interval", "type": "number", "label": { "en": "Polling Interval (seconds)", "de": "Abfrageintervall (Sekunden)" }, "value": 30, "min": 0, "max": 3600, "hint": { "en": "Set to 0 to disable polling. Default: 30 s.", "de": "0 = kein Polling. Standard: 30 s." } }
+          ]
+        },
+        {
+          "type": "group",
+          "label": { "en": "Data Points (DPs)", "de": "Datenpunkte (DPs)" },
+          "children": [
+            { "id": "dp_onoff",             "type": "number", "label": { "en": "On/Off DP",           "de": "Ein/Aus DP"              }, "value": 1,  "hint": { "en": "DP for power on/off (default: 1)", "de": "DP für Ein/Aus (Standard: 1)" } },
+            { "id": "dp_current_humidity",  "type": "number", "label": { "en": "Current Humidity DP", "de": "Aktuelle Luftfeuchtigkeit DP" }, "value": 14, "hint": { "en": "DP for current humidity reading.", "de": "DP für die aktuelle Luftfeuchtigkeit." } },
+            { "id": "dp_target_humidity",   "type": "number", "label": { "en": "Target Humidity DP",  "de": "Ziel-Luftfeuchtigkeit DP"    }, "value": 13, "hint": { "en": "DP for target humidity setpoint.", "de": "DP für den Sollwert." } },
+            { "id": "dp_mode",              "type": "number", "label": { "en": "Mode DP",             "de": "Modus DP"                    }, "value": 24 },
+            { "id": "mode_values",          "type": "text",   "label": { "en": "Mode values (comma-separated)", "de": "Modus-Werte (kommagetrennt)" }, "value": "auto,manual,normal,sleep,eco,boost", "hint": { "en": "Supported mode values.", "de": "Unterstützte Modus-Werte." } },
+            { "id": "dp_fan_speed",         "type": "number", "label": { "en": "Fan Speed DP",        "de": "Lüftergeschwindigkeit DP"    }, "value": 0,  "hint": { "en": "Set to 0 to disable.", "de": "0 = deaktiviert." } },
+            { "id": "fan_speed_values",     "type": "text",   "label": { "en": "Fan speed values (comma-separated)", "de": "Lüftergeschwindigkeit-Werte (kommagetrennt)" }, "value": "low,medium,middle,high,auto", "hint": { "en": "Supported fan speed values.", "de": "Unterstützte Lüftergeschwindigkeitswerte." } },
+            { "id": "dp_child_lock",        "type": "number", "label": { "en": "Child Lock DP",       "de": "Kindersicherung DP"          }, "value": 0,  "hint": { "en": "Set to 0 to disable.", "de": "0 = deaktiviert." } },
+            { "id": "dp_water_empty",       "type": "number", "label": { "en": "Water Empty DP",      "de": "Wassertank leer DP"          }, "value": 0,  "hint": { "en": "DP for empty water tank alarm. Set to 0 to disable.", "de": "DP für den Leer-Tank-Alarm. 0 = deaktiviert." } },
+            { "id": "dp_countdown_timer",   "type": "number", "label": { "en": "Timer DP",            "de": "Timer DP"                    }, "value": 0,  "hint": { "en": "Set to 0 to disable.", "de": "0 = deaktiviert." } },
+            { "id": "dp_countdown_left",    "type": "number", "label": { "en": "Timer Remaining DP",  "de": "Verbleibende Zeit DP"        }, "value": 0,  "hint": { "en": "Read-only. Set to 0 to disable.", "de": "Nur lesen. 0 = deaktiviert." } },
+            { "id": "dp_temperature",       "type": "number", "label": { "en": "Temperature DP",      "de": "Temperatur DP"               }, "value": 0,  "hint": { "en": "DP for temperature sensor. Set to 0 to disable.", "de": "DP für Temperatursensor. 0 = deaktiviert." } },
+            { "id": "dp_anion",             "type": "number", "label": { "en": "Ioniser DP",          "de": "Ionisator DP"                }, "value": 0,  "hint": { "en": "DP for ioniser. Set to 0 to disable.", "de": "DP für den Ionisator. 0 = deaktiviert." } }
+          ]
+        },
+        {
+          "type": "group",
+          "label": { "en": "Status", "de": "Status" },
+          "children": [
+            { "id": "connection_status", "type": "text", "label": { "en": "Connection",        "de": "Verbindung"            }, "value": "—", "hint": { "en": "Updated automatically by the app. Do not edit.", "de": "Wird automatisch aktualisiert. Nicht bearbeiten." } },
+            { "id": "last_seen",         "type": "text", "label": { "en": "Last data received", "de": "Zuletzt Daten empfangen" }, "value": "—", "hint": { "en": "Updated automatically by the app. Do not edit.", "de": "Wird automatisch aktualisiert. Nicht bearbeiten." } }
+          ]
+        }
+      ],
+      "pair":   [{ "id": "credentials" }, { "id": "list_devices" }],
+      "repair": [{ "id": "repair" }],
+      "images": {
+        "small":  "/drivers/humidifier/assets/images/small.png",
+        "large":  "/drivers/humidifier/assets/images/large.png",
+        "xlarge": "/drivers/humidifier/assets/images/xlarge.png"
+      }
+    },
+    {
+      "id": "heater",
+      "name": { "en": "Heater", "de": "Heizgerät" },
+      "class": "heater",
+      "capabilities": ["onoff", "target_temperature"],
+      "capabilitiesOptions": {
+        "target_temperature": { "min": 5, "max": 35, "step": 0.5 },
+        "measure_temperature": { "title": { "en": "Current Temperature", "de": "Aktuelle Temperatur" } }
+      },
+      "settings": [
+        {
+          "type": "group",
+          "label": { "en": "Connection", "de": "Verbindung" },
+          "children": [
+            { "id": "ip",        "type": "text",   "label": { "en": "IP Address",      "de": "IP-Adresse"        }, "value": "", "hint": { "en": "Local IP address of your device.", "de": "Lokale IP-Adresse des Geräts." } },
+            { "id": "device_id", "type": "text",   "label": { "en": "Device ID",       "de": "Geräte-ID"         }, "value": "" },
+            { "id": "local_key", "type": "text",   "label": { "en": "Local Key",       "de": "Lokaler Schlüssel" }, "value": "" },
+            { "id": "version",   "type": "dropdown", "label": { "en": "Protocol Version", "de": "Protokollversion" }, "value": "3.3",
+              "values": [
+                { "id": "3.1", "label": { "en": "3.1 (legacy)", "de": "3.1 (veraltet)" } },
+                { "id": "3.3", "label": { "en": "3.3", "de": "3.3" } },
+                { "id": "3.4", "label": { "en": "3.4", "de": "3.4" } },
+                { "id": "3.5", "label": { "en": "3.5", "de": "3.5" } }
+              ]
+            },
+            { "id": "polling_interval", "type": "number", "label": { "en": "Polling Interval (seconds)", "de": "Abfrageintervall (Sekunden)" }, "value": 30, "min": 0, "max": 3600, "hint": { "en": "Set to 0 to disable polling. Default: 30 s.", "de": "0 = kein Polling. Standard: 30 s." } }
+          ]
+        },
+        {
+          "type": "group",
+          "label": { "en": "Data Points (DPs)", "de": "Datenpunkte (DPs)" },
+          "children": [
+            { "id": "dp_onoff",           "type": "number", "label": { "en": "On/Off DP",              "de": "Ein/Aus DP"              }, "value": 1, "hint": { "en": "DP for power on/off (default: 1)", "de": "DP für Ein/Aus (Standard: 1)" } },
+            { "id": "dp_target_temp",     "type": "number", "label": { "en": "Target Temperature DP",  "de": "Solltemperatur DP"       }, "value": 2, "hint": { "en": "DP for target temperature (default: 2).", "de": "DP für die Solltemperatur (Standard: 2)." } },
+            { "id": "dp_current_temp",    "type": "number", "label": { "en": "Current Temperature DP", "de": "Aktuelle Temperatur DP"  }, "value": 0, "hint": { "en": "DP for current temperature reading. Set to 0 to disable.", "de": "DP für die aktuelle Temperatur. 0 = deaktiviert." } },
+            { "id": "temp_divisor",       "type": "number", "label": { "en": "Temperature Divisor",    "de": "Temperaturdivisor"       }, "value": 1, "hint": { "en": "Divide raw DP value by this to get °C. Use 10 if device reports e.g. 215 for 21.5 °C.", "de": "Rohwert durch diesen Faktor dividieren. 10 verwenden wenn das Gerät z.B. 215 für 21,5 °C meldet." } },
+            { "id": "temp_min",           "type": "number", "label": { "en": "Min Temperature (°C)",   "de": "Mindesttemperatur (°C)"  }, "value": 5,  "min": -10, "max": 30 },
+            { "id": "temp_max",           "type": "number", "label": { "en": "Max Temperature (°C)",   "de": "Maximaltemperatur (°C)"  }, "value": 35, "min": 10,  "max": 60 },
+            { "id": "temp_step",          "type": "number", "label": { "en": "Temperature Step (°C)",  "de": "Temperaturschritt (°C)"  }, "value": 1,  "min": 0.5, "max": 5, "step": 0.5 },
+            { "id": "dp_mode",            "type": "number", "label": { "en": "Mode DP",                "de": "Modus DP"                }, "value": 0, "hint": { "en": "Set to 0 to disable.", "de": "0 = deaktiviert." } },
+            { "id": "mode_values",        "type": "text",   "label": { "en": "Mode values (comma-separated)", "de": "Modus-Werte (kommagetrennt)" }, "value": "eco,comfort,boost,away,auto", "hint": { "en": "Supported mode values.", "de": "Unterstützte Modus-Werte." } },
+            { "id": "dp_oscillate",       "type": "number", "label": { "en": "Oscillate DP",           "de": "Schwenken DP"            }, "value": 0, "hint": { "en": "Set to 0 to disable.", "de": "0 = deaktiviert." } },
+            { "id": "dp_child_lock",      "type": "number", "label": { "en": "Child Lock DP",          "de": "Kindersicherung DP"      }, "value": 0, "hint": { "en": "Set to 0 to disable.", "de": "0 = deaktiviert." } },
+            { "id": "dp_fault",           "type": "number", "label": { "en": "Fault Alarm DP",         "de": "Fehleralarm DP"          }, "value": 0, "hint": { "en": "DP for fault/error alarm. Set to 0 to disable.", "de": "DP für Fehleralarm. 0 = deaktiviert." } },
+            { "id": "dp_countdown_timer", "type": "number", "label": { "en": "Timer DP",               "de": "Timer DP"                }, "value": 0, "hint": { "en": "Set to 0 to disable.", "de": "0 = deaktiviert." } },
+            { "id": "dp_countdown_left",  "type": "number", "label": { "en": "Timer Remaining DP",     "de": "Verbleibende Zeit DP"    }, "value": 0, "hint": { "en": "Read-only. Set to 0 to disable.", "de": "Nur lesen. 0 = deaktiviert." } }
+          ]
+        },
+        {
+          "type": "group",
+          "label": { "en": "Status", "de": "Status" },
+          "children": [
+            { "id": "connection_status", "type": "text", "label": { "en": "Connection",        "de": "Verbindung"            }, "value": "—", "hint": { "en": "Updated automatically by the app. Do not edit.", "de": "Wird automatisch aktualisiert. Nicht bearbeiten." } },
+            { "id": "last_seen",         "type": "text", "label": { "en": "Last data received", "de": "Zuletzt Daten empfangen" }, "value": "—", "hint": { "en": "Updated automatically by the app. Do not edit.", "de": "Wird automatisch aktualisiert. Nicht bearbeiten." } }
+          ]
+        }
+      ],
+      "pair":   [{ "id": "credentials" }, { "id": "list_devices" }],
+      "repair": [{ "id": "repair" }],
+      "images": {
+        "small":  "/drivers/heater/assets/images/small.png",
+        "large":  "/drivers/heater/assets/images/large.png",
+        "xlarge": "/drivers/heater/assets/images/xlarge.png"
+      }
+    },
+    {
+      "id": "light",
+      "name": { "en": "Light", "de": "Licht" },
+      "class": "light",
+      "capabilities": ["onoff", "dim"],
+      "settings": [
+        {
+          "type": "group",
+          "label": { "en": "Connection", "de": "Verbindung" },
+          "children": [
+            { "id": "ip",        "type": "text",   "label": { "en": "IP Address",      "de": "IP-Adresse"        }, "value": "", "hint": { "en": "Local IP address of your device.", "de": "Lokale IP-Adresse des Geräts." } },
+            { "id": "device_id", "type": "text",   "label": { "en": "Device ID",       "de": "Geräte-ID"         }, "value": "" },
+            { "id": "local_key", "type": "text",   "label": { "en": "Local Key",       "de": "Lokaler Schlüssel" }, "value": "" },
+            { "id": "version",   "type": "dropdown", "label": { "en": "Protocol Version", "de": "Protokollversion" }, "value": "3.3",
+              "values": [
+                { "id": "3.1", "label": { "en": "3.1 (legacy)", "de": "3.1 (veraltet)" } },
+                { "id": "3.3", "label": { "en": "3.3", "de": "3.3" } },
+                { "id": "3.4", "label": { "en": "3.4", "de": "3.4" } },
+                { "id": "3.5", "label": { "en": "3.5", "de": "3.5" } }
+              ]
+            },
+            { "id": "polling_interval", "type": "number", "label": { "en": "Polling Interval (seconds)", "de": "Abfrageintervall (Sekunden)" }, "value": 30, "min": 0, "max": 3600, "hint": { "en": "Set to 0 to disable polling. Default: 30 s.", "de": "0 = kein Polling. Standard: 30 s." } }
+          ]
+        },
+        {
+          "type": "group",
+          "label": { "en": "Data Points (DPs)", "de": "Datenpunkte (DPs)" },
+          "children": [
+            { "id": "dp_onoff",             "type": "number",  "label": { "en": "On/Off DP",          "de": "Ein/Aus DP"               }, "value": 20,   "hint": { "en": "DP for power on/off (default: 20 or 1).", "de": "DP für Ein/Aus (Standard: 20 oder 1)." } },
+            { "id": "dp_brightness",        "type": "number",  "label": { "en": "Brightness DP",      "de": "Helligkeit DP"            }, "value": 22,   "hint": { "en": "DP for brightness (default: 22 or 3). Set to 0 to disable.", "de": "DP für die Helligkeit (Standard: 22 oder 3). 0 = deaktiviert." } },
+            { "id": "brightness_max",       "type": "number",  "label": { "en": "Brightness Max",     "de": "Maximale Helligkeit"      }, "value": 1000, "hint": { "en": "Maximum raw value for brightness (1000 or 255).", "de": "Maximaler Rohwert für Helligkeit (1000 oder 255)." }, "min": 1, "max": 1000 },
+            { "id": "dp_color_temp",        "type": "number",  "label": { "en": "Color Temp DP",      "de": "Farbtemperatur DP"        }, "value": 23,   "hint": { "en": "DP for color temperature (default: 23 or 4). Set to 0 to disable.", "de": "DP für die Farbtemperatur (Standard: 23 oder 4). 0 = deaktiviert." } },
+            { "id": "color_temp_max",       "type": "number",  "label": { "en": "Color Temp Max",     "de": "Max Farbtemperatur"       }, "value": 1000, "hint": { "en": "Maximum raw value for color temperature.", "de": "Maximaler Rohwert für die Farbtemperatur." }, "min": 1, "max": 1000 },
+            { "id": "color_temp_invert",    "type": "checkbox","label": { "en": "Invert Color Temp",  "de": "Farbtemperatur invertieren" }, "value": false, "hint": { "en": "Enable if 0 = warm and max = cool (reverse direction).", "de": "Aktivieren wenn 0 = warm und max = kalt (umgekehrte Richtung)." } },
+            { "id": "dp_color_mode",        "type": "number",  "label": { "en": "Color Mode DP",      "de": "Farbmodus DP"             }, "value": 21,   "hint": { "en": "DP for color mode (white/colour). Default: 21 or 2. Set to 0 to disable.", "de": "DP für den Farbmodus (white/colour). Standard: 21 oder 2. 0 = deaktiviert." } },
+            { "id": "color_mode_white_val", "type": "text",    "label": { "en": "White Mode Value",   "de": "Weiß-Modus Wert"          }, "value": "white",  "hint": { "en": "String value sent to device to activate white/CCT mode.", "de": "String-Wert für den Weißlicht-Modus." } },
+            { "id": "color_mode_color_val", "type": "text",    "label": { "en": "Color Mode Value",   "de": "Farb-Modus Wert"          }, "value": "colour", "hint": { "en": "String value sent to device to activate color (HSV) mode.", "de": "String-Wert für den Farbmodus (HSV)." } },
+            { "id": "dp_color",             "type": "number",  "label": { "en": "Color (HSV) DP",     "de": "Farbe (HSV) DP"           }, "value": 24,   "hint": { "en": "DP for HSV hex color string (default: 24 or 5). Set to 0 to disable.", "de": "DP für den HSV-Farbstring (Standard: 24 oder 5). 0 = deaktiviert." } }
+          ]
+        },
+        {
+          "type": "group",
+          "label": { "en": "Status", "de": "Status" },
+          "children": [
+            { "id": "connection_status", "type": "text", "label": { "en": "Connection",        "de": "Verbindung"            }, "value": "—", "hint": { "en": "Updated automatically by the app. Do not edit.", "de": "Wird automatisch aktualisiert. Nicht bearbeiten." } },
+            { "id": "last_seen",         "type": "text", "label": { "en": "Last data received", "de": "Zuletzt Daten empfangen" }, "value": "—", "hint": { "en": "Updated automatically by the app. Do not edit.", "de": "Wird automatisch aktualisiert. Nicht bearbeiten." } }
+          ]
+        }
+      ],
+      "pair":   [{ "id": "credentials" }, { "id": "list_devices" }],
+      "repair": [{ "id": "repair" }],
+      "images": {
+        "small":  "/drivers/light/assets/images/small.png",
+        "large":  "/drivers/light/assets/images/large.png",
+        "xlarge": "/drivers/light/assets/images/xlarge.png"
+      }
     }
   ],
   "brandColor": "#ED5308",
@@ -4147,14 +4828,22 @@
     "en": [
       "tuya",
       "dehumidifier",
+      "humidifier",
       "humidity",
+      "fan",
+      "heater",
+      "light",
       "local",
       "lan"
     ],
     "de": [
       "tuya",
       "entfeuchter",
+      "luftbefeuchter",
       "luftfeuchtigkeit",
+      "lüfter",
+      "heizgerät",
+      "licht",
       "lokal",
       "lan"
     ]
