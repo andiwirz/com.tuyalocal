@@ -1,4 +1,8 @@
 {
+  "1.0.32": {
+    "en": "Fan driver: added fan direction (forward / reverse) capability with auto-detection at pairing time, plus flow cards for direction changed trigger, direction condition, and set direction action.",
+    "de": "Lüfter-Treiber: Lüfterrichtung (Vorwärts / Rückwärts) als optionale Fähigkeit hinzugefügt, inkl. Auto-Erkennung beim Einrichten und Flow-Karten (Auslöser, Bedingung, Aktion)."
+  },
   "1.0.31": {
     "en": "Added four new drivers: Fan (speed slider + enum speed + oscillation + mode), Humidifier (humidity sensor + target + water-empty alarm), Heater (target/current temperature + mode + fault alarm), and Light (brightness + color temperature + HSV color). All drivers include auto-detection of DPs at pairing time, repair flow, and full flow card support (triggers, conditions, actions).",
     "de": "Vier neue Treiber hinzugefügt: Lüfter (Geschwindigkeitsregler + Enum-Geschwindigkeit + Schwenkung + Modus), Luftbefeuchter (Luftfeuchtigkeitssensor + Sollwert + Leer-Tank-Alarm), Heizgerät (Soll-/Ist-Temperatur + Modus + Fehleralarm) und Licht (Helligkeit + Farbtemperatur + HSV-Farbe). Alle Treiber enthalten Auto-Erkennung der DPs beim Einrichten, Reparatur-Dialog und vollständige Flow-Karten-Unterstützung."

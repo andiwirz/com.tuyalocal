@@ -8,18 +8,20 @@ const DEBOUNCE_MS = 300;
 // dp_speed (numeric speed integer) is handled separately because it needs
 // min/max scaling to the Homey dim range (0–1).
 const DP_PROFILE = [
-  { settingKey: 'dp_onoff',           capability: 'onoff',      transform: (v) => Boolean(v),  settable: true               },
-  { settingKey: 'dp_fan_speed',       capability: 'fan_speed',  transform: (v) => String(v),   settable: true               },
-  { settingKey: 'dp_oscillate',       capability: 'oscillate',  transform: (v) => Boolean(v),  settable: true               },
-  { settingKey: 'dp_mode',            capability: 'fan_mode',   transform: (v) => String(v),   settable: true               },
-  { settingKey: 'dp_child_lock',      capability: 'child_lock', transform: (v) => Boolean(v),  settable: true               },
-  { settingKey: 'dp_countdown_timer', capability: 'countdown_timer', transform: (v) => String(v), settable: true            },
-  { settingKey: 'dp_countdown_left',  capability: 'countdown_left',  transform: (v) => Number(v), settable: false           },
+  { settingKey: 'dp_onoff',           capability: 'onoff',         transform: (v) => Boolean(v),  settable: true  },
+  { settingKey: 'dp_fan_speed',       capability: 'fan_speed',     transform: (v) => String(v),   settable: true  },
+  { settingKey: 'dp_oscillate',       capability: 'oscillate',     transform: (v) => Boolean(v),  settable: true  },
+  { settingKey: 'dp_direction',       capability: 'fan_direction', transform: (v) => String(v),   settable: true  },
+  { settingKey: 'dp_mode',            capability: 'fan_mode',      transform: (v) => String(v),   settable: true  },
+  { settingKey: 'dp_child_lock',      capability: 'child_lock',    transform: (v) => Boolean(v),  settable: true  },
+  { settingKey: 'dp_countdown_timer', capability: 'countdown_timer', transform: (v) => String(v), settable: true  },
+  { settingKey: 'dp_countdown_left',  capability: 'countdown_left',  transform: (v) => Number(v), settable: false },
 ];
 
 const OPTIONAL_CAPABILITIES = [
   { setting: 'dp_fan_speed',       capability: 'fan_speed'       },
   { setting: 'dp_oscillate',       capability: 'oscillate'       },
+  { setting: 'dp_direction',       capability: 'fan_direction'   },
   { setting: 'dp_mode',            capability: 'fan_mode'        },
   { setting: 'dp_child_lock',      capability: 'child_lock'      },
   { setting: 'dp_countdown_timer', capability: 'countdown_timer' },
@@ -42,6 +44,7 @@ class FanDevice extends BaseTuyaDevice {
     this._triggerDeviceDisconnected = this.homey.flow.getDeviceTriggerCard('fan_device_disconnected');
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('fan_dp_changed');
     this._triggerModeChanged        = this.homey.flow.getDeviceTriggerCard('fan_mode_changed');
+    this._triggerDirectionChanged   = this.homey.flow.getDeviceTriggerCard('fan_direction_changed');
 
     // ── Capability listeners — DP_PROFILE ───────────────────────────────────
     for (const entry of DP_PROFILE) {
@@ -125,6 +128,17 @@ class FanDevice extends BaseTuyaDevice {
         continue;
       }
 
+      if (entry.capability === 'fan_direction') {
+        const prevDir = this.getCapabilityValue('fan_direction');
+        await this.setCapabilityValue('fan_direction', converted).catch(() => {});
+        if (prevDir !== null && prevDir !== converted) {
+          this._triggerDirectionChanged
+            .trigger(this, { direction: converted, prev_direction: prevDir })
+            .catch(() => {});
+        }
+        continue;
+      }
+
       await this.setCapabilityValue(entry.capability, converted).catch(() => {});
     }
 
@@ -151,6 +165,9 @@ class FanDevice extends BaseTuyaDevice {
     if (changedKeys.some((k) => ['fan_speed_values', 'fan_mode_values'].includes(k))) {
       await this._syncEnumOptions('fan_speed', this.getSetting('fan_speed_values'));
       await this._syncEnumOptions('fan_mode',  this.getSetting('fan_mode_values'));
+    }
+    if (changedKeys.includes('dp_direction')) {
+      await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
     }
   }
 }

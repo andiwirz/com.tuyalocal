@@ -12,6 +12,9 @@ class FanDriver extends Homey.Driver {
     this.homey.flow.getDeviceTriggerCard('fan_mode_changed')
       .registerRunListener(async (args, state) => true); // always fire
 
+    this.homey.flow.getDeviceTriggerCard('fan_direction_changed')
+      .registerRunListener(async (args, state) => true); // always fire
+
     // ── Conditions ──────────────────────────────────────────────────────────
     this.homey.flow.getConditionCard('fan_device_is_connected')
       .registerRunListener(async (args) =>
@@ -21,6 +24,11 @@ class FanDriver extends Homey.Driver {
     this.homey.flow.getConditionCard('fan_mode_is')
       .registerRunListener(async (args) =>
         args.device.getCapabilityValue('fan_mode') === args.mode
+      );
+
+    this.homey.flow.getConditionCard('fan_direction_is')
+      .registerRunListener(async (args) =>
+        args.device.getCapabilityValue('fan_direction') === args.direction
       );
 
     // ── Actions ─────────────────────────────────────────────────────────────
@@ -44,6 +52,13 @@ class FanDriver extends Homey.Driver {
         const enabled = args.enabled === 'true';
         await args.device.setCapabilityValue('oscillate', enabled);
         return args.device.triggerCapabilityListener('oscillate', enabled);
+      });
+
+    this.homey.flow.getActionCard('fan_set_direction')
+      .registerRunListener(async (args) => {
+        if (!args.device.hasCapability('fan_direction')) return;
+        await args.device.setCapabilityValue('fan_direction', args.direction);
+        return args.device.triggerCapabilityListener('fan_direction', args.direction);
       });
 
     this.homey.flow.getActionCard('fan_force_reconnect')
@@ -145,6 +160,11 @@ class FanDriver extends Homey.Driver {
     const modeEntry    = enumDps.find((d) => KNOWN_MODES.includes(String(d.val).toLowerCase()));
     const dp_mode      = modeEntry?.dp ?? 0;
 
+    // Direction: enum DP whose value is 'forward' or 'reverse'
+    const KNOWN_DIR     = ['forward', 'reverse'];
+    const dirEntry      = enumDps.find((d) => KNOWN_DIR.includes(String(d.val).toLowerCase()));
+    const dp_direction  = dirEntry?.dp ?? 0;
+
     const timerEntry    = enumDps.find((d) => String(d.val) === 'cancel' || /^\d+h$/.test(String(d.val)));
     const dp_countdown_timer = timerEntry?.dp ?? 0;
 
@@ -158,7 +178,7 @@ class FanDriver extends Homey.Driver {
     const speed_max = rawSpeed <= 6 ? 6 : rawSpeed <= 12 ? 12 : 100;
 
     return {
-      dp_onoff, dp_speed, dp_fan_speed, dp_oscillate, dp_mode,
+      dp_onoff, dp_speed, dp_fan_speed, dp_oscillate, dp_direction, dp_mode,
       dp_child_lock: 0, dp_countdown_timer, dp_countdown_left: 0,
       speed_min, speed_max,
       fan_speed_values: 'low,medium,high,auto,turbo',
