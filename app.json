@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.32",
+  "version": "1.0.33",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -77,6 +77,10 @@
     "1.0.32": {
       "en": "Fan driver: added fan direction (forward / reverse) capability with auto-detection at pairing time, plus flow cards for direction changed trigger, direction condition, and set direction action.",
       "de": "Lüfter-Treiber: Lüfterrichtung (Vorwärts / Rückwärts) als optionale Fähigkeit hinzugefügt, inkl. Auto-Erkennung beim Einrichten und Flow-Karten (Auslöser, Bedingung, Aktion)."
+    },
+    "1.0.33": {
+      "en": "Added capability icons for all custom capabilities: mode, fan_speed, fan_mode, fan_direction, target_humidity, child_lock, oscillate, anion, countdown_timer, power_factor, and all AC capabilities (ac_mode, ac_fan_speed, ac_swing, ac_swing_h, ac_sleep, ac_eco).",
+      "de": "Capability-Icons für alle benutzerdefinierten Fähigkeiten hinzugefügt: Modus, Lüftergeschwindigkeit, Lüftermodus, Lüfterrichtung, Ziel-Luftfeuchtigkeit, Kindersicherung, Schwenkung, Ionisator, Countdown-Timer, Leistungsfaktor sowie alle Klimaanlagen-Fähigkeiten (Modus, Lüftergeschwindigkeit, Lamellen, horizontale Lamellen, Schlafmodus, ECO)."
     }
   },
   "permissions": [],
@@ -147,7 +151,8 @@
       "setable": true,
       "uiComponent": "picker",
       "uiQuickAction": false,
-      "insights": true
+      "insights": true,
+      "icon": "/assets/capabilities/mode.svg"
     },
     "countdown_left": {
       "type": "number",
@@ -356,7 +361,8 @@
       "setable": true,
       "uiComponent": "picker",
       "uiQuickAction": false,
-      "insights": false
+      "insights": false,
+      "icon": "/assets/capabilities/countdown_timer.svg"
     },
     "child_lock": {
       "type": "boolean",
@@ -368,7 +374,8 @@
       "setable": true,
       "uiComponent": "toggle",
       "uiQuickAction": false,
-      "insights": false
+      "insights": false,
+      "icon": "/assets/capabilities/child_lock.svg"
     },
     "anion": {
       "type": "boolean",
@@ -380,7 +387,8 @@
       "setable": true,
       "uiComponent": "toggle",
       "uiQuickAction": false,
-      "insights": false
+      "insights": false,
+      "icon": "/assets/capabilities/anion.svg"
     },
     "fan_speed": {
       "type": "enum",
@@ -436,7 +444,8 @@
       "setable": true,
       "uiComponent": "picker",
       "uiQuickAction": false,
-      "insights": true
+      "insights": true,
+      "icon": "/assets/capabilities/fan_speed.svg"
     },
     "target_humidity": {
       "type": "number",
@@ -452,7 +461,8 @@
       "setable": true,
       "uiComponent": "slider",
       "uiQuickAction": false,
-      "insights": true
+      "insights": true,
+      "icon": "/assets/capabilities/target_humidity.svg"
     },
     "generic_sensor_1": {
       "type": "number",
@@ -752,7 +762,8 @@
       "setable": false,
       "uiComponent": "sensor",
       "uiQuickAction": false,
-      "insights": true
+      "insights": true,
+      "icon": "/assets/capabilities/power_factor.svg"
     },
     "relay_status": {
       "type": "enum",
@@ -840,7 +851,8 @@
       "setable": true,
       "uiComponent": "picker",
       "uiQuickAction": false,
-      "insights": true
+      "insights": true,
+      "icon": "/assets/capabilities/ac_mode.svg"
     },
     "ac_fan_speed": {
       "type": "enum",
@@ -889,7 +901,8 @@
       "setable": true,
       "uiComponent": "picker",
       "uiQuickAction": false,
-      "insights": false
+      "insights": false,
+      "icon": "/assets/capabilities/ac_fan_speed.svg"
     },
     "ac_swing": {
       "type": "enum",
@@ -945,7 +958,8 @@
       "setable": true,
       "uiComponent": "picker",
       "uiQuickAction": false,
-      "insights": false
+      "insights": false,
+      "icon": "/assets/capabilities/ac_swing.svg"
     },
     "ac_swing_h": {
       "type": "boolean",
@@ -957,7 +971,8 @@
       "setable": true,
       "uiComponent": "toggle",
       "uiQuickAction": false,
-      "insights": false
+      "insights": false,
+      "icon": "/assets/capabilities/ac_swing_h.svg"
     },
     "ac_sleep": {
       "type": "boolean",
@@ -969,7 +984,8 @@
       "setable": true,
       "uiComponent": "toggle",
       "uiQuickAction": false,
-      "insights": false
+      "insights": false,
+      "icon": "/assets/capabilities/ac_sleep.svg"
     },
     "ac_eco": {
       "type": "boolean",
@@ -981,7 +997,8 @@
       "setable": true,
       "uiComponent": "toggle",
       "uiQuickAction": false,
-      "insights": false
+      "insights": false,
+      "icon": "/assets/capabilities/ac_eco.svg"
     },
     "oscillate": {
       "type": "boolean",
@@ -993,7 +1010,8 @@
       "setable": true,
       "uiComponent": "toggle",
       "uiQuickAction": false,
-      "insights": false
+      "insights": false,
+      "icon": "/assets/capabilities/oscillate.svg"
     },
     "fan_mode": {
       "type": "enum",
@@ -1042,7 +1060,8 @@
       "setable": true,
       "uiComponent": "picker",
       "uiQuickAction": false,
-      "insights": true
+      "insights": true,
+      "icon": "/assets/capabilities/fan_mode.svg"
     },
     "fan_direction": {
       "type": "enum",

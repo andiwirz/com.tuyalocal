@@ -1,4 +1,8 @@
 {
+  "1.0.33": {
+    "en": "Added capability icons for all custom capabilities: mode, fan_speed, fan_mode, fan_direction, target_humidity, child_lock, oscillate, anion, countdown_timer, power_factor, and all AC capabilities (ac_mode, ac_fan_speed, ac_swing, ac_swing_h, ac_sleep, ac_eco).",
+    "de": "Capability-Icons für alle benutzerdefinierten Fähigkeiten hinzugefügt: Modus, Lüftergeschwindigkeit, Lüftermodus, Lüfterrichtung, Ziel-Luftfeuchtigkeit, Kindersicherung, Schwenkung, Ionisator, Countdown-Timer, Leistungsfaktor sowie alle Klimaanlagen-Fähigkeiten (Modus, Lüftergeschwindigkeit, Lamellen, horizontale Lamellen, Schlafmodus, ECO)."
+  },
   "1.0.32": {
     "en": "Fan driver: added fan direction (forward / reverse) capability with auto-detection at pairing time, plus flow cards for direction changed trigger, direction condition, and set direction action.",
     "de": "Lüfter-Treiber: Lüfterrichtung (Vorwärts / Rückwärts) als optionale Fähigkeit hinzugefügt, inkl. Auto-Erkennung beim Einrichten und Flow-Karten (Auslöser, Bedingung, Aktion)."
