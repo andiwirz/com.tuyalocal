@@ -1,6 +1,6 @@
 # Tuya Local — Homey App
 
-**Version 1.0.31** · Local control of Tuya smart devices — no cloud, no internet dependency.
+**Version 1.0.33** · Local control of Tuya smart devices — no cloud, no internet dependency.
 
 All communication happens over your local network via the Tuya LAN protocol. Eight built-in drivers cover the most common device types; a fully generic driver handles anything else.
 
@@ -251,6 +251,7 @@ Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polli
 | `speed_min` / `speed_max` | Speed range | number | 1 / 100 | — |
 | `dp_fan_speed` | `fan_speed` (enum) | enum | 0 | ✓ `0` = disabled |
 | `dp_oscillate` | `oscillate` | boolean | 0 | ✓ `0` = disabled |
+| `dp_direction` | `fan_direction` | enum | 0 | ✓ `0` = disabled |
 | `dp_mode` | `fan_mode` | enum | 0 | ✓ `0` = disabled |
 | `dp_child_lock` | `child_lock` | boolean | 0 | ✓ `0` = disabled |
 | `dp_countdown_timer` | `countdown_timer` | enum | 0 | ✓ `0` = disabled |
@@ -258,12 +259,14 @@ Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polli
 
 The speed slider (`dim`) maps the numeric DP range `speed_min … speed_max` to 0–100 %. Both a numeric speed DP and a string enum DP (`fan_speed`) can be active at the same time.
 
-#### Speed & Mode Values
+#### Speed, Mode & Direction Values
 
 | Setting | Default |
 |---|---|
 | `fan_speed_values` | `low,medium,high,auto,turbo` |
 | `fan_mode_values` | `normal,sleep,nature,breeze,smart` |
+
+The `fan_direction` capability uses fixed values `forward` and `reverse` (Tuya standard). The DP is auto-detected at pairing time if the device reports either of those strings.
 
 ---
 
@@ -537,7 +540,8 @@ Each entry in the `dp_config` JSON array supports the following fields:
 |---|---|
 | Fan connected | — |
 | Fan disconnected | — |
-| Fan mode changed | `mode` (string) |
+| Fan mode changed | `mode` (string), `prev_mode` (string) |
+| Fan direction changed | `direction` (string), `prev_direction` (string) |
 | Fan data point changed | `dp` (string), `value` (string) |
 
 #### Conditions
@@ -546,6 +550,7 @@ Each entry in the `dp_config` JSON array supports the following fields:
 |---|
 | Fan is / is not connected |
 | Fan mode is / is not [mode] |
+| Fan direction is / is not [forward\|reverse] |
 
 #### Actions
 
@@ -554,6 +559,7 @@ Each entry in the `dp_config` JSON array supports the following fields:
 | Set fan mode | normal / sleep / nature / breeze / smart |
 | Set fan speed | low / medium / high / auto / turbo |
 | Set fan oscillation | on / off — requires `dp_oscillate` > 0 |
+| Set fan direction | forward / reverse — requires `dp_direction` > 0 |
 | Force fan reconnect | Drops and re-establishes the TCP connection |
 | Refresh fan values | Triggers an immediate GET request |
 
