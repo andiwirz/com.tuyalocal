@@ -127,15 +127,15 @@ homey app install
 |---|---|---|---|---|
 | `dp_onoff` | `onoff` | boolean | 1 | — |
 | `dp_current_humidity` | `measure_humidity` | number | 16 | — |
-| `dp_target_humidity` | `target_humidity` | number | 2 | — |
-| `dp_mode` | `mode` | enum | 4 | — |
-| `dp_fan_speed` | `fan_speed` | enum | 5 | — |
-| `dp_child_lock` | `child_lock` | boolean | 14 | ✓ `0` = disabled |
-| `dp_countdown_timer` | `countdown_timer` | enum | 17 | ✓ `0` = disabled |
-| `dp_countdown_left` | `countdown_left` | number | 18 | ✓ `0` = disabled |
+| `dp_target_humidity` | <img src="assets/capabilities/target_humidity.svg" height="16"> `target_humidity` | number | 2 | — |
+| `dp_mode` | <img src="assets/capabilities/mode.svg" height="16"> `mode` | enum | 4 | — |
+| `dp_fan_speed` | <img src="assets/capabilities/fan_speed.svg" height="16"> `fan_speed` | enum | 5 | — |
+| `dp_child_lock` | <img src="assets/capabilities/child_lock.svg" height="16"> `child_lock` | boolean | 14 | ✓ `0` = disabled |
+| `dp_countdown_timer` | <img src="assets/capabilities/countdown_timer.svg" height="16"> `countdown_timer` | enum | 17 | ✓ `0` = disabled |
+| `dp_countdown_left` | <img src="assets/capabilities/countdown_left.svg" height="16"> `countdown_left` | number | 18 | ✓ `0` = disabled |
 | `dp_water_full` | `alarm_water` | boolean | 19 | ✓ `0` = disabled |
 | `dp_temperature` | `measure_temperature` | number | 0 | ✓ `0` = disabled |
-| `dp_anion` | `anion` | boolean | 0 | ✓ `0` = disabled |
+| `dp_anion` | <img src="assets/capabilities/anion.svg" height="16"> `anion` | boolean | 0 | ✓ `0` = disabled |
 
 #### Mode & Fan Speed Values
 
@@ -165,8 +165,8 @@ Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polli
 | `dp_energy` | `meter_power` | number | **0** | ✓ see below |
 | `dp_relay_status` | `relay_status` | enum | 38 | ✓ `0` = disabled |
 | `dp_fault` | `alarm_generic` | boolean | 0 | ✓ `0` = disabled |
-| `dp_power_factor` | `power_factor` | number | 0 | ✓ `0` = disabled |
-| `dp_countdown` | *(flow only)* | number | 0 | ✓ `0` = disabled |
+| `dp_power_factor` | <img src="assets/capabilities/power_factor.svg" height="16"> `power_factor` | number | 0 | ✓ `0` = disabled |
+| `dp_countdown` | <img src="assets/capabilities/countdown_timer.svg" height="16"> *(flow only)* | number | 0 | ✓ `0` = disabled |
 
 #### Energy Metering
 
@@ -213,14 +213,14 @@ Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polli
 | `dp_onoff` | `onoff` | boolean | 1 | — |
 | `dp_target_temp` | `target_temperature` | number | 2 | — |
 | `dp_current_temp` | `measure_temperature` | number | 3 | — |
-| `dp_mode` | `ac_mode` | enum | 4 | — |
-| `dp_fan_speed` | `ac_fan_speed` | enum | 5 | — |
-| `dp_swing` | `ac_swing` | boolean | 0 | ✓ `0` = disabled |
-| `dp_sleep` | `ac_sleep` | boolean | 0 | ✓ `0` = disabled |
-| `dp_eco` | `ac_eco` | boolean | 0 | ✓ `0` = disabled |
-| `dp_child_lock` | `child_lock` | boolean | 0 | ✓ `0` = disabled |
-| `dp_countdown_timer` | `countdown_timer` | number | 0 | ✓ `0` = disabled |
-| `dp_countdown_left` | `countdown_left` | number | 0 | ✓ `0` = disabled |
+| `dp_mode` | <img src="assets/capabilities/ac_mode.svg" height="16"> `ac_mode` | enum | 4 | — |
+| `dp_fan_speed` | <img src="assets/capabilities/ac_fan_speed.svg" height="16"> `ac_fan_speed` | enum | 5 | — |
+| `dp_swing` | <img src="assets/capabilities/ac_swing.svg" height="16"> `ac_swing` | boolean | 0 | ✓ `0` = disabled |
+| `dp_sleep` | <img src="assets/capabilities/ac_sleep.svg" height="16"> `ac_sleep` | boolean | 0 | ✓ `0` = disabled |
+| `dp_eco` | <img src="assets/capabilities/ac_eco.svg" height="16"> `ac_eco` | boolean | 0 | ✓ `0` = disabled |
+| `dp_child_lock` | <img src="assets/capabilities/child_lock.svg" height="16"> `child_lock` | boolean | 0 | ✓ `0` = disabled |
+| `dp_countdown_timer` | <img src="assets/capabilities/countdown_timer.svg" height="16"> `countdown_timer` | number | 0 | ✓ `0` = disabled |
+| `dp_countdown_left` | <img src="assets/capabilities/countdown_left.svg" height="16"> `countdown_left` | number | 0 | ✓ `0` = disabled |
 | `dp_fault` | `alarm_generic` | boolean | 20 | ✓ `0` = disabled |
 
 #### Temperature Scaling
@@ -249,13 +249,13 @@ Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polli
 | `dp_onoff` | `onoff` | boolean | 1 | — |
 | `dp_speed` | `dim` (speed slider) | number | 3 | ✓ `0` = disabled |
 | `speed_min` / `speed_max` | Speed range | number | 1 / 100 | — |
-| `dp_fan_speed` | `fan_speed` (enum) | enum | 0 | ✓ `0` = disabled |
-| `dp_oscillate` | `oscillate` | boolean | 0 | ✓ `0` = disabled |
-| `dp_direction` | `fan_direction` | enum | 0 | ✓ `0` = disabled |
-| `dp_mode` | `fan_mode` | enum | 0 | ✓ `0` = disabled |
-| `dp_child_lock` | `child_lock` | boolean | 0 | ✓ `0` = disabled |
-| `dp_countdown_timer` | `countdown_timer` | enum | 0 | ✓ `0` = disabled |
-| `dp_countdown_left` | `countdown_left` | number | 0 | ✓ `0` = disabled |
+| `dp_fan_speed` | <img src="assets/capabilities/fan_speed.svg" height="16"> `fan_speed` (enum) | enum | 0 | ✓ `0` = disabled |
+| `dp_oscillate` | <img src="assets/capabilities/oscillate.svg" height="16"> `oscillate` | boolean | 0 | ✓ `0` = disabled |
+| `dp_direction` | <img src="assets/capabilities/fan_direction.svg" height="16"> `fan_direction` | enum | 0 | ✓ `0` = disabled |
+| `dp_mode` | <img src="assets/capabilities/fan_mode.svg" height="16"> `fan_mode` | enum | 0 | ✓ `0` = disabled |
+| `dp_child_lock` | <img src="assets/capabilities/child_lock.svg" height="16"> `child_lock` | boolean | 0 | ✓ `0` = disabled |
+| `dp_countdown_timer` | <img src="assets/capabilities/countdown_timer.svg" height="16"> `countdown_timer` | enum | 0 | ✓ `0` = disabled |
+| `dp_countdown_left` | <img src="assets/capabilities/countdown_left.svg" height="16"> `countdown_left` | number | 0 | ✓ `0` = disabled |
 
 The speed slider (`dim`) maps the numeric DP range `speed_min … speed_max` to 0–100 %. Both a numeric speed DP and a string enum DP (`fan_speed`) can be active at the same time.
 
@@ -282,15 +282,15 @@ Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polli
 |---|---|---|---|---|
 | `dp_onoff` | `onoff` | boolean | 1 | — |
 | `dp_current_humidity` | `measure_humidity` | number | 14 | — |
-| `dp_target_humidity` | `target_humidity` | number | 13 | — |
-| `dp_mode` | `mode` | enum | 24 | — |
-| `dp_fan_speed` | `fan_speed` | enum | 0 | ✓ `0` = disabled |
-| `dp_child_lock` | `child_lock` | boolean | 0 | ✓ `0` = disabled |
+| `dp_target_humidity` | <img src="assets/capabilities/target_humidity.svg" height="16"> `target_humidity` | number | 13 | — |
+| `dp_mode` | <img src="assets/capabilities/mode.svg" height="16"> `mode` | enum | 24 | — |
+| `dp_fan_speed` | <img src="assets/capabilities/fan_speed.svg" height="16"> `fan_speed` | enum | 0 | ✓ `0` = disabled |
+| `dp_child_lock` | <img src="assets/capabilities/child_lock.svg" height="16"> `child_lock` | boolean | 0 | ✓ `0` = disabled |
 | `dp_water_empty` | `alarm_water` | boolean | 0 | ✓ `0` = disabled |
-| `dp_countdown_timer` | `countdown_timer` | enum | 0 | ✓ `0` = disabled |
-| `dp_countdown_left` | `countdown_left` | number | 0 | ✓ `0` = disabled |
+| `dp_countdown_timer` | <img src="assets/capabilities/countdown_timer.svg" height="16"> `countdown_timer` | enum | 0 | ✓ `0` = disabled |
+| `dp_countdown_left` | <img src="assets/capabilities/countdown_left.svg" height="16"> `countdown_left` | number | 0 | ✓ `0` = disabled |
 | `dp_temperature` | `measure_temperature` | number | 0 | ✓ `0` = disabled |
-| `dp_anion` | `anion` | boolean | 0 | ✓ `0` = disabled |
+| `dp_anion` | <img src="assets/capabilities/anion.svg" height="16"> `anion` | boolean | 0 | ✓ `0` = disabled |
 
 > **Note:** `alarm_water` for a humidifier indicates that the water tank is **empty** (refill needed), as opposed to the dehumidifier where it means the tank is full.
 
@@ -316,12 +316,12 @@ Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polli
 | `dp_onoff` | `onoff` | boolean | 1 | — |
 | `dp_target_temp` | `target_temperature` | number | 2 | — |
 | `dp_current_temp` | `measure_temperature` | number | 0 | ✓ `0` = disabled |
-| `dp_mode` | `mode` | enum | 0 | ✓ `0` = disabled |
-| `dp_oscillate` | `oscillate` | boolean | 0 | ✓ `0` = disabled |
-| `dp_child_lock` | `child_lock` | boolean | 0 | ✓ `0` = disabled |
+| `dp_mode` | <img src="assets/capabilities/mode.svg" height="16"> `mode` | enum | 0 | ✓ `0` = disabled |
+| `dp_oscillate` | <img src="assets/capabilities/oscillate.svg" height="16"> `oscillate` | boolean | 0 | ✓ `0` = disabled |
+| `dp_child_lock` | <img src="assets/capabilities/child_lock.svg" height="16"> `child_lock` | boolean | 0 | ✓ `0` = disabled |
 | `dp_fault` | `alarm_generic` | boolean | 0 | ✓ `0` = disabled |
-| `dp_countdown_timer` | `countdown_timer` | enum | 0 | ✓ `0` = disabled |
-| `dp_countdown_left` | `countdown_left` | number | 0 | ✓ `0` = disabled |
+| `dp_countdown_timer` | <img src="assets/capabilities/countdown_timer.svg" height="16"> `countdown_timer` | enum | 0 | ✓ `0` = disabled |
+| `dp_countdown_left` | <img src="assets/capabilities/countdown_left.svg" height="16"> `countdown_left` | number | 0 | ✓ `0` = disabled |
 
 #### Temperature Settings
 
