@@ -1,0 +1,112 @@
+name: Bug report
+description: Something isn't working as expected
+title: "[Bug] "
+labels: ["bug"]
+assignees:
+  - andiwirz
+body:
+
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Please fill in as much detail as possible — a log snippet and the DP snapshot often solve the mystery immediately.
+        > **Tip:** Copy logs from **Homey app → More → Apps → Tuya Local → Settings → Logs tab**.
+
+  - type: dropdown
+    id: driver
+    attributes:
+      label: Affected driver
+      options:
+        - Dehumidifier
+        - Smart Plug
+        - Air Conditioner
+        - Fan
+        - Humidifier
+        - Heater
+        - Light
+        - Generic Tuya Device
+        - Other / App-level
+    validations:
+      required: true
+
+  - type: input
+    id: app_version
+    attributes:
+      label: App version
+      description: Shown in Settings → Help tab footer
+      placeholder: "e.g. 1.0.33"
+    validations:
+      required: true
+
+  - type: input
+    id: homey_version
+    attributes:
+      label: Homey firmware version
+      placeholder: "e.g. 12.3.1"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: protocol
+    attributes:
+      label: Protocol version used
+      options:
+        - Unknown / auto-detect
+        - "3.3"
+        - "3.4"
+        - "3.1"
+        - "3.5"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: A clear description of the bug. What did you expect, and what actually happened?
+      placeholder: |
+        Expected: ...
+        Actual: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open device settings
+        2. Set dp_xxx to ...
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Diagnostic log snippet
+      description: >
+        Copy the relevant lines from Settings → Logs tab (filter to Errors or Warnings & Errors first).
+        Include a few lines before and after the error.
+      render: text
+      placeholder: |
+        12:34:01  [ERR]  [fan]  Connection timed out
+        12:34:02  [WRN]  [fan]  Reconnecting (attempt 1)…
+
+  - type: textarea
+    id: raw_dps
+    attributes:
+      label: DP snapshot (optional but helpful)
+      description: Settings → DP Debug → Raw Data — select your device and paste the JSON.
+      render: json
+      placeholder: |
+        {
+          "1": true,
+          "3": "auto"
+        }
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Device model, screenshots, anything else that might help.

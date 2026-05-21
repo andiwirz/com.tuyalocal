@@ -2,6 +2,8 @@ name: New device support request
 description: Request support for a Tuya device type not yet covered by a built-in driver
 title: "[Device] "
 labels: ["new-device"]
+assignees:
+  - andiwirz
 body:
 
   - type: markdown
