@@ -1,0 +1,127 @@
+name: New device support request
+description: Request support for a Tuya device type not yet covered by a built-in driver
+title: "[Device] "
+labels: ["new-device"]
+body:
+
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill this in! The more detail you provide, the faster support can be added.
+        > **Tip:** The quickest way to get the DP snapshot is via **Homey app → More → Apps → Tuya Local → Settings → DP Debug → Raw Data** — select your device and copy the JSON.
+
+  - type: input
+    id: device_type
+    attributes:
+      label: Device type
+      description: What kind of device is this?
+      placeholder: "e.g. Robot Vacuum, Pool Pump, IR Blaster, Curtain Motor"
+    validations:
+      required: true
+
+  - type: input
+    id: manufacturer
+    attributes:
+      label: Manufacturer & model
+      description: Brand name and model number if known
+      placeholder: "e.g. Treatlife DS01 / Zemismart ZM25TQ"
+
+  - type: dropdown
+    id: tuya_app
+    attributes:
+      label: Tuya app used
+      options:
+        - Smart Life
+        - Tuya Smart
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: protocol
+    attributes:
+      label: Protocol version (if known)
+      options:
+        - Unknown / auto-detect
+        - "3.3"
+        - "3.4"
+        - "3.1"
+        - "3.5"
+    validations:
+      required: true
+
+  - type: textarea
+    id: raw_dps
+    attributes:
+      label: Raw DP snapshot
+      description: >
+        Paste the JSON from Settings → DP Debug → Raw Data, or from tuyapi/localtuya.
+        The more complete, the better — include all DPs the device reports.
+      render: json
+      placeholder: |
+        {
+          "1": true,
+          "2": "auto",
+          "3": 22
+        }
+    validations:
+      required: true
+
+  - type: textarea
+    id: tuya_functions
+    attributes:
+      label: Tuya Developer Platform — function definitions
+      description: >
+        If you have access to iot.tuya.com, paste the Standard Functions / Custom Functions list
+        from Cloud → Development → your project → Devices → your device.
+        This gives us exact DP codes, types and allowed enum values.
+      placeholder: |
+        DP 1  switch        Boolean
+        DP 2  work_mode     Enum: auto, manual, sleep
+        DP 3  temp_set      Integer (0–50)
+        DP 4  temp_current  Integer (read-only)
+
+  - type: checkboxes
+    id: capabilities
+    attributes:
+      label: Desired capabilities in Homey
+      description: Check everything that should be controllable or visible in Homey.
+      options:
+        - label: On / Off
+        - label: Mode picker
+        - label: Target temperature / setpoint
+        - label: Current temperature (sensor)
+        - label: Target humidity / setpoint
+        - label: Current humidity (sensor)
+        - label: Fan speed
+        - label: Brightness / dim
+        - label: Color temperature
+        - label: Color (HSV)
+        - label: Timer / countdown
+        - label: Child lock
+        - label: Oscillation / swing
+        - label: Fault alarm + push notification
+        - label: Flow cards (triggers / conditions / actions)
+
+  - type: textarea
+    id: extra_capabilities
+    attributes:
+      label: Other capabilities
+      description: Anything not covered by the checkboxes above?
+      placeholder: "e.g. Battery level, Clean status, Error code picker"
+
+  - type: dropdown
+    id: can_test
+    attributes:
+      label: Can you test a beta version?
+      options:
+        - "Yes — I can install and test on my Homey Pro"
+        - "No"
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Screenshots, links to similar projects, manufacturer spec sheets, anything else useful.
