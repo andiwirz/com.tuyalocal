@@ -126,62 +126,7 @@ class GenericDriver extends Homey.Driver {
     });
   }
 
-  // Allow users to update IP / Local Key / Protocol after pairing
-  async onRepair(session, device) {
-    session.setHandler('get_settings', async () => {
-      return {
-        ip:        device.getSetting('ip')        || '',
-        local_key: device.getSetting('local_key') || '',
-        version:   device.getSetting('version')   || '3.3',
-      };
-    });
-
-    session.setHandler('save_settings', async (data) => {
-      const { ip, local_key, version } = data;
-      if (!ip || !local_key) throw new Error(this.homey.__('pair.credentials.fillAll') || 'Please fill all fields');
-
-      const net = require('net');
-      if (!net.isIPv4(ip)) throw new Error(this.homey.__('pair.credentials.invalidIp') || 'Invalid IP address');
-      if (local_key.length !== 16 && local_key.length !== 32) {
-        throw new Error(this.homey.__('pair.credentials.invalidKey') || 'Invalid local key length');
-      }
-
-      let connected     = false;
-      let actualVersion = String(version);
-      try {
-        if (version === 'auto') {
-          const result = await detectProtocolVersion({ ip, deviceId: device.getSetting('device_id'), localKey: local_key });
-          actualVersion = result.version;
-          this.log(`Repair: auto-detected protocol version: ${actualVersion}`);
-        } else {
-          const testDev = new TuyAPI({
-            id: device.getSetting('device_id'),
-            key: local_key, ip,
-            version: actualVersion,
-            issueGetOnConnect: true,
-          });
-          testDev.on('error', (err) => { this.log('Repair test error:', err.message); });
-          await Promise.race([
-            testDev.connect(),
-            new Promise((_, rej) => setTimeout(() => rej(new Error('Connection timed out')), 8000)),
-          ]);
-          await new Promise((resolve) => setTimeout(resolve, 2000));
-          testDev.disconnect();
-        }
-        connected = true;
-      } catch (err) {
-        this.log('Repair connection test failed:', err.message);
-      }
-
-      if (!connected) {
-        throw new Error(this.homey.__('pair.credentials.failed'));
-      }
-      await device.setSettings({ ip, local_key, version: actualVersion });
-      return { detectedVersion: actualVersion };
-    });
-  }
-
-  // Extracted so scan logic can be shared between onPair and onRepair
+  // Extracted so scan logic can be shared between onPair
   async _scanNetwork() {
     const dgram = require('dgram');
     const net   = require('net');

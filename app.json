@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.33",
+  "version": "1.0.34",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -482,7 +482,8 @@
       "setable": false,
       "uiComponent": "sensor",
       "uiQuickAction": false,
-      "insights": true
+      "insights": true,
+      "icon": "/assets/capabilities/generic_sensor_1.svg"
     },
     "generic_sensor_2": {
       "type": "number",
@@ -502,7 +503,8 @@
       "setable": false,
       "uiComponent": "sensor",
       "uiQuickAction": false,
-      "insights": true
+      "insights": true,
+      "icon": "/assets/capabilities/generic_sensor_2.svg"
     },
     "generic_sensor_3": {
       "type": "number",
@@ -522,7 +524,8 @@
       "setable": false,
       "uiComponent": "sensor",
       "uiQuickAction": false,
-      "insights": true
+      "insights": true,
+      "icon": "/assets/capabilities/generic_sensor_3.svg"
     },
     "generic_sensor_4": {
       "type": "number",
@@ -542,7 +545,8 @@
       "setable": false,
       "uiComponent": "sensor",
       "uiQuickAction": false,
-      "insights": true
+      "insights": true,
+      "icon": "/assets/capabilities/generic_sensor_4.svg"
     },
     "generic_number_1": {
       "type": "number",
@@ -562,7 +566,8 @@
       "setable": true,
       "uiComponent": "slider",
       "uiQuickAction": false,
-      "insights": true
+      "insights": true,
+      "icon": "/assets/capabilities/generic_number_1.svg"
     },
     "generic_number_2": {
       "type": "number",
@@ -582,7 +587,8 @@
       "setable": true,
       "uiComponent": "slider",
       "uiQuickAction": false,
-      "insights": true
+      "insights": true,
+      "icon": "/assets/capabilities/generic_number_2.svg"
     },
     "generic_switch_1": {
       "type": "boolean",
@@ -594,7 +600,8 @@
       "setable": true,
       "uiComponent": "toggle",
       "uiQuickAction": false,
-      "insights": false
+      "insights": false,
+      "icon": "/assets/capabilities/generic_switch_1.svg"
     },
     "generic_switch_2": {
       "type": "boolean",
@@ -606,7 +613,8 @@
       "setable": true,
       "uiComponent": "toggle",
       "uiQuickAction": false,
-      "insights": false
+      "insights": false,
+      "icon": "/assets/capabilities/generic_switch_2.svg"
     },
     "generic_switch_3": {
       "type": "boolean",
@@ -618,7 +626,8 @@
       "setable": true,
       "uiComponent": "toggle",
       "uiQuickAction": false,
-      "insights": false
+      "insights": false,
+      "icon": "/assets/capabilities/generic_switch_3.svg"
     },
     "generic_switch_4": {
       "type": "boolean",
@@ -630,7 +639,8 @@
       "setable": true,
       "uiComponent": "toggle",
       "uiQuickAction": false,
-      "insights": false
+      "insights": false,
+      "icon": "/assets/capabilities/generic_switch_4.svg"
     },
     "generic_picker_1": {
       "type": "enum",
@@ -658,7 +668,8 @@
       "setable": true,
       "uiComponent": "picker",
       "uiQuickAction": false,
-      "insights": false
+      "insights": false,
+      "icon": "/assets/capabilities/generic_picker_1.svg"
     },
     "generic_picker_2": {
       "type": "enum",
@@ -686,7 +697,8 @@
       "setable": true,
       "uiComponent": "picker",
       "uiQuickAction": false,
-      "insights": false
+      "insights": false,
+      "icon": "/assets/capabilities/generic_picker_2.svg"
     },
     "generic_picker_3": {
       "type": "enum",
@@ -714,7 +726,8 @@
       "setable": true,
       "uiComponent": "picker",
       "uiQuickAction": false,
-      "insights": false
+      "insights": false,
+      "icon": "/assets/capabilities/generic_picker_3.svg"
     },
     "generic_picker_4": {
       "type": "enum",
@@ -742,7 +755,8 @@
       "setable": true,
       "uiComponent": "picker",
       "uiQuickAction": false,
-      "insights": false
+      "insights": false,
+      "icon": "/assets/capabilities/generic_picker_4.svg"
     },
     "power_factor": {
       "type": "number",
@@ -4756,11 +4770,7 @@
           "id": "list_devices"
         }
       ],
-      "repair": [
-        {
-          "id": "repair"
-        }
-      ],
+
       "images": {
         "small": "/drivers/dehumidifier/assets/images/small.png",
         "large": "/drivers/dehumidifier/assets/images/large.png",
@@ -4920,11 +4930,7 @@
           "id": "list_devices"
         }
       ],
-      "repair": [
-        {
-          "id": "repair"
-        }
-      ],
+
       "images": {
         "small": "/drivers/generic/assets/images/small.png",
         "large": "/drivers/generic/assets/images/large.png",
@@ -5284,11 +5290,7 @@
           "id": "list_devices"
         }
       ],
-      "repair": [
-        {
-          "id": "repair"
-        }
-      ],
+
       "images": {
         "small": "/drivers/smart_plug/assets/images/small.png",
         "large": "/drivers/smart_plug/assets/images/large.png",
@@ -5769,11 +5771,7 @@
           "id": "list_devices"
         }
       ],
-      "repair": [
-        {
-          "id": "repair"
-        }
-      ],
+
       "images": {
         "small": "/drivers/air_conditioner/assets/images/small.png",
         "large": "/drivers/air_conditioner/assets/images/large.png",
@@ -6117,11 +6115,7 @@
           "id": "list_devices"
         }
       ],
-      "repair": [
-        {
-          "id": "repair"
-        }
-      ],
+
       "images": {
         "small": "/drivers/fan/assets/images/small.png",
         "large": "/drivers/fan/assets/images/large.png",
@@ -6474,11 +6468,7 @@
           "id": "list_devices"
         }
       ],
-      "repair": [
-        {
-          "id": "repair"
-        }
-      ],
+
       "images": {
         "small": "/drivers/humidifier/assets/images/small.png",
         "large": "/drivers/humidifier/assets/images/large.png",
@@ -6834,11 +6824,7 @@
           "id": "list_devices"
         }
       ],
-      "repair": [
-        {
-          "id": "repair"
-        }
-      ],
+
       "images": {
         "small": "/drivers/heater/assets/images/small.png",
         "large": "/drivers/heater/assets/images/large.png",
@@ -7138,11 +7124,7 @@
           "id": "list_devices"
         }
       ],
-      "repair": [
-        {
-          "id": "repair"
-        }
-      ],
+
       "images": {
         "small": "/drivers/light/assets/images/small.png",
         "large": "/drivers/light/assets/images/large.png",

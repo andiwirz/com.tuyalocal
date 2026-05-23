@@ -162,44 +162,6 @@ class HumidifierDriver extends Homey.Driver {
     };
   }
 
-  async onRepair(session, device) {
-    session.setHandler('get_settings', async () => ({
-      ip:        device.getSetting('ip')        || '',
-      local_key: device.getSetting('local_key') || '',
-      version:   device.getSetting('version')   || '3.3',
-    }));
-
-    session.setHandler('save_settings', async (data) => {
-      const { ip, local_key, version } = data;
-      if (!ip || !local_key) throw new Error(this.homey.__('pair.credentials.fillAll'));
-      const net = require('net');
-      if (!net.isIPv4(ip)) throw new Error(this.homey.__('pair.credentials.invalidIp'));
-      if (local_key.length !== 16 && local_key.length !== 32)
-        throw new Error(this.homey.__('pair.credentials.invalidKey'));
-
-      let connected = false;
-      let actualVersion = String(version);
-      try {
-        if (version === 'auto') {
-          const result = await detectProtocolVersion({ ip, deviceId: device.getSetting('device_id'), localKey: local_key });
-          actualVersion = result.version;
-        } else {
-          const testDev = new TuyAPI({ id: device.getSetting('device_id'), key: local_key, ip, version: actualVersion, issueGetOnConnect: true });
-          testDev.on('error', () => {});
-          await Promise.race([testDev.connect(), new Promise((_, rej) => setTimeout(() => rej(new Error('Timed out')), 8000))]);
-          await new Promise((r) => setTimeout(r, 2000));
-          testDev.disconnect();
-        }
-        connected = true;
-      } catch (err) {
-        this.log('Repair test failed:', err.message);
-      }
-      if (!connected) throw new Error(this.homey.__('pair.credentials.failed'));
-      await device.setSettings({ ip, local_key, version: actualVersion });
-      return { detectedVersion: actualVersion };
-    });
-  }
-
   async _scanNetwork() {
     const dgram = require('dgram');
     const net   = require('net');
