@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.35",
+  "version": "1.0.37",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -18,6 +18,14 @@
     "appliances"
   ],
   "changelog": {
+    "1.0.37": {
+      "en": "All drivers: protocol 3.22 added to version dropdown and auto-detect sequence (newer Tuya chips/gateways). TuyaConnection: heartbeat watchdog timeout reduced 60→30 s for faster dead-socket detection; new setMultiple() method for batching multiple DP writes in a single packet. All drivers: store write frequency reduced to once per 5 minutes (was every 3 s) to reduce Homey Pro flash wear; immediate flush on device delete. Generic driver: 'readonly' flag prevents writing to sensor-only DPs; 'invert' flag mirrors numeric values within [min, max] range (useful for curtain motors where 0=open and 100=closed). AC and Heater: fault alarm grace period is now configurable per device (default 30 s, device settings → Connection). Heater: added missing Offline Grace Period setting. Pet Feeder: feed_portions slider automatically resets to minimum after dispensing (3 s delay) so the UI is ready for the next feed without manual reset.",
+      "de": "Alle Treiber: Protokoll 3.22 in Versions-Dropdown und Auto-Erkennung ergänzt (neuere Tuya-Chips/Gateways). TuyaConnection: Heartbeat-Watchdog-Timeout von 60 auf 30 s reduziert für schnellere Erkennung toter Verbindungen; neue setMultiple()-Methode zum Bündeln mehrerer DP-Schreibbefehle in einem Paket. Alle Treiber: Speicherhäufigkeit auf einmal pro 5 Minuten reduziert (vorher alle 3 s) zum Schutz des Homey-Pro-Flash-Speichers; sofortiges Speichern beim Geräte-Löschen. Generic-Treiber: 'readonly'-Flag verhindert Schreibzugriffe auf reine Sensor-DPs; 'invert'-Flag spiegelt numerische Werte im konfigurierten Bereich [min, max] (nützlich für Jalousien-Motoren, bei denen 0=offen und 100=geschlossen). Klimaanlage und Heizgerät: Alarm-Karenzzeit nach Verbindungsaufbau ist jetzt pro Gerät konfigurierbar (Standard 30 s, Geräteeinstellungen → Verbindung). Heizgerät: fehlende Offline-Karenzzeit-Einstellung ergänzt. Futterautomat: Portionen-Schieberegler setzt sich nach der Ausgabe automatisch auf den Minimalwert zurück (3 s Verzögerung), sodass die UI sofort für die nächste Fütterung bereit ist."
+    },
+    "1.0.36": {
+      "en": "Pet Feeder: added optional battery level capability (measure_battery) — auto-detected at pairing time on battery-powered feeders (e.g. Arlec 5L DP 11); disabled by default on AC-powered devices. Pet Feeder: added missing Offline Grace Period setting to Connection group. All drivers: protocol 3.4/3.5 error 904 ('no new data') is now silently ignored instead of being logged as an error and triggering a reconnect — this was causing log noise and spurious reconnects during normal polling on 3.4 devices.",
+      "de": "Futterautomat: Optionaler Akkustand (measure_battery) hinzugefügt — wird beim Einrichten automatisch erkannt bei akkubetriebenen Geräten (z.B. Arlec 5L DP 11); standardmässig deaktiviert bei netzbetriebenen Geräten. Futterautomat: fehlende Offline-Karenzzeit-Einstellung im Verbindungsbereich ergänzt. Alle Treiber: Fehlercode 904 ('keine neuen Daten', Protokoll 3.4/3.5) wird jetzt stillschweigend ignoriert statt als Fehler geloggt und als Reconnect-Auslöser behandelt — verhindert Log-Spam und unnötige Verbindungsabbrüche bei normaler Abfrage auf 3.4-Geräten."
+    },
     "1.0.35": {
       "en": "Added Pet Feeder driver: automatic DP detection, food level monitoring with push notifications (low/empty), feeding-done trigger, portions slider, and full flow card support. Food level enum extended with 'less' and 'lack' values for Mypin/video-feeder compatibility. New pet feeder device icon. All drivers: added configurable offline grace period (default 60 s) — the 'device disconnected' flow trigger is now delayed until the device has been offline for the full grace period, eliminating spurious nightly offline notifications caused by brief Tuya firmware reconnect cycles.",
       "de": "Neuer Futterautomat-Treiber: automatische DP-Erkennung, Futterstand-Überwachung mit Push-Benachrichtigungen (niedrig/leer), Fütterung-abgeschlossen-Trigger, Portionen-Schieberegler und vollständige Flow-Karten-Unterstützung. Futterstand-Enum um Werte 'less' und 'lack' für Mypin-/Video-Futterautomaten erweitert. Neues Geräte-Icon für den Futterautomaten. Alle Treiber: Konfigurierbare Offline-Karenzzeit (Standard 60 s) — der 'Gerät getrennt'-Flow-Auslöser wird jetzt erst nach Ablauf der Karenzzeit ausgelöst, was unnötige nächtliche Offline-Benachrichtigungen durch kurze Tuya-Firmware-Reconnect-Zyklen verhindert."
@@ -4896,6 +4904,13 @@
                     "en": "3.5",
                     "de": "3.5"
                   }
+                },
+                {
+                  "id": "3.22",
+                  "label": {
+                    "en": "3.22 (newer chips)",
+                    "de": "3.22 (neuere Chips)"
+                  }
                 }
               ]
             },
@@ -5255,6 +5270,13 @@
                     "en": "3.5",
                     "de": "3.5"
                   }
+                },
+                {
+                  "id": "3.22",
+                  "label": {
+                    "en": "3.22 (newer chips)",
+                    "de": "3.22 (neuere Chips)"
+                  }
                 }
               ]
             },
@@ -5449,6 +5471,13 @@
                   "label": {
                     "en": "3.5",
                     "de": "3.5"
+                  }
+                },
+                {
+                  "id": "3.22",
+                  "label": {
+                    "en": "3.22 (newer chips)",
+                    "de": "3.22 (neuere Chips)"
                   }
                 }
               ]
@@ -5828,6 +5857,13 @@
                     "en": "3.5",
                     "de": "3.5"
                   }
+                },
+                {
+                  "id": "3.22",
+                  "label": {
+                    "en": "3.22 (newer chips)",
+                    "de": "3.22 (neuere Chips)"
+                  }
                 }
               ]
             },
@@ -5860,6 +5896,21 @@
               },
               "min": 0,
               "max": 600
+            },
+            {
+              "id": "alarm_grace_seconds",
+              "type": "number",
+              "label": {
+                "en": "Alarm Grace Period (seconds)",
+                "de": "Alarm-Karenzzeit (Sekunden)"
+              },
+              "value": 30,
+              "min": 0,
+              "max": 300,
+              "hint": {
+                "en": "How long after reconnect before a fault alarm can trigger a flow or notification. Prevents false alarms caused by transient error states on reconnect. Default: 30 s.",
+                "de": "Wie lange nach dem Verbindungsaufbau ein Fehleralarm einen Flow oder eine Benachrichtigung auslösen kann. Verhindert Fehlalarme durch kurzzeitige Fehlerzustände beim Reconnect. Standard: 30 s."
+              }
             }
           ]
         },
@@ -6303,6 +6354,13 @@
                     "en": "3.5",
                     "de": "3.5"
                   }
+                },
+                {
+                  "id": "3.22",
+                  "label": {
+                    "en": "3.22 (newer chips)",
+                    "de": "3.22 (neuere Chips)"
+                  }
                 }
               ]
             },
@@ -6659,6 +6717,13 @@
                     "en": "3.5",
                     "de": "3.5"
                   }
+                },
+                {
+                  "id": "3.22",
+                  "label": {
+                    "en": "3.22 (newer chips)",
+                    "de": "3.22 (neuere Chips)"
+                  }
                 }
               ]
             },
@@ -7003,6 +7068,13 @@
                     "en": "3.5",
                     "de": "3.5"
                   }
+                },
+                {
+                  "id": "3.22",
+                  "label": {
+                    "en": "3.22 (newer chips)",
+                    "de": "3.22 (neuere Chips)"
+                  }
                 }
               ]
             },
@@ -7019,6 +7091,36 @@
               "hint": {
                 "en": "Set to 0 to disable polling. Default: 30 s.",
                 "de": "0 = kein Polling. Standard: 30 s."
+              }
+            },
+            {
+              "id": "offline_grace_seconds",
+              "type": "number",
+              "label": {
+                "en": "Offline Grace Period (seconds)",
+                "de": "Offline-Karenzzeit (Sekunden)"
+              },
+              "value": 60,
+              "min": 0,
+              "max": 600,
+              "hint": {
+                "en": "How long the device must remain offline before the 'device disconnected' flow trigger fires. Tuya devices often drop and immediately re-establish the connection — a grace period of 60 s prevents spurious offline notifications. Set to 0 to trigger immediately.",
+                "de": "Wie lange das Gerät offline sein muss, bevor der 'Gerät getrennt'-Flow-Auslöser ausgelöst wird. Tuya-Geräte trennen die Verbindung kurz und bauen sie sofort wieder auf — eine Karenzzeit von 60 s verhindert unnötige Offline-Benachrichtigungen. 0 = sofort auslösen."
+              }
+            },
+            {
+              "id": "alarm_grace_seconds",
+              "type": "number",
+              "label": {
+                "en": "Alarm Grace Period (seconds)",
+                "de": "Alarm-Karenzzeit (Sekunden)"
+              },
+              "value": 30,
+              "min": 0,
+              "max": 300,
+              "hint": {
+                "en": "How long after reconnect before a fault alarm can trigger a flow or notification. Prevents false alarms caused by transient error states on reconnect. Default: 30 s.",
+                "de": "Wie lange nach dem Verbindungsaufbau ein Fehleralarm einen Flow oder eine Benachrichtigung auslösen kann. Verhindert Fehlalarme durch kurzzeitige Fehlerzustände beim Reconnect. Standard: 30 s."
               }
             }
           ]
@@ -7346,6 +7448,13 @@
                     "en": "3.5",
                     "de": "3.5"
                   }
+                },
+                {
+                  "id": "3.22",
+                  "label": {
+                    "en": "3.22 (newer chips)",
+                    "de": "3.22 (neuere Chips)"
+                  }
                 }
               ]
             },
@@ -7645,6 +7754,13 @@
                     "en": "3.5",
                     "de": "3.5"
                   }
+                },
+                {
+                  "id": "3.22",
+                  "label": {
+                    "en": "3.22 (newer chips)",
+                    "de": "3.22 (neuere Chips)"
+                  }
                 }
               ]
             },
@@ -7661,6 +7777,21 @@
               "hint": {
                 "en": "Set to 0 to disable polling. Default: 30 s.",
                 "de": "0 = kein Polling. Standard: 30 s."
+              }
+            },
+            {
+              "id": "offline_grace_seconds",
+              "type": "number",
+              "label": {
+                "en": "Offline Grace Period (seconds)",
+                "de": "Offline-Karenzzeit (Sekunden)"
+              },
+              "value": 60,
+              "min": 0,
+              "max": 600,
+              "hint": {
+                "en": "How long the device must remain offline before the 'device disconnected' flow trigger fires. Tuya devices often drop and immediately re-establish the connection — a grace period of 60 s prevents spurious offline notifications. Set to 0 to trigger immediately.",
+                "de": "Wie lange das Gerät offline sein muss, bevor der 'Gerät getrennt'-Flow-Auslöser ausgelöst wird. Tuya-Geräte trennen die Verbindung kurz und bauen sie sofort wieder auf — eine Karenzzeit von 60 s verhindert unnötige Offline-Benachrichtigungen. 0 = sofort auslösen."
               }
             }
           ]
@@ -7761,6 +7892,19 @@
               "hint": {
                 "en": "Child lock is not part of the standard Tuya pet-feeder spec. Set to 0 to disable. Note: DP 9 is factory_reset — do not use it here.",
                 "de": "Kindersicherung ist nicht Teil der Tuya-Futterautomat-Spezifikation. 0 = deaktiviert. Hinweis: DP 9 ist Werksreset — nicht hier verwenden."
+              }
+            },
+            {
+              "id": "dp_battery",
+              "type": "number",
+              "label": {
+                "en": "Battery Level DP",
+                "de": "Akkustand DP"
+              },
+              "value": 0,
+              "hint": {
+                "en": "DP reporting battery percentage (0–100 %). Only present on battery-powered feeders (e.g. Arlec 5L uses DP 11). Auto-detected at pairing time if found. Set to 0 to disable.",
+                "de": "DP für den Akkustand in Prozent (0–100 %). Nur bei akkubetriebenen Futterautomaten vorhanden (z.B. Arlec 5L verwendet DP 11). Wird beim Einrichten automatisch erkannt wenn vorhanden. 0 = deaktiviert."
               }
             },
             {

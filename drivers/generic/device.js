@@ -73,6 +73,11 @@ class GenericDevice extends BaseTuyaDevice {
           this._appLog(`dp_config entry skipped — missing cap: ${JSON.stringify(entry)}`, 'warn');
           continue;
         }
+        // Normalise flags so downstream code can use strict equality.
+        // `readonly: true`  — never register a capability listener (no writes to device)
+        // `invert: true`    — mirror numeric value within [min, max] on both read & write
+        entry.readonly = entry.readonly === true;
+        entry.invert   = entry.invert   === true;
         valid.push(entry);
       }
       this._mappingsCache = valid;
@@ -175,6 +180,7 @@ class GenericDevice extends BaseTuyaDevice {
 
     for (const mapping of mappings) {
       if (!mapping.settable) continue;
+      if (mapping.readonly)  continue; // sensor-only DP — never write
       if (!this.hasCapability(mapping.cap)) continue;
 
       // Numeric capabilities with min/max (sliders) or generic_number_* get debounce
@@ -206,6 +212,17 @@ class GenericDevice extends BaseTuyaDevice {
 
   // ── Value conversion ───────────────────────────────────────────────────────
 
+  /**
+   * Helper: mirror a numeric value within [min, max].
+   * Used when `mapping.invert = true` — flips the range so that, e.g.,
+   * a curtain motor where 0 = open and 100 = closed becomes 100 = open, 0 = closed.
+   * Requires both `mapping.min` and `mapping.max` to be defined; no-ops otherwise.
+   */
+  _invertNumber(value, mapping) {
+    if (mapping.min == null || mapping.max == null) return value;
+    return mapping.max + mapping.min - value;
+  }
+
   _capToDP(value, mapping) {
     if (typeof value === 'boolean') {
       return value;
@@ -224,8 +241,10 @@ class GenericDevice extends BaseTuyaDevice {
       return value;
     }
     if (typeof value === 'number') {
-      if (mapping.integer === false) return value / (mapping.scale || 1);
-      return Math.round(value / (mapping.scale || 1));
+      // Apply invert before scale so the inversion happens in capability-space.
+      const v = mapping.invert ? this._invertNumber(value, mapping) : value;
+      if (mapping.integer === false) return v / (mapping.scale || 1);
+      return Math.round(v / (mapping.scale || 1));
     }
     return value;
   }
@@ -233,8 +252,11 @@ class GenericDevice extends BaseTuyaDevice {
   _dpToCap(rawValue, mapping) {
     const scale = mapping.scale || 1;
 
-    if (typeof rawValue === 'number' && scale !== 1) {
-      return rawValue * scale;
+    if (typeof rawValue === 'number') {
+      // Apply scale first (converts raw DP units → capability units),
+      // then invert if requested.
+      const scaled = scale !== 1 ? rawValue * scale : rawValue;
+      return mapping.invert ? this._invertNumber(scaled, mapping) : scaled;
     }
 
     if (typeof rawValue === 'string' && mapping.readMap) {

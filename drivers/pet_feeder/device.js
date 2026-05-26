@@ -18,15 +18,19 @@ const DP_PROFILE = [
   { settingKey: 'dp_surplus_grain', capability: 'surplus_grain',  transform: (v) => Number(v),       settable: false },
   { settingKey: 'dp_feed_report',   capability: 'feed_report',    transform: (v) => Number(v),       settable: false },
   { settingKey: 'dp_child_lock',    capability: 'child_lock',     transform: (v) => Boolean(v),      settable: true  },
+  // Battery percentage (0–100 %). Present on battery-powered feeders (e.g. Arlec 5L DP 11).
+  // Disabled by default — most feeders are AC-powered.
+  { settingKey: 'dp_battery',       capability: 'measure_battery', transform: (v) => Number(v),      settable: false },
 ];
 
 const OPTIONAL_CAPABILITIES = [
-  { setting: 'dp_motor_state',   capability: 'motor_state'   },
-  { setting: 'dp_fault',         capability: 'alarm_generic' },
-  { setting: 'dp_food_level',    capability: 'food_status'   },
-  { setting: 'dp_surplus_grain', capability: 'surplus_grain' },
-  { setting: 'dp_feed_report',   capability: 'feed_report'   },
-  { setting: 'dp_child_lock',    capability: 'child_lock'    },
+  { setting: 'dp_motor_state',   capability: 'motor_state'    },
+  { setting: 'dp_fault',         capability: 'alarm_generic'  },
+  { setting: 'dp_food_level',    capability: 'food_status'    },
+  { setting: 'dp_surplus_grain', capability: 'surplus_grain'  },
+  { setting: 'dp_feed_report',   capability: 'feed_report'    },
+  { setting: 'dp_child_lock',    capability: 'child_lock'     },
+  { setting: 'dp_battery',       capability: 'measure_battery'},
 ];
 
 class PetFeederDevice extends BaseTuyaDevice {
@@ -48,9 +52,24 @@ class PetFeederDevice extends BaseTuyaDevice {
     // ── Capability listeners ─────────────────────────────────────────────────
     for (const entry of DP_PROFILE) {
       if (!entry.settable) continue;
-      this.registerCapabilityListener(entry.capability, async (value) => {
-        await this._conn?.set(this.getSetting(entry.settingKey), value);
-      });
+
+      if (entry.capability === 'feed_portions') {
+        // Non-persistent: after a manual feed command is sent, reset the slider
+        // back to portions_min so the UI is ready for the next feed without the
+        // user having to drag the slider back down.  The reset is delayed 3 s to
+        // allow the device to process the command first.
+        this.registerCapabilityListener('feed_portions', async (value) => {
+          await this._conn?.set(this.getSetting('dp_portions'), value);
+          setTimeout(() => {
+            const resetTo = this.getSetting('portions_min') ?? 1;
+            this.setCapabilityValue('feed_portions', resetTo).catch(() => {});
+          }, 3000);
+        });
+      } else {
+        this.registerCapabilityListener(entry.capability, async (value) => {
+          await this._conn?.set(this.getSetting(entry.settingKey), value);
+        });
+      }
     }
 
     await this._connect();

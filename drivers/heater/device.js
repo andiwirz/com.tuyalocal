@@ -126,7 +126,7 @@ class HeaterDevice extends BaseTuyaDevice {
         await this.setCapabilityValue('alarm_generic', isActive).catch(() => {});
 
         if (!prevActive && isActive) {
-          const GRACE_MS   = 30_000;
+          const GRACE_MS   = (this.getSetting('alarm_grace_seconds') ?? 30) * 1000;
           const elapsed    = this._connectedAt ? Date.now() - this._connectedAt : GRACE_MS;
           const debounceMs = elapsed < GRACE_MS ? GRACE_MS - elapsed + 5_000 : 5_000;
           clearTimeout(this._faultAlarmTimer);

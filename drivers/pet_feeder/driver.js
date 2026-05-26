@@ -150,6 +150,17 @@ class PetFeederDriver extends Homey.Driver {
     // ── Fault (DP 14 per spec: bitfield 1=no_food 2=jammed 4=feed_timeout 8=battery_low) ──
     const dp_fault = (14 in dpsMap) ? 14 : 0;
 
+    // ── Battery percentage (DP 11 per Arlec/battery-feeder spec: 0–100 %) ────
+    // Only enable when DP 11 exists, is a number, and falls within the 0–100 range.
+    // Default disabled — the vast majority of feeders are AC-powered; battery models
+    // (e.g. Arlec 5L) are the exception and explicitly report DP 11.
+    const dp_battery = (
+      11 in dpsMap &&
+      typeof dpsMap[11] === 'number' &&
+      dpsMap[11] >= 0 &&
+      dpsMap[11] <= 100
+    ) ? 11 : 0;
+
     // Track which DPs are already assigned to avoid double-mapping.
     const assignedNumDps = new Set([dp_portions, dp_feed_report].filter((d) => d > 0));
 
@@ -194,6 +205,7 @@ class PetFeederDriver extends Homey.Driver {
       dp_surplus_grain,
       dp_feed_report,
       dp_child_lock,
+      dp_battery,
       food_empty_values: 'low,less,empty,lack',
     };
   }
