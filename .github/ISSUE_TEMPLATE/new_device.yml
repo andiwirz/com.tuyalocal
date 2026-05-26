@@ -185,6 +185,28 @@ body:
       description: Anything not covered by the checkboxes above?
       placeholder: "e.g. Battery level, Clean status, Error code picker"
 
+  - type: textarea
+    id: screenshot_device
+    attributes:
+      label: Screenshot — device tile in Homey
+      description: >
+        Add the device to Homey as a **Generic Tuya Device** first, then take a screenshot
+        of its tile / detail view so we can see which capabilities are currently visible
+        and how the values are displayed.
+        **Drag and drop your screenshot directly into this field.**
+      placeholder: "Drag & drop screenshot here, or click to attach"
+
+  - type: textarea
+    id: screenshot_dp_debug
+    attributes:
+      label: Screenshot — DP Debug panel (DP values & Raw Data)
+      description: >
+        Open **Homey app → More → Apps → Tuya Local → Settings** and take two screenshots:
+        1. **DP Debug** — the live DP value table for this device (DP number, value, type columns).
+        2. **Raw Data** — the full unprocessed JSON payload for the same device.
+        **Drag and drop both screenshots into this field** (you can attach multiple images at once).
+      placeholder: "Drag & drop screenshots here, or click to attach"
+
   - type: dropdown
     id: can_test
     attributes:
