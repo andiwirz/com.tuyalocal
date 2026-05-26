@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.37",
+  "version": "1.0.38",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -18,6 +18,10 @@
     "appliances"
   ],
   "changelog": {
+    "1.0.38": {
+      "en": "Bug fixes and reliability improvements: fixed capability-listener crash on optional capabilities (fan, humidifier, heater, AC, dehumidifier); AC swing migration runs only once; Homey-managed setInterval/clearInterval; DPS handler serialised via promise queue; heartbeat watchdog directly triggers reconnect; smart plug fault alarm flow trigger added; AC eco/child-lock auto-detect collision fixed; humidifier water-filled trigger now fires. BREAKING: dehumidifier flow card IDs renamed with 'dehumidifier_' prefix — existing flows must be recreated. New: shared scanNetwork lib; configurable temp_divisor for humidifier/dehumidifier; float:true flag for generic driver.",
+      "de": "Fehlerbehebungen: Absturz bei optionalen Capabilities (5 Treiber) behoben; AC-Schwenk-Migration einmalig; Homey-setInterval; DPS-Queue; Heartbeat-Reconnect direkt; Smart Plug Fehleralarm-Trigger; AC Eco/Kindersicherung Auto-Detect; Luftbefeuchter Wasser-befüllt-Trigger. WICHTIG: Dehumidifier Flow-Karten-IDs mit 'dehumidifier_'-Präfix umbenannt — bestehende Flows neu erstellen. Neu: gemeinsame scanNetwork-Lib; konfigurierbarer temp_divisor; float:true-Flag."
+    },
     "1.0.37": {
       "en": "All drivers: protocol 3.22 added to version dropdown and auto-detect sequence (newer Tuya chips/gateways). TuyaConnection: heartbeat watchdog timeout reduced 60→30 s for faster dead-socket detection; new setMultiple() method for batching multiple DP writes in a single packet. All drivers: store write frequency reduced to once per 5 minutes (was every 3 s) to reduce Homey Pro flash wear; immediate flush on device delete. Generic driver: 'readonly' flag prevents writing to sensor-only DPs; 'invert' flag mirrors numeric values within [min, max] range (useful for curtain motors where 0=open and 100=closed). AC and Heater: fault alarm grace period is now configurable per device (default 30 s, device settings → Connection). Heater: added missing Offline Grace Period setting. Pet Feeder: feed_portions slider automatically resets to minimum after dispensing (3 s delay) so the UI is ready for the next feed without manual reset.",
       "de": "Alle Treiber: Protokoll 3.22 in Versions-Dropdown und Auto-Erkennung ergänzt (neuere Tuya-Chips/Gateways). TuyaConnection: Heartbeat-Watchdog-Timeout von 60 auf 30 s reduziert für schnellere Erkennung toter Verbindungen; neue setMultiple()-Methode zum Bündeln mehrerer DP-Schreibbefehle in einem Paket. Alle Treiber: Speicherhäufigkeit auf einmal pro 5 Minuten reduziert (vorher alle 3 s) zum Schutz des Homey-Pro-Flash-Speichers; sofortiges Speichern beim Geräte-Löschen. Generic-Treiber: 'readonly'-Flag verhindert Schreibzugriffe auf reine Sensor-DPs; 'invert'-Flag spiegelt numerische Werte im konfigurierten Bereich [min, max] (nützlich für Jalousien-Motoren, bei denen 0=offen und 100=geschlossen). Klimaanlage und Heizgerät: Alarm-Karenzzeit nach Verbindungsaufbau ist jetzt pro Gerät konfigurierbar (Standard 30 s, Geräteeinstellungen → Verbindung). Heizgerät: fehlende Offline-Karenzzeit-Einstellung ergänzt. Futterautomat: Portionen-Schieberegler setzt sich nach der Ausgabe automatisch auf den Minimalwert zurück (3 s Verzögerung), sodass die UI sofort für die nächste Fütterung bereit ist."
@@ -1305,7 +1309,7 @@
   "flow": {
     "triggers": [
       {
-        "id": "humidity_above",
+        "id": "dehumidifier_humidity_above",
         "title": {
           "en": "Humidity went above threshold",
           "de": "Luftfeuchtigkeit überschreitet Schwellenwert"
@@ -1363,7 +1367,7 @@
         ]
       },
       {
-        "id": "humidity_below",
+        "id": "dehumidifier_humidity_below",
         "title": {
           "en": "Humidity dropped below threshold",
           "de": "Luftfeuchtigkeit unterschreitet Schwellenwert"
@@ -1421,7 +1425,7 @@
         ]
       },
       {
-        "id": "water_tank_full",
+        "id": "dehumidifier_water_tank_full",
         "title": {
           "en": "Water tank became full",
           "de": "Wassertank ist voll"
@@ -1435,7 +1439,7 @@
         ]
       },
       {
-        "id": "water_tank_emptied",
+        "id": "dehumidifier_water_tank_emptied",
         "title": {
           "en": "Water tank was emptied",
           "de": "Wassertank wurde geleert"
@@ -1449,7 +1453,7 @@
         ]
       },
       {
-        "id": "device_connected",
+        "id": "dehumidifier_device_connected",
         "title": {
           "en": "Device connected",
           "de": "Gerät verbunden"
@@ -1463,7 +1467,7 @@
         ]
       },
       {
-        "id": "device_disconnected",
+        "id": "dehumidifier_device_disconnected",
         "title": {
           "en": "Device disconnected",
           "de": "Gerät getrennt"
@@ -1477,7 +1481,7 @@
         ]
       },
       {
-        "id": "dp_changed",
+        "id": "dehumidifier_dp_changed",
         "title": {
           "en": "A data point changed",
           "de": "Ein Datenpunkt hat sich geändert"
@@ -1729,6 +1733,31 @@
               "de": "Vorherige Leistung (W)"
             },
             "example": 150
+          }
+        ]
+      },
+      {
+        "id": "plug_fault_alarm_on",
+        "title": {
+          "en": "Smart plug fault alarm triggered",
+          "de": "Smart Plug: Fehleralarm ausgelöst"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=smart_plug"
+          }
+        ],
+        "tokens": [
+          {
+            "name": "fault_code",
+            "type": "number",
+            "title": {
+              "en": "Fault Code",
+              "de": "Fehlercode"
+            },
+            "example": 1
           }
         ]
       },
@@ -2409,7 +2438,7 @@
     ],
     "conditions": [
       {
-        "id": "humidity_is_above",
+        "id": "dehumidifier_humidity_is_above",
         "title": {
           "en": "Humidity !{{is|is not}} above",
           "de": "Luftfeuchtigkeit !{{ist|ist nicht}} über"
@@ -2438,7 +2467,7 @@
         ]
       },
       {
-        "id": "humidity_is_below",
+        "id": "dehumidifier_humidity_is_below",
         "title": {
           "en": "Humidity !{{is|is not}} below",
           "de": "Luftfeuchtigkeit !{{ist|ist nicht}} unter"
@@ -2467,7 +2496,7 @@
         ]
       },
       {
-        "id": "water_tank_is_full",
+        "id": "dehumidifier_water_tank_is_full",
         "title": {
           "en": "Water tank !{{is|is not}} full",
           "de": "Wassertank !{{ist|ist nicht}} voll"
@@ -2481,7 +2510,7 @@
         ]
       },
       {
-        "id": "device_is_connected",
+        "id": "dehumidifier_device_is_connected",
         "title": {
           "en": "Device !{{is|is not}} connected",
           "de": "Gerät ist !{{verbunden|nicht verbunden}}"
@@ -2566,7 +2595,7 @@
         ]
       },
       {
-        "id": "mode_is",
+        "id": "dehumidifier_mode_is",
         "title": {
           "en": "Mode !{{is|is not}}",
           "de": "Modus !{{ist|ist nicht}}"
@@ -3112,7 +3141,7 @@
     ],
     "actions": [
       {
-        "id": "set_target_humidity",
+        "id": "dehumidifier_set_target_humidity",
         "title": {
           "en": "Set target humidity",
           "de": "Ziel-Luftfeuchtigkeit setzen"
@@ -3141,7 +3170,7 @@
         ]
       },
       {
-        "id": "set_mode",
+        "id": "dehumidifier_set_mode",
         "title": {
           "en": "Set mode",
           "de": "Modus setzen"
@@ -3183,7 +3212,7 @@
         ]
       },
       {
-        "id": "set_fan_speed",
+        "id": "dehumidifier_set_fan_speed",
         "title": {
           "en": "Set fan speed",
           "de": "Lüftergeschwindigkeit setzen"
@@ -3225,7 +3254,7 @@
         ]
       },
       {
-        "id": "set_timer",
+        "id": "dehumidifier_set_timer",
         "title": {
           "en": "Set timer",
           "de": "Timer setzen"
@@ -3428,7 +3457,7 @@
         ]
       },
       {
-        "id": "set_child_lock",
+        "id": "dehumidifier_set_child_lock",
         "title": {
           "en": "Set child lock",
           "de": "Kindersicherung setzen"
@@ -3470,7 +3499,7 @@
         ]
       },
       {
-        "id": "set_anion",
+        "id": "dehumidifier_set_anion",
         "title": {
           "en": "Set ioniser",
           "de": "Ionisator setzen"
@@ -3512,7 +3541,7 @@
         ]
       },
       {
-        "id": "force_reconnect",
+        "id": "dehumidifier_force_reconnect",
         "title": {
           "en": "Force reconnect",
           "de": "Verbindung neu aufbauen"
@@ -3530,7 +3559,7 @@
         ]
       },
       {
-        "id": "refresh_device",
+        "id": "dehumidifier_refresh_device",
         "title": {
           "en": "Refresh device values",
           "de": "Gerätewerte aktualisieren"
@@ -6019,10 +6048,10 @@
                 "en": "Temperature Divisor",
                 "de": "Temperaturdivisor"
               },
-              "value": 1,
+              "value": 10,
               "hint": {
-                "en": "Divide raw device temperature by this value to get °C. Use 1 for most devices (e.g. 22 → 22 °C). Use 10 if your device sends e.g. 220 for 22.0 °C.",
-                "de": "Rohen Temperaturwert durch diesen Wert teilen um °C zu erhalten. Bei den meisten Geräten: 1 (z.B. 22 → 22 °C). Bei manchen: 10 (z.B. 220 → 22,0 °C)."
+                "en": "Divide raw device temperature by this value to get °C. Use 10 if your device sends e.g. 220 for 22.0 °C. Use 1 if it sends 22 directly.",
+                "de": "Rohen Temperaturwert durch diesen Wert teilen um °C zu erhalten. 10 verwenden wenn das Gerät z.B. 220 für 22,0 °C sendet. 1 wenn es direkt 22 sendet."
               },
               "min": 1,
               "max": 100
@@ -7178,11 +7207,13 @@
                 "en": "Temperature Divisor",
                 "de": "Temperaturdivisor"
               },
-              "value": 1,
+              "value": 10,
               "hint": {
-                "en": "Divide raw DP value by this to get °C. Use 10 if device reports e.g. 215 for 21.5 °C.",
-                "de": "Rohwert durch diesen Faktor dividieren. 10 verwenden wenn das Gerät z.B. 215 für 21,5 °C meldet."
-              }
+                "en": "Divide raw DP value by this to get °C. Use 10 if device reports e.g. 215 for 21.5 °C. Use 1 if it reports 21 directly.",
+                "de": "Rohwert durch diesen Faktor dividieren. 10 verwenden wenn das Gerät z.B. 215 für 21,5 °C meldet. 1 wenn es direkt 21 meldet."
+              },
+              "min": 1,
+              "max": 100
             },
             {
               "id": "temp_min",

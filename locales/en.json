@@ -113,14 +113,6 @@
     "device_is_connected": "Device is connected",
     "force_reconnect": "Force reconnect"
   },
-  "repair": {
-    "title": "Update Connection",
-    "subtitle": "Update the connection settings for this device.",
-    "save": "Save & Reconnect",
-    "saving": "Saving…",
-    "success": "Settings saved! Reconnecting…",
-    "fillAll": "Please fill in IP address and Local Key."
-  },
   "errors": {
     "missing_settings": "Device settings incomplete — check IP address, Device ID and Local Key."
   },

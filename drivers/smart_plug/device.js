@@ -58,6 +58,7 @@ class SmartPlugDevice extends BaseTuyaDevice {
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('plug_dp_changed');
     this._triggerPowerAbove         = this.homey.flow.getDeviceTriggerCard('plug_power_above');
     this._triggerPowerBelow         = this.homey.flow.getDeviceTriggerCard('plug_power_below');
+    this._triggerFaultOn            = this.homey.flow.getDeviceTriggerCard('plug_fault_alarm_on');
 
     // ── Capability listeners (auto-registered from DP_PROFILE) ──────────────
     for (const entry of DP_PROFILE) {
@@ -213,6 +214,8 @@ class SmartPlugDevice extends BaseTuyaDevice {
           this._faultAlarmTimer = setTimeout(() => {
             if (this.getCapabilityValue('alarm_generic') === true) {
               this._faultAlarmConfirmed = true;
+              const faultCode = typeof value === 'number' ? value : 1;
+              this._triggerFaultOn.trigger(this, { fault_code: faultCode }).catch(() => {});
               this.homey.notifications.createNotification({
                 excerpt: `${this.getName()}: ${this.homey.__('notifications.faultAlarm')}`,
               }).catch(() => {});

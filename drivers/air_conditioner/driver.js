@@ -3,6 +3,7 @@
 const Homey                     = require('homey');
 const TuyAPI                    = require('tuyapi');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
+const { scanNetwork }           = require('../../lib/networkScan');
 
 class AirConditionerDriver extends Homey.Driver {
   async onInit() {
@@ -109,7 +110,7 @@ class AirConditionerDriver extends Homey.Driver {
     let pendingDevice = null;
     let pendingRawDps = {};
 
-    session.setHandler('scan_network', async () => this._scanNetwork());
+    session.setHandler('scan_network', async () => scanNetwork(this.homey));
 
     session.setHandler('credentials', async (data) => {
       const { ip, deviceId, localKey, version } = data;
@@ -126,6 +127,7 @@ class AirConditionerDriver extends Homey.Driver {
       let actualVersion = String(version);
       const collectedDps = {};
 
+      let pairingDevice = null;
       try {
         let rawDps;
         if (version === 'auto') {
@@ -139,6 +141,7 @@ class AirConditionerDriver extends Homey.Driver {
             version: actualVersion,
             issueGetOnConnect: true,
           });
+          pairingDevice = device;
           device.on('error', (err) => { this.log('Connection test error:', err.message); });
           const tmpDps = {};
           device.on('data', (payload) => {
@@ -150,6 +153,7 @@ class AirConditionerDriver extends Homey.Driver {
           ]);
           await new Promise((resolve) => setTimeout(resolve, 4000));
           device.disconnect();
+          pairingDevice = null;
           rawDps = tmpDps;
         }
         Object.assign(collectedDps, rawDps);
@@ -162,6 +166,8 @@ class AirConditionerDriver extends Homey.Driver {
           pendingDevice = this._buildPendingDevice({ ip, deviceId, localKey, version: actualVersion, detectedDps: detected });
         }
       } catch (err) {
+        connected = false;
+        try { if (pairingDevice) pairingDevice.disconnect(); } catch (_e) {}
         this.log('Connection test failed:', err.message);
       }
 
@@ -332,6 +338,8 @@ class AirConditionerDriver extends Homey.Driver {
     // ── Sleep — prefer conventional DP 9, fall back to DP 103 or other unused booleans
     const assignedBoolDps = new Set([
       result.dp_onoff, result.dp_swing, result.dp_swing_h, result.dp_anion,
+      6,  // eco (DP 6 is reserved for eco; don't let fallback assign it to sleep)
+      7,  // child lock (DP 7 is reserved for child lock)
     ].filter(Boolean));
     const sleepEntry     = unusedBools.find((d) => d.dp === 9)
                         || unusedBools.find((d) => d.dp === 103)
@@ -350,82 +358,6 @@ class AirConditionerDriver extends Homey.Driver {
     if (timer11) result.dp_countdown_left  = 11;
 
     return result;
-  }
-
-  async _scanNetwork() {
-    const dgram = require('dgram');
-    const net   = require('net');
-    const os    = require('os');
-
-    const UDP_PORTS       = [6666, 6667];
-    const TCP_PORT        = 6668;
-    const UDP_LISTEN_MS   = 6000;
-    const TCP_TIMEOUT_MS  = 600;
-    const TCP_CONCURRENCY = 50;
-
-    const found = new Set();
-
-    await new Promise((resolve) => {
-      const sockets = [];
-      for (const port of UDP_PORTS) {
-        try {
-          const sock = dgram.createSocket({ type: 'udp4', reuseAddr: true });
-          sock.on('message', (msg, rinfo) => { found.add(rinfo.address); });
-          sock.on('error', () => {});
-          sock.bind(port, () => { try { sock.setBroadcast(true); } catch (e) {} });
-          sockets.push(sock);
-        } catch (err) {
-          this.log(`Could not bind UDP port ${port}:`, err.message);
-        }
-      }
-      setTimeout(() => {
-        sockets.forEach((s) => { try { s.close(); } catch (e) {} });
-        resolve();
-      }, UDP_LISTEN_MS);
-    });
-
-    const ipToInt = (ip) => ip.split('.').reduce((acc, b) => ((acc << 8) | parseInt(b, 10)) >>> 0, 0);
-    const intToIp = (n)  => [24, 16, 8, 0].map((s) => (n >>> s) & 0xFF).join('.');
-    const seenSubnets = new Set();
-    const queue = [];
-
-    for (const ifaces of Object.values(os.networkInterfaces())) {
-      for (const addr of ifaces) {
-        if (addr.family !== 'IPv4' || addr.internal) continue;
-        const ipInt   = ipToInt(addr.address);
-        const maskInt = ipToInt(addr.netmask || '255.255.255.0');
-        const network   = (ipInt & maskInt) >>> 0;
-        const broadcast = (network | (~maskInt >>> 0)) >>> 0;
-        if (seenSubnets.has(network)) continue;
-        seenSubnets.add(network);
-        if (broadcast - network - 1 > 2046) continue;
-        for (let i = network + 1; i < broadcast; i++) queue.push(intToIp(i));
-      }
-    }
-
-    const probeIp = (ip) => new Promise((resolve) => {
-      const socket = new net.Socket();
-      socket.setTimeout(TCP_TIMEOUT_MS);
-      socket.on('connect', () => { socket.destroy(); resolve(ip); });
-      socket.on('timeout', () => { socket.destroy(); resolve(null); });
-      socket.on('error',   () => { resolve(null); });
-      socket.connect(TCP_PORT, ip);
-    });
-
-    for (let i = 0; i < queue.length; i += TCP_CONCURRENCY) {
-      const results = await Promise.all(queue.slice(i, i + TCP_CONCURRENCY).map(probeIp));
-      results.forEach((ip) => { if (ip) found.add(ip); });
-    }
-
-    const dns = require('dns');
-    const reverseLookup = (ip) => new Promise((resolve) => {
-      dns.reverse(ip, (err, hostnames) =>
-        resolve(!err && hostnames?.length ? hostnames[0] : null)
-      );
-    });
-
-    const ips = [...found];
-    return Promise.all(ips.map(async (ip) => ({ ip, hostname: await reverseLookup(ip) })));
   }
 
   async onPairListDevices() { return []; }

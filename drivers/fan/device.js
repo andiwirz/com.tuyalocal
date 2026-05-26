@@ -49,6 +49,7 @@ class FanDevice extends BaseTuyaDevice {
     // ── Capability listeners — DP_PROFILE ───────────────────────────────────
     for (const entry of DP_PROFILE) {
       if (!entry.settable) continue;
+      if (!this.hasCapability(entry.capability)) continue;
       this.registerCapabilityListener(entry.capability, async (value) => {
         await this._conn?.set(this.getSetting(entry.settingKey), value);
       });
@@ -165,9 +166,6 @@ class FanDevice extends BaseTuyaDevice {
     if (changedKeys.some((k) => ['fan_speed_values', 'fan_mode_values'].includes(k))) {
       await this._syncEnumOptions('fan_speed', this.getSetting('fan_speed_values'));
       await this._syncEnumOptions('fan_mode',  this.getSetting('fan_mode_values'));
-    }
-    if (changedKeys.includes('dp_direction')) {
-      await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
     }
   }
 }

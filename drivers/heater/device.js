@@ -49,6 +49,7 @@ class HeaterDevice extends BaseTuyaDevice {
     // ── Capability listeners — DP_PROFILE ───────────────────────────────────
     for (const entry of DP_PROFILE) {
       if (!entry.settable) continue;
+      if (!this.hasCapability(entry.capability)) continue;
       this.registerCapabilityListener(entry.capability, async (value) => {
         await this._conn?.set(this.getSetting(entry.settingKey), value);
       });

@@ -243,7 +243,7 @@ class GenericDevice extends BaseTuyaDevice {
     if (typeof value === 'number') {
       // Apply invert before scale so the inversion happens in capability-space.
       const v = mapping.invert ? this._invertNumber(value, mapping) : value;
-      if (mapping.integer === false) return v / (mapping.scale || 1);
+      if (mapping.float === true || mapping.integer === false) return v / (mapping.scale || 1);
       return Math.round(v / (mapping.scale || 1));
     }
     return value;
