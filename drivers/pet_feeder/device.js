@@ -11,26 +11,45 @@ const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 // DP 102+ food_level    : non-standard enum full|low|empty (custom/legacy firmware)
 
 const DP_PROFILE = [
-  { settingKey: 'dp_portions',      capability: 'feed_portions',  transform: (v) => Number(v),       settable: true  },
-  { settingKey: 'dp_motor_state',   capability: 'motor_state',    transform: (v) => String(v),       settable: false },
-  { settingKey: 'dp_fault',         capability: 'alarm_generic',  transform: (v) => Number(v) > 0,   settable: false },
-  { settingKey: 'dp_food_level',    capability: 'food_status',    transform: (v) => String(v),       settable: false },
-  { settingKey: 'dp_surplus_grain', capability: 'surplus_grain',  transform: (v) => Number(v),       settable: false },
-  { settingKey: 'dp_feed_report',   capability: 'feed_report',    transform: (v) => Number(v),       settable: false },
-  { settingKey: 'dp_child_lock',    capability: 'child_lock',     transform: (v) => Boolean(v),      settable: true  },
+  { settingKey: 'dp_portions',        capability: 'feed_portions',   transform: (v) => Number(v),       settable: true  },
+  { settingKey: 'dp_motor_state',     capability: 'motor_state',     transform: (v) => String(v),       settable: false },
+  { settingKey: 'dp_fault',           capability: 'alarm_generic',   transform: (v) => Number(v) > 0,   settable: false },
+  { settingKey: 'dp_food_level',      capability: 'food_status',     transform: (v) => String(v),       settable: false },
+  { settingKey: 'dp_surplus_grain',   capability: 'surplus_grain',   transform: (v) => Number(v),       settable: false },
+  { settingKey: 'dp_feed_report',     capability: 'feed_report',     transform: (v) => Number(v),       settable: false },
+  { settingKey: 'dp_child_lock',      capability: 'child_lock',      transform: (v) => Boolean(v),      settable: true  },
   // Battery percentage (0–100 %). Present on battery-powered feeders (e.g. Arlec 5L DP 11).
   // Disabled by default — most feeders are AC-powered.
-  { settingKey: 'dp_battery',       capability: 'measure_battery', transform: (v) => Number(v),      settable: false },
+  { settingKey: 'dp_battery',         capability: 'measure_battery', transform: (v) => Number(v),       settable: false },
+  // ── New optional DPs ────────────────────────────────────────────────────────
+  // DP 19  indicator_light : boolean — LED indicator on/off (settable)
+  // DP 103 voice_playback  : boolean — mealtime recording on/off (settable)
+  // DP 101 battery_status  : enum    — High/Medium/Low (report only)
+  // DP 18  voice_times     : number  — recording repetitions (settable via device setting)
+  // DP 106 manual_button_portions : number — portions per button press (settable via device setting)
+  { settingKey: 'dp_indicator_light', capability: 'indicator_light', transform: (v) => Boolean(v),      settable: true  },
+  { settingKey: 'dp_voice_playback',  capability: 'voice_playback',  transform: (v) => Boolean(v),      settable: true  },
+  { settingKey: 'dp_battery_status',  capability: 'battery_status',  transform: (v) => String(v).toLowerCase(), settable: false },
+];
+
+// DPs that map to device settings (not capabilities) — written to device on settings change,
+// and settings are updated when the device reports them.
+const SETTINGS_DPS = [
+  { settingKey: 'dp_voice_times',          valueSetting: 'voice_times',           transform: (v) => Number(v) },
+  { settingKey: 'dp_manual_button_portions', valueSetting: 'manual_button_portions', transform: (v) => Number(v) },
 ];
 
 const OPTIONAL_CAPABILITIES = [
-  { setting: 'dp_motor_state',   capability: 'motor_state'    },
-  { setting: 'dp_fault',         capability: 'alarm_generic'  },
-  { setting: 'dp_food_level',    capability: 'food_status'    },
-  { setting: 'dp_surplus_grain', capability: 'surplus_grain'  },
-  { setting: 'dp_feed_report',   capability: 'feed_report'    },
-  { setting: 'dp_child_lock',    capability: 'child_lock'     },
-  { setting: 'dp_battery',       capability: 'measure_battery'},
+  { setting: 'dp_motor_state',       capability: 'motor_state'      },
+  { setting: 'dp_fault',             capability: 'alarm_generic'    },
+  { setting: 'dp_food_level',        capability: 'food_status'      },
+  { setting: 'dp_surplus_grain',     capability: 'surplus_grain'    },
+  { setting: 'dp_feed_report',       capability: 'feed_report'      },
+  { setting: 'dp_child_lock',        capability: 'child_lock'       },
+  { setting: 'dp_battery',           capability: 'measure_battery'  },
+  { setting: 'dp_indicator_light',   capability: 'indicator_light'  },
+  { setting: 'dp_voice_playback',    capability: 'voice_playback'   },
+  { setting: 'dp_battery_status',    capability: 'battery_status'   },
 ];
 
 class PetFeederDevice extends BaseTuyaDevice {
@@ -52,6 +71,7 @@ class PetFeederDevice extends BaseTuyaDevice {
     // ── Capability listeners ─────────────────────────────────────────────────
     for (const entry of DP_PROFILE) {
       if (!entry.settable) continue;
+      if (!this.hasCapability(entry.capability)) continue;
 
       if (entry.capability === 'feed_portions') {
         // Non-persistent: after a manual feed command is sent, reset the slider
@@ -86,15 +106,27 @@ class PetFeederDevice extends BaseTuyaDevice {
       this._lastDps[dpStr] = value;
       changed = true;
 
-      const dp    = parseInt(dpStr, 10);
-      const entry = DP_PROFILE.find((e) => {
-        const dpNum = settings[e.settingKey];
-        return dpNum > 0 && dp === dpNum;
-      });
+      const dp = parseInt(dpStr, 10);
 
       this._triggerDpChanged
         .trigger(this, { dp: dpStr, value: String(value) })
         .catch(() => {});
+
+      // ── Settings-backed DPs (voice_times, manual_button_portions) ──────────
+      // These DPs map to device settings, not capabilities — handle before DP_PROFILE lookup.
+      const settingsDp = SETTINGS_DPS.find((s) => {
+        const dpNum = settings[s.settingKey];
+        return dpNum > 0 && dp === dpNum;
+      });
+      if (settingsDp) {
+        await this.setSettings({ [settingsDp.valueSetting]: settingsDp.transform(value) }).catch(() => {});
+        continue;
+      }
+
+      const entry = DP_PROFILE.find((e) => {
+        const dpNum = settings[e.settingKey];
+        return dpNum > 0 && dp === dpNum;
+      });
 
       if (!entry) {
         this.log(`Unknown DP ${dp}:`, value);
@@ -186,7 +218,7 @@ class PetFeederDevice extends BaseTuyaDevice {
     }
   }
 
-  async onSettings({ changedKeys }) {
+  async onSettings({ changedKeys, newSettings }) {
     const connectionKeys = ['ip', 'device_id', 'local_key', 'version'];
     if (changedKeys.some((k) => connectionKeys.includes(k))) {
       await this._connect();
@@ -200,6 +232,17 @@ class PetFeederDevice extends BaseTuyaDevice {
     }
     if (changedKeys.includes('portions_min') || changedKeys.includes('portions_max')) {
       await this._syncPortionsRange();
+    }
+
+    // ── Write settings-backed DPs to device when value changes ───────────────
+    for (const entry of SETTINGS_DPS) {
+      if (!changedKeys.includes(entry.valueSetting)) continue;
+      const dp = newSettings[entry.settingKey] ?? this.getSetting(entry.settingKey);
+      if (dp > 0) {
+        await this._conn?.set(dp, newSettings[entry.valueSetting]).catch((err) => {
+          this.log(`Failed to write ${entry.valueSetting} to DP ${dp}:`, err.message);
+        });
+      }
     }
   }
 }

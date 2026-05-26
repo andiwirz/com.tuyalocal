@@ -1304,6 +1304,51 @@
       "uiQuickAction": false,
       "insights": true,
       "icon": "/assets/capabilities/feed_report.svg"
+    },
+    "indicator_light": {
+      "type": "boolean",
+      "title": {
+        "en": "Indicator Light",
+        "de": "Kontrollleuchte"
+      },
+      "getable": true,
+      "setable": true,
+      "uiComponent": "toggle",
+      "uiQuickAction": false,
+      "insights": false,
+      "icon": "/assets/capabilities/indicator_light.svg"
+    },
+    "voice_playback": {
+      "type": "boolean",
+      "title": {
+        "en": "Voice Playback",
+        "de": "Sprachausgabe"
+      },
+      "getable": true,
+      "setable": true,
+      "uiComponent": "toggle",
+      "uiQuickAction": false,
+      "insights": false,
+      "icon": "/assets/capabilities/voice_playback.svg"
+    },
+    "battery_status": {
+      "type": "enum",
+      "title": {
+        "en": "Battery Status",
+        "de": "Akkustatus"
+      },
+      "values": [
+        { "id": "high",   "title": { "en": "High",   "de": "Hoch"      } },
+        { "id": "medium", "title": { "en": "Medium",  "de": "Mittel"    } },
+        { "id": "low",    "title": { "en": "Low",     "de": "Niedrig"   } },
+        { "id": "empty",  "title": { "en": "Empty",   "de": "Leer"      } }
+      ],
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "uiQuickAction": false,
+      "insights": true,
+      "icon": "/assets/capabilities/battery_status.svg"
     }
   },
   "flow": {
@@ -7708,7 +7753,9 @@
       },
       "class": "other",
       "capabilities": [
-        "feed_portions"
+        "feed_portions",
+        "indicator_light",
+        "voice_playback"
       ],
       "settings": [
         {
@@ -7980,6 +8027,101 @@
               },
               "min": 1,
               "max": 50
+            },
+            {
+              "id": "dp_indicator_light",
+              "type": "number",
+              "label": {
+                "en": "Indicator Light DP",
+                "de": "Kontrollleuchte DP"
+              },
+              "value": 19,
+              "hint": {
+                "en": "DP for the LED indicator light (default: 19). Set to 0 to disable.",
+                "de": "DP für die Kontrollleuchte (Standard: 19). 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_voice_playback",
+              "type": "number",
+              "label": {
+                "en": "Voice Playback DP",
+                "de": "Sprachausgabe DP"
+              },
+              "value": 103,
+              "hint": {
+                "en": "DP to enable/disable mealtime audio recording playback (default: 103). Set to 0 to disable.",
+                "de": "DP zum Aktivieren/Deaktivieren der Sprachausgabe beim Füttern (Standard: 103). 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_battery_status",
+              "type": "number",
+              "label": {
+                "en": "Battery Status DP",
+                "de": "Akkustatus DP"
+              },
+              "value": 101,
+              "hint": {
+                "en": "DP reporting battery status as enum (High/Medium/Low). Used on feeders with backup battery. Set to 0 to disable.",
+                "de": "DP für den Akkustatus als Enum (High/Medium/Low). Bei Geräten mit Backup-Akku. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_voice_times",
+              "type": "number",
+              "label": {
+                "en": "Voice Times DP",
+                "de": "Wiederholungen DP"
+              },
+              "value": 18,
+              "hint": {
+                "en": "DP for the number of times the mealtime recording plays (default: 18). Set to 0 to disable.",
+                "de": "DP für die Anzahl der Wiederholungen der Sprachausgabe (Standard: 18). 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "voice_times",
+              "type": "number",
+              "label": {
+                "en": "Voice Playback Repetitions",
+                "de": "Sprachausgabe-Wiederholungen"
+              },
+              "value": 1,
+              "min": 0,
+              "max": 10,
+              "hint": {
+                "en": "How many times the mealtime recording plays per feed cycle. 0 = silent. Sent to the device when changed. Only effective if Voice Times DP is configured.",
+                "de": "Wie oft die Sprachausgabe pro Fütterung abgespielt wird. 0 = stumm. Wird bei Änderung ans Gerät gesendet. Nur wirksam wenn Voice Times DP konfiguriert."
+              }
+            },
+            {
+              "id": "dp_manual_button_portions",
+              "type": "number",
+              "label": {
+                "en": "Manual Button Portions DP",
+                "de": "Manuelle Portionen DP"
+              },
+              "value": 106,
+              "hint": {
+                "en": "DP for the number of portions dispensed by the physical button (default: 106). Set to 0 to disable.",
+                "de": "DP für die Portionenanzahl bei Tastendruck (Standard: 106). 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "manual_button_portions",
+              "type": "number",
+              "label": {
+                "en": "Manual Button Portions",
+                "de": "Portionen bei Tastendruck"
+              },
+              "value": 3,
+              "min": 1,
+              "max": 50,
+              "hint": {
+                "en": "How many portions the physical button on the feeder dispenses per press. Sent to the device when changed. Only effective if Manual Button Portions DP is configured.",
+                "de": "Wie viele Portionen beim Drücken der Gerätetaste ausgegeben werden. Wird bei Änderung ans Gerät gesendet. Nur wirksam wenn Manual Button Portions DP konfiguriert."
+              }
             }
           ]
         },
