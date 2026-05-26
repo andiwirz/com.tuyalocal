@@ -8,13 +8,15 @@
       "fan":             "Fan",
       "humidifier":      "Humidifier",
       "heater":          "Heater",
-      "light":           "Light"
+      "light":           "Light",
+      "pet_feeder":      "Pet Feeder"
     }
   },
   "notifications": {
     "waterFull":  "Water tank is full — please empty it.",
     "waterEmpty": "Water tank is empty — please refill it.",
-    "faultAlarm": "Fault detected — please check the device."
+    "faultAlarm": "Fault detected — please check the device.",
+    "foodEmpty":  "Food container is low or empty — please refill it."
   },
   "pair": {
     "credentials": {
@@ -90,6 +92,17 @@
         "relay":        "Relay Power-on Behavior  (0 = disabled)",
         "powerFactor":  "Power Factor %  (0 = disabled)",
         "countdown":    "Countdown Timer s  (0 = disabled)"
+      },
+      "pet_feeder": {
+        "portions":      "Portions (DP 3, manual_feed)",
+        "motorState":    "Feed State  (DP 4 — standby/feeding/done/no_food/…)",
+        "fault":         "Fault Alarm  (DP 14, 0 = disabled)",
+        "feedReport":    "Feed Report  (DP 15, 0 = disabled)",
+        "surplusGrain":  "Remaining Food %  (DP 16, 0 = disabled)",
+        "foodLevel":     "Food Level DP  (non-standard, 0 = disabled)",
+        "childLock":     "Child Lock  (non-standard, 0 = disabled)",
+        "portionsMin":   "Portions — minimum",
+        "portionsMax":   "Portions — maximum"
       }
     }
   },

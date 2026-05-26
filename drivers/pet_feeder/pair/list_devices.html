@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      padding: 24px 16px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 14px;
+      margin: 0;
+    }
+    h2 { font-size: 20px; font-weight: 700; margin: 0 0 6px; }
+    .subtitle { color: #666; margin: 0 0 16px; font-size: 13px; }
+
+    .device-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 14px;
+      border: 2px solid #1a73e8;
+      border-radius: 10px;
+      background: #f0f6ff;
+      margin-bottom: 14px;
+    }
+    .device-name { font-weight: 600; font-size: 15px; }
+    .device-sub  { font-size: 12px; color: #555; margin-top: 2px; }
+
+    /* DP mapping table */
+    .dp-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+    .dp-table th {
+      text-align: left;
+      color: #888;
+      font-weight: 500;
+      padding: 4px 6px;
+      border-bottom: 1px solid #e8e8e8;
+    }
+    .dp-table td {
+      padding: 4px 6px;
+      border-bottom: 1px solid #f0f0f0;
+      vertical-align: middle;
+    }
+
+    /* Editable DP input */
+    .dp-input {
+      width: 62px;
+      padding: 3px 6px;
+      border: 1px solid #d0d0d0;
+      border-radius: 5px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #1a73e8;
+      background: #e8f0fe;
+      text-align: center;
+      -moz-appearance: textfield;
+    }
+    .dp-input::-webkit-outer-spin-button,
+    .dp-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .dp-input:focus {
+      outline: none;
+      border-color: #1a73e8;
+      background: #d2e3fc;
+    }
+    .dp-input.dp-zero { color: #aaa; background: #f1f3f4; border-color: #e0e0e0; }
+
+    .val-badge {
+      display: inline-block;
+      background: #f1f3f4;
+      color: #333;
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-size: 12px;
+      font-family: monospace;
+    }
+    .no-val { color: #ccc; font-style: italic; font-size: 12px; }
+    .hint-text { font-size: 11px; color: #888; margin: 0 0 14px; }
+
+    /* All detected DPs section */
+    .raw-section {
+      margin-bottom: 14px;
+    }
+    .raw-toggle {
+      background: none;
+      border: none;
+      padding: 0;
+      color: #1a73e8;
+      font-size: 12px;
+      cursor: pointer;
+      width: auto;
+      font-weight: 500;
+    }
+    .raw-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      margin-top: 6px;
+      background: #fafafa;
+      border: 1px solid #e8e8e8;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .raw-table th {
+      text-align: left;
+      color: #888;
+      font-weight: 500;
+      padding: 4px 8px;
+      border-bottom: 1px solid #e8e8e8;
+      background: #f1f3f4;
+    }
+    .raw-table td { padding: 3px 8px; border-bottom: 1px solid #f0f0f0; }
+    .raw-table tr:last-child td { border-bottom: none; }
+    .raw-dp { font-weight: 600; color: #1a73e8; }
+    .raw-assigned { color: #888; font-style: italic; }
+
+    .status {
+      margin-bottom: 12px;
+      padding: 8px 10px;
+      border-radius: 5px;
+      font-size: 13px;
+      display: none;
+    }
+    .status.error   { background: #fce8e6; color: #c5221f; display: block; }
+    .status.success { background: #e6f4ea; color: #1e6a34; display: block; }
+
+    .name-input-wrap { margin-bottom: 14px; }
+    .name-input-wrap label { display: block; font-size: 12px; color: #666; margin-bottom: 4px; }
+    .name-input-wrap input {
+      width: 100%;
+      padding: 9px 10px;
+      border: 1px solid #d0d0d0;
+      border-radius: 8px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    .name-input-wrap input:focus { outline: none; border-color: #1a73e8; }
+
+    button#addBtn {
+      width: 100%;
+      padding: 12px;
+      background: #1a73e8;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    button#addBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+    #loading { color: #888; font-size: 13px; margin-bottom: 16px; }
+  </style>
+</head>
+<body>
+  <h2 id="page-title">Device found</h2>
+  <p class="subtitle" id="page-subtitle">Ready to add.</p>
+
+  <div id="loading">Loading device data…</div>
+
+  <div id="device-card" class="device-card" style="display:none">
+    <div>
+      <div class="device-name" id="device-name">—</div>
+      <div class="device-sub"  id="device-sub">—</div>
+    </div>
+  </div>
+
+  <table class="dp-table" id="dp-table" style="display:none">
+    <thead>
+      <tr>
+        <th id="th-function">Function</th>
+        <th id="th-dp">DP</th>
+        <th id="th-currentValue">Current value</th>
+      </tr>
+    </thead>
+    <tbody id="dp-tbody"></tbody>
+  </table>
+
+  <p class="hint-text" id="dp-hint" style="display:none"></p>
+
+  <!-- All detected DPs (collapsible) -->
+  <div class="raw-section" id="raw-section" style="display:none">
+    <button class="raw-toggle" id="rawToggle">▶ Show all detected DPs</button>
+    <div id="rawContent" style="display:none"></div>
+  </div>
+
+  <div id="name-input-wrap" class="name-input-wrap" style="display:none">
+    <label id="name-label">Device name</label>
+    <input type="text" id="device-name-input" />
+  </div>
+
+  <div id="status" class="status"></div>
+  <button id="addBtn" disabled>Add Device</button>
+
+  <script>
+    var pendingDevice = null;
+
+    function initText() {
+      document.getElementById('page-title').textContent      = Homey.__('pair.list_devices.title')        || 'Device found';
+      document.getElementById('page-subtitle').textContent   = Homey.__('pair.list_devices.subtitle')     || 'Ready to add.';
+      document.getElementById('loading').textContent         = Homey.__('pair.list_devices.loading')      || 'Loading device data…';
+      document.getElementById('th-function').textContent     = Homey.__('pair.list_devices.function')     || 'Function';
+      document.getElementById('th-dp').textContent           = Homey.__('pair.list_devices.dp')           || 'DP';
+      document.getElementById('th-currentValue').textContent = Homey.__('pair.list_devices.currentValue') || 'Current value';
+      document.getElementById('addBtn').textContent          = Homey.__('pair.list_devices.addBtn')       || 'Add Device';
+      document.getElementById('name-label').textContent      = Homey.__('pair.list_devices.deviceName')   || 'Device name';
+      document.getElementById('dp-hint').textContent         = Homey.__('pair.list_devices.dpHint')       || 'You can change DP numbers directly. The current value updates live.';
+    }
+    if (typeof Homey !== 'undefined') initText();
+
+    function showStatus(msg, type) {
+      var el = document.getElementById('status');
+      el.textContent = msg;
+      el.className = 'status ' + type;
+    }
+
+    function valBadge(dps, dp) {
+      var dpNum = parseInt(dp);
+      if (!dpNum || !(String(dpNum) in dps)) return '<span class="no-val">—</span>';
+      return '<span class="val-badge">' + String(dps[String(dpNum)]) + '</span>';
+    }
+
+    var devicesResult = null;
+    var rawDpsResult  = {};
+    var pending = 2;
+
+    function onBothLoaded() {
+      document.getElementById('loading').style.display = 'none';
+
+      if (!devicesResult || devicesResult.length === 0) {
+        showStatus(Homey.__('pair.list_devices.noDevice') || 'No device found.', 'error');
+        return;
+      }
+
+      pendingDevice = devicesResult[0];
+      var s   = pendingDevice.settings || {};
+      var dps = rawDpsResult;
+
+      var defaultName = Homey.__('device.defaultName.pet_feeder') || 'Pet Feeder';
+      document.getElementById('device-name').textContent = pendingDevice.name || defaultName;
+      document.getElementById('device-sub').textContent  = s.ip || '';
+      document.getElementById('device-card').style.display = 'flex';
+
+      // Editable name field
+      document.getElementById('device-name-input').value = pendingDevice.name || defaultName;
+      document.getElementById('name-input-wrap').style.display = 'block';
+      document.getElementById('device-name-input').addEventListener('input', function() {
+        document.getElementById('device-name').textContent = this.value || defaultName;
+      });
+
+      // rowDefs: [rowKey, settingKey, initialDp, label]
+      var rowDefs = [
+        ['portions',    'dp_portions',      s.dp_portions      || 3,  Homey.__('pair.list_devices.pet_feeder.portions')      || 'Portions (DP 3, manual_feed)'],
+        ['motor',       'dp_motor_state',   s.dp_motor_state   || 4,  Homey.__('pair.list_devices.pet_feeder.motorState')    || 'Feed State (DP 4)'],
+        ['fault',       'dp_fault',         s.dp_fault         || 14, Homey.__('pair.list_devices.pet_feeder.fault')         || 'Fault Alarm (DP 14, 0 = disabled)'],
+        ['feedreport',  'dp_feed_report',   s.dp_feed_report   || 15, Homey.__('pair.list_devices.pet_feeder.feedReport')    || 'Feed Report (DP 15, 0 = disabled)'],
+        ['surplus',     'dp_surplus_grain', s.dp_surplus_grain || 16, Homey.__('pair.list_devices.pet_feeder.surplusGrain')  || 'Remaining Food % (DP 16, 0 = disabled)'],
+        ['food',        'dp_food_level',    s.dp_food_level    || 0,  Homey.__('pair.list_devices.pet_feeder.foodLevel')     || 'Food Level DP (non-standard, 0 = disabled)'],
+        ['childlock',   'dp_child_lock',    s.dp_child_lock    || 0,  Homey.__('pair.list_devices.pet_feeder.childLock')     || 'Child Lock (non-standard, 0 = disabled)'],
+      ];
+
+      var tbody = document.getElementById('dp-tbody');
+      tbody.innerHTML = '';
+
+      rowDefs.forEach(function(r) {
+        var rowKey     = r[0];
+        var settingKey = r[1];
+        var dpVal      = r[2];
+        var label      = r[3];
+
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td>' + label + '</td>' +
+          '<td><input type="number" class="dp-input' + (dpVal === 0 ? ' dp-zero' : '') + '"' +
+            ' id="input-' + rowKey + '"' +
+            ' data-key="' + settingKey + '"' +
+            ' data-row="' + rowKey + '"' +
+            ' value="' + dpVal + '" min="0" max="255"></td>' +
+          '<td id="val-' + rowKey + '">' + valBadge(dps, dpVal) + '</td>';
+        tbody.appendChild(tr);
+      });
+
+      // Live update value cell when DP input changes
+      tbody.addEventListener('input', function(e) {
+        if (!e.target.classList.contains('dp-input')) return;
+        var rowKey     = e.target.dataset.row;
+        var settingKey = e.target.dataset.key;
+        var dpNum      = parseInt(e.target.value) || 0;
+
+        // Update value badge live
+        document.getElementById('val-' + rowKey).innerHTML = valBadge(dps, dpNum);
+
+        // Keep zero styling
+        e.target.classList.toggle('dp-zero', dpNum === 0);
+
+        // Write back into pendingDevice.settings immediately
+        pendingDevice.settings[settingKey] = dpNum;
+      });
+
+      document.getElementById('dp-table').style.display = 'table';
+      document.getElementById('dp-hint').style.display  = 'block';
+
+      // "All detected DPs" section
+      var dpKeys = Object.keys(dps).map(Number).sort(function(a, b) { return a - b; });
+      if (dpKeys.length > 0) {
+        // Build a reverse map: dp number → which function it is assigned to
+        var assignedMap = {};
+        rowDefs.forEach(function(r) {
+          if (r[2] > 0) assignedMap[r[2]] = r[3];
+        });
+
+        var rows = dpKeys.map(function(dp) {
+          var val      = dps[String(dp)];
+          var assigned = assignedMap[dp] ? '<span class="raw-assigned">→ ' + assignedMap[dp] + '</span>' : '';
+          return '<tr>' +
+            '<td><span class="raw-dp">DP ' + dp + '</span></td>' +
+            '<td><span class="val-badge">' + String(val) + '</span></td>' +
+            '<td>' + assigned + '</td>' +
+            '</tr>';
+        }).join('');
+
+        document.getElementById('rawContent').innerHTML =
+          '<table class="raw-table">' +
+          '<thead><tr><th>DP</th><th>Value</th><th>Assigned to</th></tr></thead>' +
+          '<tbody>' + rows + '</tbody></table>';
+        document.getElementById('raw-section').style.display = 'block';
+
+        document.getElementById('rawToggle').addEventListener('click', function() {
+          var content = document.getElementById('rawContent');
+          var hidden  = content.style.display === 'none';
+          content.style.display = hidden ? 'block' : 'none';
+          this.textContent = (hidden ? '▼ ' : '▶ ') +
+            (Homey.__('pair.list_devices.allDps') || 'Show all detected DPs');
+        });
+      }
+
+      document.getElementById('addBtn').disabled = false;
+    }
+
+    Homey.emit('list_devices', null, function(err, devices) {
+      devicesResult = (!err && devices) ? devices : [];
+      if (--pending === 0) onBothLoaded();
+    });
+
+    Homey.emit('raw_dps', null, function(err, dps) {
+      rawDpsResult = (!err && dps) ? dps : {};
+      if (--pending === 0) onBothLoaded();
+    });
+
+    document.getElementById('addBtn').addEventListener('click', function() {
+      if (!pendingDevice) return;
+      var btn = document.getElementById('addBtn');
+      btn.disabled = true;
+      btn.textContent = Homey.__('pair.list_devices.adding') || 'Adding…';
+
+      // Ensure all current input values are written to settings
+      document.querySelectorAll('.dp-input').forEach(function(input) {
+        pendingDevice.settings[input.dataset.key] = parseInt(input.value) || 0;
+      });
+
+      var nameInput = document.getElementById('device-name-input').value.trim();
+      if (nameInput) pendingDevice.name = nameInput;
+
+      Homey.emit('set_device_name', pendingDevice.name, function() {});
+
+      Homey.createDevice(pendingDevice)
+        .then(function() {
+          showStatus(Homey.__('pair.list_devices.added') || 'Device added!', 'success');
+          btn.textContent = '✓ ' + (Homey.__('pair.list_devices.added') || 'Added!');
+          setTimeout(function() { Homey.done(); }, 1000);
+        })
+        .catch(function(err) {
+          btn.disabled = false;
+          btn.textContent = Homey.__('pair.list_devices.addBtn') || 'Add Device';
+          showStatus((Homey.__('pair.list_devices.error') || 'Error: ') + (err.message || String(err)), 'error');
+        });
+    });
+
+    if (typeof Homey !== 'undefined') {
+      Homey.ready(function() {});
+    }
+  </script>
+</body>
+</html>

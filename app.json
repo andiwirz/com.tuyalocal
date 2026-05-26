@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.34",
+  "version": "1.0.35",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -18,6 +18,14 @@
     "appliances"
   ],
   "changelog": {
+    "1.0.35": {
+      "en": "Added Pet Feeder driver: automatic DP detection, food level monitoring with push notifications (low/empty), feeding-done trigger, portions slider, and full flow card support. Food level enum extended with 'less' and 'lack' values for Mypin/video-feeder compatibility. New pet feeder device icon. All drivers: added configurable offline grace period (default 60 s) — the 'device disconnected' flow trigger is now delayed until the device has been offline for the full grace period, eliminating spurious nightly offline notifications caused by brief Tuya firmware reconnect cycles.",
+      "de": "Neuer Futterautomat-Treiber: automatische DP-Erkennung, Futterstand-Überwachung mit Push-Benachrichtigungen (niedrig/leer), Fütterung-abgeschlossen-Trigger, Portionen-Schieberegler und vollständige Flow-Karten-Unterstützung. Futterstand-Enum um Werte 'less' und 'lack' für Mypin-/Video-Futterautomaten erweitert. Neues Geräte-Icon für den Futterautomaten. Alle Treiber: Konfigurierbare Offline-Karenzzeit (Standard 60 s) — der 'Gerät getrennt'-Flow-Auslöser wird jetzt erst nach Ablauf der Karenzzeit ausgelöst, was unnötige nächtliche Offline-Benachrichtigungen durch kurze Tuya-Firmware-Reconnect-Zyklen verhindert."
+    },
+    "1.0.34": {
+      "en": "Removed repair flow from all drivers — IP address, local key, and protocol version can be updated directly in the device settings page, making the separate repair dialog unnecessary.",
+      "de": "Reparatur-Dialog aus allen Treibern entfernt — IP-Adresse, Local Key und Protokollversion können direkt in den Geräteeinstellungen geändert werden; ein separater Dialog ist nicht mehr notwendig."
+    },
     "1.0.31": {
       "en": "Added four new drivers: Fan (speed slider + enum speed + oscillation + mode), Humidifier (humidity sensor + target + water-empty alarm), Heater (target/current temperature + mode + fault alarm), and Light (brightness + color temperature + HSV color). All drivers include auto-detection of DPs at pairing time, repair flow, and full flow card support (triggers, conditions, actions).",
       "de": "Vier neue Treiber hinzugefügt: Lüfter (Geschwindigkeitsregler + Enum-Geschwindigkeit + Schwenkung + Modus), Luftbefeuchter (Luftfeuchtigkeitssensor + Sollwert + Leer-Tank-Alarm), Heizgerät (Soll-/Ist-Temperatur + Modus + Fehleralarm) und Licht (Helligkeit + Farbtemperatur + HSV-Farbe). Alle Treiber enthalten Auto-Erkennung der DPs beim Einrichten, Reparatur-Dialog und vollständige Flow-Karten-Unterstützung (Auslöser, Bedingungen, Aktionen)."
@@ -1103,6 +1111,187 @@
       "setable": true,
       "uiComponent": "picker",
       "icon": "/assets/capabilities/fan_direction.svg"
+    },
+    "feed_portions": {
+      "type": "number",
+      "title": {
+        "en": "Portions",
+        "de": "Portionen"
+      },
+      "units": {
+        "en": "portions",
+        "de": "Portionen"
+      },
+      "min": 1,
+      "max": 50,
+      "step": 1,
+      "getable": true,
+      "setable": true,
+      "uiComponent": "slider",
+      "uiQuickAction": true,
+      "insights": false,
+      "icon": "/assets/capabilities/feed_portions.svg"
+    },
+    "food_status": {
+      "type": "enum",
+      "title": {
+        "en": "Food Level",
+        "de": "Futterstand"
+      },
+      "values": [
+        {
+          "id": "full",
+          "title": {
+            "en": "Full",
+            "de": "Voll"
+          }
+        },
+        {
+          "id": "high",
+          "title": {
+            "en": "High",
+            "de": "Hoch"
+          }
+        },
+        {
+          "id": "half",
+          "title": {
+            "en": "Half",
+            "de": "Halb"
+          }
+        },
+        {
+          "id": "low",
+          "title": {
+            "en": "Low",
+            "de": "Niedrig"
+          }
+        },
+        {
+          "id": "less",
+          "title": {
+            "en": "Less",
+            "de": "Wenig"
+          }
+        },
+        {
+          "id": "empty",
+          "title": {
+            "en": "Empty",
+            "de": "Leer"
+          }
+        },
+        {
+          "id": "lack",
+          "title": {
+            "en": "Lack",
+            "de": "Leer (Mangel)"
+          }
+        }
+      ],
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "uiQuickAction": false,
+      "insights": true,
+      "icon": "/assets/capabilities/food_status.svg"
+    },
+    "motor_state": {
+      "type": "enum",
+      "title": {
+        "en": "Feed State",
+        "de": "Fütterungsstatus"
+      },
+      "values": [
+        {
+          "id": "standby",
+          "title": {
+            "en": "Standby",
+            "de": "Bereit"
+          }
+        },
+        {
+          "id": "feeding",
+          "title": {
+            "en": "Feeding",
+            "de": "Fütternd"
+          }
+        },
+        {
+          "id": "done",
+          "title": {
+            "en": "Done",
+            "de": "Abgeschlossen"
+          }
+        },
+        {
+          "id": "no_food",
+          "title": {
+            "en": "No Food",
+            "de": "Kein Futter"
+          }
+        },
+        {
+          "id": "error_ir",
+          "title": {
+            "en": "Jammed (IR error)",
+            "de": "Blockiert (IR-Fehler)"
+          }
+        },
+        {
+          "id": "feed_timeout",
+          "title": {
+            "en": "Blocked (timeout)",
+            "de": "Blockiert (Timeout)"
+          }
+        }
+      ],
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "uiQuickAction": false,
+      "insights": false,
+      "icon": "/assets/capabilities/motor_state.svg"
+    },
+    "surplus_grain": {
+      "type": "number",
+      "title": {
+        "en": "Remaining Food",
+        "de": "Verbleibendes Futter"
+      },
+      "units": {
+        "en": "%",
+        "de": "%"
+      },
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "uiQuickAction": false,
+      "insights": true,
+      "icon": "/assets/capabilities/surplus_grain.svg"
+    },
+    "feed_report": {
+      "type": "number",
+      "title": {
+        "en": "Last Feed",
+        "de": "Letzte Fütterung"
+      },
+      "units": {
+        "en": "servings",
+        "de": "Portionen"
+      },
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "uiQuickAction": false,
+      "insights": true,
+      "icon": "/assets/capabilities/feed_report.svg"
     }
   },
   "flow": {
@@ -2098,6 +2287,116 @@
             }
           }
         ]
+      },
+      {
+        "id": "feeder_food_level_changed",
+        "title": {
+          "en": "Food level changed",
+          "de": "Futterstand geändert"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=pet_feeder"
+          }
+        ],
+        "tokens": [
+          {
+            "name": "food_status",
+            "type": "string",
+            "title": {
+              "en": "Food level",
+              "de": "Futterstand"
+            },
+            "example": "low"
+          },
+          {
+            "name": "prev_status",
+            "type": "string",
+            "title": {
+              "en": "Previous food level",
+              "de": "Vorheriger Futterstand"
+            },
+            "example": "full"
+          }
+        ]
+      },
+      {
+        "id": "feeder_feeding_done",
+        "title": {
+          "en": "Feeding completed",
+          "de": "Fütterung abgeschlossen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=pet_feeder"
+          }
+        ]
+      },
+      {
+        "id": "feeder_device_connected",
+        "title": {
+          "en": "Pet feeder connected",
+          "de": "Futterautomat verbunden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=pet_feeder"
+          }
+        ]
+      },
+      {
+        "id": "feeder_device_disconnected",
+        "title": {
+          "en": "Pet feeder disconnected",
+          "de": "Futterautomat getrennt"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=pet_feeder"
+          }
+        ]
+      },
+      {
+        "id": "feeder_dp_changed",
+        "title": {
+          "en": "Pet feeder data point changed",
+          "de": "Futterautomat: Datenpunkt geändert"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=pet_feeder"
+          }
+        ],
+        "tokens": [
+          {
+            "name": "dp",
+            "type": "string",
+            "title": {
+              "en": "DP number",
+              "de": "DP-Nummer"
+            },
+            "example": "4"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "title": {
+              "en": "Value",
+              "de": "Wert"
+            },
+            "example": "standby"
+          }
+        ]
       }
     ],
     "conditions": [
@@ -2773,6 +3072,34 @@
           "en": "Fan direction !{{is|is not}} [[direction]]",
           "de": "Lüfterrichtung !{{ist|ist nicht}} [[direction]]"
         }
+      },
+      {
+        "id": "feeder_food_is_low",
+        "title": {
+          "en": "Food level !{{is|is not}} low",
+          "de": "Futterstand !{{ist|ist nicht}} niedrig"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=pet_feeder"
+          }
+        ]
+      },
+      {
+        "id": "feeder_device_is_connected",
+        "title": {
+          "en": "Pet feeder !{{is|is not}} connected",
+          "de": "Futterautomat !{{ist|ist nicht}} verbunden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=pet_feeder"
+          }
+        ]
       }
     ],
     "actions": [
@@ -4400,6 +4727,63 @@
           "en": "Set fan direction to [[direction]]",
           "de": "Lüfterrichtung auf [[direction]] setzen"
         }
+      },
+      {
+        "id": "feeder_feed_now",
+        "title": {
+          "en": "Feed now",
+          "de": "Jetzt füttern"
+        },
+        "titleFormatted": {
+          "en": "Feed [[portions]] portion(s) now",
+          "de": "Jetzt [[portions]] Portion(en) ausgeben"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=pet_feeder"
+          },
+          {
+            "name": "portions",
+            "type": "number",
+            "min": 1,
+            "max": 50,
+            "step": 1,
+            "title": {
+              "en": "Portions",
+              "de": "Portionen"
+            }
+          }
+        ]
+      },
+      {
+        "id": "feeder_force_reconnect",
+        "title": {
+          "en": "Force pet feeder reconnect",
+          "de": "Futterautomat: Verbindung neu aufbauen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=pet_feeder"
+          }
+        ]
+      },
+      {
+        "id": "feeder_refresh_device",
+        "title": {
+          "en": "Refresh pet feeder values",
+          "de": "Futterautomat: Daten aktualisieren"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=pet_feeder"
+          }
+        ]
       }
     ]
   },
@@ -4529,6 +4913,21 @@
               },
               "min": 0,
               "max": 3600
+            },
+            {
+              "id": "offline_grace_seconds",
+              "type": "number",
+              "label": {
+                "en": "Offline Grace Period (seconds)",
+                "de": "Offline-Karenzzeit (Sekunden)"
+              },
+              "value": 60,
+              "hint": {
+                "en": "How long the device must remain offline before the 'device disconnected' flow trigger fires. Tuya devices often drop and immediately re-establish the connection — a grace period of 60 s prevents spurious offline notifications. Set to 0 to trigger immediately.",
+                "de": "Wie lange das Gerät offline sein muss, bevor der 'Gerät getrennt'-Flow-Auslöser ausgelöst wird. Tuya-Geräte trennen die Verbindung kurz und bauen sie sofort wieder auf — eine Karenzzeit von 60 s verhindert unnötige Offline-Benachrichtigungen. 0 = sofort auslösen."
+              },
+              "min": 0,
+              "max": 600
             }
           ]
         },
@@ -4869,6 +5268,21 @@
               "value": 30,
               "min": 0,
               "max": 3600
+            },
+            {
+              "id": "offline_grace_seconds",
+              "type": "number",
+              "label": {
+                "en": "Offline Grace Period (seconds)",
+                "de": "Offline-Karenzzeit (Sekunden)"
+              },
+              "value": 60,
+              "hint": {
+                "en": "How long the device must remain offline before the 'device disconnected' flow trigger fires. Tuya devices often drop and immediately re-establish the connection — a grace period of 60 s prevents spurious offline notifications. Set to 0 to trigger immediately.",
+                "de": "Wie lange das Gerät offline sein muss, bevor der 'Gerät getrennt'-Flow-Auslöser ausgelöst wird. Tuya-Geräte trennen die Verbindung kurz und bauen sie sofort wieder auf — eine Karenzzeit von 60 s verhindert unnötige Offline-Benachrichtigungen. 0 = sofort auslösen."
+              },
+              "min": 0,
+              "max": 600
             }
           ]
         },
@@ -5431,6 +5845,21 @@
               },
               "min": 0,
               "max": 3600
+            },
+            {
+              "id": "offline_grace_seconds",
+              "type": "number",
+              "label": {
+                "en": "Offline Grace Period (seconds)",
+                "de": "Offline-Karenzzeit (Sekunden)"
+              },
+              "value": 60,
+              "hint": {
+                "en": "How long the device must remain offline before the 'device disconnected' flow trigger fires. Tuya devices often drop and immediately re-establish the connection — a grace period of 60 s prevents spurious offline notifications. Set to 0 to trigger immediately.",
+                "de": "Wie lange das Gerät offline sein muss, bevor der 'Gerät getrennt'-Flow-Auslöser ausgelöst wird. Tuya-Geräte trennen die Verbindung kurz und bauen sie sofort wieder auf — eine Karenzzeit von 60 s verhindert unnötige Offline-Benachrichtigungen. 0 = sofort auslösen."
+              },
+              "min": 0,
+              "max": 600
             }
           ]
         },
@@ -7130,6 +7559,304 @@
         "large": "/drivers/light/assets/images/large.png",
         "xlarge": "/drivers/light/assets/images/xlarge.png"
       }
+    },
+    {
+      "id": "pet_feeder",
+      "name": {
+        "en": "Pet Feeder",
+        "de": "Futterautomat"
+      },
+      "class": "other",
+      "capabilities": [
+        "feed_portions"
+      ],
+      "settings": [
+        {
+          "type": "group",
+          "label": {
+            "en": "Connection",
+            "de": "Verbindung"
+          },
+          "children": [
+            {
+              "id": "ip",
+              "type": "text",
+              "label": {
+                "en": "IP Address",
+                "de": "IP-Adresse"
+              },
+              "value": "",
+              "hint": {
+                "en": "Local IP address of your device.",
+                "de": "Lokale IP-Adresse des Geräts."
+              }
+            },
+            {
+              "id": "device_id",
+              "type": "text",
+              "label": {
+                "en": "Device ID",
+                "de": "Geräte-ID"
+              },
+              "value": ""
+            },
+            {
+              "id": "local_key",
+              "type": "text",
+              "label": {
+                "en": "Local Key",
+                "de": "Lokaler Schlüssel"
+              },
+              "value": ""
+            },
+            {
+              "id": "version",
+              "type": "dropdown",
+              "label": {
+                "en": "Protocol Version",
+                "de": "Protokollversion"
+              },
+              "value": "3.3",
+              "values": [
+                {
+                  "id": "3.1",
+                  "label": {
+                    "en": "3.1 (legacy)",
+                    "de": "3.1 (veraltet)"
+                  }
+                },
+                {
+                  "id": "3.3",
+                  "label": {
+                    "en": "3.3",
+                    "de": "3.3"
+                  }
+                },
+                {
+                  "id": "3.4",
+                  "label": {
+                    "en": "3.4",
+                    "de": "3.4"
+                  }
+                },
+                {
+                  "id": "3.5",
+                  "label": {
+                    "en": "3.5",
+                    "de": "3.5"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "polling_interval",
+              "type": "number",
+              "label": {
+                "en": "Polling Interval (seconds)",
+                "de": "Abfrageintervall (Sekunden)"
+              },
+              "value": 30,
+              "min": 0,
+              "max": 3600,
+              "hint": {
+                "en": "Set to 0 to disable polling. Default: 30 s.",
+                "de": "0 = kein Polling. Standard: 30 s."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Data Points (DPs)",
+            "de": "Datenpunkte (DPs)"
+          },
+          "children": [
+            {
+              "id": "dp_portions",
+              "type": "number",
+              "label": {
+                "en": "Portions DP",
+                "de": "Portionen DP"
+              },
+              "value": 3,
+              "hint": {
+                "en": "DP for the number of portions to dispense (default: 3).",
+                "de": "DP für die Anzahl der auszugebenden Portionen (Standard: 3)."
+              }
+            },
+            {
+              "id": "dp_motor_state",
+              "type": "number",
+              "label": {
+                "en": "Motor State DP",
+                "de": "Motorstatus DP"
+              },
+              "value": 4,
+              "hint": {
+                "en": "DP for motor/feeding state (e.g. standby, feeding). Set to 0 to disable.",
+                "de": "DP für den Motor-/Fütterungsstatus (z.B. standby, feeding). 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_fault",
+              "type": "number",
+              "label": {
+                "en": "Fault DP",
+                "de": "Fehler DP"
+              },
+              "value": 14,
+              "hint": {
+                "en": "DP 14 per Tuya spec (fault): bitfield — 1=no_food, 2=jammed, 4=feed_timeout, 8=battery_low. Activates the fault alarm. Set to 0 to disable.",
+                "de": "DP 14 laut Tuya-Spezifikation (fault): Bitfeld — 1=kein Futter, 2=blockiert, 4=Timeout, 8=Akku leer. Aktiviert den Fehleralarm. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_food_level",
+              "type": "number",
+              "label": {
+                "en": "Food Level DP",
+                "de": "Futterstand DP"
+              },
+              "value": 0,
+              "hint": {
+                "en": "Non-standard custom DP reporting enum values like full/low/empty. Not in the Tuya spec — enable only if your device exposes such a DP (e.g. 101 or 102). Set to 0 to disable.",
+                "de": "Nicht-standardisierter DP mit Enum-Werten wie full/low/empty. Nicht in der Tuya-Spezifikation — nur aktivieren, wenn das Gerät einen solchen DP meldet (z.B. 101 oder 102). 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_surplus_grain",
+              "type": "number",
+              "label": {
+                "en": "Remaining Food % DP",
+                "de": "Futterstand % DP"
+              },
+              "value": 16,
+              "hint": {
+                "en": "DP 16 per Tuya spec (surplus_grain): remaining food as a percentage 0–100. Set to 0 to disable.",
+                "de": "DP 16 laut Tuya-Spezifikation (surplus_grain): verbleibendes Futter in Prozent (0–100). 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_feed_report",
+              "type": "number",
+              "label": {
+                "en": "Feed Report DP",
+                "de": "Fütterungsreport DP"
+              },
+              "value": 15,
+              "hint": {
+                "en": "DP 15 per Tuya spec (feed_report): actual servings dispensed in the last feed cycle (0–12). Set to 0 to disable.",
+                "de": "DP 15 laut Tuya-Spezifikation (feed_report): tatsächlich ausgegebene Portionen im letzten Fütterungszyklus (0–12). 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_child_lock",
+              "type": "number",
+              "label": {
+                "en": "Child Lock DP",
+                "de": "Kindersicherung DP"
+              },
+              "value": 0,
+              "hint": {
+                "en": "Child lock is not part of the standard Tuya pet-feeder spec. Set to 0 to disable. Note: DP 9 is factory_reset — do not use it here.",
+                "de": "Kindersicherung ist nicht Teil der Tuya-Futterautomat-Spezifikation. 0 = deaktiviert. Hinweis: DP 9 ist Werksreset — nicht hier verwenden."
+              }
+            },
+            {
+              "id": "food_empty_values",
+              "type": "text",
+              "label": {
+                "en": "Low/Empty values",
+                "de": "Niedrig-/Leer-Werte"
+              },
+              "value": "low,less,empty,lack",
+              "hint": {
+                "en": "Comma-separated values of the Food Level DP that trigger a low-food notification. Possible values: full, high, half, low, less, empty, lack. Default: low,less,empty,lack",
+                "de": "Kommagetrennte Werte des Futterstand-DPs, die eine Benachrichtigung auslösen. Mögliche Werte: full, high, half, low, less, empty, lack. Standard: low,less,empty,lack"
+              }
+            },
+            {
+              "id": "portions_min",
+              "type": "number",
+              "label": {
+                "en": "Portions — minimum",
+                "de": "Portionen — Minimum"
+              },
+              "value": 1,
+              "hint": {
+                "en": "Minimum value for the portions slider and 'Feed now' flow action. Default: 1.",
+                "de": "Minimalwert für den Portionen-Slider und die 'Jetzt füttern'-Flow-Aktion. Standard: 1."
+              },
+              "min": 1,
+              "max": 50
+            },
+            {
+              "id": "portions_max",
+              "type": "number",
+              "label": {
+                "en": "Portions — maximum",
+                "de": "Portionen — Maximum"
+              },
+              "value": 12,
+              "hint": {
+                "en": "Maximum value for the portions slider. Set to 12 for standard Tuya feeders, up to 50 for large-capacity devices. Default: 12.",
+                "de": "Maximalwert für den Portionen-Slider. 12 für Standard-Tuya-Futterautomaten, bis 50 für Grossbehälter-Geräte. Standard: 12."
+              },
+              "min": 1,
+              "max": 50
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Diagnostics",
+            "de": "Diagnose"
+          },
+          "children": [
+            {
+              "id": "connection_status",
+              "type": "text",
+              "label": {
+                "en": "Connection status",
+                "de": "Verbindungsstatus"
+              },
+              "value": "—",
+              "hint": {
+                "en": "Updated automatically by the app. Do not edit.",
+                "de": "Wird automatisch aktualisiert. Nicht bearbeiten."
+              }
+            },
+            {
+              "id": "last_seen",
+              "type": "text",
+              "label": {
+                "en": "Last data received",
+                "de": "Zuletzt Daten empfangen"
+              },
+              "value": "—",
+              "hint": {
+                "en": "Updated automatically by the app. Do not edit.",
+                "de": "Wird automatisch aktualisiert. Nicht bearbeiten."
+              }
+            }
+          ]
+        }
+      ],
+      "pair": [
+        {
+          "id": "credentials"
+        },
+        {
+          "id": "list_devices"
+        }
+      ],
+      "images": {
+        "small": "/drivers/pet_feeder/assets/images/small.png",
+        "large": "/drivers/pet_feeder/assets/images/large.png",
+        "xlarge": "/drivers/pet_feeder/assets/images/xlarge.png"
+      }
     }
   ],
   "brandColor": "#ED5308",
@@ -7142,6 +7869,7 @@
       "fan",
       "heater",
       "light",
+      "pet feeder",
       "local",
       "lan"
     ],
@@ -7153,6 +7881,7 @@
       "lüfter",
       "heizgerät",
       "licht",
+      "futterautomat",
       "lokal",
       "lan"
     ]

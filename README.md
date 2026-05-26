@@ -1,8 +1,8 @@
 # Tuya Local — Homey App
 
-**Version 1.0.33** · Local control of Tuya smart devices — no cloud, no internet dependency.
+**Version 1.0.35** · Local control of Tuya smart devices — no cloud, no internet dependency.
 
-All communication happens over your local network via the Tuya LAN protocol. Eight built-in drivers cover the most common device types; a fully generic driver handles anything else.
+All communication happens over your local network via the Tuya LAN protocol. Nine built-in drivers cover the most common device types; a fully generic driver handles anything else.
 
 ---
 
@@ -17,6 +17,7 @@ All communication happens over your local network via the Tuya LAN protocol. Eig
 | [Humidifier](#humidifier-1) | Humidifiers, aroma diffusers | Humidifier |
 | [Heater](#heater-1) | Panel heaters, convectors, oil radiators | Heater |
 | [Light](#light-1) | Bulbs, LED strips, ceiling lights | Light |
+| [Pet Feeder](#pet-feeder-1) | Automatic pet feeders (e.g. Mypin, PETKIT) | Other |
 | [Generic Tuya Device](#generic-tuya-device-1) | Any Tuya device not covered above | Other |
 
 ---
@@ -31,7 +32,7 @@ All communication happens over your local network via the Tuya LAN protocol. Eig
 - **Auto DP detection** — on pairing, the app connects to the device, collects live data points and maps them to capabilities automatically
 - **Inline DP editor** — every DP number can be adjusted in the pairing screen before adding the device
 - **Optional capabilities** — tiles are added or removed dynamically based on your DP settings; set a DP to `0` to hide the tile
-- **Repair flow** — update IP address or Local Key at any time without re-pairing
+- **Live credential updates** — change IP address, Local Key or Protocol Version directly in device settings at any time without re-pairing
 - **Computed energy metering** — kWh accumulated from live power readings using trapezoidal integration; persisted across restarts
 - **Push notifications** — Homey notifications for water tank events, fault alarms and other device alerts
 - **Diagnostic tools** — in-app log buffer, live DP debug panel and raw payload viewer
@@ -120,6 +121,7 @@ homey app install
 | Local Key | LAN encryption key (16 or 32 chars) | — |
 | Protocol Version | Auto-detect / 3.1 / 3.3 / 3.4 / 3.5 | Auto-detect |
 | Polling Interval (s) | Active poll cadence — `0` disables polling | 30 |
+| Offline Grace Period (s) | Seconds to wait before triggering "device disconnected" flows — `0` = immediate | 60 |
 
 #### Data Points
 
@@ -152,7 +154,7 @@ The exact strings vary by manufacturer. Check the **Raw Data** panel in app sett
 
 #### Connection
 
-Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polling Interval).
+Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polling Interval, Offline Grace Period).
 
 #### Data Points
 
@@ -204,7 +206,7 @@ Default: `off,on,memory` (all three options shown).
 
 #### Connection
 
-Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polling Interval).
+Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polling Interval, Offline Grace Period).
 
 #### Data Points
 
@@ -240,7 +242,7 @@ Some AC units send temperatures multiplied by 10 (e.g. `220` = 22.0 °C). The dr
 
 #### Connection
 
-Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polling Interval).
+Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polling Interval, Offline Grace Period).
 
 #### Data Points
 
@@ -274,7 +276,7 @@ The `fan_direction` capability uses fixed values `forward` and `reverse` (Tuya s
 
 #### Connection
 
-Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polling Interval).
+Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polling Interval, Offline Grace Period).
 
 #### Data Points
 
@@ -307,7 +309,7 @@ Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polli
 
 #### Connection
 
-Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polling Interval).
+Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polling Interval, Offline Grace Period).
 
 #### Data Points
 
@@ -344,7 +346,7 @@ Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polli
 
 #### Connection
 
-Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polling Interval).
+Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polling Interval, Offline Grace Period).
 
 #### Data Points
 
@@ -417,6 +419,67 @@ Each entry in the `dp_config` JSON array supports the following fields:
 | Toggles | `generic_switch_1` … `generic_switch_4` | boolean | Yes |
 | Pickers | `generic_picker_1` … `generic_picker_4` | enum | Yes |
 | Standard | `onoff`, `measure_temperature`, `measure_humidity`, `measure_power`, `measure_voltage`, `measure_current`, `meter_power`, and others | various | varies |
+
+---
+
+### Pet Feeder
+
+#### Connection
+
+| Setting | Description | Default |
+|---|---|---|
+| IP Address | Local IP of the device | — |
+| Device ID | Tuya device identifier | — |
+| Local Key | LAN encryption key (16 or 32 chars) | — |
+| Protocol Version | Auto-detect / 3.1 / 3.3 / 3.4 / 3.5 | Auto-detect |
+| Polling Interval (s) | Active poll cadence — `0` disables polling | 30 |
+| Offline Grace Period (s) | Seconds to wait before triggering "device disconnected" flows — `0` = immediate | 60 |
+
+#### Data Points
+
+| Setting | Icon | Capability | Type | Default DP | Optional |
+|---|:---:|---|---|---|---|
+| `dp_onoff` |  | `onoff` | boolean | 1 | — |
+| `dp_motor_state` | <img src="assets/capabilities/motor_state.svg" height="24"> | `motor_state` | enum | 4 | — |
+| `dp_food_status` | <img src="assets/capabilities/food_status.svg" height="24"> | `food_status` | enum | 102 | — |
+| `dp_feed_portions` | <img src="assets/capabilities/feed_portions.svg" height="24"> | `feed_portions` | number | 3 | — |
+| `dp_feed_report` | <img src="assets/capabilities/feed_report.svg" height="24"> | `feed_report` | number | 18 | ✓ `0` = disabled |
+| `dp_surplus_grain` | <img src="assets/capabilities/surplus_grain.svg" height="24"> | `surplus_grain` | enum | 101 | ✓ `0` = disabled |
+| `dp_alarm_blockage` |  | `alarm_generic` | boolean | 9 | ✓ `0` = disabled |
+| `dp_alarm_cleaning` |  | `alarm_cleaning` | boolean | 103 | ✓ `0` = disabled |
+| `dp_alarm_grain_outlet` |  | `alarm_grain_outlet` | boolean | 104 | ✓ `0` = disabled |
+| `dp_child_lock` | <img src="assets/capabilities/child_lock.svg" height="24"> | `child_lock` | boolean | 19 | ✓ `0` = disabled |
+| `dp_meal_plan_count` |  | `meal_plan_count` | number | 15 | ✓ `0` = disabled |
+| `dp_desiccant_left_days` |  | `desiccant_left_days` | number | 106 | ✓ `0` = disabled |
+
+All DP numbers are auto-detected at pairing time from a live device snapshot. Adjust any DP in device settings if auto-detection selects the wrong data point, or set to `0` to hide an optional tile.
+
+#### Food Level Values
+
+The `food_status` capability accepts the following standard Tuya enum values (not all are present on every device):
+
+| Value | Meaning |
+|---|---|
+| `full` | Tank is full |
+| `high` | Level is high |
+| `half` | Level is around half |
+| `low` / `less` / `lack` | Level is low — triggers the food-is-low condition and push notification |
+| `empty` | Tank is empty — also triggers the low condition and notification |
+
+#### Portions Settings
+
+| Setting | Description | Default |
+|---|---|---|
+| `portions_min` | Minimum value shown on the feed-portions slider | 1 |
+| `portions_max` | Maximum value shown on the feed-portions slider | 12 |
+
+The slider range is applied when the device initialises and whenever these settings change. The absolute maximum supported value is 50.
+
+#### Push Notification Settings
+
+| Setting | Description | Default |
+|---|---|---|
+| `food_empty_values` | Comma-separated food level values that trigger a Homey push notification | `low,less,empty,lack` |
 
 ---
 
@@ -683,6 +746,36 @@ Each entry in the `dp_config` JSON array supports the following fields:
 
 ---
 
+### Pet Feeder
+
+#### Triggers
+
+| Trigger | Flow tokens |
+|---|---|
+| Pet feeder connected | — |
+| Pet feeder disconnected | — |
+| Food level is low | `food_level` (string) — fires when `food_status` transitions to any value in the configured low set (`low`, `less`, `lack`, `empty`) |
+| Feeding completed | `portions` (number) — fires when `feed_report` updates after a manual or scheduled feed |
+
+> **Offline grace period:** The "disconnected" trigger is delayed by the **Offline Grace Period** setting (default 60 s). Tuya pet feeder firmware briefly drops the TCP connection at certain intervals and immediately reconnects — without the grace period this causes several spurious disconnect/connect notifications per night.
+
+#### Conditions
+
+| Condition |
+|---|
+| Food level is / is not low |
+| Pet feeder is / is not connected |
+
+#### Actions
+
+| Action | Notes |
+|---|---|
+| Feed now | Dispenses 1–50 portions immediately |
+| Refresh feeder state | Triggers an immediate GET request |
+| Force reconnect | Drops and re-establishes the TCP connection |
+
+---
+
 ## Push Notifications
 
 | Event | Driver | Condition |
@@ -692,6 +785,7 @@ Each entry in the `dp_config` JSON array supports the following fields:
 | Fault detected | Smart Plug | `alarm_generic` transitions `false` → `true` |
 | Fault detected | Air Conditioner | `alarm_generic` transitions `false` → `true` (debounced, 30 s grace on reconnect) |
 | Fault detected | Heater | `alarm_generic` transitions `false` → `true` (debounced, 30 s grace on reconnect) |
+| Food level low / empty | Pet Feeder | `food_status` transitions to any value in `food_empty_values` (default: `low,less,empty,lack`) |
 
 ---
 
@@ -733,8 +827,8 @@ Full unprocessed payload for the selected device:
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| Device stays unavailable | Wrong IP, Device ID or Local Key | Use **Repair** to update credentials; check the Logs tab for the exact error |
-| ECONNRESET on every connect | Protocol version mismatch | Use *Auto-detect* in Repair, or manually try 3.3, 3.4, 3.1, 3.5 |
+| Device stays unavailable | Wrong IP, Device ID or Local Key | Open the device in Homey → **Settings** → update the credentials; check the Logs tab for the exact error |
+| ECONNRESET on every connect | Protocol version mismatch | Open device **Settings** → set Protocol Version to **Auto-detect**, or manually try 3.3, 3.4, 3.1, 3.5 in turn |
 | Device connects but values are wrong | Incorrect DP numbers | Adjust DPs in device settings |
 | Smart Plug power reading is 10× off | Wrong power scale | Change **Power Scale** setting to ×0.1 |
 | Energy (kWh) shows `—` or never updates | `dp_energy` set to 17 but device sends delta locally | Set `dp_energy = 0` — app will compute kWh from power readings |
@@ -744,6 +838,7 @@ Full unprocessed payload for the selected device:
 | Light color mode not working | Wrong `color_mode_white_val` / `color_mode_color_val` | Check Raw Data panel for actual strings sent by device (e.g. `white`, `colour`, `color`) |
 | Humidifier water alarm fires on connect | Device sends transient alarm on reconnect | Built-in debounce suppresses these; if they persist increase the alarm guard window |
 | Spurious fault alarm after reconnect | Reconnect artifact | Built-in 30 s grace period on reconnect suppresses these |
+| Pet feeder sends 3–4 "disconnected" notifications per night | Tuya firmware briefly drops TCP connection at timed intervals | Increase **Offline Grace Period** in device settings (default 60 s already handles most cases; try 120 s if it still fires) |
 | Generic device shows raw key as label | Missing locale key | Set labels via the `label` field in the dp_config mapping |
 
 ---

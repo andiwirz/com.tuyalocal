@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Bowl shape -->
+  <path d="M4 11 C4 17 20 17 20 11" />
+  <line x1="3" y1="11" x2="21" y2="11" />
+  <!-- Food pellets above bowl -->
+  <circle cx="9"  cy="7" r="1.2" fill="currentColor" stroke="none"/>
+  <circle cx="12" cy="5" r="1.2" fill="currentColor" stroke="none"/>
+  <circle cx="15" cy="7" r="1.2" fill="currentColor" stroke="none"/>
+  <circle cx="12" cy="9" r="1.2" fill="currentColor" stroke="none"/>
+  <!-- Base line -->
+  <line x1="7" y1="17" x2="17" y2="17" />
+</svg>

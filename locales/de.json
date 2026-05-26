@@ -8,13 +8,15 @@
       "fan":             "Lüfter",
       "humidifier":      "Luftbefeuchter",
       "heater":          "Heizgerät",
-      "light":           "Licht"
+      "light":           "Licht",
+      "pet_feeder":      "Futterautomat"
     }
   },
   "notifications": {
     "waterFull":  "Wassertank ist voll — bitte leeren.",
     "waterEmpty": "Wassertank ist leer — bitte befüllen.",
-    "faultAlarm": "Fehler erkannt — bitte Gerät prüfen."
+    "faultAlarm": "Fehler erkannt — bitte Gerät prüfen.",
+    "foodEmpty":  "Futterbehälter ist niedrig oder leer — bitte nachfüllen."
   },
   "pair": {
     "credentials": {
@@ -90,6 +92,17 @@
         "relay":        "Relais-Einschaltverhalten  (0 = deaktiviert)",
         "powerFactor":  "Leistungsfaktor %  (0 = deaktiviert)",
         "countdown":    "Countdown-Timer s  (0 = deaktiviert)"
+      },
+      "pet_feeder": {
+        "portions":      "Portionen (DP 3, manual_feed)",
+        "motorState":    "Fütterungsstatus  (DP 4 — standby/feeding/done/no_food/…)",
+        "fault":         "Fehleralarm  (DP 14, 0 = deaktiviert)",
+        "feedReport":    "Fütterungsreport  (DP 15, 0 = deaktiviert)",
+        "surplusGrain":  "Verbleib. Futter %  (DP 16, 0 = deaktiviert)",
+        "foodLevel":     "Futterstand DP  (nicht standard, 0 = deaktiviert)",
+        "childLock":     "Kindersicherung  (nicht standard, 0 = deaktiviert)",
+        "portionsMin":   "Portionen — Minimum",
+        "portionsMax":   "Portionen — Maximum"
       }
     }
   },

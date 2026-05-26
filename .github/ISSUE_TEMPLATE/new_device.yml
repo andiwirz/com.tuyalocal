@@ -10,7 +10,33 @@ body:
     attributes:
       value: |
         Thanks for taking the time to fill this in! The more detail you provide, the faster support can be added.
-        > **Tip:** The quickest way to get the DP snapshot is via **Homey app → More → Apps → Tuya Local → Settings → DP Debug → Raw Data** — select your device and copy the JSON.
+
+        ---
+
+        ### How to collect the required DP data from iot.tuya.com
+
+        You need **two API calls** from the Tuya IoT Platform. Both are found under
+        **Cloud → API Explorer → Device Control**.
+
+        #### Step 1 — Current DP values (Query Properties)
+
+        > Cloud → API Explorer → Device Control → **Query Properties**
+
+        Enter your **Device ID** and run the call. Paste the full JSON response into the
+        *"Current DP values (Query Properties)"* field below.
+        This shows every DP the device is currently reporting, with its live value.
+
+        #### Step 2 — Data types and allowed values (Standard Instruction Set)
+
+        > Cloud → API Explorer → Device Control (Standard Instruction Set) →
+        > **Get the specifications and properties of the device**
+
+        Enter your **Device ID** and run the call. Paste the full JSON response into the
+        *"DP specifications (types & allowed values)"* field below.
+        This gives you the data type (`Boolean`, `Integer`, `Enum`, …) and the full
+        set of allowed values / range for every DP — essential for building pickers and sliders.
+
+        ---
 
   - type: input
     id: device_type
@@ -55,33 +81,80 @@ body:
   - type: textarea
     id: raw_dps
     attributes:
-      label: Raw DP snapshot
+      label: "Step 1 — Current DP values (Query Properties)"
       description: >
-        Paste the JSON from Settings → DP Debug → Raw Data, or from tuyapi/localtuya.
-        The more complete, the better — include all DPs the device reports.
+        Paste the JSON response from
+        Cloud → API Explorer → Device Control → Query Properties.
+        Alternatively use Homey app → More → Apps → Tuya Local → Settings → DP Debug → Raw Data
+        and copy the JSON for your device.
+        Include every DP the device reports — even ones whose purpose is unclear.
       render: json
       placeholder: |
         {
-          "1": true,
-          "2": "auto",
-          "3": 22
+          "result": [
+            { "code": "switch",      "value": true   },
+            { "code": "work_mode",   "value": "auto" },
+            { "code": "temp_set",    "value": 22     },
+            { "code": "temp_current","value": 21     }
+          ],
+          "success": true
         }
     validations:
       required: true
 
   - type: textarea
-    id: tuya_functions
+    id: dp_specifications
     attributes:
-      label: Tuya Developer Platform — function definitions
+      label: "Step 2 — DP specifications (types & allowed values)"
       description: >
-        If you have access to iot.tuya.com, paste the Standard Functions / Custom Functions list
-        from Cloud → Development → your project → Devices → your device.
-        This gives us exact DP codes, types and allowed enum values.
+        Paste the JSON response from
+        Cloud → API Explorer → Device Control (Standard Instruction Set) →
+        Get the specifications and properties of the device.
+        This is the most important field — it tells us the exact data type and every
+        allowed value for each DP (enum ranges, integer min/max/step/scale, etc.).
+      render: json
       placeholder: |
-        DP 1  switch        Boolean
-        DP 2  work_mode     Enum: auto, manual, sleep
-        DP 3  temp_set      Integer (0–50)
-        DP 4  temp_current  Integer (read-only)
+        {
+          "result": {
+            "functions": [
+              {
+                "code":   "switch",
+                "dp_id":  1,
+                "type":   "Boolean",
+                "values": "{}"
+              },
+              {
+                "code":   "work_mode",
+                "dp_id":  2,
+                "type":   "Enum",
+                "values": "{\"range\":[\"auto\",\"manual\",\"sleep\",\"eco\"]}"
+              },
+              {
+                "code":   "temp_set",
+                "dp_id":  3,
+                "type":   "Integer",
+                "values": "{\"unit\":\"℃\",\"min\":16,\"max\":30,\"scale\":0,\"step\":1}"
+              },
+              {
+                "code":   "temp_current",
+                "dp_id":  4,
+                "type":   "Integer",
+                "values": "{\"unit\":\"℃\",\"min\":0,\"max\":50,\"scale\":0,\"step\":1}"
+              }
+            ],
+            "status": [
+              {
+                "code":   "fault",
+                "dp_id":  13,
+                "type":   "Bitmap",
+                "values": "{\"label\":[\"lack_water\",\"overheat\"],\"maxlen\":2}"
+              }
+            ]
+          },
+          "success": true
+        }
+    validations:
+      required: true
 
   - type: checkboxes
     id: capabilities
