@@ -229,8 +229,6 @@ class LightDevice extends BaseTuyaDevice {
   // ── Sync optional light capabilities based on DP settings ───────────────────
 
   async _syncLightCapabilities() {
-    const settings = this.getSetting;
-
     const OPTIONAL_CAPS = [
       { setting: 'dp_color_temp', capability: 'light_temperature' },
       { setting: 'dp_color_mode', capability: 'light_mode'        },

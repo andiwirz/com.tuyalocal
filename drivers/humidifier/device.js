@@ -14,7 +14,7 @@ const DP_PROFILE = [
   { settingKey: 'dp_countdown_timer',  capability: 'countdown_timer',     transform: (v) => String(v),      settable: true                },
   { settingKey: 'dp_child_lock',       capability: 'child_lock',          transform: (v) => Boolean(v),     settable: true                },
   { settingKey: 'dp_water_empty',      capability: 'alarm_water',         transform: (v) => Boolean(v),     settable: false               },
-  { settingKey: 'dp_temperature',      capability: 'measure_temperature', transform: (v) => Number(v) / 10, settable: false               },
+  { settingKey: 'dp_temperature',      capability: 'measure_temperature', transform: (v) => Number(v),      settable: false               },
   { settingKey: 'dp_anion',            capability: 'anion',               transform: (v) => Boolean(v),     settable: true                },
 ];
 
@@ -50,6 +50,7 @@ class HumidifierDevice extends BaseTuyaDevice {
     // ── Capability listeners ─────────────────────────────────────────────────
     for (const entry of DP_PROFILE) {
       if (!entry.settable) continue;
+      if (!this.hasCapability(entry.capability)) continue;
       if (entry.debounce) {
         let timer = null;
         this.registerCapabilityListener(entry.capability, (value) => {
@@ -122,6 +123,12 @@ class HumidifierDevice extends BaseTuyaDevice {
         if (prevEmpty && !converted) {
           this._triggerWaterFilled.trigger(this).catch(() => {});
         }
+        continue;
+      }
+
+      if (entry.capability === 'measure_temperature') {
+        const divisor = this.getSetting('temp_divisor') || 10;
+        await this.setCapabilityValue('measure_temperature', converted / divisor).catch(() => {});
         continue;
       }
 

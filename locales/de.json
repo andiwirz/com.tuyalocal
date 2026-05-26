@@ -113,14 +113,6 @@
     "device_is_connected": "Gerät ist verbunden",
     "force_reconnect": "Verbindung neu aufbauen"
   },
-  "repair": {
-    "title": "Verbindung aktualisieren",
-    "subtitle": "Verbindungseinstellungen für dieses Gerät anpassen.",
-    "save": "Speichern & Neu verbinden",
-    "saving": "Speichern…",
-    "success": "Einstellungen gespeichert! Verbinde neu…",
-    "fillAll": "Bitte IP-Adresse und Lokalen Schlüssel ausfüllen."
-  },
   "errors": {
     "missing_settings": "Geräteeinstellungen unvollständig — IP-Adresse, Geräte-ID und Local Key prüfen."
   },

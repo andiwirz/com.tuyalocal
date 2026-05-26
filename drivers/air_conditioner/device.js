@@ -47,10 +47,12 @@ class AirConditionerDevice extends BaseTuyaDevice {
     this._faultAlarmConfirmed = false;
     this._lazyDpDetected      = false; // true once optional DPs have been auto-discovered
 
-    // Migration: ac_swing changed from boolean to enum — remove so it is re-added
-    // as the correct type by _syncOptionalCapabilities below.
+    // One-time migration: ac_swing changed from boolean to enum
     if (this.hasCapability('ac_swing')) {
-      await this.removeCapability('ac_swing').catch(() => {});
+      const swingOpts = this.getCapabilityOptions('ac_swing');
+      if (!swingOpts || !swingOpts.values) {
+        await this.removeCapability('ac_swing').catch(() => {});
+      }
     }
 
     await this._migrateCapabilities([]);
@@ -70,6 +72,7 @@ class AirConditionerDevice extends BaseTuyaDevice {
     // ── Capability listeners — DP_PROFILE (simple) ────────────────────────────
     for (const entry of DP_PROFILE) {
       if (!entry.settable) continue;
+      if (!this.hasCapability(entry.capability)) continue;
 
       if (entry.debounce) {
         let timer = null;
@@ -212,7 +215,7 @@ class AirConditionerDevice extends BaseTuyaDevice {
 
       const converted = entry.transform(value);
 
-      // ac_mode_changed trigger — fire before updating capability so prev value is still readable
+      // Capture prev value before updating so the trigger token contains both old and new mode.
       if (entry.capability === 'ac_mode') {
         const prevMode = this.getCapabilityValue('ac_mode');
         await this.setCapabilityValue('ac_mode', converted).catch(() => {});

@@ -224,7 +224,7 @@ class GenericDevice extends BaseTuyaDevice {
       return value;
     }
     if (typeof value === 'number') {
-      if (mapping.integer === false) return value / (mapping.scale || 1);
+      if (mapping.float === true || mapping.integer === false) return value / (mapping.scale || 1);
       return Math.round(value / (mapping.scale || 1));
     }
     return value;

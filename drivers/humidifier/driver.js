@@ -3,6 +3,7 @@
 const Homey                     = require('homey');
 const TuyAPI                    = require('tuyapi');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
+const { scanNetwork }           = require('../../lib/networkScan');
 
 class HumidifierDriver extends Homey.Driver {
   async onInit() {
@@ -58,7 +59,7 @@ class HumidifierDriver extends Homey.Driver {
     let pendingDevice = null;
     let pendingRawDps = {};
 
-    session.setHandler('scan_network', async () => this._scanNetwork());
+    session.setHandler('scan_network', async () => scanNetwork(this.homey));
 
     session.setHandler('credentials', async (data) => {
       const { ip, deviceId, localKey, version } = data;
@@ -71,6 +72,7 @@ class HumidifierDriver extends Homey.Driver {
       let detectedDps   = null;
       let actualVersion = String(version);
       const collectedDps = {};
+      let pairingDevice = null;
       try {
         let rawDps;
         if (version === 'auto') {
@@ -79,6 +81,7 @@ class HumidifierDriver extends Homey.Driver {
           rawDps        = result.dps;
         } else {
           const device = new TuyAPI({ id: deviceId, key: localKey, ip, version: actualVersion, issueGetOnConnect: true });
+          pairingDevice = device;
           device.on('error', () => {});
           const tmpDps = {};
           device.on('data', (payload) => { if (payload?.dps) Object.assign(tmpDps, payload.dps); });
@@ -88,12 +91,15 @@ class HumidifierDriver extends Homey.Driver {
           ]);
           await new Promise((resolve) => setTimeout(resolve, 4000));
           device.disconnect();
+          pairingDevice = null;
           rawDps = tmpDps;
         }
         Object.assign(collectedDps, rawDps);
         connected = true;
         if (Object.keys(collectedDps).length > 0) detectedDps = this._detectDps(collectedDps);
       } catch (err) {
+        connected = false;
+        try { if (pairingDevice) pairingDevice.disconnect(); } catch (_e) {}
         this.log('Connection test failed:', err.message);
       }
 
@@ -160,58 +166,6 @@ class HumidifierDriver extends Homey.Driver {
       mode_values:      'auto,manual,normal,sleep,eco,boost',
       fan_speed_values: 'low,medium,middle,high,auto',
     };
-  }
-
-  async _scanNetwork() {
-    const dgram = require('dgram');
-    const net   = require('net');
-    const os    = require('os');
-    const found = new Set();
-    await new Promise((resolve) => {
-      const sockets = [];
-      for (const port of [6666, 6667]) {
-        try {
-          const sock = dgram.createSocket({ type: 'udp4', reuseAddr: true });
-          sock.on('message', (msg, rinfo) => { found.add(rinfo.address); });
-          sock.on('error', () => {});
-          sock.bind(port, () => { try { sock.setBroadcast(true); } catch (e) {} });
-          sockets.push(sock);
-        } catch (err) {}
-      }
-      setTimeout(() => { sockets.forEach((s) => { try { s.close(); } catch (e) {} }); resolve(); }, 6000);
-    });
-    const ipToInt = (ip) => ip.split('.').reduce((a, b) => ((a << 8) | parseInt(b, 10)) >>> 0, 0);
-    const intToIp = (n)  => [24, 16, 8, 0].map((s) => (n >>> s) & 0xFF).join('.');
-    const queue = [];
-    for (const ifaces of Object.values(os.networkInterfaces())) {
-      for (const addr of ifaces) {
-        if (addr.family !== 'IPv4' || addr.internal) continue;
-        const ipInt   = ipToInt(addr.address);
-        const maskInt = ipToInt(addr.netmask || '255.255.255.0');
-        const network   = (ipInt & maskInt) >>> 0;
-        const broadcast = (network | (~maskInt >>> 0)) >>> 0;
-        if ((broadcast - network - 1) > 2046) continue;
-        for (let i = network + 1; i < broadcast; i++) queue.push(intToIp(i));
-      }
-    }
-    const probeIp = (ip) => new Promise((resolve) => {
-      const s = new net.Socket();
-      s.setTimeout(600);
-      s.on('connect', () => { s.destroy(); resolve(ip); });
-      s.on('timeout', () => { s.destroy(); resolve(null); });
-      s.on('error',   () => { resolve(null); });
-      s.connect(6668, ip);
-    });
-    for (let i = 0; i < queue.length; i += 50) {
-      const results = await Promise.all(queue.slice(i, i + 50).map(probeIp));
-      results.forEach((ip) => { if (ip) found.add(ip); });
-    }
-    const dns = require('dns');
-    const ips = [...found];
-    return Promise.all(ips.map(async (ip) => ({
-      ip,
-      hostname: await new Promise((r) => dns.reverse(ip, (e, h) => r(e || !h?.length ? null : h[0]))),
-    })));
   }
 
   async onPairListDevices() { return []; }

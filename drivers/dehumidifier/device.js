@@ -17,7 +17,7 @@ const DP_PROFILE = [
   { settingKey: 'dp_countdown_timer',  capability: 'countdown_timer',     transform: (v) => String(v),      settable: true               },
   { settingKey: 'dp_child_lock',       capability: 'child_lock',          transform: (v) => Boolean(v),     settable: true               },
   { settingKey: 'dp_water_full',       capability: 'alarm_water',         transform: (v) => Boolean(v),     settable: false              },
-  { settingKey: 'dp_temperature',      capability: 'measure_temperature', transform: (v) => Number(v) / 10, settable: false              },
+  { settingKey: 'dp_temperature',      capability: 'measure_temperature', transform: (v) => Number(v),      settable: false              },
   { settingKey: 'dp_anion',            capability: 'anion',               transform: (v) => Boolean(v),     settable: true               },
 ];
 
@@ -56,17 +56,18 @@ class DehumidifierDevice extends BaseTuyaDevice {
 
     // ── Flow trigger cards ───────────────────────────────────────────────────
     // RunListeners for humidity_above/below are registered once in driver.js onInit.
-    this._triggerHumidityAbove      = this.homey.flow.getDeviceTriggerCard('humidity_above');
-    this._triggerHumidityBelow      = this.homey.flow.getDeviceTriggerCard('humidity_below');
-    this._triggerWaterFull          = this.homey.flow.getDeviceTriggerCard('water_tank_full');
-    this._triggerWaterEmptied       = this.homey.flow.getDeviceTriggerCard('water_tank_emptied');
-    this._triggerDeviceConnected    = this.homey.flow.getDeviceTriggerCard('device_connected');
-    this._triggerDeviceDisconnected = this.homey.flow.getDeviceTriggerCard('device_disconnected');
-    this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('dp_changed');
+    this._triggerHumidityAbove      = this.homey.flow.getDeviceTriggerCard('dehumidifier_humidity_above');
+    this._triggerHumidityBelow      = this.homey.flow.getDeviceTriggerCard('dehumidifier_humidity_below');
+    this._triggerWaterFull          = this.homey.flow.getDeviceTriggerCard('dehumidifier_water_tank_full');
+    this._triggerWaterEmptied       = this.homey.flow.getDeviceTriggerCard('dehumidifier_water_tank_emptied');
+    this._triggerDeviceConnected    = this.homey.flow.getDeviceTriggerCard('dehumidifier_device_connected');
+    this._triggerDeviceDisconnected = this.homey.flow.getDeviceTriggerCard('dehumidifier_device_disconnected');
+    this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('dehumidifier_dp_changed');
 
     // ── Capability listeners (auto-registered from DP_PROFILE) ──────────────
     for (const entry of DP_PROFILE) {
       if (!entry.settable) continue;
+      if (!this.hasCapability(entry.capability)) continue;
 
       if (entry.debounce) {
         let timer = null;
@@ -220,6 +221,12 @@ class DehumidifierDevice extends BaseTuyaDevice {
           }
           this._waterAlarmConfirmed = false;
         }
+        continue;
+      }
+
+      if (entry.capability === 'measure_temperature') {
+        const divisor = this.getSetting('temp_divisor') || 10;
+        await this.setCapabilityValue('measure_temperature', converted / divisor).catch(() => {});
         continue;
       }
 
