@@ -11,7 +11,8 @@ const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 // DP 102+ food_level    : non-standard enum full|low|empty (custom/legacy firmware)
 
 const DP_PROFILE = [
-  { settingKey: 'dp_portions',        capability: 'feed_portions',   transform: (v) => Number(v),       settable: true  },
+  // feed_portions is an enum picker — device sends integers, we map to string IDs.
+  { settingKey: 'dp_portions',        capability: 'feed_portions',   transform: (v) => String(v),       settable: true  },
   { settingKey: 'dp_motor_state',     capability: 'motor_state',     transform: (v) => String(v),       settable: false },
   { settingKey: 'dp_fault',           capability: 'alarm_generic',   transform: (v) => Number(v) > 0,   settable: false },
   { settingKey: 'dp_food_level',      capability: 'food_status',     transform: (v) => String(v),       settable: false },
@@ -58,6 +59,19 @@ class PetFeederDevice extends BaseTuyaDevice {
 
     await this._baseInit();
     await this._migrateCapabilities([]);
+
+    // ── Migrate feed_portions: number/slider → enum/picker ───────────────────
+    // If the old capability options contain a numeric 'min' key it was the legacy
+    // slider type — remove and re-add so Homey registers it as an enum.
+    if (this.hasCapability('feed_portions')) {
+      const opts = this.getCapabilityOptions('feed_portions') || {};
+      if (opts.min !== undefined) {
+        this.log('Migrating feed_portions: slider → picker');
+        await this.removeCapability('feed_portions').catch(() => {});
+        await this.addCapability('feed_portions').catch(() => {});
+      }
+    }
+
     await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
     await this._syncPortionsRange();
 
@@ -74,14 +88,14 @@ class PetFeederDevice extends BaseTuyaDevice {
       if (!this.hasCapability(entry.capability)) continue;
 
       if (entry.capability === 'feed_portions') {
-        // Non-persistent: after a manual feed command is sent, reset the slider
-        // back to portions_min so the UI is ready for the next feed without the
-        // user having to drag the slider back down.  The reset is delayed 3 s to
-        // allow the device to process the command first.
+        // Non-persistent: after a manual feed command is sent, reset the picker
+        // back to portions_min so the UI is ready for the next feed.
+        // The reset is delayed 3 s to allow the device to process the command first.
+        // The capability is an enum — values are strings; send as Number to the device.
         this.registerCapabilityListener('feed_portions', async (value) => {
-          await this._conn?.set(this.getSetting('dp_portions'), value);
+          await this._conn?.set(this.getSetting('dp_portions'), Number(value));
           setTimeout(() => {
-            const resetTo = this.getSetting('portions_min') ?? 1;
+            const resetTo = String(this.getSetting('portions_min') ?? 1);
             this.setCapabilityValue('feed_portions', resetTo).catch(() => {});
           }, 3000);
         });
@@ -205,14 +219,21 @@ class PetFeederDevice extends BaseTuyaDevice {
 
   // ── Homey lifecycle ──────────────────────────────────────────────────────────
 
-  // ── Portions slider range ────────────────────────────────────────────────────
+  // ── Portions picker range ────────────────────────────────────────────────────
+  // Builds enum values from portions_min..portions_max so the picker only shows
+  // the entries that the device actually supports.
 
   async _syncPortionsRange() {
     const min = this.getSetting('portions_min') ?? 1;
     const max = this.getSetting('portions_max') ?? 12;
+    const values = [];
+    for (let i = min; i <= max; i++) {
+      const s = String(i);
+      values.push({ id: s, title: { en: s, de: s } });
+    }
     try {
-      await this.setCapabilityOptions('feed_portions', { min, max });
-      this.log(`feed_portions range → ${min}–${max}`);
+      await this.setCapabilityOptions('feed_portions', { values });
+      this.log(`feed_portions picker → ${min}–${max} (${values.length} options)`);
     } catch (err) {
       this.log('setCapabilityOptions(feed_portions) failed:', err.message);
     }
