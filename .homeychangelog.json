@@ -1,4 +1,8 @@
 {
+  "1.0.38": {
+    "en": "Pet Feeder: fixed 'Feed now' action card failing with type error after portions picker change.",
+    "de": "Futterautomat: Fehler im 'Jetzt füttern'-Aktionskarte nach Umstellung auf Picker behoben."
+  },
   "1.0.37": {
     "en": "Pet Feeder: portions control changed from slider to picker for easier use — range adapts to portions_min/max settings.",
     "de": "Futterautomat: Portionen-Steuerung von Slider auf Picker umgestellt für einfachere Bedienung — Bereich passt sich an portions_min/max-Einstellungen an."
