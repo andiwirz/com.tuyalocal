@@ -37,9 +37,12 @@ class PetFeederDriver extends Homey.Driver {
     // ── Actions ──────────────────────────────────────────────────────────────
     this.homey.flow.getActionCard('feeder_feed_now')
       .registerRunListener(async (args) => {
-        const portions = args.portions ?? args.device.getCapabilityValue('feed_portions') ?? 1;
-        await args.device.setCapabilityValue('feed_portions', portions);
-        return args.device.triggerCapabilityListener('feed_portions', portions);
+        // args.portions comes from the flow card as a number; feed_portions is an
+        // enum capability and therefore requires a string value.
+        const portionsNum = args.portions ?? Number(args.device.getCapabilityValue('feed_portions')) ?? 1;
+        const portionsStr = String(portionsNum);
+        await args.device.setCapabilityValue('feed_portions', portionsStr);
+        return args.device.triggerCapabilityListener('feed_portions', portionsStr);
       });
 
     this.homey.flow.getActionCard('feeder_force_reconnect')
