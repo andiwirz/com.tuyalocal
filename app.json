@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.38",
+  "version": "1.0.39",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -18,6 +18,10 @@
     "appliances"
   ],
   "changelog": {
+    "1.0.39": {
+      "en": "Added Garage Door driver: WOFEA and compatible Tuya garage door openers. Door open/closed state from magnetic contact sensor (DP 3), open/close commands via DP 6, relay toggle via DP 1. Optional door-alarm state (DP 12: left open / close timeout). Full flow card support: opened/closed triggers, alarm trigger, open/close/toggle actions.",
+      "de": "Neuer Garagentor-Treiber: WOFEA und kompatible Tuya-Garagentorantriebe. Offen/Geschlossen-Status über Magnetkontakt (DP 3), Auf/Zu-Befehl über DP 6, Relais-Toggle über DP 1. Optionaler Toralarm (DP 12: zu lange offen / Schließ-Timeout). Vollständige Flow-Karten: Offen/Geschlossen-Auslöser, Alarm-Auslöser, Auf/Zu/Toggle-Aktionen."
+    },
     "1.0.38": {
       "en": "Pet Feeder: fixed 'Feed now' action card failing with type error after portions picker change.",
       "de": "Futterautomat: Fehler im 'Jetzt füttern'-Aktionskarte nach Umstellung auf Picker behoben."
@@ -2486,6 +2490,87 @@
             "example": "standby"
           }
         ]
+      },
+      {
+        "id": "garage_door_opened",
+        "title": {
+          "en": "Garage door opened",
+          "de": "Garagentor geöffnet"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=garage_door"
+          }
+        ]
+      },
+      {
+        "id": "garage_door_closed",
+        "title": {
+          "en": "Garage door closed",
+          "de": "Garagentor geschlossen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=garage_door"
+          }
+        ]
+      },
+      {
+        "id": "garage_door_alarm_triggered",
+        "title": {
+          "en": "Garage door alarm triggered",
+          "de": "Garagentor-Alarm ausgelöst"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=garage_door"
+          }
+        ],
+        "tokens": [
+          {
+            "name": "alarm_state",
+            "type": "string",
+            "title": {
+              "en": "Alarm state",
+              "de": "Alarmstatus"
+            },
+            "example": "unclosed_time"
+          }
+        ]
+      },
+      {
+        "id": "garage_door_device_connected",
+        "title": {
+          "en": "Garage door opener connected",
+          "de": "Garagentorantrieb verbunden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=garage_door"
+          }
+        ]
+      },
+      {
+        "id": "garage_door_device_disconnected",
+        "title": {
+          "en": "Garage door opener disconnected",
+          "de": "Garagentorantrieb getrennt"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=garage_door"
+          }
+        ]
       }
     ],
     "conditions": [
@@ -3187,6 +3272,34 @@
             "name": "device",
             "type": "device",
             "filter": "driver_id=pet_feeder"
+          }
+        ]
+      },
+      {
+        "id": "garage_door_is_open",
+        "title": {
+          "en": "Garage door !{{is open|is closed}}",
+          "de": "Garagentor !{{ist geöffnet|ist geschlossen}}"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=garage_door"
+          }
+        ]
+      },
+      {
+        "id": "garage_door_device_is_connected",
+        "title": {
+          "en": "Garage door opener !{{is|is not}} connected",
+          "de": "Garagentorantrieb !{{ist|ist nicht}} verbunden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=garage_door"
           }
         ]
       }
@@ -4871,6 +4984,76 @@
             "name": "device",
             "type": "device",
             "filter": "driver_id=pet_feeder"
+          }
+        ]
+      },
+      {
+        "id": "garage_door_open",
+        "title": {
+          "en": "Open garage door",
+          "de": "Garagentor öffnen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=garage_door"
+          }
+        ]
+      },
+      {
+        "id": "garage_door_close",
+        "title": {
+          "en": "Close garage door",
+          "de": "Garagentor schließen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=garage_door"
+          }
+        ]
+      },
+      {
+        "id": "garage_door_toggle",
+        "title": {
+          "en": "Toggle garage door",
+          "de": "Garagentor umschalten"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=garage_door"
+          }
+        ]
+      },
+      {
+        "id": "garage_door_force_reconnect",
+        "title": {
+          "en": "Force garage door opener reconnect",
+          "de": "Garagentorantrieb: Verbindung neu aufbauen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=garage_door"
+          }
+        ]
+      },
+      {
+        "id": "garage_door_refresh_device",
+        "title": {
+          "en": "Refresh garage door values",
+          "de": "Garagentor: Daten aktualisieren"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=garage_door"
           }
         ]
       }
@@ -8181,6 +8364,266 @@
         "large": "/drivers/pet_feeder/assets/images/large.png",
         "xlarge": "/drivers/pet_feeder/assets/images/xlarge.png"
       }
+    },
+    {
+      "id": "garage_door",
+      "name": {
+        "en": "Garage Door",
+        "de": "Garagentor"
+      },
+      "class": "garagedoor",
+      "capabilities": [
+        "garagedoor_closed"
+      ],
+      "settings": [
+        {
+          "type": "group",
+          "label": {
+            "en": "Connection",
+            "de": "Verbindung"
+          },
+          "children": [
+            {
+              "id": "ip",
+              "type": "text",
+              "label": {
+                "en": "IP Address",
+                "de": "IP-Adresse"
+              },
+              "value": "",
+              "hint": {
+                "en": "Local IP address of your device.",
+                "de": "Lokale IP-Adresse des Geräts."
+              }
+            },
+            {
+              "id": "device_id",
+              "type": "text",
+              "label": {
+                "en": "Device ID",
+                "de": "Geräte-ID"
+              },
+              "value": ""
+            },
+            {
+              "id": "local_key",
+              "type": "text",
+              "label": {
+                "en": "Local Key",
+                "de": "Lokaler Schlüssel"
+              },
+              "value": ""
+            },
+            {
+              "id": "version",
+              "type": "dropdown",
+              "label": {
+                "en": "Protocol Version",
+                "de": "Protokollversion"
+              },
+              "value": "3.3",
+              "values": [
+                {
+                  "id": "3.1",
+                  "label": {
+                    "en": "3.1 (legacy)",
+                    "de": "3.1 (veraltet)"
+                  }
+                },
+                {
+                  "id": "3.3",
+                  "label": {
+                    "en": "3.3",
+                    "de": "3.3"
+                  }
+                },
+                {
+                  "id": "3.4",
+                  "label": {
+                    "en": "3.4",
+                    "de": "3.4"
+                  }
+                },
+                {
+                  "id": "3.5",
+                  "label": {
+                    "en": "3.5",
+                    "de": "3.5"
+                  }
+                },
+                {
+                  "id": "3.22",
+                  "label": {
+                    "en": "3.22 (newer chips)",
+                    "de": "3.22 (neuere Chips)"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "polling_interval",
+              "type": "number",
+              "label": {
+                "en": "Polling Interval (seconds)",
+                "de": "Abfrageintervall (Sekunden)"
+              },
+              "value": 30,
+              "min": 0,
+              "max": 3600,
+              "hint": {
+                "en": "Set to 0 to disable polling. Default: 30 s.",
+                "de": "0 = kein Polling. Standard: 30 s."
+              }
+            },
+            {
+              "id": "offline_grace_seconds",
+              "type": "number",
+              "label": {
+                "en": "Offline Grace Period (seconds)",
+                "de": "Offline-Karenzzeit (Sekunden)"
+              },
+              "value": 60,
+              "min": 0,
+              "max": 600,
+              "hint": {
+                "en": "How long the device must remain offline before the 'device disconnected' flow trigger fires. Set to 0 to trigger immediately.",
+                "de": "Wie lange das Gerät offline sein muss, bevor der 'Gerät getrennt'-Auslöser ausgelöst wird. 0 = sofort auslösen."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Data Points (DPs)",
+            "de": "Datenpunkte (DPs)"
+          },
+          "children": [
+            {
+              "id": "dp_door_contact",
+              "type": "number",
+              "label": {
+                "en": "Door Contact Sensor DP",
+                "de": "Türkontakt-Sensor DP"
+              },
+              "value": 3,
+              "hint": {
+                "en": "DP for the magnetic door contact sensor (DP 3, bool). Reports true = door closed, false = door open.",
+                "de": "DP für den magnetischen Türkontakt (DP 3, bool). Gibt true = geschlossen, false = offen zurück."
+              }
+            },
+            {
+              "id": "dp_door_control",
+              "type": "number",
+              "label": {
+                "en": "Door Control DP",
+                "de": "Tor-Steuerungs-DP"
+              },
+              "value": 6,
+              "hint": {
+                "en": "DP for open/close commands (DP 6, enum open|close). Used by the tile and flow actions.",
+                "de": "DP für Auf/Zu-Befehle (DP 6, Enum open|close). Wird von der Kachel und Flow-Aktionen verwendet."
+              }
+            },
+            {
+              "id": "dp_switch",
+              "type": "number",
+              "label": {
+                "en": "Relay Switch DP",
+                "de": "Relais-Schalter DP"
+              },
+              "value": 1,
+              "hint": {
+                "en": "DP for the relay toggle (DP 1, bool). Sends a pulse to trigger the motor — used by the 'Toggle garage door' flow action. Set to 0 to disable.",
+                "de": "DP für den Relais-Toggle (DP 1, bool). Sendet einen Impuls zum Auslösen des Motors — wird von der 'Garagentor umschalten'-Aktion verwendet. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_door_state",
+              "type": "number",
+              "label": {
+                "en": "Door Alarm State DP",
+                "de": "Toralarm-Status DP"
+              },
+              "value": 12,
+              "hint": {
+                "en": "DP for door alarm state (DP 12, enum). Values: none = no alarm, unclosed_time = door left open too long, close_time_alarm = door failed to close. Set to 0 to disable.",
+                "de": "DP für den Toralarm-Status (DP 12, Enum). Werte: none = kein Alarm, unclosed_time = Tor zu lange offen, close_time_alarm = Tor konnte nicht schließen. 0 = deaktiviert."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Device",
+            "de": "Gerät"
+          },
+          "children": [
+            {
+              "id": "door_contact_invert",
+              "type": "checkbox",
+              "label": {
+                "en": "Invert door contact sensor",
+                "de": "Türkontakt-Sensor invertieren"
+              },
+              "value": false,
+              "hint": {
+                "en": "Enable if the door status appears inverted (shows open when closed). Swaps the boolean reading from the contact sensor DP.",
+                "de": "Aktivieren wenn der Türstatus invertiert erscheint (zeigt offen wenn geschlossen). Vertauscht den Bool-Wert des Kontaktsensors."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Diagnostics",
+            "de": "Diagnose"
+          },
+          "children": [
+            {
+              "id": "connection_status",
+              "type": "text",
+              "label": {
+                "en": "Connection status",
+                "de": "Verbindungsstatus"
+              },
+              "value": "—",
+              "hint": {
+                "en": "Updated automatically by the app. Do not edit.",
+                "de": "Wird automatisch aktualisiert. Nicht bearbeiten."
+              }
+            },
+            {
+              "id": "last_seen",
+              "type": "text",
+              "label": {
+                "en": "Last data received",
+                "de": "Zuletzt Daten empfangen"
+              },
+              "value": "—",
+              "hint": {
+                "en": "Updated automatically by the app. Do not edit.",
+                "de": "Wird automatisch aktualisiert. Nicht bearbeiten."
+              }
+            }
+          ]
+        }
+      ],
+      "pair": [
+        {
+          "id": "credentials"
+        },
+        {
+          "id": "list_devices"
+        }
+      ],
+      "images": {
+        "small": "/drivers/garage_door/assets/images/small.png",
+        "large": "/drivers/garage_door/assets/images/large.png",
+        "xlarge": "/drivers/garage_door/assets/images/xlarge.png"
+      }
     }
   ],
   "brandColor": "#ED5308",
@@ -8194,6 +8637,7 @@
       "heater",
       "light",
       "pet feeder",
+      "garage door",
       "local",
       "lan"
     ],
@@ -8206,6 +8650,7 @@
       "heizgerät",
       "licht",
       "futterautomat",
+      "garagentor",
       "lokal",
       "lan"
     ]

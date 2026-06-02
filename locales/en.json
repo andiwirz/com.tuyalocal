@@ -9,14 +9,16 @@
       "humidifier":      "Humidifier",
       "heater":          "Heater",
       "light":           "Light",
-      "pet_feeder":      "Pet Feeder"
+      "pet_feeder":      "Pet Feeder",
+      "garage_door":     "Garage Door"
     }
   },
   "notifications": {
-    "waterFull":  "Water tank is full — please empty it.",
-    "waterEmpty": "Water tank is empty — please refill it.",
-    "faultAlarm": "Fault detected — please check the device.",
-    "foodEmpty":  "Food container is low or empty — please refill it."
+    "waterFull":       "Water tank is full — please empty it.",
+    "waterEmpty":      "Water tank is empty — please refill it.",
+    "faultAlarm":      "Fault detected — please check the device.",
+    "foodEmpty":       "Food container is low or empty — please refill it.",
+    "garageDoorOpen":  "Garage door has been left open."
   },
   "pair": {
     "credentials": {
@@ -103,6 +105,12 @@
         "childLock":     "Child Lock  (non-standard, 0 = disabled)",
         "portionsMin":   "Portions — minimum",
         "portionsMax":   "Portions — maximum"
+      },
+      "garage_door": {
+        "doorContact":   "Door Contact Sensor  (DP 3, bool — true=closed)",
+        "doorControl":   "Open/Close Command  (DP 6, enum open|close)",
+        "relaySwitch":   "Relay Switch  (DP 1, toggle — 0 = disabled)",
+        "doorState":     "Door Alarm State  (DP 12, 0 = disabled)"
       }
     }
   },

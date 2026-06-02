@@ -1,4 +1,8 @@
 {
+  "1.0.39": {
+    "en": "Added Garage Door driver: WOFEA and compatible Tuya garage door openers. Door open/closed state from magnetic contact sensor (DP 3), open/close commands via DP 6, relay toggle via DP 1. Optional door-alarm state (DP 12: left open / close timeout). Full flow card support: opened/closed triggers, alarm trigger, open/close/toggle actions.",
+    "de": "Neuer Garagentor-Treiber: WOFEA und kompatible Tuya-Garagentorantriebe. Offen/Geschlossen-Status über Magnetkontakt (DP 3), Auf/Zu-Befehl über DP 6, Relais-Toggle über DP 1. Optionaler Toralarm (DP 12). Vollständige Flow-Karten: Offen/Geschlossen-Auslöser, Alarm-Auslöser, Auf/Zu/Toggle-Aktionen."
+  },
   "1.0.38": {
     "en": "Pet Feeder: fixed 'Feed now' action card failing with type error after portions picker change.",
     "de": "Futterautomat: Fehler im 'Jetzt füttern'-Aktionskarte nach Umstellung auf Picker behoben."
