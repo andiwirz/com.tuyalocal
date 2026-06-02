@@ -222,10 +222,9 @@ class GarageDoorDevice extends BaseTuyaDevice {
     }
     // Re-apply contact/action reading immediately when invert flips
     if (changedKeys.includes('door_contact_invert') && this.hasCapability('garagedoor_closed')) {
-      const settings = this.getSettings();
-      // Check both contact and action DPs — use whichever has a recent value
+      // Use newSettings for DP numbers (getSettings() could still hold pre-save values)
       for (const key of ['dp_door_contact', 'dp_door_action']) {
-        const dpNum = settings[key];
+        const dpNum = newSettings[key];
         if (!dpNum || dpNum === 0) continue;
         const rawVal = this._lastDps[String(dpNum)];
         if (rawVal === undefined) continue;

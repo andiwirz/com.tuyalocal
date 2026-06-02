@@ -48,13 +48,17 @@ class GarageDoorDriver extends Homey.Driver {
         return args.device._conn?.set(dp, true);
       });
 
-    // Stop: sends "stop" on the control DP — supported by ZC34T (DP 101) and
-    // cover-style devices. Ignored silently by WOFEA (device rejects unknown enum value).
+    // Stop:
+    //   AOSD / ZC34T → sends "stop" on dp_door_control (DP 101)
+    //   BoboYun      → dp_door_control = 0, falls back to dp_switch (DP 103: set true → stop)
+    //   WOFEA        → dp_door_control = 6, sends "stop" (device ignores invalid enum — harmless)
     this.homey.flow.getActionCard('garage_door_stop')
       .registerRunListener(async (args) => {
-        const dp = args.device.getSetting('dp_door_control');
-        if (!dp || dp === 0) throw new Error('Door control DP not configured');
-        return args.device._conn?.set(dp, 'stop');
+        const dpControl = args.device.getSetting('dp_door_control');
+        const dpSwitch  = args.device.getSetting('dp_switch');
+        if (dpControl > 0) return args.device._conn?.set(dpControl, 'stop');
+        if (dpSwitch  > 0) return args.device._conn?.set(dpSwitch, true);
+        throw new Error('No stop DP configured (set dp_door_control or dp_switch)');
       });
 
     this.homey.flow.getActionCard('garage_door_force_reconnect')
@@ -156,19 +160,23 @@ class GarageDoorDriver extends Homey.Driver {
     const dp_door_action = actionEntry?.dp ?? 0;
 
     // ── Door contact sensor ────────────────────────────────────────────────────
-    // Priority 1: DP 3 bool               — WOFEA
-    // Priority 2: any other non-switch bool DP
-    // Priority 3: string DP "open"/"closed" that is NOT the action DP
-    //             (ZC34T DP 1 = "open"/"closed"; BoboYun DP 10 = "opened"/"closed" → action)
-    // Fallback:   3
+    // When an action state DP was detected (AOSD / BoboYun), there is no separate
+    // contact sensor — the action string IS the state source. Set to 0 so we don't
+    // accidentally grab a light DP (e.g. AOSD DP 105) or voice DP (WOFEA DP 11).
+    //
+    // Without action DP:
+    //   Priority 1: DP 3 bool                       — WOFEA
+    //   Priority 2: non-switch bool DP ≤ 20         — eWeLink DP 2
+    //   Priority 3: string DP "open"/"closed"       — ZC34T DP 1
+    //   Fallback:   3                               — WOFEA safe default
     const CONTACT_STRINGS = new Set(['open', 'closed']);
     const stringContactEntry = stringDps.find((d) =>
       CONTACT_STRINGS.has(d.val) && d.dp !== dp_door_action
     );
-    const dp_door_contact =
-      (3 in dpsMap && typeof dpsMap[3] === 'boolean')   ? 3
-      : (boolDps.find((d) => d !== dp_switch)           ?? null)
-      ?? (stringContactEntry?.dp                        ?? 3);
+    const dp_door_contact = (dp_door_action > 0) ? 0
+      : (3 in dpsMap && typeof dpsMap[3] === 'boolean')         ? 3
+      : (boolDps.find((d) => d !== dp_switch && d <= 20)        ?? null)
+      ?? (stringContactEntry?.dp                                 ?? 3);
 
     // ── Door control command ──────────────────────────────────────────────────
     // String DP with open/close/stop value, excluding contact and action DPs.
