@@ -1,4 +1,8 @@
 {
+  "1.0.40": {
+    "en": "Garage Door: ZC34T / swing-arm opener compatibility — string state DPs (DP 1: open/closed) now supported alongside WOFEA bool contact sensor. Added 'Stop garage door' flow action. Auto-detect identifies ZC34T vs WOFEA patterns at pairing time.",
+    "de": "Garagentor: ZC34T / Schwenkarm-Kompatibilität — String-Zustands-DPs (DP 1: open/closed) neben WOFEA Bool-Kontaktsensor unterstützt. Neue Flow-Aktion 'Garagentor stoppen'. Auto-Erkennung unterscheidet ZC34T- und WOFEA-Muster beim Einrichten."
+  },
   "1.0.39": {
     "en": "Added Garage Door driver: WOFEA and compatible Tuya garage door openers. Door open/closed state from magnetic contact sensor (DP 3), open/close commands via DP 6, relay toggle via DP 1. Optional door-alarm state (DP 12: left open / close timeout). Full flow card support: opened/closed triggers, alarm trigger, open/close/toggle actions.",
     "de": "Neuer Garagentor-Treiber: WOFEA und kompatible Tuya-Garagentorantriebe. Offen/Geschlossen-Status über Magnetkontakt (DP 3), Auf/Zu-Befehl über DP 6, Relais-Toggle über DP 1. Optionaler Toralarm (DP 12). Vollständige Flow-Karten: Offen/Geschlossen-Auslöser, Alarm-Auslöser, Auf/Zu/Toggle-Aktionen."

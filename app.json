@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.39",
+  "version": "1.0.40",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -18,6 +18,10 @@
     "appliances"
   ],
   "changelog": {
+    "1.0.40": {
+      "en": "Garage Door: ZC34T / swing-arm opener compatibility — string-based door state (DP 1: 'open'/'closed') is now handled alongside the WOFEA bool contact sensor. Added 'Stop garage door' flow action for devices that support a stop command (ZC34T DP 101). Auto-detect correctly identifies ZC34T vs WOFEA DP patterns at pairing time.",
+      "de": "Garagentor: ZC34T / Schwenkarm-Kompatibilität — String-basierter Türstatus (DP 1: 'open'/'closed') wird jetzt zusätzlich zum WOFEA Bool-Kontaktsensor unterstützt. Neue Flow-Aktion 'Garagentor stoppen' für Geräte mit Stop-Befehl (ZC34T DP 101). Auto-Erkennung identifiziert ZC34T- vs. WOFEA-DP-Muster beim Einrichten korrekt."
+    },
     "1.0.39": {
       "en": "Added Garage Door driver: WOFEA and compatible Tuya garage door openers. Door open/closed state from magnetic contact sensor (DP 3), open/close commands via DP 6, relay toggle via DP 1. Optional door-alarm state (DP 12: left open / close timeout). Full flow card support: opened/closed triggers, alarm trigger, open/close/toggle actions.",
       "de": "Neuer Garagentor-Treiber: WOFEA und kompatible Tuya-Garagentorantriebe. Offen/Geschlossen-Status über Magnetkontakt (DP 3), Auf/Zu-Befehl über DP 6, Relais-Toggle über DP 1. Optionaler Toralarm (DP 12: zu lange offen / Schließ-Timeout). Vollständige Flow-Karten: Offen/Geschlossen-Auslöser, Alarm-Auslöser, Auf/Zu/Toggle-Aktionen."
@@ -5054,6 +5058,20 @@
         "title": {
           "en": "Toggle garage door",
           "de": "Garagentor umschalten"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=garage_door"
+          }
+        ]
+      },
+      {
+        "id": "garage_door_stop",
+        "title": {
+          "en": "Stop garage door",
+          "de": "Garagentor stoppen"
         },
         "args": [
           {

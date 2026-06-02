@@ -3,14 +3,22 @@
 const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 
 // ── DP → capability mapping ──────────────────────────────────────────────────
+//
+// WOFEA WF-CS01 / Tuya category ckmkzq (standard garage door controller):
 // DP 1  switch_1          : bool              — relay toggle (momentary pulse, triggers motor)
-// DP 2  countdown_1       : int  0–86400 s    — countdown timer for switch_1
 // DP 3  doorcontact_state : bool              — magnetic contact (true=closed, false=open)
-// DP 4  tr_timecon        : int  10–120 s     — door travel time (device setting)
-// DP 5  countdown_alarm   : int  0–86400 s    — open-too-long alarm delay (device setting)
 // DP 6  door_control_1    : enum open|close   — open/close command
-// DP 11 voice_control_1   : bool              — voice control enable/disable
-// DP 12 door_state_1      : enum unclosed_time|close_time_alarm|none  — alarm state
+// DP 12 door_state_1      : enum none|unclosed_time|close_time_alarm — alarm state
+//
+// ZC34T-03-3A swing arm opener (and similar string-state devices):
+// DP 1  state             : string "open"|"closed"        — door state
+//                           → set dp_door_contact = 1
+// DP 101 control          : string "open"|"close"|"stop"  — command
+//                           → set dp_door_control = 101, dp_switch = 0
+//
+// eWeLink-style simple relay:
+// DP 1  dpAction          : bool   — relay trigger  → dp_switch = 1
+// DP 2  dpStatus          : bool   — door state     → dp_door_contact = 2
 
 const DP_PROFILE = [
   // Door contact sensor → garagedoor_closed (bool: true = closed, false = open)
@@ -87,7 +95,7 @@ class GarageDoorDevice extends BaseTuyaDevice {
       // ── Door contact sensor → garagedoor_closed ───────────────────────────
       if (entry.capability === 'garagedoor_closed') {
         const invert    = settings.door_contact_invert || false;
-        const converted = invert ? !Boolean(value) : Boolean(value);
+        const converted = this._contactToBool(value, invert);
         const prev      = this.getCapabilityValue('garagedoor_closed');
         await this.setCapabilityValue('garagedoor_closed', converted).catch(() => {});
         if (prev !== converted) {
@@ -148,10 +156,29 @@ class GarageDoorDevice extends BaseTuyaDevice {
       const dpNum = this.getSetting('dp_door_contact');
       const rawVal = this._lastDps[String(dpNum)];
       if (rawVal !== undefined) {
-        const converted = newSettings.door_contact_invert ? !Boolean(rawVal) : Boolean(rawVal);
+        const converted = this._contactToBool(rawVal, newSettings.door_contact_invert);
         await this.setCapabilityValue('garagedoor_closed', converted).catch(() => {});
       }
     }
+  }
+
+  // ── Helpers ──────────────────────────────────────────────────────────────────
+
+  /**
+   * Convert a door-contact DP value to a bool (true = door closed).
+   * Handles both device types:
+   *  - WOFEA (bool DP 3):   true / false  →  direct
+   *  - ZC34T (string DP 1): "closed" / "open"  →  string comparison
+   */
+  _contactToBool(value, invert = false) {
+    let isClosed;
+    if (typeof value === 'boolean') {
+      isClosed = value;
+    } else {
+      // String-based state DP (ZC34T DP 1: "open" | "closed" | null)
+      isClosed = String(value).toLowerCase() === 'closed';
+    }
+    return invert ? !isClosed : isClosed;
   }
 }
 

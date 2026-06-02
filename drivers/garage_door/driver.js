@@ -48,6 +48,15 @@ class GarageDoorDriver extends Homey.Driver {
         return args.device._conn?.set(dp, true);
       });
 
+    // Stop: sends "stop" on the control DP — supported by ZC34T (DP 101) and
+    // cover-style devices. Ignored silently by WOFEA (device rejects unknown enum value).
+    this.homey.flow.getActionCard('garage_door_stop')
+      .registerRunListener(async (args) => {
+        const dp = args.device.getSetting('dp_door_control');
+        if (!dp || dp === 0) throw new Error('Door control DP not configured');
+        return args.device._conn?.set(dp, 'stop');
+      });
+
     this.homey.flow.getActionCard('garage_door_force_reconnect')
       .registerRunListener(async (args) => args.device.forceReconnect());
 
@@ -128,34 +137,44 @@ class GarageDoorDriver extends Homey.Driver {
   // ── Auto-detect DPs from raw DPS payload ─────────────────────────────────────
 
   _detectDps(dps) {
-    const dpsMap  = Object.fromEntries(Object.entries(dps).map(([k, v]) => [parseInt(k), v]));
-    const enumDps = Object.entries(dpsMap)
-      .filter(([, v]) => typeof v === 'string')
-      .map(([k, v]) => ({ dp: parseInt(k), val: String(v).toLowerCase() }));
-    const boolDps = Object.entries(dpsMap)
+    const dpsMap    = Object.fromEntries(Object.entries(dps).map(([k, v]) => [parseInt(k), v]));
+    const boolDps   = Object.entries(dpsMap)
       .filter(([, v]) => typeof v === 'boolean')
       .map(([k]) => parseInt(k));
+    const stringDps = Object.entries(dpsMap)
+      .filter(([, v]) => typeof v === 'string')
+      .map(([k, v]) => ({ dp: parseInt(k), val: String(v).toLowerCase() }));
 
-    // ── Relay switch (DP 1): bool, triggers motor pulse ───────────────────────
-    // Detect first so we can exclude it from door-contact detection.
+    // ── Relay switch (DP 1, WOFEA only) ──────────────────────────────────────
+    // DP 1 is the relay on WOFEA (bool). On ZC34T, DP 1 is a string state —
+    // do NOT treat it as a switch in that case.
     const dp_switch = (1 in dpsMap && typeof dpsMap[1] === 'boolean') ? 1 : 0;
 
-    // ── Door contact (DP 3): bool sensor for actual door position ─────────────
-    // Prefer DP 3 explicitly. Fallback: first bool DP that isn't the switch DP.
-    // Never fall back to 0 — a missing response at pairing time would disable
-    // door-state monitoring entirely; 3 is always the right WOFEA default.
+    // ── Door contact sensor ────────────────────────────────────────────────────
+    // Priority 1: DP 3 bool  — WOFEA (doorcontact_state)
+    // Priority 2: any other bool DP, excluding the relay switch
+    // Priority 3: first string DP whose value is "open" or "closed" — ZC34T (DP 1)
+    // Fallback:   3  — safe WOFEA default if device didn't respond at pairing time
+    const CONTACT_STRINGS = new Set(['open', 'closed']);
+    const stringContactEntry = stringDps.find((d) => CONTACT_STRINGS.has(d.val));
     const dp_door_contact =
-      (3 in dpsMap && typeof dpsMap[3] === 'boolean') ? 3
-      : (boolDps.find((d) => d !== dp_switch) ?? 3);
+      (3 in dpsMap && typeof dpsMap[3] === 'boolean')   ? 3
+      : (boolDps.find((d) => d !== dp_switch)           ?? null)
+      ?? (stringContactEntry?.dp                        ?? 3);
 
-    // ── Door control (DP 6): enum open|close command ──────────────────────────
-    const DOOR_CMDS = new Set(['open', 'close']);
-    const ctrlEntry  = enumDps.find((d) => DOOR_CMDS.has(d.val));
+    // ── Door control command ────────────────────────────────────────────────────
+    // Find a string DP whose current value is "open", "close", or "stop",
+    // but NOT the contact DP (avoids confusing ZC34T's state DP 1 for the control DP 101).
+    // Covers WOFEA DP 6 (enum "open") and ZC34T DP 101 (string "open"/"close"/"stop").
+    const DOOR_CMDS = new Set(['open', 'close', 'stop']);
+    const ctrlEntry = stringDps.find((d) =>
+      DOOR_CMDS.has(d.val) && d.dp !== dp_door_contact
+    );
     const dp_door_control = ctrlEntry?.dp ?? (6 in dpsMap ? 6 : 0);
 
-    // ── Door alarm state (DP 12): enum unclosed_time|close_time_alarm|none ────
+    // ── Door alarm state (DP 12, WOFEA) ────────────────────────────────────────
     const ALARM_STATES = new Set(['unclosed_time', 'close_time_alarm', 'none']);
-    const alarmEntry   = enumDps.find((d) => ALARM_STATES.has(d.val));
+    const alarmEntry = stringDps.find((d) => ALARM_STATES.has(d.val));
     const dp_door_state = alarmEntry?.dp ?? (12 in dpsMap ? 12 : 0);
 
     this.log('Detected DPs:', { dp_door_contact, dp_door_control, dp_switch, dp_door_state });
