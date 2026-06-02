@@ -2571,6 +2571,40 @@
             "filter": "driver_id=garage_door"
           }
         ]
+      },
+      {
+        "id": "garage_door_dp_changed",
+        "title": {
+          "en": "Garage door data point changed",
+          "de": "Garagentor: Datenpunkt geändert"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=garage_door"
+          }
+        ],
+        "tokens": [
+          {
+            "name": "dp",
+            "type": "string",
+            "title": {
+              "en": "DP number",
+              "de": "DP-Nummer"
+            },
+            "example": "3"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "title": {
+              "en": "Value",
+              "de": "Wert"
+            },
+            "example": "false"
+          }
+        ]
       }
     ],
     "conditions": [
@@ -8375,6 +8409,22 @@
       "capabilities": [
         "garagedoor_closed"
       ],
+      "capabilitiesOptions": {
+        "alarm_generic": {
+          "title": {
+            "en": "Door Alarm",
+            "de": "Toralarm"
+          },
+          "insightsTitleTrue": {
+            "en": "Door alarm triggered",
+            "de": "Toralarm ausgelöst"
+          },
+          "insightsTitleFalse": {
+            "en": "Door alarm cleared",
+            "de": "Toralarm beendet"
+          }
+        }
+      },
       "settings": [
         {
           "type": "group",

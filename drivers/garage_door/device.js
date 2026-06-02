@@ -38,6 +38,7 @@ class GarageDoorDevice extends BaseTuyaDevice {
     this._triggerAlarm              = this.homey.flow.getDeviceTriggerCard('garage_door_alarm_triggered');
     this._triggerDeviceConnected    = this.homey.flow.getDeviceTriggerCard('garage_door_device_connected');
     this._triggerDeviceDisconnected = this.homey.flow.getDeviceTriggerCard('garage_door_device_disconnected');
+    this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('garage_door_dp_changed');
 
     // ── Capability listeners ─────────────────────────────────────────────────
     // garagedoor_closed: true = close, false = open
@@ -65,6 +66,11 @@ class GarageDoorDevice extends BaseTuyaDevice {
       changed = true;
 
       const dp = parseInt(dpStr, 10);
+
+      // Fire generic DP-changed trigger for every changed DP (useful for debugging / advanced flows)
+      this._triggerDpChanged
+        .trigger(this, { dp: dpStr, value: String(value) })
+        .catch(() => {});
 
       const entry = DP_PROFILE.find((e) => {
         const dpNum = settings[e.settingKey];
@@ -135,6 +141,16 @@ class GarageDoorDevice extends BaseTuyaDevice {
     }
     if (changedKeys.some((k) => OPTIONAL_CAPABILITIES.map((o) => o.setting).includes(k))) {
       await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
+    }
+    // Re-apply the door contact reading immediately when the invert setting changes —
+    // otherwise the displayed state stays wrong until the next DP 3 push from the device.
+    if (changedKeys.includes('door_contact_invert') && this.hasCapability('garagedoor_closed')) {
+      const dpNum = this.getSetting('dp_door_contact');
+      const rawVal = this._lastDps[String(dpNum)];
+      if (rawVal !== undefined) {
+        const converted = newSettings.door_contact_invert ? !Boolean(rawVal) : Boolean(rawVal);
+        await this.setCapabilityValue('garagedoor_closed', converted).catch(() => {});
+      }
     }
   }
 }

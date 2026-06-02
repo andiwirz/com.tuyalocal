@@ -15,6 +15,7 @@ class GarageDoorDriver extends Homey.Driver {
     this.homey.flow.getDeviceTriggerCard('garage_door_alarm_triggered');
     this.homey.flow.getDeviceTriggerCard('garage_door_device_connected');
     this.homey.flow.getDeviceTriggerCard('garage_door_device_disconnected');
+    this.homey.flow.getDeviceTriggerCard('garage_door_dp_changed');
 
     // ── Conditions ───────────────────────────────────────────────────────────
     // Returns true when the door IS open (garagedoor_closed === false)
@@ -27,19 +28,17 @@ class GarageDoorDriver extends Homey.Driver {
       .registerRunListener(async (args) => args.device._conn?.connected === true);
 
     // ── Actions ──────────────────────────────────────────────────────────────
+    // Use triggerCapabilityListener so the UI updates optimistically (same as tapping the tile)
+    // and the full capability-listener logic (DP control setting, error handling) is reused.
     this.homey.flow.getActionCard('garage_door_open')
-      .registerRunListener(async (args) => {
-        const dp = args.device.getSetting('dp_door_control');
-        if (!dp || dp === 0) throw new Error('Door control DP not configured');
-        return args.device._conn?.set(dp, 'open');
-      });
+      .registerRunListener(async (args) =>
+        args.device.triggerCapabilityListener('garagedoor_closed', false)
+      );
 
     this.homey.flow.getActionCard('garage_door_close')
-      .registerRunListener(async (args) => {
-        const dp = args.device.getSetting('dp_door_control');
-        if (!dp || dp === 0) throw new Error('Door control DP not configured');
-        return args.device._conn?.set(dp, 'close');
-      });
+      .registerRunListener(async (args) =>
+        args.device.triggerCapabilityListener('garagedoor_closed', true)
+      );
 
     // Toggle sends a pulse on the relay switch DP (DP 1) — equivalent to pressing the button
     this.homey.flow.getActionCard('garage_door_toggle')
@@ -133,17 +132,26 @@ class GarageDoorDriver extends Homey.Driver {
     const enumDps = Object.entries(dpsMap)
       .filter(([, v]) => typeof v === 'string')
       .map(([k, v]) => ({ dp: parseInt(k), val: String(v).toLowerCase() }));
+    const boolDps = Object.entries(dpsMap)
+      .filter(([, v]) => typeof v === 'boolean')
+      .map(([k]) => parseInt(k));
+
+    // ── Relay switch (DP 1): bool, triggers motor pulse ───────────────────────
+    // Detect first so we can exclude it from door-contact detection.
+    const dp_switch = (1 in dpsMap && typeof dpsMap[1] === 'boolean') ? 1 : 0;
 
     // ── Door contact (DP 3): bool sensor for actual door position ─────────────
-    const dp_door_contact = (3 in dpsMap && typeof dpsMap[3] === 'boolean') ? 3 : 0;
+    // Prefer DP 3 explicitly. Fallback: first bool DP that isn't the switch DP.
+    // Never fall back to 0 — a missing response at pairing time would disable
+    // door-state monitoring entirely; 3 is always the right WOFEA default.
+    const dp_door_contact =
+      (3 in dpsMap && typeof dpsMap[3] === 'boolean') ? 3
+      : (boolDps.find((d) => d !== dp_switch) ?? 3);
 
     // ── Door control (DP 6): enum open|close command ──────────────────────────
     const DOOR_CMDS = new Set(['open', 'close']);
     const ctrlEntry  = enumDps.find((d) => DOOR_CMDS.has(d.val));
     const dp_door_control = ctrlEntry?.dp ?? (6 in dpsMap ? 6 : 0);
-
-    // ── Relay switch (DP 1): bool, triggers motor pulse ───────────────────────
-    const dp_switch = (1 in dpsMap && typeof dpsMap[1] === 'boolean') ? 1 : 0;
 
     // ── Door alarm state (DP 12): enum unclosed_time|close_time_alarm|none ────
     const ALARM_STATES = new Set(['unclosed_time', 'close_time_alarm', 'none']);
