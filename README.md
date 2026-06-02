@@ -1,8 +1,8 @@
 # Tuya Local — Homey App
 
-**Version 1.0.35** · Local control of Tuya smart devices — no cloud, no internet dependency.
+**Version 1.0.41** · Local control of Tuya smart devices — no cloud, no internet dependency.
 
-All communication happens over your local network via the Tuya LAN protocol. Nine built-in drivers cover the most common device types; a fully generic driver handles anything else.
+All communication happens over your local network via the Tuya LAN protocol. Ten built-in drivers cover the most common device types; a fully generic driver handles anything else.
 
 ---
 
@@ -17,7 +17,8 @@ All communication happens over your local network via the Tuya LAN protocol. Nin
 | [Humidifier](#humidifier-1) | Humidifiers, aroma diffusers | Humidifier |
 | [Heater](#heater-1) | Panel heaters, convectors, oil radiators | Heater |
 | [Light](#light-1) | Bulbs, LED strips, ceiling lights | Light |
-| [Pet Feeder](#pet-feeder-1) | Automatic pet feeders (e.g. Mypin, PETKIT) | Other |
+| [Pet Feeder](#pet-feeder-1) | Automatic pet feeders (e.g. WOFEA, Mypin, PETKIT) | Other |
+| [Garage Door](#garage-door-1) | Garage door openers (WOFEA, AOSD, ZC34T, BoboYun gatePro) | Garage Door |
 | [Generic Tuya Device](#generic-tuya-device-1) | Any Tuya device not covered above | Other |
 
 ---
@@ -426,60 +427,104 @@ Each entry in the `dp_config` JSON array supports the following fields:
 
 #### Connection
 
-| Setting | Description | Default |
-|---|---|---|
-| IP Address | Local IP of the device | — |
-| Device ID | Tuya device identifier | — |
-| Local Key | LAN encryption key (16 or 32 chars) | — |
-| Protocol Version | Auto-detect / 3.1 / 3.3 / 3.4 / 3.5 | Auto-detect |
-| Polling Interval (s) | Active poll cadence — `0` disables polling | 30 |
-| Offline Grace Period (s) | Seconds to wait before triggering "device disconnected" flows — `0` = immediate | 60 |
+Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polling Interval, Offline Grace Period).
 
 #### Data Points
 
 | Setting | Icon | Capability | Type | Default DP | Optional |
 |---|:---:|---|---|---|---|
-| `dp_onoff` |  | `onoff` | boolean | 1 | — |
-| `dp_motor_state` | <img src="assets/capabilities/motor_state.svg" height="24"> | `motor_state` | enum | 4 | — |
-| `dp_food_status` | <img src="assets/capabilities/food_status.svg" height="24"> | `food_status` | enum | 102 | — |
-| `dp_feed_portions` | <img src="assets/capabilities/feed_portions.svg" height="24"> | `feed_portions` | number | 3 | — |
-| `dp_feed_report` | <img src="assets/capabilities/feed_report.svg" height="24"> | `feed_report` | number | 18 | ✓ `0` = disabled |
-| `dp_surplus_grain` | <img src="assets/capabilities/surplus_grain.svg" height="24"> | `surplus_grain` | enum | 101 | ✓ `0` = disabled |
-| `dp_alarm_blockage` |  | `alarm_generic` | boolean | 9 | ✓ `0` = disabled |
-| `dp_alarm_cleaning` |  | `alarm_cleaning` | boolean | 103 | ✓ `0` = disabled |
-| `dp_alarm_grain_outlet` |  | `alarm_grain_outlet` | boolean | 104 | ✓ `0` = disabled |
-| `dp_child_lock` | <img src="assets/capabilities/child_lock.svg" height="24"> | `child_lock` | boolean | 19 | ✓ `0` = disabled |
-| `dp_meal_plan_count` |  | `meal_plan_count` | number | 15 | ✓ `0` = disabled |
-| `dp_desiccant_left_days` |  | `desiccant_left_days` | number | 106 | ✓ `0` = disabled |
+| `dp_portions` | <img src="assets/capabilities/feed_portions.svg" height="24"> | `feed_portions` | enum picker | 3 | — |
+| `dp_motor_state` | <img src="assets/capabilities/motor_state.svg" height="24"> | `motor_state` | enum | 4 | ✓ `0` = disabled |
+| `dp_fault` | | `alarm_generic` | bitfield | 14 | ✓ `0` = disabled |
+| `dp_feed_report` | <img src="assets/capabilities/feed_report.svg" height="24"> | `feed_report` | number | 15 | ✓ `0` = disabled |
+| `dp_surplus_grain` | <img src="assets/capabilities/surplus_grain.svg" height="24"> | `surplus_grain` | number | 16 | ✓ `0` = disabled |
+| `dp_food_level` | <img src="assets/capabilities/food_status.svg" height="24"> | `food_status` | enum | 0 | ✓ `0` = disabled |
+| `dp_child_lock` | <img src="assets/capabilities/child_lock.svg" height="24"> | `child_lock` | boolean | 0 | ✓ `0` = disabled |
+| `dp_battery` | | `measure_battery` | number | 0 | ✓ `0` = disabled |
+| `dp_indicator_light` | <img src="assets/capabilities/indicator_light.svg" height="24"> | `indicator_light` | boolean | 0 | ✓ `0` = disabled |
+| `dp_voice_playback` | <img src="assets/capabilities/voice_playback.svg" height="24"> | `voice_playback` | boolean | 0 | ✓ `0` = disabled |
+| `dp_battery_status` | <img src="assets/capabilities/battery_status.svg" height="24"> | `battery_status` | enum | 0 | ✓ `0` = disabled |
 
-All DP numbers are auto-detected at pairing time from a live device snapshot. Adjust any DP in device settings if auto-detection selects the wrong data point, or set to `0` to hide an optional tile.
+All DP numbers are auto-detected at pairing time. Set any optional DP to `0` to hide the tile.
 
 #### Food Level Values
 
-The `food_status` capability accepts the following standard Tuya enum values (not all are present on every device):
-
 | Value | Meaning |
 |---|---|
-| `full` | Tank is full |
-| `high` | Level is high |
-| `half` | Level is around half |
-| `low` / `less` / `lack` | Level is low — triggers the food-is-low condition and push notification |
-| `empty` | Tank is empty — also triggers the low condition and notification |
+| `full` / `high` / `half` | Adequate food in the hopper |
+| `low` / `less` / `lack` | Level is low — triggers push notification |
+| `empty` | Hopper is empty — also triggers notification |
 
-#### Portions Settings
+`less` and `lack` are used by Mypin 6L and some video feeder variants.
 
-| Setting | Description | Default |
-|---|---|---|
-| `portions_min` | Minimum value shown on the feed-portions slider | 1 |
-| `portions_max` | Maximum value shown on the feed-portions slider | 12 |
-
-The slider range is applied when the device initialises and whenever these settings change. The absolute maximum supported value is 50.
-
-#### Push Notification Settings
+#### Portions Picker
 
 | Setting | Description | Default |
 |---|---|---|
-| `food_empty_values` | Comma-separated food level values that trigger a Homey push notification | `low,less,empty,lack` |
+| `portions_min` | Lowest value shown in the portions picker | 1 |
+| `portions_max` | Highest value shown in the portions picker | 12 |
+
+The picker range is rebuilt on every startup and whenever these settings change.
+
+#### Other Settings
+
+| Setting | Description | Default |
+|---|---|---|
+| `food_empty_values` | Comma-separated food status values that trigger a push notification | `low,less,empty,lack` |
+| `voice_times` | Number of times the mealtime recording plays (written to device) | 1 |
+| `manual_button_portions` | Portions dispensed per physical button press (written to device) | 1 |
+
+---
+
+### Garage Door
+
+Supports four device families with automatic DP pattern detection at pairing time.
+
+| Device family | State DP | Control DP | Examples |
+|---|---|---|---|
+| WOFEA / ckmkzq | DP 3 bool | DP 6 enum `open`/`close` | WOFEA WF-CS01 |
+| ZC34T swing arm | DP 1 string `"open"`/`"closed"` | DP 101 string `open`/`close`/`stop` | ZC34T-03-3A |
+| AOSD + light | DP 107 string `opened`/`closing`/… | DP 101 string | AOSD garage door with light |
+| BoboYun gatePro | DP 10 string `opened`/`closing`/… | DP 106 bool (open) + DP 107 bool (close) | BoboYun gatePro |
+
+#### Connection
+
+Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polling Interval, Offline Grace Period).
+
+#### Data Points
+
+| Setting | Capability | Default DP | Description |
+|---|---|---|---|
+| `dp_door_contact` | `garagedoor_closed` | 3 | Bool or string `"open"`/`"closed"` contact sensor. WOFEA DP 3, ZC34T DP 1, eWeLink DP 2. |
+| `dp_door_action` | `garagedoor_closed` | 0 | String action state (`opened`/`closed`/`opening`/`closing`). AOSD DP 107, BoboYun DP 10. |
+| `dp_door_control` | — | 6 | Combined open/close command DP. WOFEA DP 6 (enum), AOSD/ZC34T DP 101 (string). |
+| `dp_door_open` | — | 0 | Separate bool open DP (BoboYun DP 106: send `true` → open). |
+| `dp_door_close` | — | 0 | Separate bool close DP (BoboYun DP 107: send `true` → close). |
+| `dp_switch` | — | 1 | Relay toggle DP (WOFEA DP 1 = relay pulse; BoboYun DP 103 = stop). Used by Toggle and Stop actions. |
+| `dp_door_state` | `alarm_generic` | 12 | Alarm state. WOFEA: `none`/`unclosed_time`/`close_time_alarm`. BoboYun: `No`/event strings (set to 141). |
+| `dp_light` | `onoff.light` | 0 | Integrated light switch. AOSD DP 105, BoboYun DP 102. `0` = disabled. |
+
+All DPs are auto-detected at pairing time. For AOSD and BoboYun, `dp_door_action` and `dp_light` are detected automatically; BoboYun's `dp_door_state` (DP 141) must be set manually.
+
+#### Device Settings
+
+| Setting | Description | Default |
+|---|---|---|
+| `door_contact_invert` | Swap open/closed reading from the contact sensor — enable if the door shows open when closed | `false` |
+
+#### Control Logic
+
+| Configuration | Open door | Close door | Stop door |
+|---|---|---|---|
+| `dp_door_open > 0` (BoboYun) | `set(dp_door_open, true)` | `set(dp_door_close, true)` | `set(dp_switch, true)` |
+| `dp_door_control > 0` (WOFEA / AOSD / ZC34T) | `set(dp_door_control, 'open')` | `set(dp_door_control, 'close')` | `set(dp_door_control, 'stop')` |
+
+**Stop note:** WOFEA DP 6 only accepts `open`/`close`; sending `stop` is silently ignored by the device. Use the **Toggle** action to interrupt movement on WOFEA devices.
+
+#### Action state vs. contact sensor
+
+- **Contact sensor** (`dp_door_contact`): reports binary open/closed — opens/closed flow triggers fire on every change.
+- **Action state** (`dp_door_action`): reports `opened`/`opening`/`closing`/`closed` — opened/closed flow triggers fire only on **terminal states** (`opened` / `closed`), not during movement.
 
 ---
 
@@ -754,10 +799,11 @@ The slider range is applied when the device initialises and whenever these setti
 |---|---|
 | Pet feeder connected | — |
 | Pet feeder disconnected | — |
-| Food level is low | `food_level` (string) — fires when `food_status` transitions to any value in the configured low set (`low`, `less`, `lack`, `empty`) |
-| Feeding completed | `portions` (number) — fires when `feed_report` updates after a manual or scheduled feed |
+| Food level changed | `food_status` (string), `prev_status` (string) |
+| Feeding completed | — |
+| Pet feeder data point changed | `dp` (string), `value` (string) |
 
-> **Offline grace period:** The "disconnected" trigger is delayed by the **Offline Grace Period** setting (default 60 s). Tuya pet feeder firmware briefly drops the TCP connection at certain intervals and immediately reconnects — without the grace period this causes several spurious disconnect/connect notifications per night.
+> **Offline grace period:** The "disconnected" trigger is delayed by the **Offline Grace Period** setting (default 60 s). Tuya pet feeder firmware briefly drops the TCP connection at certain intervals — without the grace period this causes spurious nightly offline notifications.
 
 #### Conditions
 
@@ -770,9 +816,44 @@ The slider range is applied when the device initialises and whenever these setti
 
 | Action | Notes |
 |---|---|
-| Feed now | Dispenses 1–50 portions immediately |
-| Refresh feeder state | Triggers an immediate GET request |
-| Force reconnect | Drops and re-establishes the TCP connection |
+| Feed [[portions]] portion(s) now | Dispenses 1–50 portions immediately |
+| Refresh pet feeder values | Triggers an immediate GET request |
+| Force pet feeder reconnect | Drops and re-establishes the TCP connection |
+
+---
+
+### Garage Door
+
+#### Triggers
+
+| Trigger | Flow tokens |
+|---|---|
+| Garage door opened | — |
+| Garage door closed | — |
+| Garage door alarm triggered | `alarm_state` (string) — e.g. `unclosed_time`, `close_time_alarm`, `openLongTime` |
+| Garage door opener connected | — |
+| Garage door opener disconnected | — |
+| Garage door data point changed | `dp` (string), `value` (string) |
+
+> **Opened/closed triggers with action state DP:** When using `dp_door_action` (AOSD / BoboYun), the opened and closed triggers fire only on terminal states (`opened` / `closed`), not on intermediate `opening` / `closing` states.
+
+#### Conditions
+
+| Condition |
+|---|
+| Garage door is open / is closed |
+| Garage door opener is / is not connected |
+
+#### Actions
+
+| Action | Notes |
+|---|---|
+| Open garage door | Sends open command via `dp_door_control` or `dp_door_open` |
+| Close garage door | Sends close command via `dp_door_control` or `dp_door_close` |
+| Stop garage door | Sends stop via `dp_door_control` (AOSD/ZC34T) or `dp_switch` (BoboYun). WOFEA: use Toggle instead |
+| Toggle garage door | Sends a relay pulse on `dp_switch` — equivalent to pressing the wall button |
+| Force garage door opener reconnect | Drops and re-establishes the TCP connection |
+| Refresh garage door values | Triggers an immediate GET request |
 
 ---
 
@@ -786,6 +867,8 @@ The slider range is applied when the device initialises and whenever these setti
 | Fault detected | Air Conditioner | `alarm_generic` transitions `false` → `true` (debounced, 30 s grace on reconnect) |
 | Fault detected | Heater | `alarm_generic` transitions `false` → `true` (debounced, 30 s grace on reconnect) |
 | Food level low / empty | Pet Feeder | `food_status` transitions to any value in `food_empty_values` (default: `low,less,empty,lack`) |
+| Motor reports no food | Pet Feeder | `motor_state` = `no_food` — hopper empty during feeding attempt |
+| Garage door left open | Garage Door | Alarm state `unclosed_time` (WOFEA) or `openLongTime` (BoboYun) |
 
 ---
 

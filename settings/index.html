@@ -266,6 +266,50 @@
     </div>
 
     <div class="section">
+      <h2>Pet Feeder — DP reference</h2>
+      <table class="help-table">
+        <thead><tr><th>Setting</th><th>Default DP</th><th>Capability</th><th>Notes</th><th>R/W</th></tr></thead>
+        <tbody>
+          <tr><td>dp_portions</td>      <td>3</td>  <td>Feed Portions (picker)</td>  <td>Enum picker 1–12. Range set by <em>portions_min</em> / <em>portions_max</em></td>  <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_motor_state</td>   <td>4</td>  <td>Motor State</td>              <td>standby / feeding / done / no_food / error_ir. 0 = disabled</td>                 <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_fault</td>         <td>14</td> <td>Fault Alarm</td>              <td>Bitfield: 1=no_food, 2=jammed, 4=feed_timeout, 8=battery_low. 0 = disabled</td>  <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_feed_report</td>   <td>15</td> <td>Feed Report</td>              <td>Actual portions dispensed after feeding. 0 = disabled</td>                       <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_surplus_grain</td> <td>16</td> <td>Remaining Food %</td>         <td>0–100 %. 0 = disabled</td>                                                        <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_food_level</td>    <td>0</td>  <td>Food Status</td>              <td>Non-standard enum: full / high / half / low / less / lack / empty. 0 = disabled</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_child_lock</td>    <td>0</td>  <td>Child Lock</td>               <td>0 = disabled</td>                                                                 <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_battery</td>       <td>0</td>  <td>Battery Level (%)</td>        <td>0 = disabled. DP 11 on Arlec / battery feeders</td>                               <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_indicator_light</td> <td>0</td> <td>Indicator Light</td>         <td>0 = disabled. DP 19 typical</td>                                                  <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_voice_playback</td> <td>0</td> <td>Voice Playback</td>           <td>0 = disabled. DP 103 typical</td>                                                  <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_battery_status</td> <td>0</td> <td>Battery Status</td>           <td>Enum: high / medium / low. DP 101 typical. 0 = disabled</td>                      <td><span class="help-badge badge-ro">Read</span></td></tr>
+        </tbody>
+      </table>
+      <div class="note"><strong>Portions picker:</strong> The picker shows <em>portions_min</em> – <em>portions_max</em> (default 1–12). Change these settings to match your device's supported range. After dispensing, the picker resets to <em>portions_min</em> automatically.</div>
+      <div class="note"><strong>Food level DP:</strong> This is a non-standard DP not in the Tuya pet feeder spec — only some devices expose it (e.g. DP 101 or 102). Most devices report the hopper state via <em>motor_state</em> (no_food) and <em>dp_fault</em> (bitfield 1 = no_food) instead.</div>
+    </div>
+
+    <div class="section">
+      <h2>Garage Door — DP reference</h2>
+      <p>Supports four device families. All DPs are auto-detected at pairing time.</p>
+      <table class="help-table">
+        <thead><tr><th>Setting</th><th>Default DP</th><th>Capability / Use</th><th>Device family</th><th>R/W</th></tr></thead>
+        <tbody>
+          <tr><td>dp_door_contact</td> <td>3</td>  <td>garagedoor_closed</td>  <td>WOFEA (bool DP 3) · ZC34T (string DP 1: "open"/"closed") · eWeLink (bool DP 2)</td>       <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_door_action</td>  <td>0</td>  <td>garagedoor_closed</td>  <td>AOSD DP 107 · BoboYun DP 10 — string: opened / closed / opening / closing. 0 = disabled</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_door_control</td> <td>6</td>  <td>Open/close command</td> <td>WOFEA DP 6 (enum open|close) · AOSD/ZC34T DP 101 (string open|close|stop)</td>            <td><span class="help-badge badge-rw">Write</span></td></tr>
+          <tr><td>dp_door_open</td>    <td>0</td>  <td>Open command</td>       <td>BoboYun DP 106 — send true → open. 0 = use dp_door_control instead</td>                    <td><span class="help-badge badge-rw">Write</span></td></tr>
+          <tr><td>dp_door_close</td>   <td>0</td>  <td>Close command</td>      <td>BoboYun DP 107 — send true → close. 0 = use dp_door_control instead</td>                   <td><span class="help-badge badge-rw">Write</span></td></tr>
+          <tr><td>dp_switch</td>       <td>1</td>  <td>Toggle / Stop pulse</td><td>WOFEA DP 1 (relay pulse) · BoboYun DP 103 (stop: send true). 0 = disabled</td>             <td><span class="help-badge badge-rw">Write</span></td></tr>
+          <tr><td>dp_door_state</td>   <td>12</td> <td>Door Alarm</td>         <td>WOFEA DP 12: none|unclosed_time|close_time_alarm · BoboYun DP 141: No|event. 0 = disabled</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_light</td>        <td>0</td>  <td>onoff.light</td>         <td>AOSD DP 105 · BoboYun DP 102 — integrated light switch. 0 = disabled</td>                 <td><span class="help-badge badge-rw">R/W</span></td></tr>
+        </tbody>
+      </table>
+      <div class="note"><strong>door_contact_invert:</strong> Enable if the door shows "open" when it is physically closed. This swaps the boolean/string reading from dp_door_contact or dp_door_action.</div>
+      <div class="note"><strong>WOFEA Stop:</strong> WOFEA DP 6 only accepts "open" and "close" — sending "stop" is silently ignored. Use the <em>Toggle garage door</em> flow action (dp_switch = 1) to interrupt movement instead.</div>
+      <div class="note"><strong>BoboYun DP 141 alarm:</strong> Not auto-detected at pairing (alarm strings don't match WOFEA patterns). Set <em>dp_door_state = 141</em> manually in device settings after pairing.</div>
+      <div class="note"><strong>Auto-detect summary:</strong> WOFEA → contact=3, ctrl=6, switch=1, state=12. ZC34T → contact=1, ctrl=101. AOSD → action=107, ctrl=101, light=105. BoboYun → action=10, open=106, close=107, light=102.</div>
+    </div>
+
+    <div class="section">
       <h2>Troubleshooting</h2>
       <table class="help-table">
         <thead><tr><th>Symptom</th><th>Fix</th></tr></thead>
@@ -284,6 +328,11 @@
           <tr><td>Light brightness or color temp range is wrong</td>   <td>Adjust <em>brightness_max</em> or <em>color_temp_max</em> in device settings (default 1000; some older devices use 255).</td></tr>
           <tr><td>Humidifier water alarm fires on connect</td>         <td>Built-in debounce suppresses transient alarms. If they persist, check the Logs tab for the DP value and timing.</td></tr>
           <tr><td>Spurious water / fault alarm after reconnect</td>    <td>Built-in debounce suppresses these. If they persist, check the Logs tab for the exact DP value and timing.</td></tr>
+          <tr><td>Garage door shows wrong open/closed state</td>        <td>Enable <em>door_contact_invert</em> in device settings to swap the reading. Or set <em>dp_door_contact</em> to the correct DP number using the DP Debug tab.</td></tr>
+          <tr><td>Garage door Stop action has no effect</td>            <td>WOFEA DP 6 ignores "stop" — use <em>Toggle garage door</em> instead (sends a relay pulse on dp_switch). For BoboYun set <em>dp_switch = 103</em>.</td></tr>
+          <tr><td>Garage door open/close action doesn't work (BoboYun)</td> <td>BoboYun uses separate open/close DPs. Set <em>dp_door_open = 106</em> and <em>dp_door_close = 107</em> in device settings.</td></tr>
+          <tr><td>Garage door alarm never fires (BoboYun)</td>           <td>BoboYun alarm DP 141 is not auto-detected. Set <em>dp_door_state = 141</em> manually in device settings after pairing.</td></tr>
+          <tr><td>AOSD light not controllable</td>                       <td>Set <em>dp_light = 105</em> in device settings (auto-detected at pairing, but verify in DP Debug tab).</td></tr>
         </tbody>
       </table>
     </div>
