@@ -4,32 +4,48 @@ const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 
 // ── DP → capability mapping ──────────────────────────────────────────────────
 //
-// WOFEA WF-CS01 / Tuya category ckmkzq (standard garage door controller):
-// DP 1  switch_1          : bool              — relay toggle (momentary pulse, triggers motor)
-// DP 3  doorcontact_state : bool              — magnetic contact (true=closed, false=open)
-// DP 6  door_control_1    : enum open|close   — open/close command
-// DP 12 door_state_1      : enum none|unclosed_time|close_time_alarm — alarm state
+// WOFEA WF-CS01 / Tuya ckmkzq (standard garage door controller):
+// DP 1   switch_1          : bool              — relay toggle (pulse → motor)
+// DP 3   doorcontact_state : bool              — magnetic contact (true=closed)
+// DP 6   door_control_1    : enum open|close   — combined open/close command
+// DP 12  door_state_1      : enum none|unclosed_time|close_time_alarm
 //
-// ZC34T-03-3A swing arm opener (and similar string-state devices):
-// DP 1  state             : string "open"|"closed"        — door state
-//                           → set dp_door_contact = 1
-// DP 101 control          : string "open"|"close"|"stop"  — command
-//                           → set dp_door_control = 101, dp_switch = 0
+// ZC34T-03-3A swing arm opener:
+// DP 1   state             : string "open"|"closed"       — dp_door_contact = 1
+// DP 101 control           : string "open"|"close"|"stop" — dp_door_control = 101
+//
+// AOSD garage door with light:
+// DP 101 control           : string "open"|"close"|"stop" — dp_door_control = 101
+// DP 107 action            : string "opened"|"closed"|"opening"|"closing" — dp_door_action = 107
+// DP 105 light             : bool                         — dp_light = 105
+//
+// BoboYun gatePro opener:
+// DP 10  action            : string "opened"|"closed"|"opening"|"closing" — dp_door_action = 10
+// DP 106 control_open      : bool (send true → open)     — dp_door_open = 106
+// DP 107 control_close     : bool (send true → close)    — dp_door_close = 107
+// DP 103 control (stop)    : bool (send true → stop)     — dp_switch = 103
+// DP 141 alarm             : string event codes          — dp_door_state = 141
+// DP 102 light             : bool                        — dp_light = 102
 //
 // eWeLink-style simple relay:
-// DP 1  dpAction          : bool   — relay trigger  → dp_switch = 1
-// DP 2  dpStatus          : bool   — door state     → dp_door_contact = 2
+// DP 1   dpAction          : bool   — relay trigger  → dp_switch = 1
+// DP 2   dpStatus          : bool   — door state     → dp_door_contact = 2
 
+// DP_PROFILE entries have a `type` field used in _handleDps to select the right handler:
+//   'contact' — bool or string "open"/"closed" → garagedoor_closed
+//   'action'  — string "opened"/"closed"/"opening"/"closing" → garagedoor_closed (final-state triggers only)
+//   'alarm'   — string alarm state → alarm_generic
+//   'switch'  — bool → onoff.light
 const DP_PROFILE = [
-  // Door contact sensor → garagedoor_closed (bool: true = closed, false = open)
-  // Controlled by dp_door_contact setting; invert via door_contact_invert checkbox.
-  { settingKey: 'dp_door_contact', capability: 'garagedoor_closed', settable: false },
-  // Door alarm state (DP 12, optional — 0 = disabled)
-  { settingKey: 'dp_door_state',   capability: 'alarm_generic',     settable: false },
+  { settingKey: 'dp_door_contact', capability: 'garagedoor_closed', type: 'contact', settable: false },
+  { settingKey: 'dp_door_action',  capability: 'garagedoor_closed', type: 'action',  settable: false },
+  { settingKey: 'dp_door_state',   capability: 'alarm_generic',     type: 'alarm',   settable: false },
+  { settingKey: 'dp_light',        capability: 'onoff.light',        type: 'switch',  settable: true  },
 ];
 
 const OPTIONAL_CAPABILITIES = [
   { setting: 'dp_door_state', capability: 'alarm_generic' },
+  { setting: 'dp_light',      capability: 'onoff.light'   },
 ];
 
 class GarageDoorDevice extends BaseTuyaDevice {
@@ -49,15 +65,33 @@ class GarageDoorDevice extends BaseTuyaDevice {
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('garage_door_dp_changed');
 
     // ── Capability listeners ─────────────────────────────────────────────────
-    // garagedoor_closed: true = close, false = open
-    // Fires when the user taps the tile in Homey or a flow action calls setCapabilityValue.
+
+    // garagedoor_closed — sends open/close command via whichever control scheme is configured:
+    //   BoboYun (separate bool DPs):    set(dp_door_open, true) / set(dp_door_close, true)
+    //   WOFEA / AOSD / ZC34T:           set(dp_door_control, 'open'/'close')
     this.registerCapabilityListener('garagedoor_closed', async (value) => {
-      const dp = this.getSetting('dp_door_control');
-      if (!dp || dp === 0) throw new Error('Door control DP not configured');
-      const cmd = value ? 'close' : 'open';
-      this.log(`Sending door command: ${cmd} (DP ${dp})`);
-      await this._conn?.set(dp, cmd);
+      const dpOpen    = this.getSetting('dp_door_open');
+      const dpClose   = this.getSetting('dp_door_close');
+      const dpControl = this.getSetting('dp_door_control');
+
+      if (!value && dpOpen > 0) {
+        this.log(`Sending open command: set(${dpOpen}, true)`);
+        await this._conn?.set(dpOpen, true);
+      } else if (value && dpClose > 0) {
+        this.log(`Sending close command: set(${dpClose}, true)`);
+        await this._conn?.set(dpClose, true);
+      } else if (dpControl > 0) {
+        const cmd = value ? 'close' : 'open';
+        this.log(`Sending door command: ${cmd} (DP ${dpControl})`);
+        await this._conn?.set(dpControl, cmd);
+      } else {
+        throw new Error('No door control DP configured');
+      }
     });
+
+    // onoff.light — added dynamically when dp_light > 0
+    this._lightListenerRegistered = false;
+    this._registerLightListener();
 
     await this._connect();
   }
@@ -75,7 +109,7 @@ class GarageDoorDevice extends BaseTuyaDevice {
 
       const dp = parseInt(dpStr, 10);
 
-      // Fire generic DP-changed trigger for every changed DP (useful for debugging / advanced flows)
+      // Generic DP-changed trigger — fires for every changed DP
       this._triggerDpChanged
         .trigger(this, { dp: dpStr, value: String(value) })
         .catch(() => {});
@@ -92,8 +126,8 @@ class GarageDoorDevice extends BaseTuyaDevice {
 
       if (!this.hasCapability(entry.capability)) continue;
 
-      // ── Door contact sensor → garagedoor_closed ───────────────────────────
-      if (entry.capability === 'garagedoor_closed') {
+      // ── Contact sensor → garagedoor_closed (bool or string "open"/"closed") ─
+      if (entry.type === 'contact') {
         const invert    = settings.door_contact_invert || false;
         const converted = this._contactToBool(value, invert);
         const prev      = this.getCapabilityValue('garagedoor_closed');
@@ -110,22 +144,56 @@ class GarageDoorDevice extends BaseTuyaDevice {
         continue;
       }
 
-      // ── Door alarm state (DP 12) ──────────────────────────────────────────
-      // none → no alarm; unclosed_time / close_time_alarm → alarm active
-      if (entry.capability === 'alarm_generic') {
-        const isAlarm = String(value) !== 'none';
+      // ── Action state → garagedoor_closed ("opened"/"closed"/"opening"/"closing") ─
+      // Used by AOSD (DP 107) and BoboYun (DP 10).
+      // Triggers opened/closed flow cards only on final states (not while moving).
+      if (entry.type === 'action') {
+        const actionStr = String(value).toLowerCase();
+        const converted = this._actionToBool(actionStr);
+        if (converted === null) {
+          this.log(`Unknown action state: ${actionStr}`);
+          continue;
+        }
+        const invert = settings.door_contact_invert || false;
+        const final  = invert ? !converted : converted;
+        const prev   = this.getCapabilityValue('garagedoor_closed');
+        await this.setCapabilityValue('garagedoor_closed', final).catch(() => {});
+        // Fire trigger only on terminal states — not on "opening" / "closing"
+        const isTerminal = actionStr === 'opened' || actionStr === 'closed';
+        if (prev !== final && isTerminal) {
+          if (final) {
+            this._triggerDoorClosed.trigger(this).catch(() => {});
+            this.log('Door closed (action state)');
+          } else {
+            this._triggerDoorOpened.trigger(this).catch(() => {});
+            this.log('Door opened (action state)');
+          }
+        }
+        continue;
+      }
+
+      // ── Alarm state (WOFEA DP 12 / BoboYun DP 141) ───────────────────────
+      // WOFEA values:  none | unclosed_time | close_time_alarm
+      // BoboYun values: "No" = clear; any other string = alarm event
+      if (entry.type === 'alarm') {
+        const valueStr = String(value);
+        const isAlarm  = valueStr !== 'none' && valueStr !== 'No';
         await this.setCapabilityValue('alarm_generic', isAlarm).catch(() => {});
         if (isAlarm) {
-          this._triggerAlarm
-            .trigger(this, { alarm_state: String(value) })
-            .catch(() => {});
-          // Push notification for door-left-open alarm
-          if (String(value) === 'unclosed_time') {
+          this._triggerAlarm.trigger(this, { alarm_state: valueStr }).catch(() => {});
+          // Push notification for "left open" variants (WOFEA and BoboYun)
+          if (valueStr === 'unclosed_time' || valueStr === 'openLongTime') {
             this.homey.notifications.createNotification({
               excerpt: `${this.getName()}: ${this.homey.__('notifications.garageDoorOpen')}`,
             }).catch(() => {});
           }
         }
+        continue;
+      }
+
+      // ── Integrated light (AOSD DP 105 / BoboYun DP 102) ─────────────────
+      if (entry.type === 'switch') {
+        await this.setCapabilityValue('onoff.light', Boolean(value)).catch(() => {});
         continue;
       }
     }
@@ -149,15 +217,26 @@ class GarageDoorDevice extends BaseTuyaDevice {
     }
     if (changedKeys.some((k) => OPTIONAL_CAPABILITIES.map((o) => o.setting).includes(k))) {
       await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
+      // If dp_light was just enabled, register its listener for the first time.
+      this._registerLightListener();
     }
-    // Re-apply the door contact reading immediately when the invert setting changes —
-    // otherwise the displayed state stays wrong until the next DP 3 push from the device.
+    // Re-apply contact/action reading immediately when invert flips
     if (changedKeys.includes('door_contact_invert') && this.hasCapability('garagedoor_closed')) {
-      const dpNum = this.getSetting('dp_door_contact');
-      const rawVal = this._lastDps[String(dpNum)];
-      if (rawVal !== undefined) {
-        const converted = this._contactToBool(rawVal, newSettings.door_contact_invert);
-        await this.setCapabilityValue('garagedoor_closed', converted).catch(() => {});
+      const settings = this.getSettings();
+      // Check both contact and action DPs — use whichever has a recent value
+      for (const key of ['dp_door_contact', 'dp_door_action']) {
+        const dpNum = settings[key];
+        if (!dpNum || dpNum === 0) continue;
+        const rawVal = this._lastDps[String(dpNum)];
+        if (rawVal === undefined) continue;
+        const invert = newSettings.door_contact_invert;
+        const converted = key === 'dp_door_action'
+          ? (() => { const b = this._actionToBool(String(rawVal).toLowerCase()); return b === null ? null : (invert ? !b : b); })()
+          : this._contactToBool(rawVal, invert);
+        if (converted !== null) {
+          await this.setCapabilityValue('garagedoor_closed', converted).catch(() => {});
+          break;
+        }
       }
     }
   }
@@ -165,20 +244,50 @@ class GarageDoorDevice extends BaseTuyaDevice {
   // ── Helpers ──────────────────────────────────────────────────────────────────
 
   /**
-   * Convert a door-contact DP value to a bool (true = door closed).
-   * Handles both device types:
-   *  - WOFEA (bool DP 3):   true / false  →  direct
-   *  - ZC34T (string DP 1): "closed" / "open"  →  string comparison
+   * Register the onoff.light capability listener once.
+   * Called from onInit and from onSettings when dp_light is enabled.
+   */
+  _registerLightListener() {
+    if (this._lightListenerRegistered || !this.hasCapability('onoff.light')) return;
+    this.registerCapabilityListener('onoff.light', async (value) => {
+      const dp = this.getSetting('dp_light');
+      if (!dp || dp === 0) throw new Error('Light DP not configured');
+      await this._conn?.set(dp, Boolean(value));
+    });
+    this._lightListenerRegistered = true;
+    this.log('onoff.light capability listener registered');
+  }
+
+  /**
+   * Convert a contact DP value to garagedoor_closed bool (true = door closed).
+   *  - WOFEA bool DP 3:   true/false  →  direct
+   *  - ZC34T string DP 1: "closed"/"open"  →  string compare
    */
   _contactToBool(value, invert = false) {
-    let isClosed;
-    if (typeof value === 'boolean') {
-      isClosed = value;
-    } else {
-      // String-based state DP (ZC34T DP 1: "open" | "closed" | null)
-      isClosed = String(value).toLowerCase() === 'closed';
-    }
+    const isClosed = typeof value === 'boolean'
+      ? value
+      : String(value).toLowerCase() === 'closed';
     return invert ? !isClosed : isClosed;
+  }
+
+  /**
+   * Convert an action-state string to garagedoor_closed bool.
+   *  "opened" / "opening" / "partial_opening"  →  false (door open)
+   *  "closed" / "closing"                       →  true  (door closed)
+   *  anything else                              →  null  (unknown, skip)
+   */
+  _actionToBool(actionStr) {
+    switch (actionStr) {
+      case 'opened':
+      case 'opening':
+      case 'partial_opening':
+        return false;
+      case 'closed':
+      case 'closing':
+        return true;
+      default:
+        return null;
+    }
   }
 }
 

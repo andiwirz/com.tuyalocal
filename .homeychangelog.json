@@ -1,4 +1,8 @@
 {
+  "1.0.41": {
+    "en": "Garage Door: AOSD (with light) and BoboYun gatePro support. Action state DP (opened/closed/opening/closing), separate open/close bool DPs for BoboYun, integrated light capability. Auto-detect covers all four families.",
+    "de": "Garagentor: AOSD (mit Licht) und BoboYun gatePro. Bewegungsstatus-DP, separate Öffnen/Schließen-Bool-DPs für BoboYun, Licht-Capability. Auto-Erkennung für alle vier Geräteklassen."
+  },
   "1.0.40": {
     "en": "Garage Door: ZC34T / swing-arm opener compatibility — string state DPs (DP 1: open/closed) now supported alongside WOFEA bool contact sensor. Added 'Stop garage door' flow action. Auto-detect identifies ZC34T vs WOFEA patterns at pairing time.",
     "de": "Garagentor: ZC34T / Schwenkarm-Kompatibilität — String-Zustands-DPs (DP 1: open/closed) neben WOFEA Bool-Kontaktsensor unterstützt. Neue Flow-Aktion 'Garagentor stoppen'. Auto-Erkennung unterscheidet ZC34T- und WOFEA-Muster beim Einrichten."

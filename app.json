@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.40",
+  "version": "1.0.41",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -18,6 +18,10 @@
     "appliances"
   ],
   "changelog": {
+    "1.0.41": {
+      "en": "Garage Door: AOSD (garage door with light) and BoboYun gatePro support. New DPs: action state (opened/closed/opening/closing), separate open/close bool DPs, integrated light. Auto-detect covers all four device families at pairing time.",
+      "de": "Garagentor: AOSD (Garagentor mit Licht) und BoboYun gatePro Unterstützung. Neue DPs: Bewegungsstatus (opened/closed/opening/closing), separate Öffnen/Schließen-Bool-DPs, integriertes Licht. Auto-Erkennung unterstützt alle vier Geräteklassen beim Einrichten."
+    },
     "1.0.40": {
       "en": "Garage Door: ZC34T / swing-arm opener compatibility — string-based door state (DP 1: 'open'/'closed') is now handled alongside the WOFEA bool contact sensor. Added 'Stop garage door' flow action for devices that support a stop command (ZC34T DP 101). Auto-detect correctly identifies ZC34T vs WOFEA DP patterns at pairing time.",
       "de": "Garagentor: ZC34T / Schwenkarm-Kompatibilität — String-basierter Türstatus (DP 1: 'open'/'closed') wird jetzt zusätzlich zum WOFEA Bool-Kontaktsensor unterstützt. Neue Flow-Aktion 'Garagentor stoppen' für Geräte mit Stop-Befehl (ZC34T DP 101). Auto-Erkennung identifiziert ZC34T- vs. WOFEA-DP-Muster beim Einrichten korrekt."
@@ -8615,8 +8619,60 @@
               },
               "value": 12,
               "hint": {
-                "en": "DP for door alarm state (DP 12, enum). Values: none = no alarm, unclosed_time = door left open too long, close_time_alarm = door failed to close. Set to 0 to disable.",
-                "de": "DP für den Toralarm-Status (DP 12, Enum). Werte: none = kein Alarm, unclosed_time = Tor zu lange offen, close_time_alarm = Tor konnte nicht schließen. 0 = deaktiviert."
+                "en": "DP for door alarm state (DP 12 WOFEA / DP 141 BoboYun). Values: none = no alarm, unclosed_time = door left open, close_time_alarm = failed to close. BoboYun: 'No' = clear, event strings = alarm. Set to 0 to disable.",
+                "de": "DP für Toralarm (DP 12 WOFEA / DP 141 BoboYun). Werte: none = kein Alarm, unclosed_time = zu lange offen, close_time_alarm = Schließfehler. BoboYun: 'No' = ok, Event-Strings = Alarm. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_door_action",
+              "type": "number",
+              "label": {
+                "en": "Action State DP",
+                "de": "Bewegungsstatus DP"
+              },
+              "value": 0,
+              "hint": {
+                "en": "DP reporting movement state (opened / closed / opening / closing). AOSD DP 107, BoboYun DP 10. Set to 0 to disable (use dp_door_contact instead).",
+                "de": "DP für Bewegungsstatus (opened / closed / opening / closing). AOSD DP 107, BoboYun DP 10. 0 = deaktiviert (stattdessen dp_door_contact verwenden)."
+              }
+            },
+            {
+              "id": "dp_door_open",
+              "type": "number",
+              "label": {
+                "en": "Open Command DP",
+                "de": "Öffnen-Befehl DP"
+              },
+              "value": 0,
+              "hint": {
+                "en": "Separate bool DP for open command (BoboYun DP 106: set true → open). Set to 0 to use dp_door_control (string 'open') instead.",
+                "de": "Separater Bool-DP für Öffnen-Befehl (BoboYun DP 106: true senden → öffnen). 0 = dp_door_control (String 'open') verwenden."
+              }
+            },
+            {
+              "id": "dp_door_close",
+              "type": "number",
+              "label": {
+                "en": "Close Command DP",
+                "de": "Schließen-Befehl DP"
+              },
+              "value": 0,
+              "hint": {
+                "en": "Separate bool DP for close command (BoboYun DP 107: set true → close). Set to 0 to use dp_door_control (string 'close') instead.",
+                "de": "Separater Bool-DP für Schließen-Befehl (BoboYun DP 107: true senden → schließen). 0 = dp_door_control (String 'close') verwenden."
+              }
+            },
+            {
+              "id": "dp_light",
+              "type": "number",
+              "label": {
+                "en": "Integrated Light DP",
+                "de": "Integriertes Licht DP"
+              },
+              "value": 0,
+              "hint": {
+                "en": "DP for an integrated light switch (AOSD DP 105, BoboYun DP 102, bool). Adds an on/off light capability to the device. Set to 0 to disable.",
+                "de": "DP für integrierten Lichtschalter (AOSD DP 105, BoboYun DP 102, bool). Fügt eine Ein/Aus-Licht-Capability hinzu. 0 = deaktiviert."
               }
             }
           ]

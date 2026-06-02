@@ -146,39 +146,64 @@ class GarageDoorDriver extends Homey.Driver {
       .map(([k, v]) => ({ dp: parseInt(k), val: String(v).toLowerCase() }));
 
     // ── Relay switch (DP 1, WOFEA only) ──────────────────────────────────────
-    // DP 1 is the relay on WOFEA (bool). On ZC34T, DP 1 is a string state —
-    // do NOT treat it as a switch in that case.
+    // WOFEA: DP 1 is bool relay. ZC34T / BoboYun: DP 1 is string — NOT a relay.
     const dp_switch = (1 in dpsMap && typeof dpsMap[1] === 'boolean') ? 1 : 0;
 
+    // ── Action state (AOSD DP 107, BoboYun DP 10) ────────────────────────────
+    // String DP reporting movement / position state.
+    const ACTION_STATES = new Set(['opened', 'closed', 'opening', 'closing', 'partial_opening']);
+    const actionEntry  = stringDps.find((d) => ACTION_STATES.has(d.val));
+    const dp_door_action = actionEntry?.dp ?? 0;
+
     // ── Door contact sensor ────────────────────────────────────────────────────
-    // Priority 1: DP 3 bool  — WOFEA (doorcontact_state)
-    // Priority 2: any other bool DP, excluding the relay switch
-    // Priority 3: first string DP whose value is "open" or "closed" — ZC34T (DP 1)
-    // Fallback:   3  — safe WOFEA default if device didn't respond at pairing time
+    // Priority 1: DP 3 bool               — WOFEA
+    // Priority 2: any other non-switch bool DP
+    // Priority 3: string DP "open"/"closed" that is NOT the action DP
+    //             (ZC34T DP 1 = "open"/"closed"; BoboYun DP 10 = "opened"/"closed" → action)
+    // Fallback:   3
     const CONTACT_STRINGS = new Set(['open', 'closed']);
-    const stringContactEntry = stringDps.find((d) => CONTACT_STRINGS.has(d.val));
+    const stringContactEntry = stringDps.find((d) =>
+      CONTACT_STRINGS.has(d.val) && d.dp !== dp_door_action
+    );
     const dp_door_contact =
       (3 in dpsMap && typeof dpsMap[3] === 'boolean')   ? 3
       : (boolDps.find((d) => d !== dp_switch)           ?? null)
       ?? (stringContactEntry?.dp                        ?? 3);
 
-    // ── Door control command ────────────────────────────────────────────────────
-    // Find a string DP whose current value is "open", "close", or "stop",
-    // but NOT the contact DP (avoids confusing ZC34T's state DP 1 for the control DP 101).
-    // Covers WOFEA DP 6 (enum "open") and ZC34T DP 101 (string "open"/"close"/"stop").
+    // ── Door control command ──────────────────────────────────────────────────
+    // String DP with open/close/stop value, excluding contact and action DPs.
+    // WOFEA DP 6, AOSD DP 101, ZC34T DP 101.
     const DOOR_CMDS = new Set(['open', 'close', 'stop']);
     const ctrlEntry = stringDps.find((d) =>
-      DOOR_CMDS.has(d.val) && d.dp !== dp_door_contact
+      DOOR_CMDS.has(d.val) && d.dp !== dp_door_contact && d.dp !== dp_door_action
     );
     const dp_door_control = ctrlEntry?.dp ?? (6 in dpsMap ? 6 : 0);
 
-    // ── Door alarm state (DP 12, WOFEA) ────────────────────────────────────────
+    // ── Separate open/close DPs (BoboYun DP 106/107) ─────────────────────────
+    // Only bool DPs match — AOSD DP 107 is a string, so no conflict.
+    const dp_door_open  = (106 in dpsMap && typeof dpsMap[106] === 'boolean') ? 106 : 0;
+    const dp_door_close = (107 in dpsMap && typeof dpsMap[107] === 'boolean') ? 107 : 0;
+
+    // ── Door alarm state ──────────────────────────────────────────────────────
+    // WOFEA DP 12. BoboYun DP 141 not auto-detected (users set dp_door_state = 141).
     const ALARM_STATES = new Set(['unclosed_time', 'close_time_alarm', 'none']);
-    const alarmEntry = stringDps.find((d) => ALARM_STATES.has(d.val));
+    const alarmEntry   = stringDps.find((d) => ALARM_STATES.has(d.val));
     const dp_door_state = alarmEntry?.dp ?? (12 in dpsMap ? 12 : 0);
 
-    this.log('Detected DPs:', { dp_door_contact, dp_door_control, dp_switch, dp_door_state });
-    return { dp_door_contact, dp_door_control, dp_switch, dp_door_state };
+    // ── Integrated light (AOSD DP 105, BoboYun DP 102) ───────────────────────
+    // First bool DP > 100 not already assigned.
+    const assigned = new Set(
+      [dp_door_contact, dp_switch, dp_door_open, dp_door_close].filter((d) => d > 0)
+    );
+    const lightCandidate = boolDps.find((d) => d > 100 && !assigned.has(d));
+    const dp_light = lightCandidate ?? 0;
+
+    const detected = {
+      dp_door_contact, dp_door_control, dp_switch, dp_door_state,
+      dp_door_action, dp_door_open, dp_door_close, dp_light,
+    };
+    this.log('Detected DPs:', detected);
+    return detected;
   }
 
   async onPairListDevices() { return []; }
