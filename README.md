@@ -1,8 +1,8 @@
 # Tuya Local — Homey App
 
-**Version 1.0.41** · Local control of Tuya smart devices — no cloud, no internet dependency.
+**Version 1.0.46** · Local control of Tuya smart devices — no cloud, no internet dependency.
 
-All communication happens over your local network via the Tuya LAN protocol. Ten built-in drivers cover the most common device types; a fully generic driver handles anything else.
+All communication happens over your local network via the Tuya LAN protocol. Eleven built-in drivers cover the most common device types; a fully generic driver handles anything else.
 
 ---
 
@@ -17,8 +17,9 @@ All communication happens over your local network via the Tuya LAN protocol. Ten
 | [Humidifier](#humidifier-1) | Humidifiers, aroma diffusers | Humidifier |
 | [Heater](#heater-1) | Panel heaters, convectors, oil radiators | Heater |
 | [Light](#light-1) | Bulbs, LED strips, ceiling lights | Light |
-| [Pet Feeder](#pet-feeder-1) | Automatic pet feeders (e.g. WOFEA, Mypin, PETKIT) | Other |
+| [Pet Feeder](#pet-feeder-1) | Automatic pet feeders (e.g. WOFEA, Mypin, PETKIT) | Pet Feeder |
 | [Garage Door](#garage-door-1) | Garage door openers (WOFEA, AOSD, ZC34T, BoboYun gatePro) | Garage Door |
+| [Heat Pump](#heat-pump-1) | Pool / air-water heat pumps (Phalén, Fairland, Brustec, BWT, Waterco, …) | Heat Pump |
 | [Generic Tuya Device](#generic-tuya-device-1) | Any Tuya device not covered above | Other |
 
 ---
@@ -387,6 +388,54 @@ In **white mode**, the brightness (`dim`) slider writes directly to `dp_brightne
 
 ---
 
+### Heat Pump
+
+Universal driver for pool / air-water heat pumps. Auto-detects all major DP layouts at pairing time.
+
+| Device family | On/Off | Target temp | Current temp | Mode |
+|---|---|---|---|---|
+| Brustec / BWT / CBC / Madimack / Mountfield / Varpoolfaye | DP 1 | DP 2 | DP 3 | DP 4/5 |
+| Phalén Calidi XP / Fairland InverterPlus | DP 1 | DP 106 | DP 102 | DP 105 |
+| Waterco Electroheat ECO-VS | DP 101 | DP 104 | — | — |
+| Apricus / Powerworld water HP | DP 1 | DP 2 | DP 3 | DP 4 |
+| Arcelik / Axen combo (DHW + space heating) | DP 1 | DP 103–106 | — | DP 109 |
+
+#### Connection
+
+Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polling Interval, Offline Grace Period).
+
+#### Data Points
+
+| Setting | Icon | Capability | Type | Default DP | Optional |
+|---|:---:|---|---|---|---|
+| `dp_onoff` | | `onoff` | boolean | 1 | — |
+| `dp_target_temp` | | `target_temperature` | number | 2 | — |
+| `dp_current_temp` | | `measure_temperature` | number | 3 | ✓ `0` = disabled |
+| `dp_mode` | <img src="assets/capabilities/heat_pump_mode.svg" height="24"> | `heat_pump_mode` | enum | 0 | ✓ `0` = disabled |
+| `dp_preset` | <img src="assets/capabilities/heat_pump_preset.svg" height="24"> | `heat_pump_preset` | enum or bool | 0 | ✓ `0` = disabled |
+| `dp_fault` | | `alarm_generic` | bitfield / bool | 0 | ✓ `0` = disabled |
+| `dp_power_level` | <img src="assets/capabilities/power_level.svg" height="24"> | `power_level` | number | 0 | ✓ `0` = disabled |
+
+#### Temperature Settings
+
+| Setting | Description | Default |
+|---|---|---|
+| `temp_divisor` | Divide raw DP value to get °C — use `10` if device sends e.g. `350` for 35 °C | 1 (auto-detected) |
+| `temp_min` | Minimum target temperature (°C) | 12 |
+| `temp_max` | Maximum target temperature (°C) | 45 |
+| `temp_step` | Step size for the temperature slider (°C) | 1 |
+
+#### Mode & Preset Values
+
+| Setting | Description | Default |
+|---|---|---|
+| `mode_values` | Comma-separated mode strings matching your device | `heat,cool,auto` |
+| `preset_values` | Comma-separated preset names — for bool DPs the first value = false, second = true | `sleep,comfort,boost` |
+
+Check the **Raw Data** panel in app settings to find the exact strings your device sends. A bool preset DP (e.g. Phalén DP 117: `false` = sleep, `true` = boost) is handled automatically — set `preset_values = sleep,boost`.
+
+---
+
 ### Generic Tuya Device
 
 Maps any Tuya DP to any Homey capability. The mapping is built visually during pairing — no manual JSON editing required.
@@ -511,6 +560,7 @@ All DPs are auto-detected at pairing time. For AOSD and BoboYun, `dp_door_action
 | Setting | Description | Default |
 |---|---|---|
 | `door_contact_invert` | Swap open/closed reading from the contact sensor — enable if the door shows open when closed | `false` |
+| `use_relay_toggle` | Enable for single-relay openers (e.g. WOFEA): tile button and Open/Close flow actions send a relay pulse on `dp_switch` instead of an open/close command. The door status continues to be read from the contact sensor. | `false` |
 
 #### Control Logic
 
@@ -822,6 +872,37 @@ All DPs are auto-detected at pairing time. For AOSD and BoboYun, `dp_door_action
 
 ---
 
+### Heat Pump
+
+#### Triggers
+
+| Trigger | Flow tokens |
+|---|---|
+| Heat pump connected | — |
+| Heat pump disconnected | — |
+| Heat pump mode changed | `mode` (string), `prev_mode` (string) |
+| Fault alarm triggered | `fault_code` (string) |
+| Heat pump data point changed | `dp` (string), `value` (string) |
+
+#### Conditions
+
+| Condition |
+|---|
+| Heat pump is / is not on |
+| Fault alarm is / is not active |
+| Heat pump is / is not connected |
+
+#### Actions
+
+| Action | Notes |
+|---|---|
+| Set operating mode | Values from `mode_values` setting — autocomplete in flow editor |
+| Set preset | Values from `preset_values` setting — autocomplete in flow editor |
+| Force heat pump reconnect | Drops and re-establishes the TCP connection |
+| Refresh heat pump values | Triggers an immediate GET request |
+
+---
+
 ### Garage Door
 
 #### Triggers
@@ -866,9 +947,11 @@ All DPs are auto-detected at pairing time. For AOSD and BoboYun, `dp_door_action
 | Fault detected | Smart Plug | `alarm_generic` transitions `false` → `true` |
 | Fault detected | Air Conditioner | `alarm_generic` transitions `false` → `true` (debounced, 30 s grace on reconnect) |
 | Fault detected | Heater | `alarm_generic` transitions `false` → `true` (debounced, 30 s grace on reconnect) |
+| Fault detected | Heat Pump | `alarm_generic` transitions `false` → `true` (debounced, 30 s grace on reconnect) |
 | Food level low / empty | Pet Feeder | `food_status` transitions to any value in `food_empty_values` (default: `low,less,empty,lack`) |
 | Motor reports no food | Pet Feeder | `motor_state` = `no_food` — hopper empty during feeding attempt |
-| Garage door left open | Garage Door | Alarm state `unclosed_time` (WOFEA) or `openLongTime` (BoboYun) |
+| Garage door left open | Garage Door | Alarm state `unclosed_time` (WOFEA) or `openLongTime` (BoboYun) — uses "left open" message |
+| Garage door alarm | Garage Door | Any other alarm state (e.g. `close_time_alarm`, `closeLongTime`) — uses generic fault message |
 
 ---
 
@@ -920,7 +1003,8 @@ Full unprocessed payload for the selected device:
 | Picker still shows old options after saving | Homey caches capability options | Restart the Tuya Local app |
 | Light color mode not working | Wrong `color_mode_white_val` / `color_mode_color_val` | Check Raw Data panel for actual strings sent by device (e.g. `white`, `colour`, `color`) |
 | Humidifier water alarm fires on connect | Device sends transient alarm on reconnect | Built-in debounce suppresses these; if they persist increase the alarm guard window |
-| Spurious fault alarm after reconnect | Reconnect artifact | Built-in 30 s grace period on reconnect suppresses these |
+| Spurious fault alarm after reconnect | Reconnect artifact | Built-in 30 s grace period on reconnect suppresses these (AC, Heater, Heat Pump) |
+| Heat pump mode/preset picker does nothing | DP was enabled after initial pairing — listener not registered | Restart the Tuya Local app; the listener is re-registered on next `onInit` |
 | Pet feeder sends 3–4 "disconnected" notifications per night | Tuya firmware briefly drops TCP connection at timed intervals | Increase **Offline Grace Period** in device settings (default 60 s already handles most cases; try 120 s if it still fires) |
 | Generic device shows raw key as label | Missing locale key | Set labels via the `label` field in the dp_config mapping |
 
