@@ -1,4 +1,8 @@
 {
+  "1.0.44": {
+    "en": "Garage Door: '1-button relay toggle' setting — enable for WOFEA and single-relay openers so the tile button sends a relay pulse instead of an open/close command.",
+    "de": "Garagentor: '1-Tasten Relais-Toggle'-Einstellung — für WOFEA und Einkanal-Antriebe aktivieren damit die Kachel einen Relaisimpuls sendet."
+  },
   "1.0.43": {
     "en": "New Heat Pump driver: universal pool / air-water heat pump support. Phalén Calidi XP, Fairland InverterPlus, Brustec, BWT, CBC, Madimack, Mountfield, Waterco, Aquastrong, Arcelik/Axen, Apricus, ITS 45HD and more. Auto-detects all major DP layouts at pairing time.",
     "de": "Neuer Wärmepumpen-Treiber: Pool- und Luft-Wasser-Wärmepumpen. Phalén Calidi XP, Fairland InverterPlus, Brustec, BWT, CBC, Madimack, Mountfield, Waterco, Aquastrong, Arcelik/Axen, Apricus, ITS 45HD u.v.m. Auto-Erkennung aller gängigen DP-Layouts."

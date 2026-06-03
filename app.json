@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.43",
+  "version": "1.0.44",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -18,6 +18,10 @@
     "appliances"
   ],
   "changelog": {
+    "1.0.44": {
+      "en": "Garage Door: added '1-button relay toggle' setting. Enable this for WOFEA and other single-relay openers — the tile button and Open/Close flow actions will send a relay pulse (dp_switch) instead of the open/close command. The door status continues to be read from the contact sensor.",
+      "de": "Garagentor: '1-Tasten Relais-Toggle'-Einstellung hinzugefügt. Für WOFEA und andere Einkanal-Antriebe aktivieren — Kachel-Taste und Auf/Zu-Flow-Aktionen senden einen Relaisimpuls (dp_switch) statt eines Befehls. Türstatus wird weiterhin vom Kontaktsensor gelesen."
+    },
     "1.0.43": {
       "en": "New Heat Pump driver: universal pool / air-water heat pump support covering Phalén Calidi XP, Fairland InverterPlus, Brustec BR80, BWT FI45, CBC Pool BP, Madimack Elite V3, Mountfield Azuro, Waterco Electroheat ECO-VS, Aquastrong HEX, Arcelik/Axen, Apricus, ITS 45HD and more. On/off, target/current temperature, mode picker, preset picker, fault alarm, inverter power level — all configurable via DP settings. Auto-detection covers all major DP layouts at pairing time.",
       "de": "Neuer Wärmepumpen-Treiber: universelle Unterstützung für Pool- und Luft-Wasser-Wärmepumpen (Phalén Calidi XP, Fairland InverterPlus, Brustec BR80, BWT FI45, CBC Pool BP, Madimack Elite V3, Mountfield Azuro, Waterco Electroheat ECO-VS, Aquastrong HEX, Arcelik/Axen, Apricus, ITS 45HD u.v.m.). Ein/Aus, Soll-/Ist-Temperatur, Modus-Picker, Voreinstellungs-Picker, Fehleralarm, Leistungsstufe — alles über DP-Einstellungen konfigurierbar. Auto-Erkennung aller gängigen DP-Layouts beim Einrichten."
@@ -8837,6 +8841,19 @@
             "de": "Gerät"
           },
           "children": [
+            {
+              "id": "use_relay_toggle",
+              "type": "checkbox",
+              "label": {
+                "en": "1-button relay toggle",
+                "de": "1-Tasten Relais-Toggle"
+              },
+              "value": false,
+              "hint": {
+                "en": "Enable for garage doors that use a single relay pulse to cycle states (open → stop → close → stop). The tile button and Open/Close flow actions will send a relay pulse on dp_switch instead of the open/close command. The door status is still read from the contact sensor. Recommended for WOFEA and most single-relay openers.",
+                "de": "Aktivieren für Garagentore die einen einzigen Relaisimpuls zum Zyklusschalten verwenden (auf → stop → zu → stop). Die Kachel-Taste und Auf/Zu-Flow-Aktionen senden einen Relaisimpuls auf dp_switch statt eines Befehls. Türstatus wird weiterhin vom Kontaktsensor gelesen. Empfohlen für WOFEA und die meisten Einkanal-Antriebe."
+              }
+            },
             {
               "id": "door_contact_invert",
               "type": "checkbox",

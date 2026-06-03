@@ -66,15 +66,25 @@ class GarageDoorDevice extends BaseTuyaDevice {
 
     // ── Capability listeners ─────────────────────────────────────────────────
 
-    // garagedoor_closed — sends open/close command via whichever control scheme is configured:
-    //   BoboYun (separate bool DPs):    set(dp_door_open, true) / set(dp_door_close, true)
-    //   WOFEA / AOSD / ZC34T:           set(dp_door_control, 'open'/'close')
+    // garagedoor_closed — sends command via whichever control scheme is configured.
+    // Control priority:
+    //  1. use_relay_toggle = true  → relay pulse on dp_switch (1-button cycle, e.g. WOFEA)
+    //  2. dp_door_open / dp_door_close  → separate bool DPs (BoboYun)
+    //  3. dp_door_control  → combined string "open"/"close" (AOSD / ZC34T)
+    //  4. dp_switch fallback  → relay pulse when no control DP is set
     this.registerCapabilityListener('garagedoor_closed', async (value) => {
       const dpOpen    = this.getSetting('dp_door_open');
       const dpClose   = this.getSetting('dp_door_close');
       const dpControl = this.getSetting('dp_door_control');
+      const dpSwitch  = this.getSetting('dp_switch');
+      const useToggle = this.getSetting('use_relay_toggle') || false;
 
-      if (!value && dpOpen > 0) {
+      if (useToggle && dpSwitch > 0) {
+        // 1-button cycle door: pulse the relay regardless of target state.
+        // Physical cycle: open → stop → close → stop → open …
+        this.log(`Relay pulse (toggle mode): set(${dpSwitch}, true)`);
+        await this._conn?.set(dpSwitch, true);
+      } else if (!value && dpOpen > 0) {
         this.log(`Sending open command: set(${dpOpen}, true)`);
         await this._conn?.set(dpOpen, true);
       } else if (value && dpClose > 0) {
@@ -84,8 +94,12 @@ class GarageDoorDevice extends BaseTuyaDevice {
         const cmd = value ? 'close' : 'open';
         this.log(`Sending door command: ${cmd} (DP ${dpControl})`);
         await this._conn?.set(dpControl, cmd);
+      } else if (dpSwitch > 0) {
+        // Fallback: no control DP configured — pulse relay.
+        this.log(`Relay pulse (fallback): set(${dpSwitch}, true)`);
+        await this._conn?.set(dpSwitch, true);
       } else {
-        throw new Error('No door control DP configured');
+        throw new Error('No door control DP configured (set dp_door_control or dp_switch)');
       }
     });
 
