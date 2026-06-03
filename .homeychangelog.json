@@ -1,4 +1,8 @@
 {
+  "1.0.43": {
+    "en": "New Heat Pump driver: universal pool / air-water heat pump support. Phalén Calidi XP, Fairland InverterPlus, Brustec, BWT, CBC, Madimack, Mountfield, Waterco, Aquastrong, Arcelik/Axen, Apricus, ITS 45HD and more. Auto-detects all major DP layouts at pairing time.",
+    "de": "Neuer Wärmepumpen-Treiber: Pool- und Luft-Wasser-Wärmepumpen. Phalén Calidi XP, Fairland InverterPlus, Brustec, BWT, CBC, Madimack, Mountfield, Waterco, Aquastrong, Arcelik/Axen, Apricus, ITS 45HD u.v.m. Auto-Erkennung aller gängigen DP-Layouts."
+  },
   "1.0.42": {
     "en": "Garage Door: fixed timeout when controlling WOFEA — dp_door_control was auto-detected as 0 (instead of 6) when DP 6 was absent from the initial device response. DP 6 is only included when recently used; fallback now always defaults to 6.",
     "de": "Garagentor: Timeout beim Steuern von WOFEA behoben — dp_door_control wurde als 0 erkannt (statt 6) wenn DP 6 in der initialen Geräteantwort fehlte. DP 6 wird nur bei kürzlicher Nutzung übermittelt; Fallback jetzt immer 6."

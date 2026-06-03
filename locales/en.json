@@ -10,7 +10,8 @@
       "heater":          "Heater",
       "light":           "Light",
       "pet_feeder":      "Pet Feeder",
-      "garage_door":     "Garage Door"
+      "garage_door":     "Garage Door",
+      "heat_pump":       "Heat Pump"
     }
   },
   "notifications": {
@@ -111,6 +112,15 @@
         "doorControl":   "Open/Close Command  (DP 6, enum open|close)",
         "relaySwitch":   "Relay Switch  (DP 1, toggle — 0 = disabled)",
         "doorState":     "Door Alarm State  (DP 12, 0 = disabled)"
+      },
+      "heat_pump": {
+        "onoff":       "On / Off",
+        "targetTemp":  "Target Temperature",
+        "currentTemp": "Current Temperature  (0 = disabled)",
+        "mode":        "Mode  (0 = disabled)",
+        "preset":      "Preset  (0 = disabled)",
+        "fault":       "Fault Alarm  (0 = disabled)",
+        "powerLevel":  "Power Level %  (0 = disabled)"
       }
     }
   },

@@ -10,7 +10,8 @@
       "heater":          "Heizgerät",
       "light":           "Licht",
       "pet_feeder":      "Futterautomat",
-      "garage_door":     "Garagentor"
+      "garage_door":     "Garagentor",
+      "heat_pump":       "Wärmepumpe"
     }
   },
   "notifications": {
@@ -111,6 +112,15 @@
         "doorControl":   "Auf/Zu-Befehl  (DP 6, Enum open|close)",
         "relaySwitch":   "Relais-Schalter  (DP 1, Toggle — 0 = deaktiviert)",
         "doorState":     "Toralarm-Status  (DP 12, 0 = deaktiviert)"
+      },
+      "heat_pump": {
+        "onoff":       "Ein / Aus",
+        "targetTemp":  "Zieltemperatur",
+        "currentTemp": "Aktuelle Temperatur  (0 = deaktiviert)",
+        "mode":        "Modus  (0 = deaktiviert)",
+        "preset":      "Voreinstellung  (0 = deaktiviert)",
+        "fault":       "Fehleralarm  (0 = deaktiviert)",
+        "powerLevel":  "Leistungsstufe %  (0 = deaktiviert)"
       }
     }
   },
