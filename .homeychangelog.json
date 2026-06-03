@@ -1,4 +1,8 @@
 {
+  "1.0.45": {
+    "en": "Device class corrections: Heat Pump → heatpump, Pet Feeder → petfeeder. Heat Pump icon updated.",
+    "de": "Geräteklassen korrigiert: Wärmepumpe → heatpump, Futterautomat → petfeeder. Wärmepumpen-Icon aktualisiert."
+  },
   "1.0.44": {
     "en": "Garage Door: '1-button relay toggle' setting — enable for WOFEA and single-relay openers so the tile button sends a relay pulse instead of an open/close command.",
     "de": "Garagentor: '1-Tasten Relais-Toggle'-Einstellung — für WOFEA und Einkanal-Antriebe aktivieren damit die Kachel einen Relaisimpuls sendet."

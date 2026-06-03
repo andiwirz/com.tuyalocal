@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.44",
+  "version": "1.0.45",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -18,6 +18,10 @@
     "appliances"
   ],
   "changelog": {
+    "1.0.45": {
+      "en": "Device class corrections: Heat Pump changed to heatpump, Pet Feeder changed to petfeeder — both now use the correct dedicated Homey SDK device classes. Heat Pump driver icon updated.",
+      "de": "Geräteklassen korrigiert: Wärmepumpe auf heatpump, Futterautomat auf petfeeder — beide verwenden jetzt die korrekten dedizierten Homey-SDK-Geräteklassen. Wärmepumpen-Icon aktualisiert."
+    },
     "1.0.44": {
       "en": "Garage Door: added '1-button relay toggle' setting. Enable this for WOFEA and other single-relay openers — the tile button and Open/Close flow actions will send a relay pulse (dp_switch) instead of the open/close command. The door status continues to be read from the contact sensor.",
       "de": "Garagentor: '1-Tasten Relais-Toggle'-Einstellung hinzugefügt. Für WOFEA und andere Einkanal-Antriebe aktivieren — Kachel-Taste und Auf/Zu-Flow-Aktionen senden einen Relaisimpuls (dp_switch) statt eines Befehls. Türstatus wird weiterhin vom Kontaktsensor gelesen."
@@ -1155,18 +1159,90 @@
         "de": "Portionen"
       },
       "values": [
-        { "id": "1",  "title": { "en": "1",  "de": "1"  } },
-        { "id": "2",  "title": { "en": "2",  "de": "2"  } },
-        { "id": "3",  "title": { "en": "3",  "de": "3"  } },
-        { "id": "4",  "title": { "en": "4",  "de": "4"  } },
-        { "id": "5",  "title": { "en": "5",  "de": "5"  } },
-        { "id": "6",  "title": { "en": "6",  "de": "6"  } },
-        { "id": "7",  "title": { "en": "7",  "de": "7"  } },
-        { "id": "8",  "title": { "en": "8",  "de": "8"  } },
-        { "id": "9",  "title": { "en": "9",  "de": "9"  } },
-        { "id": "10", "title": { "en": "10", "de": "10" } },
-        { "id": "11", "title": { "en": "11", "de": "11" } },
-        { "id": "12", "title": { "en": "12", "de": "12" } }
+        {
+          "id": "1",
+          "title": {
+            "en": "1",
+            "de": "1"
+          }
+        },
+        {
+          "id": "2",
+          "title": {
+            "en": "2",
+            "de": "2"
+          }
+        },
+        {
+          "id": "3",
+          "title": {
+            "en": "3",
+            "de": "3"
+          }
+        },
+        {
+          "id": "4",
+          "title": {
+            "en": "4",
+            "de": "4"
+          }
+        },
+        {
+          "id": "5",
+          "title": {
+            "en": "5",
+            "de": "5"
+          }
+        },
+        {
+          "id": "6",
+          "title": {
+            "en": "6",
+            "de": "6"
+          }
+        },
+        {
+          "id": "7",
+          "title": {
+            "en": "7",
+            "de": "7"
+          }
+        },
+        {
+          "id": "8",
+          "title": {
+            "en": "8",
+            "de": "8"
+          }
+        },
+        {
+          "id": "9",
+          "title": {
+            "en": "9",
+            "de": "9"
+          }
+        },
+        {
+          "id": "10",
+          "title": {
+            "en": "10",
+            "de": "10"
+          }
+        },
+        {
+          "id": "11",
+          "title": {
+            "en": "11",
+            "de": "11"
+          }
+        },
+        {
+          "id": "12",
+          "title": {
+            "en": "12",
+            "de": "12"
+          }
+        }
       ],
       "getable": true,
       "setable": true,
@@ -1369,10 +1445,34 @@
         "de": "Akkustatus"
       },
       "values": [
-        { "id": "high",   "title": { "en": "High",   "de": "Hoch"      } },
-        { "id": "medium", "title": { "en": "Medium",  "de": "Mittel"    } },
-        { "id": "low",    "title": { "en": "Low",     "de": "Niedrig"   } },
-        { "id": "empty",  "title": { "en": "Empty",   "de": "Leer"      } }
+        {
+          "id": "high",
+          "title": {
+            "en": "High",
+            "de": "Hoch"
+          }
+        },
+        {
+          "id": "medium",
+          "title": {
+            "en": "Medium",
+            "de": "Mittel"
+          }
+        },
+        {
+          "id": "low",
+          "title": {
+            "en": "Low",
+            "de": "Niedrig"
+          }
+        },
+        {
+          "id": "empty",
+          "title": {
+            "en": "Empty",
+            "de": "Leer"
+          }
+        }
       ],
       "getable": true,
       "setable": false,
@@ -1388,9 +1488,27 @@
         "de": "Heizbetrieb"
       },
       "values": [
-        { "id": "heat", "title": { "en": "Heat", "de": "Heizen" } },
-        { "id": "cool", "title": { "en": "Cool", "de": "Kühlen" } },
-        { "id": "auto", "title": { "en": "Auto", "de": "Auto"   } }
+        {
+          "id": "heat",
+          "title": {
+            "en": "Heat",
+            "de": "Heizen"
+          }
+        },
+        {
+          "id": "cool",
+          "title": {
+            "en": "Cool",
+            "de": "Kühlen"
+          }
+        },
+        {
+          "id": "auto",
+          "title": {
+            "en": "Auto",
+            "de": "Auto"
+          }
+        }
       ],
       "getable": true,
       "setable": true,
@@ -1406,9 +1524,27 @@
         "de": "Voreinstellung"
       },
       "values": [
-        { "id": "sleep",   "title": { "en": "Silent",  "de": "Leise"    } },
-        { "id": "comfort", "title": { "en": "Comfort", "de": "Komfort"  } },
-        { "id": "boost",   "title": { "en": "Boost",   "de": "Boost"    } }
+        {
+          "id": "sleep",
+          "title": {
+            "en": "Silent",
+            "de": "Leise"
+          }
+        },
+        {
+          "id": "comfort",
+          "title": {
+            "en": "Comfort",
+            "de": "Komfort"
+          }
+        },
+        {
+          "id": "boost",
+          "title": {
+            "en": "Boost",
+            "de": "Boost"
+          }
+        }
       ],
       "getable": true,
       "setable": true,
@@ -2689,11 +2825,31 @@
           "de": "Wärmepumpe: Modus geändert"
         },
         "args": [
-          { "name": "device", "type": "device", "filter": "driver_id=heat_pump" }
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=heat_pump"
+          }
         ],
         "tokens": [
-          { "name": "mode",      "type": "string", "title": { "en": "New mode",      "de": "Neuer Modus"      }, "example": "heat" },
-          { "name": "prev_mode", "type": "string", "title": { "en": "Previous mode", "de": "Vorheriger Modus" }, "example": "auto" }
+          {
+            "name": "mode",
+            "type": "string",
+            "title": {
+              "en": "New mode",
+              "de": "Neuer Modus"
+            },
+            "example": "heat"
+          },
+          {
+            "name": "prev_mode",
+            "type": "string",
+            "title": {
+              "en": "Previous mode",
+              "de": "Vorheriger Modus"
+            },
+            "example": "auto"
+          }
         ]
       },
       {
@@ -2703,29 +2859,84 @@
           "de": "Wärmepumpe: Fehleralarm ausgelöst"
         },
         "args": [
-          { "name": "device", "type": "device", "filter": "driver_id=heat_pump" }
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=heat_pump"
+          }
         ],
         "tokens": [
-          { "name": "fault_code", "type": "string", "title": { "en": "Fault code", "de": "Fehlercode" }, "example": "4" }
+          {
+            "name": "fault_code",
+            "type": "string",
+            "title": {
+              "en": "Fault code",
+              "de": "Fehlercode"
+            },
+            "example": "4"
+          }
         ]
       },
       {
         "id": "heat_pump_device_connected",
-        "title": { "en": "Heat pump connected", "de": "Wärmepumpe verbunden" },
-        "args": [ { "name": "device", "type": "device", "filter": "driver_id=heat_pump" } ]
+        "title": {
+          "en": "Heat pump connected",
+          "de": "Wärmepumpe verbunden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=heat_pump"
+          }
+        ]
       },
       {
         "id": "heat_pump_device_disconnected",
-        "title": { "en": "Heat pump disconnected", "de": "Wärmepumpe getrennt" },
-        "args": [ { "name": "device", "type": "device", "filter": "driver_id=heat_pump" } ]
+        "title": {
+          "en": "Heat pump disconnected",
+          "de": "Wärmepumpe getrennt"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=heat_pump"
+          }
+        ]
       },
       {
         "id": "heat_pump_dp_changed",
-        "title": { "en": "Heat pump data point changed", "de": "Wärmepumpe: Datenpunkt geändert" },
-        "args": [ { "name": "device", "type": "device", "filter": "driver_id=heat_pump" } ],
+        "title": {
+          "en": "Heat pump data point changed",
+          "de": "Wärmepumpe: Datenpunkt geändert"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=heat_pump"
+          }
+        ],
         "tokens": [
-          { "name": "dp",    "type": "string", "title": { "en": "DP number", "de": "DP-Nummer" }, "example": "105" },
-          { "name": "value", "type": "string", "title": { "en": "Value",     "de": "Wert"       }, "example": "warm" }
+          {
+            "name": "dp",
+            "type": "string",
+            "title": {
+              "en": "DP number",
+              "de": "DP-Nummer"
+            },
+            "example": "105"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "title": {
+              "en": "Value",
+              "de": "Wert"
+            },
+            "example": "warm"
+          }
         ]
       }
     ],
@@ -3461,18 +3672,45 @@
       },
       {
         "id": "heat_pump_is_on",
-        "title": { "en": "Heat pump !{{is|is not}} on", "de": "Wärmepumpe !{{ist|ist nicht}} ein" },
-        "args": [ { "name": "device", "type": "device", "filter": "driver_id=heat_pump" } ]
+        "title": {
+          "en": "Heat pump !{{is|is not}} on",
+          "de": "Wärmepumpe !{{ist|ist nicht}} ein"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=heat_pump"
+          }
+        ]
       },
       {
         "id": "heat_pump_fault_is_active",
-        "title": { "en": "Heat pump fault alarm !{{is|is not}} active", "de": "Wärmepumpe: Fehleralarm !{{ist|ist nicht}} aktiv" },
-        "args": [ { "name": "device", "type": "device", "filter": "driver_id=heat_pump" } ]
+        "title": {
+          "en": "Heat pump fault alarm !{{is|is not}} active",
+          "de": "Wärmepumpe: Fehleralarm !{{ist|ist nicht}} aktiv"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=heat_pump"
+          }
+        ]
       },
       {
         "id": "heat_pump_device_is_connected",
-        "title": { "en": "Heat pump !{{is|is not}} connected", "de": "Wärmepumpe !{{ist|ist nicht}} verbunden" },
-        "args": [ { "name": "device", "type": "device", "filter": "driver_id=heat_pump" } ]
+        "title": {
+          "en": "Heat pump !{{is|is not}} connected",
+          "de": "Wärmepumpe !{{ist|ist nicht}} verbunden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=heat_pump"
+          }
+        ]
       }
     ],
     "actions": [
@@ -5244,31 +5482,83 @@
       },
       {
         "id": "heat_pump_set_mode",
-        "title": { "en": "Set heat pump mode", "de": "Wärmepumpe: Modus setzen" },
-        "titleFormatted": { "en": "Set heat pump mode to [[mode]]", "de": "Wärmepumpe: Modus auf [[mode]] setzen" },
+        "title": {
+          "en": "Set heat pump mode",
+          "de": "Wärmepumpe: Modus setzen"
+        },
+        "titleFormatted": {
+          "en": "Set heat pump mode to [[mode]]",
+          "de": "Wärmepumpe: Modus auf [[mode]] setzen"
+        },
         "args": [
-          { "name": "device", "type": "device", "filter": "driver_id=heat_pump" },
-          { "name": "mode",   "type": "autocomplete", "title": { "en": "Mode", "de": "Modus" } }
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=heat_pump"
+          },
+          {
+            "name": "mode",
+            "type": "autocomplete",
+            "title": {
+              "en": "Mode",
+              "de": "Modus"
+            }
+          }
         ]
       },
       {
         "id": "heat_pump_set_preset",
-        "title": { "en": "Set heat pump preset", "de": "Wärmepumpe: Voreinstellung setzen" },
-        "titleFormatted": { "en": "Set heat pump preset to [[preset]]", "de": "Wärmepumpe: Voreinstellung auf [[preset]] setzen" },
+        "title": {
+          "en": "Set heat pump preset",
+          "de": "Wärmepumpe: Voreinstellung setzen"
+        },
+        "titleFormatted": {
+          "en": "Set heat pump preset to [[preset]]",
+          "de": "Wärmepumpe: Voreinstellung auf [[preset]] setzen"
+        },
         "args": [
-          { "name": "device", "type": "device", "filter": "driver_id=heat_pump" },
-          { "name": "preset", "type": "autocomplete", "title": { "en": "Preset", "de": "Voreinstellung" } }
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=heat_pump"
+          },
+          {
+            "name": "preset",
+            "type": "autocomplete",
+            "title": {
+              "en": "Preset",
+              "de": "Voreinstellung"
+            }
+          }
         ]
       },
       {
         "id": "heat_pump_force_reconnect",
-        "title": { "en": "Force heat pump reconnect", "de": "Wärmepumpe: Verbindung neu aufbauen" },
-        "args": [ { "name": "device", "type": "device", "filter": "driver_id=heat_pump" } ]
+        "title": {
+          "en": "Force heat pump reconnect",
+          "de": "Wärmepumpe: Verbindung neu aufbauen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=heat_pump"
+          }
+        ]
       },
       {
         "id": "heat_pump_refresh_device",
-        "title": { "en": "Refresh heat pump values", "de": "Wärmepumpe: Daten aktualisieren" },
-        "args": [ { "name": "device", "type": "device", "filter": "driver_id=heat_pump" } ]
+        "title": {
+          "en": "Refresh heat pump values",
+          "de": "Wärmepumpe: Daten aktualisieren"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=heat_pump"
+          }
+        ]
       }
     ]
   },
@@ -5661,7 +5951,6 @@
           "id": "list_devices"
         }
       ],
-
       "images": {
         "small": "/drivers/dehumidifier/assets/images/small.png",
         "large": "/drivers/dehumidifier/assets/images/large.png",
@@ -5843,7 +6132,6 @@
           "id": "list_devices"
         }
       ],
-
       "images": {
         "small": "/drivers/generic/assets/images/small.png",
         "large": "/drivers/generic/assets/images/large.png",
@@ -6210,7 +6498,6 @@
           "id": "list_devices"
         }
       ],
-
       "images": {
         "small": "/drivers/smart_plug/assets/images/small.png",
         "large": "/drivers/smart_plug/assets/images/large.png",
@@ -6728,7 +7015,6 @@
           "id": "list_devices"
         }
       ],
-
       "images": {
         "small": "/drivers/air_conditioner/assets/images/small.png",
         "large": "/drivers/air_conditioner/assets/images/large.png",
@@ -7079,7 +7365,6 @@
           "id": "list_devices"
         }
       ],
-
       "images": {
         "small": "/drivers/fan/assets/images/small.png",
         "large": "/drivers/fan/assets/images/large.png",
@@ -7439,7 +7724,6 @@
           "id": "list_devices"
         }
       ],
-
       "images": {
         "small": "/drivers/humidifier/assets/images/small.png",
         "large": "/drivers/humidifier/assets/images/large.png",
@@ -7834,7 +8118,6 @@
           "id": "list_devices"
         }
       ],
-
       "images": {
         "small": "/drivers/heater/assets/images/small.png",
         "large": "/drivers/heater/assets/images/large.png",
@@ -8141,7 +8424,6 @@
           "id": "list_devices"
         }
       ],
-
       "images": {
         "small": "/drivers/light/assets/images/small.png",
         "large": "/drivers/light/assets/images/large.png",
@@ -8154,7 +8436,7 @@
         "en": "Pet Feeder",
         "de": "Futterautomat"
       },
-      "class": "other",
+      "class": "petfeeder",
       "capabilities": [
         "feed_portions",
         "indicator_light",
@@ -8921,95 +9203,407 @@
     },
     {
       "id": "heat_pump",
-      "name": { "en": "Heat Pump", "de": "Wärmepumpe" },
-      "class": "other",
+      "name": {
+        "en": "Heat Pump",
+        "de": "Wärmepumpe"
+      },
+      "class": "heatpump",
       "capabilities": [
         "onoff",
         "target_temperature",
         "measure_temperature"
       ],
       "capabilitiesOptions": {
-        "target_temperature": { "min": 12, "max": 45, "step": 1 },
+        "target_temperature": {
+          "min": 12,
+          "max": 45,
+          "step": 1
+        },
         "measure_temperature": {
-          "title": { "en": "Water Temperature", "de": "Wassertemperatur" }
+          "title": {
+            "en": "Water Temperature",
+            "de": "Wassertemperatur"
+          }
         },
         "alarm_generic": {
-          "title": { "en": "Fault Alarm", "de": "Fehleralarm" },
-          "insightsTitleTrue":  { "en": "Fault alarm triggered", "de": "Fehleralarm ausgelöst" },
-          "insightsTitleFalse": { "en": "Fault alarm cleared",   "de": "Fehleralarm beendet"  }
+          "title": {
+            "en": "Fault Alarm",
+            "de": "Fehleralarm"
+          },
+          "insightsTitleTrue": {
+            "en": "Fault alarm triggered",
+            "de": "Fehleralarm ausgelöst"
+          },
+          "insightsTitleFalse": {
+            "en": "Fault alarm cleared",
+            "de": "Fehleralarm beendet"
+          }
         }
       },
       "settings": [
         {
           "type": "group",
-          "label": { "en": "Connection", "de": "Verbindung" },
+          "label": {
+            "en": "Connection",
+            "de": "Verbindung"
+          },
           "children": [
-            { "id": "ip",         "type": "text",   "label": { "en": "IP Address",       "de": "IP-Adresse"        }, "value": "" },
-            { "id": "device_id",  "type": "text",   "label": { "en": "Device ID",         "de": "Geräte-ID"         }, "value": "" },
-            { "id": "local_key",  "type": "text",   "label": { "en": "Local Key",          "de": "Lokaler Schlüssel" }, "value": "" },
             {
-              "id": "version", "type": "dropdown",
-              "label": { "en": "Protocol Version", "de": "Protokollversion" },
+              "id": "ip",
+              "type": "text",
+              "label": {
+                "en": "IP Address",
+                "de": "IP-Adresse"
+              },
+              "value": ""
+            },
+            {
+              "id": "device_id",
+              "type": "text",
+              "label": {
+                "en": "Device ID",
+                "de": "Geräte-ID"
+              },
+              "value": ""
+            },
+            {
+              "id": "local_key",
+              "type": "text",
+              "label": {
+                "en": "Local Key",
+                "de": "Lokaler Schlüssel"
+              },
+              "value": ""
+            },
+            {
+              "id": "version",
+              "type": "dropdown",
+              "label": {
+                "en": "Protocol Version",
+                "de": "Protokollversion"
+              },
               "value": "3.3",
               "values": [
-                { "id": "3.1",  "label": { "en": "3.1 (legacy)",      "de": "3.1 (veraltet)"  } },
-                { "id": "3.3",  "label": { "en": "3.3",               "de": "3.3"              } },
-                { "id": "3.4",  "label": { "en": "3.4",               "de": "3.4"              } },
-                { "id": "3.5",  "label": { "en": "3.5",               "de": "3.5"              } },
-                { "id": "3.22", "label": { "en": "3.22 (newer chips)","de": "3.22 (neuere Chips)" } }
+                {
+                  "id": "3.1",
+                  "label": {
+                    "en": "3.1 (legacy)",
+                    "de": "3.1 (veraltet)"
+                  }
+                },
+                {
+                  "id": "3.3",
+                  "label": {
+                    "en": "3.3",
+                    "de": "3.3"
+                  }
+                },
+                {
+                  "id": "3.4",
+                  "label": {
+                    "en": "3.4",
+                    "de": "3.4"
+                  }
+                },
+                {
+                  "id": "3.5",
+                  "label": {
+                    "en": "3.5",
+                    "de": "3.5"
+                  }
+                },
+                {
+                  "id": "3.22",
+                  "label": {
+                    "en": "3.22 (newer chips)",
+                    "de": "3.22 (neuere Chips)"
+                  }
+                }
               ]
             },
-            { "id": "polling_interval",    "type": "number", "label": { "en": "Polling Interval (s)", "de": "Abfrageintervall (s)" }, "value": 30, "min": 0, "max": 3600, "hint": { "en": "0 = disable polling.", "de": "0 = kein Polling." } },
-            { "id": "offline_grace_seconds","type": "number", "label": { "en": "Offline Grace Period (s)", "de": "Offline-Karenzzeit (s)" }, "value": 60, "min": 0, "max": 600, "hint": { "en": "Delay before 'device disconnected' trigger fires.", "de": "Verzögerung vor dem 'Gerät getrennt'-Auslöser." } }
+            {
+              "id": "polling_interval",
+              "type": "number",
+              "label": {
+                "en": "Polling Interval (s)",
+                "de": "Abfrageintervall (s)"
+              },
+              "value": 30,
+              "min": 0,
+              "max": 3600,
+              "hint": {
+                "en": "0 = disable polling.",
+                "de": "0 = kein Polling."
+              }
+            },
+            {
+              "id": "offline_grace_seconds",
+              "type": "number",
+              "label": {
+                "en": "Offline Grace Period (s)",
+                "de": "Offline-Karenzzeit (s)"
+              },
+              "value": 60,
+              "min": 0,
+              "max": 600,
+              "hint": {
+                "en": "Delay before 'device disconnected' trigger fires.",
+                "de": "Verzögerung vor dem 'Gerät getrennt'-Auslöser."
+              }
+            }
           ]
         },
         {
           "type": "group",
-          "label": { "en": "Data Points (DPs)", "de": "Datenpunkte (DPs)" },
+          "label": {
+            "en": "Data Points (DPs)",
+            "de": "Datenpunkte (DPs)"
+          },
           "children": [
-            { "id": "dp_onoff",       "type": "number", "label": { "en": "On/Off DP",              "de": "Ein/Aus DP"           }, "value": 1,  "hint": { "en": "DP 1 (bool) on most devices. DP 101 on Waterco.",            "de": "DP 1 (bool) bei den meisten Geräten. DP 101 bei Waterco." } },
-            { "id": "dp_target_temp", "type": "number", "label": { "en": "Target Temperature DP",  "de": "Zieltemperatur DP"    }, "value": 2,  "hint": { "en": "Standard: DP 2. Phalén/Fairland: DP 106. ITS: DP 4.",          "de": "Standard: DP 2. Phalén/Fairland: DP 106. ITS: DP 4."     } },
-            { "id": "dp_current_temp","type": "number", "label": { "en": "Current Temperature DP", "de": "Aktuelle Temp. DP"    }, "value": 3,  "hint": { "en": "Standard: DP 3. Phalén/Fairland: DP 102. 0 = disabled.",       "de": "Standard: DP 3. Phalén/Fairland: DP 102. 0 = deaktiviert." } },
-            { "id": "dp_mode",        "type": "number", "label": { "en": "Mode DP",                "de": "Modus DP"             }, "value": 0,  "hint": { "en": "Operating mode DP. Phalén DP 105, Mountfield DP 4. 0 = disabled.", "de": "Betriebs-Modus DP. Phalén DP 105, Mountfield DP 4. 0 = deaktiviert." } },
-            { "id": "dp_preset",      "type": "number", "label": { "en": "Preset DP",              "de": "Voreinstellung DP"    }, "value": 0,  "hint": { "en": "Preset DP. Phalén DP 117 (bool: false=sleep, true=boost). 0 = disabled.", "de": "Voreinstellungs-DP. Phalén DP 117 (bool: false=leise, true=boost). 0 = deaktiviert." } },
-            { "id": "dp_fault",       "type": "number", "label": { "en": "Fault Alarm DP",         "de": "Fehleralarm DP"       }, "value": 0,  "hint": { "en": "Fault/alarm DP (bitfield or bool). Phalén DP 115, Brustec DP 21. 0 = disabled.", "de": "Fehleralarm-DP (Bitfeld oder bool). Phalén DP 115, Brustec DP 21. 0 = deaktiviert." } },
-            { "id": "dp_power_level", "type": "number", "label": { "en": "Power Level % DP",       "de": "Leistungsstufe % DP"  }, "value": 0,  "hint": { "en": "Inverter power level 0–100 %. Phalén DP 104, Waterco DP 109, Madimack DP 20. 0 = disabled.", "de": "Inverter-Leistungsstufe 0–100 %. Phalén DP 104, Waterco DP 109, Madimack DP 20. 0 = deaktiviert." } }
+            {
+              "id": "dp_onoff",
+              "type": "number",
+              "label": {
+                "en": "On/Off DP",
+                "de": "Ein/Aus DP"
+              },
+              "value": 1,
+              "hint": {
+                "en": "DP 1 (bool) on most devices. DP 101 on Waterco.",
+                "de": "DP 1 (bool) bei den meisten Geräten. DP 101 bei Waterco."
+              }
+            },
+            {
+              "id": "dp_target_temp",
+              "type": "number",
+              "label": {
+                "en": "Target Temperature DP",
+                "de": "Zieltemperatur DP"
+              },
+              "value": 2,
+              "hint": {
+                "en": "Standard: DP 2. Phalén/Fairland: DP 106. ITS: DP 4.",
+                "de": "Standard: DP 2. Phalén/Fairland: DP 106. ITS: DP 4."
+              }
+            },
+            {
+              "id": "dp_current_temp",
+              "type": "number",
+              "label": {
+                "en": "Current Temperature DP",
+                "de": "Aktuelle Temp. DP"
+              },
+              "value": 3,
+              "hint": {
+                "en": "Standard: DP 3. Phalén/Fairland: DP 102. 0 = disabled.",
+                "de": "Standard: DP 3. Phalén/Fairland: DP 102. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_mode",
+              "type": "number",
+              "label": {
+                "en": "Mode DP",
+                "de": "Modus DP"
+              },
+              "value": 0,
+              "hint": {
+                "en": "Operating mode DP. Phalén DP 105, Mountfield DP 4. 0 = disabled.",
+                "de": "Betriebs-Modus DP. Phalén DP 105, Mountfield DP 4. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_preset",
+              "type": "number",
+              "label": {
+                "en": "Preset DP",
+                "de": "Voreinstellung DP"
+              },
+              "value": 0,
+              "hint": {
+                "en": "Preset DP. Phalén DP 117 (bool: false=sleep, true=boost). 0 = disabled.",
+                "de": "Voreinstellungs-DP. Phalén DP 117 (bool: false=leise, true=boost). 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_fault",
+              "type": "number",
+              "label": {
+                "en": "Fault Alarm DP",
+                "de": "Fehleralarm DP"
+              },
+              "value": 0,
+              "hint": {
+                "en": "Fault/alarm DP (bitfield or bool). Phalén DP 115, Brustec DP 21. 0 = disabled.",
+                "de": "Fehleralarm-DP (Bitfeld oder bool). Phalén DP 115, Brustec DP 21. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_power_level",
+              "type": "number",
+              "label": {
+                "en": "Power Level % DP",
+                "de": "Leistungsstufe % DP"
+              },
+              "value": 0,
+              "hint": {
+                "en": "Inverter power level 0–100 %. Phalén DP 104, Waterco DP 109, Madimack DP 20. 0 = disabled.",
+                "de": "Inverter-Leistungsstufe 0–100 %. Phalén DP 104, Waterco DP 109, Madimack DP 20. 0 = deaktiviert."
+              }
+            }
           ]
         },
         {
           "type": "group",
-          "label": { "en": "Temperature", "de": "Temperatur" },
+          "label": {
+            "en": "Temperature",
+            "de": "Temperatur"
+          },
           "children": [
-            { "id": "temp_divisor", "type": "number", "label": { "en": "Temperature Divisor",     "de": "Temperaturdivisor"   }, "value": 1,  "min": 1, "max": 100, "hint": { "en": "Divide raw DP value to get °C. Set to 10 if device sends e.g. 350 for 35.0 °C (Arcelik/Axen).", "de": "Rohwert durch diesen Wert dividieren um °C zu erhalten. 10 wenn Gerät z.B. 350 für 35,0 °C sendet." } },
-            { "id": "temp_min",     "type": "number", "label": { "en": "Min. Target Temperature", "de": "Min. Zieltemperatur"  }, "value": 12, "min": 0, "max": 100, "hint": { "en": "Minimum setpoint in °C.",   "de": "Minimaler Sollwert in °C."  } },
-            { "id": "temp_max",     "type": "number", "label": { "en": "Max. Target Temperature", "de": "Max. Zieltemperatur"  }, "value": 45, "min": 0, "max": 100, "hint": { "en": "Maximum setpoint in °C.",   "de": "Maximaler Sollwert in °C."  } },
-            { "id": "temp_step",    "type": "number", "label": { "en": "Temperature Step",        "de": "Temperaturschritt"    }, "value": 1,  "min": 1, "max": 10,  "hint": { "en": "Step size for the slider.", "de": "Schrittweite des Schiebereglers." } }
+            {
+              "id": "temp_divisor",
+              "type": "number",
+              "label": {
+                "en": "Temperature Divisor",
+                "de": "Temperaturdivisor"
+              },
+              "value": 1,
+              "min": 1,
+              "max": 100,
+              "hint": {
+                "en": "Divide raw DP value to get °C. Set to 10 if device sends e.g. 350 for 35.0 °C (Arcelik/Axen).",
+                "de": "Rohwert durch diesen Wert dividieren um °C zu erhalten. 10 wenn Gerät z.B. 350 für 35,0 °C sendet."
+              }
+            },
+            {
+              "id": "temp_min",
+              "type": "number",
+              "label": {
+                "en": "Min. Target Temperature",
+                "de": "Min. Zieltemperatur"
+              },
+              "value": 12,
+              "min": 0,
+              "max": 100,
+              "hint": {
+                "en": "Minimum setpoint in °C.",
+                "de": "Minimaler Sollwert in °C."
+              }
+            },
+            {
+              "id": "temp_max",
+              "type": "number",
+              "label": {
+                "en": "Max. Target Temperature",
+                "de": "Max. Zieltemperatur"
+              },
+              "value": 45,
+              "min": 0,
+              "max": 100,
+              "hint": {
+                "en": "Maximum setpoint in °C.",
+                "de": "Maximaler Sollwert in °C."
+              }
+            },
+            {
+              "id": "temp_step",
+              "type": "number",
+              "label": {
+                "en": "Temperature Step",
+                "de": "Temperaturschritt"
+              },
+              "value": 1,
+              "min": 1,
+              "max": 10,
+              "hint": {
+                "en": "Step size for the slider.",
+                "de": "Schrittweite des Schiebereglers."
+              }
+            }
           ]
         },
         {
           "type": "group",
-          "label": { "en": "Mode & Preset", "de": "Modus & Voreinstellung" },
+          "label": {
+            "en": "Mode & Preset",
+            "de": "Modus & Voreinstellung"
+          },
           "children": [
-            { "id": "mode_values",   "type": "text", "label": { "en": "Mode Values",   "de": "Modus-Werte"          }, "value": "heat,cool,auto", "hint": { "en": "Comma-separated mode strings your device sends. Phalén: warm,cool,smart. Mountfield: Heating,Cooling,Auto. After saving, restart the app.", "de": "Kommagetrennte Modus-Strings des Geräts. Phalén: warm,cool,smart. Mountfield: Heating,Cooling,Auto. Nach dem Speichern die App neu starten." } },
-            { "id": "preset_values", "type": "text", "label": { "en": "Preset Values", "de": "Voreinstellungs-Werte" }, "value": "sleep,comfort,boost", "hint": { "en": "Comma-separated preset strings. For bool presets: first value = false, second = true. E.g. sleep,boost", "de": "Kommagetrennte Voreinstellungs-Strings. Bei bool-Preset: erster Wert = false, zweiter = true. Z.B. sleep,boost" } }
+            {
+              "id": "mode_values",
+              "type": "text",
+              "label": {
+                "en": "Mode Values",
+                "de": "Modus-Werte"
+              },
+              "value": "heat,cool,auto",
+              "hint": {
+                "en": "Comma-separated mode strings your device sends. Phalén: warm,cool,smart. Mountfield: Heating,Cooling,Auto. After saving, restart the app.",
+                "de": "Kommagetrennte Modus-Strings des Geräts. Phalén: warm,cool,smart. Mountfield: Heating,Cooling,Auto. Nach dem Speichern die App neu starten."
+              }
+            },
+            {
+              "id": "preset_values",
+              "type": "text",
+              "label": {
+                "en": "Preset Values",
+                "de": "Voreinstellungs-Werte"
+              },
+              "value": "sleep,comfort,boost",
+              "hint": {
+                "en": "Comma-separated preset strings. For bool presets: first value = false, second = true. E.g. sleep,boost",
+                "de": "Kommagetrennte Voreinstellungs-Strings. Bei bool-Preset: erster Wert = false, zweiter = true. Z.B. sleep,boost"
+              }
+            }
           ]
         },
         {
           "type": "group",
-          "label": { "en": "Diagnostics", "de": "Diagnose" },
+          "label": {
+            "en": "Diagnostics",
+            "de": "Diagnose"
+          },
           "children": [
-            { "id": "connection_status", "type": "text", "label": { "en": "Connection status",   "de": "Verbindungsstatus"       }, "value": "—", "hint": { "en": "Updated automatically.", "de": "Wird automatisch aktualisiert." } },
-            { "id": "last_seen",         "type": "text", "label": { "en": "Last data received",  "de": "Zuletzt Daten empfangen" }, "value": "—", "hint": { "en": "Updated automatically.", "de": "Wird automatisch aktualisiert." } }
+            {
+              "id": "connection_status",
+              "type": "text",
+              "label": {
+                "en": "Connection status",
+                "de": "Verbindungsstatus"
+              },
+              "value": "—",
+              "hint": {
+                "en": "Updated automatically.",
+                "de": "Wird automatisch aktualisiert."
+              }
+            },
+            {
+              "id": "last_seen",
+              "type": "text",
+              "label": {
+                "en": "Last data received",
+                "de": "Zuletzt Daten empfangen"
+              },
+              "value": "—",
+              "hint": {
+                "en": "Updated automatically.",
+                "de": "Wird automatisch aktualisiert."
+              }
+            }
           ]
         }
       ],
       "pair": [
-        { "id": "credentials"  },
-        { "id": "list_devices" }
+        {
+          "id": "credentials"
+        },
+        {
+          "id": "list_devices"
+        }
       ],
       "images": {
-        "small":  "/drivers/heat_pump/assets/images/small.png",
-        "large":  "/drivers/heat_pump/assets/images/large.png",
+        "small": "/drivers/heat_pump/assets/images/small.png",
+        "large": "/drivers/heat_pump/assets/images/large.png",
         "xlarge": "/drivers/heat_pump/assets/images/xlarge.png"
       }
     }
