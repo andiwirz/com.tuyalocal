@@ -1,4 +1,8 @@
 {
+  "1.0.46": {
+    "en": "Heat Pump: fault alarm now debounced (suppresses false alarms on reconnect). Mode/preset listeners re-register correctly when a DP is enabled after initial pairing. Garage Door: push notifications now fire for all alarm states. Internal code quality improvements.",
+    "de": "Wärmepumpe: Fehleralarm jetzt entprellt (unterdrückt Fehlalarme beim Reconnect). Modus-/Voreinstellungs-Listener werden bei nachträglicher DP-Aktivierung korrekt registriert. Garagentor: Push-Benachrichtigungen für alle Alarmzustände. Interne Code-Qualitätsverbesserungen."
+  },
   "1.0.45": {
     "en": "Device class corrections: Heat Pump → heatpump, Pet Feeder → petfeeder. Heat Pump icon updated.",
     "de": "Geräteklassen korrigiert: Wärmepumpe → heatpump, Futterautomat → petfeeder. Wärmepumpen-Icon aktualisiert."
