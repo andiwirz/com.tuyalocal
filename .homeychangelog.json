@@ -1,4 +1,8 @@
 {
+  "1.0.42": {
+    "en": "Garage Door: fixed timeout when controlling WOFEA — dp_door_control was auto-detected as 0 (instead of 6) when DP 6 was absent from the initial device response. DP 6 is only included when recently used; fallback now always defaults to 6.",
+    "de": "Garagentor: Timeout beim Steuern von WOFEA behoben — dp_door_control wurde als 0 erkannt (statt 6) wenn DP 6 in der initialen Geräteantwort fehlte. DP 6 wird nur bei kürzlicher Nutzung übermittelt; Fallback jetzt immer 6."
+  },
   "1.0.41": {
     "en": "Garage Door: AOSD (with light) and BoboYun gatePro support. Action state DP (opened/closed/opening/closing), separate open/close bool DPs for BoboYun, integrated light capability. Auto-detect covers all four families.",
     "de": "Garagentor: AOSD (mit Licht) und BoboYun gatePro. Bewegungsstatus-DP, separate Öffnen/Schließen-Bool-DPs für BoboYun, Licht-Capability. Auto-Erkennung für alle vier Geräteklassen."

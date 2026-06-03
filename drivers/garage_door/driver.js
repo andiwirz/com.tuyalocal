@@ -185,12 +185,25 @@ class GarageDoorDriver extends Homey.Driver {
     const ctrlEntry = stringDps.find((d) =>
       DOOR_CMDS.has(d.val) && d.dp !== dp_door_contact && d.dp !== dp_door_action
     );
-    const dp_door_control = ctrlEntry?.dp ?? (6 in dpsMap ? 6 : 0);
 
     // ── Separate open/close DPs (BoboYun DP 106/107) ─────────────────────────
+    // Detect BEFORE dp_door_control so we can skip the fallback for BoboYun.
     // Only bool DPs match — AOSD DP 107 is a string, so no conflict.
     const dp_door_open  = (106 in dpsMap && typeof dpsMap[106] === 'boolean') ? 106 : 0;
     const dp_door_close = (107 in dpsMap && typeof dpsMap[107] === 'boolean') ? 107 : 0;
+
+    // ── Door control command (continued) ─────────────────────────────────────
+    // Fallback: always use DP 6 when no control DP was found in the response
+    // AND no separate BoboYun open/close DPs were detected.
+    //
+    // Root cause of the reported timeout: WOFEA only includes DP 6 in the GET
+    // response when it was recently used. If the door hasn't been operated in a
+    // while, DP 6 is absent from the DPS snapshot → ctrlEntry = undefined →
+    // old code: dp_door_control = 0 → user sees 0 and sets wrong value (e.g. 1)
+    // → string "open"/"close" sent to bool DP 1 → device timeout.
+    // Fix: default to 6 unconditionally for non-BoboYun devices.
+    const dp_door_control = (dp_door_open > 0) ? 0      // BoboYun: use separate DPs, no combined ctrl
+      : (ctrlEntry?.dp ?? 6);                            // WOFEA/AOSD/ZC34T: 6 is always a safe default
 
     // ── Door alarm state ──────────────────────────────────────────────────────
     // WOFEA DP 12. BoboYun DP 141 not auto-detected (users set dp_door_state = 141).
