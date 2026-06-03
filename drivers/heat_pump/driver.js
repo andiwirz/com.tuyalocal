@@ -2,8 +2,10 @@
 
 const Homey                     = require('homey');
 const TuyAPI                    = require('tuyapi');
+const net                       = require('net');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
+const { capitalize }            = require('../../lib/utils');
 
 // ── Mode strings recognised during auto-detect ────────────────────────────────
 // Covers common naming across 15+ pool/water heat pump models.
@@ -46,7 +48,7 @@ class HeatPumpDriver extends Homey.Driver {
         const q = query.toLowerCase();
         return values
           .filter((v) => v.toLowerCase().includes(q))
-          .map((v) => ({ name: v.charAt(0).toUpperCase() + v.slice(1).replace(/_/g, ' '), id: v }));
+          .map((v) => ({ name: capitalize(v), id: v }));
       })
       .registerRunListener(async (args) => {
         await args.device.setCapabilityValue('heat_pump_mode', args.mode.id);
@@ -60,7 +62,7 @@ class HeatPumpDriver extends Homey.Driver {
         const q = query.toLowerCase();
         return values
           .filter((v) => v.toLowerCase().includes(q))
-          .map((v) => ({ name: v.charAt(0).toUpperCase() + v.slice(1).replace(/_/g, ' '), id: v }));
+          .map((v) => ({ name: capitalize(v), id: v }));
       })
       .registerRunListener(async (args) => {
         await args.device.setCapabilityValue('heat_pump_preset', args.preset.id);
@@ -84,7 +86,6 @@ class HeatPumpDriver extends Homey.Driver {
 
     session.setHandler('credentials', async (data) => {
       const { ip, deviceId, localKey, version } = data;
-      const net = require('net');
       if (!net.isIPv4(ip)) throw new Error(this.homey.__('pair.credentials.invalidIp'));
       if (localKey.length !== 16 && localKey.length !== 32)
         throw new Error(this.homey.__('pair.credentials.invalidKey'));

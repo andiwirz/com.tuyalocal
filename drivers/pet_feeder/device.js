@@ -58,7 +58,6 @@ class PetFeederDevice extends BaseTuyaDevice {
     this.log('Device initialized:', this.getName());
 
     await this._baseInit();
-    await this._migrateCapabilities([]);
 
     // ── Migrate feed_portions: number/slider → enum/picker ───────────────────
     // If the old capability options contain a numeric 'min' key it was the legacy

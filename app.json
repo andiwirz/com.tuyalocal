@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.45",
+  "version": "1.0.46",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -18,6 +18,10 @@
     "appliances"
   ],
   "changelog": {
+    "1.0.46": {
+      "en": "Code quality fixes: Heat Pump — added fault alarm debounce (suppresses false alarms on reconnect), mode/preset listeners now correctly re-register when DP is enabled via settings, _syncModeOptions/_syncPresetOptions called on DP change. Garage Door — push notifications now fire for all alarm states (not just left-open). Shared: isNewProtocol extracted to getter in TuyaConnection; capitalize() helper extracted to lib/utils; changelog sorted correctly.",
+      "de": "Code-Qualitätsfixes: Wärmepumpe — Fehleralarm-Entprellung hinzugefügt (unterdrückt Fehlalarme beim Reconnect), Modus-/Voreinstellungs-Listener werden bei DP-Änderung in Einstellungen korrekt neu registriert, _syncModeOptions/_syncPresetOptions bei DP-Änderung aufgerufen. Garagentor — Push-Benachrichtigungen werden jetzt für alle Alarmzustände ausgelöst. Allgemein: isNewProtocol als Getter in TuyaConnection; capitalize()-Hilfsfunktion nach lib/utils extrahiert; Changelog korrekt sortiert."
+    },
     "1.0.45": {
       "en": "Device class corrections: Heat Pump changed to heatpump, Pet Feeder changed to petfeeder — both now use the correct dedicated Homey SDK device classes. Heat Pump driver icon updated.",
       "de": "Geräteklassen korrigiert: Wärmepumpe auf heatpump, Futterautomat auf petfeeder — beide verwenden jetzt die korrekten dedizierten Homey-SDK-Geräteklassen. Wärmepumpen-Icon aktualisiert."
@@ -65,6 +69,14 @@
     "1.0.34": {
       "en": "Removed repair flow from all drivers — IP address, local key, and protocol version can be updated directly in the device settings page, making the separate repair dialog unnecessary.",
       "de": "Reparatur-Dialog aus allen Treibern entfernt — IP-Adresse, Local Key und Protokollversion können direkt in den Geräteeinstellungen geändert werden; ein separater Dialog ist nicht mehr notwendig."
+    },
+    "1.0.33": {
+      "en": "Added capability icons for all custom capabilities: mode, fan_speed, fan_mode, fan_direction, target_humidity, child_lock, oscillate, anion, countdown_timer, power_factor, and all AC capabilities (ac_mode, ac_fan_speed, ac_swing, ac_swing_h, ac_sleep, ac_eco).",
+      "de": "Capability-Icons für alle benutzerdefinierten Fähigkeiten hinzugefügt: Modus, Lüftergeschwindigkeit, Lüftermodus, Lüfterrichtung, Ziel-Luftfeuchtigkeit, Kindersicherung, Schwenkung, Ionisator, Countdown-Timer, Leistungsfaktor sowie alle Klimaanlagen-Fähigkeiten (Modus, Lüftergeschwindigkeit, Lamellen, horizontale Lamellen, Schlafmodus, ECO)."
+    },
+    "1.0.32": {
+      "en": "Fan driver: added fan direction (forward / reverse) capability with auto-detection at pairing time, plus flow cards for direction changed trigger, direction condition, and set direction action.",
+      "de": "Lüfter-Treiber: Lüfterrichtung (Vorwärts / Rückwärts) als optionale Fähigkeit hinzugefügt, inkl. Auto-Erkennung beim Einrichten und Flow-Karten (Auslöser, Bedingung, Aktion)."
     },
     "1.0.31": {
       "en": "Added four new drivers: Fan (speed slider + enum speed + oscillation + mode), Humidifier (humidity sensor + target + water-empty alarm), Heater (target/current temperature + mode + fault alarm), and Light (brightness + color temperature + HSV color). All drivers include auto-detection of DPs at pairing time, repair flow, and full flow card support (triggers, conditions, actions).",
@@ -121,14 +133,6 @@
     "1.0.18": {
       "en": "Initial public release.",
       "de": "Erste öffentliche Version."
-    },
-    "1.0.32": {
-      "en": "Fan driver: added fan direction (forward / reverse) capability with auto-detection at pairing time, plus flow cards for direction changed trigger, direction condition, and set direction action.",
-      "de": "Lüfter-Treiber: Lüfterrichtung (Vorwärts / Rückwärts) als optionale Fähigkeit hinzugefügt, inkl. Auto-Erkennung beim Einrichten und Flow-Karten (Auslöser, Bedingung, Aktion)."
-    },
-    "1.0.33": {
-      "en": "Added capability icons for all custom capabilities: mode, fan_speed, fan_mode, fan_direction, target_humidity, child_lock, oscillate, anion, countdown_timer, power_factor, and all AC capabilities (ac_mode, ac_fan_speed, ac_swing, ac_swing_h, ac_sleep, ac_eco).",
-      "de": "Capability-Icons für alle benutzerdefinierten Fähigkeiten hinzugefügt: Modus, Lüftergeschwindigkeit, Lüftermodus, Lüfterrichtung, Ziel-Luftfeuchtigkeit, Kindersicherung, Schwenkung, Ionisator, Countdown-Timer, Leistungsfaktor sowie alle Klimaanlagen-Fähigkeiten (Modus, Lüftergeschwindigkeit, Lamellen, horizontale Lamellen, Schlafmodus, ECO)."
     }
   },
   "permissions": [],

@@ -1,6 +1,7 @@
 'use strict';
 
 const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
+const { capitalize }  = require('../../lib/utils');
 
 // ── Universal pool / air-water heat pump driver ───────────────────────────────
 //
@@ -73,20 +74,26 @@ class HeatPumpDevice extends BaseTuyaDevice {
     this.log('Device initialized:', this.getName());
 
     await this._baseInit();
-    await this._migrateCapabilities([]);
+
+    // Fault-alarm debounce state
+    this._connectedAt         = null;
+    this._faultAlarmTimer     = null;
+    this._faultAlarmConfirmed = false;
+
     await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
     await this._syncTempRange();
     await this._syncModeOptions();
     await this._syncPresetOptions();
+    this._registerOptionalListeners();
 
     // ── Flow trigger cards ───────────────────────────────────────────────────
-    this._triggerModeChanged       = this.homey.flow.getDeviceTriggerCard('heat_pump_mode_changed');
-    this._triggerFault             = this.homey.flow.getDeviceTriggerCard('heat_pump_fault_triggered');
-    this._triggerDeviceConnected   = this.homey.flow.getDeviceTriggerCard('heat_pump_device_connected');
-    this._triggerDeviceDisconnected= this.homey.flow.getDeviceTriggerCard('heat_pump_device_disconnected');
-    this._triggerDpChanged         = this.homey.flow.getDeviceTriggerCard('heat_pump_dp_changed');
+    this._triggerModeChanged        = this.homey.flow.getDeviceTriggerCard('heat_pump_mode_changed');
+    this._triggerFault              = this.homey.flow.getDeviceTriggerCard('heat_pump_fault_triggered');
+    this._triggerDeviceConnected    = this.homey.flow.getDeviceTriggerCard('heat_pump_device_connected');
+    this._triggerDeviceDisconnected = this.homey.flow.getDeviceTriggerCard('heat_pump_device_disconnected');
+    this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('heat_pump_dp_changed');
 
-    // ── Capability listeners ─────────────────────────────────────────────────
+    // ── Capability listeners (always-present capabilities) ───────────────────
     this.registerCapabilityListener('onoff', async (value) => {
       const dp = this.getSetting('dp_onoff');
       if (!dp || dp === 0) throw new Error('On/Off DP not configured');
@@ -100,6 +107,31 @@ class HeatPumpDevice extends BaseTuyaDevice {
       await this._conn?.set(dp, Math.round(value * div));
     });
 
+    await this._connect();
+  }
+
+  // ── Hook overrides ────────────────────────────────────────────────────────────
+
+  /** Reset fault-debounce state on every (re)connect. */
+  _onConnected() {
+    this._connectedAt         = Date.now();
+    clearTimeout(this._faultAlarmTimer);
+    this._faultAlarmTimer     = null;
+    this._faultAlarmConfirmed = false;
+  }
+
+  async _onDeleted() {
+    clearTimeout(this._faultAlarmTimer);
+  }
+
+  // ── Optional capability listeners ─────────────────────────────────────────────
+  //
+  // Called from onInit (after _syncOptionalCapabilities) AND from onSettings
+  // whenever dp_mode / dp_preset changes.  Homey SDK replaces the listener if
+  // registerCapabilityListener is called again for the same capability, so
+  // re-calling this is always safe.
+
+  _registerOptionalListeners() {
     if (this.hasCapability('heat_pump_mode')) {
       this.registerCapabilityListener('heat_pump_mode', async (value) => {
         const dp = this.getSetting('dp_mode');
@@ -107,14 +139,13 @@ class HeatPumpDevice extends BaseTuyaDevice {
         await this._conn?.set(dp, value);
       });
     }
-
     if (this.hasCapability('heat_pump_preset')) {
       this.registerCapabilityListener('heat_pump_preset', async (value) => {
         const dp  = this.getSetting('dp_preset');
         if (!dp || dp === 0) throw new Error('Preset DP not configured');
         const raw = this._lastDps[String(dp)];
         if (typeof raw === 'boolean') {
-          // Bool preset: false = first value, true = second value
+          // Bool preset: false = first value (e.g. sleep), true = second value (e.g. boost)
           const vals = (this.getSetting('preset_values') || 'sleep,comfort,boost')
             .split(',').map((s) => s.trim()).filter(Boolean);
           await this._conn?.set(dp, value === (vals[1] ?? 'boost'));
@@ -123,8 +154,6 @@ class HeatPumpDevice extends BaseTuyaDevice {
         }
       });
     }
-
-    await this._connect();
   }
 
   // ── DPS handling ─────────────────────────────────────────────────────────────
@@ -167,15 +196,13 @@ class HeatPumpDevice extends BaseTuyaDevice {
 
         // ── Target temperature ────────────────────────────────────────────────
         case 'temp': {
-          const temp = Number(value) / div;
-          await this.setCapabilityValue('target_temperature', temp).catch(() => {});
+          await this.setCapabilityValue('target_temperature', Number(value) / div).catch(() => {});
           break;
         }
 
         // ── Current temperature (read-only) ──────────────────────────────────
         case 'temp_ro': {
-          const temp = Number(value) / div;
-          await this.setCapabilityValue('measure_temperature', temp).catch(() => {});
+          await this.setCapabilityValue('measure_temperature', Number(value) / div).catch(() => {});
           break;
         }
 
@@ -208,6 +235,10 @@ class HeatPumpDevice extends BaseTuyaDevice {
 
         // ── Fault alarm (bitfield or bool) ────────────────────────────────────
         // non-zero number = fault active; bool true = fault; string ≠ eorr0/no = fault
+        //
+        // Debounce: heat-pump firmware (like AC / Heater) can send a transient fault=true
+        // immediately after reconnect that self-corrects within seconds.  Suppress the
+        // notification until the alarm has persisted for the full debounce window.
         case 'alarm': {
           let isAlarm;
           if (typeof value === 'boolean') {
@@ -218,12 +249,30 @@ class HeatPumpDevice extends BaseTuyaDevice {
             const v = String(value).toLowerCase();
             isAlarm = v !== 'eorr0' && v !== 'no' && v !== '0' && v !== 'false';
           }
+
+          const prevAlarm = this.getCapabilityValue('alarm_generic');
           await this.setCapabilityValue('alarm_generic', isAlarm).catch(() => {});
-          if (isAlarm) {
-            this._triggerFault.trigger(this, { fault_code: String(value) }).catch(() => {});
-            this.homey.notifications.createNotification({
-              excerpt: `${this.getName()}: ${this.homey.__('notifications.faultAlarm')}`,
-            }).catch(() => {});
+
+          if (!prevAlarm && isAlarm) {
+            // Grace window: extend debounce if we just reconnected.
+            const GRACE_MS   = 30_000; // 30 s post-connect grace period
+            const elapsed    = this._connectedAt ? Date.now() - this._connectedAt : GRACE_MS;
+            const debounceMs = elapsed < GRACE_MS ? GRACE_MS - elapsed + 5_000 : 5_000;
+            clearTimeout(this._faultAlarmTimer);
+            this._faultAlarmConfirmed = false;
+            this._faultAlarmTimer = setTimeout(() => {
+              if (this.getCapabilityValue('alarm_generic') === true) {
+                this._faultAlarmConfirmed = true;
+                this._triggerFault.trigger(this, { fault_code: String(value) }).catch(() => {});
+                this.homey.notifications.createNotification({
+                  excerpt: `${this.getName()}: ${this.homey.__('notifications.faultAlarm')}`,
+                }).catch(() => {});
+              }
+            }, debounceMs);
+          }
+          if (prevAlarm && !isAlarm) {
+            clearTimeout(this._faultAlarmTimer);
+            this._faultAlarmConfirmed = false;
           }
           break;
         }
@@ -247,7 +296,7 @@ class HeatPumpDevice extends BaseTuyaDevice {
 
   // ── Settings ─────────────────────────────────────────────────────────────────
 
-  async onSettings({ changedKeys, newSettings }) {
+  async onSettings({ changedKeys }) {
     const connectionKeys = ['ip', 'device_id', 'local_key', 'version'];
     if (changedKeys.some((k) => connectionKeys.includes(k))) {
       await this._connect();
@@ -258,14 +307,18 @@ class HeatPumpDevice extends BaseTuyaDevice {
     }
     if (changedKeys.some((k) => OPTIONAL_CAPABILITIES.map((o) => o.setting).includes(k))) {
       await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
+      // Re-register listeners for any newly added optional capabilities.
+      this._registerOptionalListeners();
     }
     if (changedKeys.some((k) => ['temp_min', 'temp_max', 'temp_step'].includes(k))) {
       await this._syncTempRange();
     }
-    if (changedKeys.includes('mode_values')) {
+    // Rebuild mode picker when either the DP assignment or the value list changes.
+    if (changedKeys.includes('mode_values') || changedKeys.includes('dp_mode')) {
       await this._syncModeOptions();
     }
-    if (changedKeys.includes('preset_values')) {
+    // Rebuild preset picker when either the DP assignment or the value list changes.
+    if (changedKeys.includes('preset_values') || changedKeys.includes('dp_preset')) {
       await this._syncPresetOptions();
     }
   }
@@ -289,13 +342,13 @@ class HeatPumpDevice extends BaseTuyaDevice {
 
   /**
    * Rebuild heat_pump_mode picker from the mode_values setting string.
-   * Called at init and when mode_values changes.
+   * Called at init and when mode_values or dp_mode changes.
    */
   async _syncModeOptions() {
     if (!this.hasCapability('heat_pump_mode')) return;
     const values = (this.getSetting('mode_values') || 'heat,cool,auto')
       .split(',').map((s) => s.trim()).filter(Boolean)
-      .map((v) => ({ id: v, title: { en: this._cap(v), de: this._cap(v) } }));
+      .map((v) => ({ id: v, title: { en: capitalize(v), de: capitalize(v) } }));
     try {
       await this.setCapabilityOptions('heat_pump_mode', { values });
       this.log(`heat_pump_mode picker → ${values.map((v) => v.id).join(', ')}`);
@@ -306,24 +359,19 @@ class HeatPumpDevice extends BaseTuyaDevice {
 
   /**
    * Rebuild heat_pump_preset picker from the preset_values setting string.
-   * Called at init and when preset_values changes.
+   * Called at init and when preset_values or dp_preset changes.
    */
   async _syncPresetOptions() {
     if (!this.hasCapability('heat_pump_preset')) return;
     const values = (this.getSetting('preset_values') || 'sleep,comfort,boost')
       .split(',').map((s) => s.trim()).filter(Boolean)
-      .map((v) => ({ id: v, title: { en: this._cap(v), de: this._cap(v) } }));
+      .map((v) => ({ id: v, title: { en: capitalize(v), de: capitalize(v) } }));
     try {
       await this.setCapabilityOptions('heat_pump_preset', { values });
       this.log(`heat_pump_preset picker → ${values.map((v) => v.id).join(', ')}`);
     } catch (err) {
       this.log('setCapabilityOptions(heat_pump_preset) failed:', err.message);
     }
-  }
-
-  /** Capitalize first letter, replace underscores with spaces. */
-  _cap(s) {
-    return s.charAt(0).toUpperCase() + s.slice(1).replace(/_/g, ' ');
   }
 }
 

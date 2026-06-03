@@ -53,7 +53,6 @@ class GarageDoorDevice extends BaseTuyaDevice {
     this.log('Device initialized:', this.getName());
 
     await this._baseInit();
-    await this._migrateCapabilities([]);
     await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
 
     // ── Flow trigger cards ───────────────────────────────────────────────────
@@ -195,12 +194,14 @@ class GarageDoorDevice extends BaseTuyaDevice {
         await this.setCapabilityValue('alarm_generic', isAlarm).catch(() => {});
         if (isAlarm) {
           this._triggerAlarm.trigger(this, { alarm_state: valueStr }).catch(() => {});
-          // Push notification for "left open" variants (WOFEA and BoboYun)
-          if (valueStr === 'unclosed_time' || valueStr === 'openLongTime') {
-            this.homey.notifications.createNotification({
-              excerpt: `${this.getName()}: ${this.homey.__('notifications.garageDoorOpen')}`,
-            }).catch(() => {});
-          }
+          // Push notification — use a specific "left open" message for known timeout codes,
+          // and a generic fault message for any other alarm state (e.g. BoboYun closeLongTime).
+          const notifKey = (valueStr === 'unclosed_time' || valueStr === 'openLongTime')
+            ? 'notifications.garageDoorOpen'
+            : 'notifications.faultAlarm';
+          this.homey.notifications.createNotification({
+            excerpt: `${this.getName()}: ${this.homey.__(notifKey)}`,
+          }).catch(() => {});
         }
         continue;
       }
