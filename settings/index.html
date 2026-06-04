@@ -85,6 +85,43 @@
     .type-badge { display: inline-block; font-size: 10px; padding: 1px 5px; border-radius: 3px; background: #f1f3f4; color: #666; }
     #dpPlaceholder { color: #999; font-size: 12px; padding: 16px 0; }
 
+    /* ── Help nav ── */
+    .help-nav {
+      position: sticky;
+      top: 44px;            /* just below the sticky tab bar */
+      z-index: 5;
+      background: #fff;
+      border-bottom: 1px solid #e8e8e8;
+      padding: 7px 16px;
+      margin: -16px -16px 16px -16px; /* break out of tab-panel padding to go full-width */
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .help-nav label { font-size: 12px; color: #666; white-space: nowrap; }
+    .help-nav select {
+      flex: 1;
+      padding: 5px 8px;
+      border: 1px solid #d0d0d0;
+      border-radius: 6px;
+      font-size: 12px;
+      background: #f8f9fa;
+      color: #333;
+      cursor: pointer;
+    }
+    .back-top {
+      display: block;
+      text-align: right;
+      font-size: 11px;
+      color: #aaa;
+      cursor: pointer;
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px solid #f0f0f0;
+      user-select: none;
+    }
+    .back-top:hover { color: #1a73e8; }
+
     /* ── Help tab ── */
     .help-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 14px; }
     .help-table th { text-align: left; background: #f8f9fa; color: #555; font-weight: 500; padding: 6px 10px; border: 1px solid #e8e8e8; }
@@ -110,7 +147,28 @@
   <!-- ── Help ─────────────────────────────────────────────────────────── -->
   <div class="tab-panel active" id="tab-help">
 
-    <div class="section">
+    <!-- sticky jump-to nav -->
+    <div class="help-nav">
+      <label>&#9654; Jump to:</label>
+      <select id="helpJump">
+        <option value="">— select section —</option>
+        <option value="sec-start">Getting started</option>
+        <option value="sec-plug">Smart Plug</option>
+        <option value="sec-dehumidifier">Dehumidifier</option>
+        <option value="sec-ac">Air Conditioner</option>
+        <option value="sec-fan">Fan</option>
+        <option value="sec-humidifier">Humidifier</option>
+        <option value="sec-heater">Heater</option>
+        <option value="sec-light">Light</option>
+        <option value="sec-pet">Pet Feeder</option>
+        <option value="sec-garage">Garage Door</option>
+        <option value="sec-heatpump">Heat Pump</option>
+        <option value="sec-curtain">Curtain Motor</option>
+        <option value="sec-trouble">Troubleshooting</option>
+      </select>
+    </div>
+
+    <div class="section" id="sec-start">
       <h2>Getting started</h2>
       <p>You need three things from each device: <strong>IP address</strong>, <strong>Device ID</strong>, and <strong>Local Key</strong>.</p>
       <div class="note">
@@ -124,7 +182,7 @@
       <p>Use <strong>Scan Network</strong> in the pairing wizard (UDP broadcast + TCP subnet scan, ~10 s), or check your router's DHCP table. Assign a static IP / DHCP reservation so it never changes.</p>
     </div>
 
-    <div class="section">
+    <div class="section" id="sec-plug">
       <h2>Smart Plug — DP reference</h2>
       <table class="help-table">
         <thead><tr><th>Setting</th><th>Default DP</th><th>Capability</th><th>Transform</th><th>R/W</th></tr></thead>
@@ -143,7 +201,7 @@
       <div class="note"><strong>Energy metering:</strong> Most Tuya plugs send DP 17 as a resetting delta that appears frozen locally. Leave <em>dp_energy = 0</em> (default) — the app computes kWh from power readings instead and persists the total across restarts. Use the <em>Reset energy meter</em> flow action to zero it.</div>
     </div>
 
-    <div class="section">
+    <div class="section" id="sec-dehumidifier">
       <h2>Dehumidifier — DP reference</h2>
       <table class="help-table">
         <thead><tr><th>Setting</th><th>Typical DP</th><th>Capability</th><th>R/W</th></tr></thead>
@@ -164,7 +222,7 @@
       <p>Set any optional DP to <strong>0</strong> to hide the tile. Use the <strong>DP Debug</strong> and <strong>Raw Data</strong> tabs to find the correct DP numbers for your device.</p>
     </div>
 
-    <div class="section">
+    <div class="section" id="sec-ac">
       <h2>Air Conditioner — DP reference</h2>
       <table class="help-table">
         <thead><tr><th>Setting</th><th>Default DP</th><th>Capability</th><th>Notes</th><th>R/W</th></tr></thead>
@@ -190,7 +248,7 @@
       <div class="note"><strong>Auto-detect at pairing:</strong> The pairing wizard automatically detects DP 1 (power), DP 2/3 (temperatures), DP 4 (mode), DP 5 (fan speed), DP 11 (ioniser), DP 15 (swing), DP 20 (fault), DP 103 (sleep) and DP 110 (horizontal swing). Only <em>mode_values</em> and <em>fan_speed_values</em> need to be adjusted manually after pairing.</div>
     </div>
 
-    <div class="section">
+    <div class="section" id="sec-fan">
       <h2>Fan — DP reference</h2>
       <table class="help-table">
         <thead><tr><th>Setting</th><th>Default DP</th><th>Capability</th><th>Notes</th><th>R/W</th></tr></thead>
@@ -210,7 +268,7 @@
       <div class="note"><strong>Fan direction:</strong> Detected automatically at pairing if the device reports <code>forward</code> or <code>reverse</code>. Set <em>dp_direction</em> manually (e.g. DP 63) if the device uses a different DP number.</div>
     </div>
 
-    <div class="section">
+    <div class="section" id="sec-humidifier">
       <h2>Humidifier — DP reference</h2>
       <table class="help-table">
         <thead><tr><th>Setting</th><th>Default DP</th><th>Capability</th><th>Notes</th><th>R/W</th></tr></thead>
@@ -230,7 +288,7 @@
       </table>
     </div>
 
-    <div class="section">
+    <div class="section" id="sec-heater">
       <h2>Heater — DP reference</h2>
       <table class="help-table">
         <thead><tr><th>Setting</th><th>Default DP</th><th>Capability</th><th>Notes</th><th>R/W</th></tr></thead>
@@ -249,7 +307,7 @@
       <div class="note"><strong>Temperature range:</strong> Use <em>temp_min</em>, <em>temp_max</em> and <em>temp_step</em> to configure the target temperature slider (defaults: 5–35 °C, step 1).</div>
     </div>
 
-    <div class="section">
+    <div class="section" id="sec-light">
       <h2>Light — DP reference</h2>
       <table class="help-table">
         <thead><tr><th>Setting</th><th>Default DP</th><th>Capability</th><th>Notes</th><th>R/W</th></tr></thead>
@@ -265,7 +323,7 @@
       <div class="note"><strong>Color mode strings:</strong> Most devices use <code>white</code> and <code>colour</code>, but some send <code>color</code>, <code>cct</code> or <code>rgb</code>. Check the Raw Data tab while switching modes manually to find the exact strings.</div>
     </div>
 
-    <div class="section">
+    <div class="section" id="sec-pet">
       <h2>Pet Feeder — DP reference</h2>
       <table class="help-table">
         <thead><tr><th>Setting</th><th>Default DP</th><th>Capability</th><th>Notes</th><th>R/W</th></tr></thead>
@@ -287,7 +345,7 @@
       <div class="note"><strong>Food level DP:</strong> This is a non-standard DP not in the Tuya pet feeder spec — only some devices expose it (e.g. DP 101 or 102). Most devices report the hopper state via <em>motor_state</em> (no_food) and <em>dp_fault</em> (bitfield 1 = no_food) instead.</div>
     </div>
 
-    <div class="section">
+    <div class="section" id="sec-garage">
       <h2>Garage Door — DP reference</h2>
       <p>Supports four device families. All DPs are auto-detected at pairing time.</p>
       <table class="help-table">
@@ -309,7 +367,7 @@
       <div class="note"><strong>Auto-detect summary:</strong> WOFEA → contact=3, ctrl=6, switch=1, state=12. ZC34T → contact=1, ctrl=101. AOSD → action=107, ctrl=101, light=105. BoboYun → action=10, open=106, close=107, light=102.</div>
     </div>
 
-    <div class="section">
+    <div class="section" id="sec-heatpump">
       <h2>Heat Pump — DP reference</h2>
       <p>Universal pool / air-water heat pump driver. Covers Phalén Calidi XP, Fairland InverterPlus, Brustec, BWT, CBC, Madimack, Mountfield, Waterco, Aquastrong, Arcelik/Axen, Apricus, ITS 45HD and more. All DPs are auto-detected at pairing time.</p>
       <table class="help-table">
@@ -329,7 +387,7 @@
       <div class="note"><strong>Temperature range:</strong> Use <em>temp_min</em>, <em>temp_max</em> and <em>temp_step</em> to configure the target temperature slider (defaults: 12–45 °C, step 1).</div>
     </div>
 
-    <div class="section">
+    <div class="section" id="sec-curtain">
       <h2>Curtain Motor — DP reference</h2>
       <p>Universal curtain / blind motor driver. Supports Zemismart v1 &amp; v2 and any compatible Tuya category-cl curtain motor. All DPs are auto-detected at pairing time.</p>
       <table class="help-table">
@@ -346,7 +404,7 @@
       <div class="note"><strong>control_back / motor direction:</strong> DP 5 reverses the motor spin direction. This is a physical wiring compensation setting — change it in the Tuya / Smart Life app, not via Homey.</div>
     </div>
 
-    <div class="section">
+    <div class="section" id="sec-trouble">
       <h2>Troubleshooting</h2>
       <table class="help-table">
         <thead><tr><th>Symptom</th><th>Fix</th></tr></thead>
@@ -444,6 +502,28 @@
   </div>
 
   <script type="text/javascript">
+    // ── Help nav — jump-to dropdown ───────────────────────────────────
+    document.getElementById('helpJump').addEventListener('change', function() {
+      var id = this.value;
+      if (!id) return;
+      var el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // reset so the same section can be selected again
+      var sel = this;
+      setTimeout(function() { sel.value = ''; }, 600);
+    });
+
+    // Auto-inject "↑ Top" link at the bottom of every help section that has an id
+    document.querySelectorAll('#tab-help .section[id]').forEach(function(sec) {
+      var link = document.createElement('span');
+      link.className = 'back-top';
+      link.textContent = '↑ Top';
+      link.addEventListener('click', function() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+      sec.appendChild(link);
+    });
+
     // ── Tab switching ──────────────────────────────────────────────────
     document.querySelectorAll('.tab-btn').forEach(function(btn) {
       btn.addEventListener('click', function() {
