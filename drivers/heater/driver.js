@@ -15,16 +15,27 @@ class HeaterDriver extends Homey.Driver {
     this.homey.flow.getConditionCard('heater_fault_is_active')
       .registerRunListener(async (args) => args.device.getCapabilityValue('alarm_generic') === true);
 
+    const modeAutocomplete = async (query, args) => {
+      const values = (args.device.getSetting('mode_values') || 'eco,comfort,boost,away,auto')
+        .split(',').map((s) => s.trim()).filter(Boolean);
+      const q = query.toLowerCase();
+      return values
+        .filter((v) => v.toLowerCase().includes(q))
+        .map((v) => ({ id: v, name: v.charAt(0).toUpperCase() + v.slice(1).replace(/_/g, ' ') }));
+    };
+
     this.homey.flow.getConditionCard('heater_mode_is')
+      .registerArgumentAutocompleteListener('mode', modeAutocomplete)
       .registerRunListener(async (args) =>
-        args.device.getCapabilityValue('mode') === args.mode
+        args.device.getCapabilityValue('mode') === args.mode.id
       );
 
     this.homey.flow.getActionCard('heater_set_mode')
+      .registerArgumentAutocompleteListener('mode', modeAutocomplete)
       .registerRunListener(async (args) => {
         if (!args.device.hasCapability('mode')) return;
-        await args.device.setCapabilityValue('mode', args.mode);
-        return args.device.triggerCapabilityListener('mode', args.mode);
+        await args.device.setCapabilityValue('mode', args.mode.id);
+        return args.device.triggerCapabilityListener('mode', args.mode.id);
       });
 
     this.homey.flow.getActionCard('heater_set_target_temp')

@@ -22,9 +22,24 @@ class FanDriver extends Homey.Driver {
         args.device._conn?.connected === true
       );
 
+    const cap = (v) => v.charAt(0).toUpperCase() + v.slice(1).replace(/_/g, ' ');
+    const modeAC = async (query, args) => {
+      const values = (args.device.getSetting('fan_mode_values') || 'normal,sleep,nature,breeze,smart')
+        .split(',').map((s) => s.trim()).filter(Boolean);
+      const q = query.toLowerCase();
+      return values.filter((v) => v.toLowerCase().includes(q)).map((v) => ({ id: v, name: cap(v) }));
+    };
+    const fanAC = async (query, args) => {
+      const values = (args.device.getSetting('fan_speed_values') || 'low,medium,high,auto,turbo')
+        .split(',').map((s) => s.trim()).filter(Boolean);
+      const q = query.toLowerCase();
+      return values.filter((v) => v.toLowerCase().includes(q)).map((v) => ({ id: v, name: cap(v) }));
+    };
+
     this.homey.flow.getConditionCard('fan_mode_is')
+      .registerArgumentAutocompleteListener('mode', modeAC)
       .registerRunListener(async (args) =>
-        args.device.getCapabilityValue('fan_mode') === args.mode
+        args.device.getCapabilityValue('fan_mode') === args.mode.id
       );
 
     this.homey.flow.getConditionCard('fan_direction_is')
@@ -34,17 +49,19 @@ class FanDriver extends Homey.Driver {
 
     // ── Actions ─────────────────────────────────────────────────────────────
     this.homey.flow.getActionCard('fan_set_mode')
+      .registerArgumentAutocompleteListener('mode', modeAC)
       .registerRunListener(async (args) => {
         if (!args.device.hasCapability('fan_mode')) return;
-        await args.device.setCapabilityValue('fan_mode', args.mode);
-        return args.device.triggerCapabilityListener('fan_mode', args.mode);
+        await args.device.setCapabilityValue('fan_mode', args.mode.id);
+        return args.device.triggerCapabilityListener('fan_mode', args.mode.id);
       });
 
     this.homey.flow.getActionCard('fan_set_fan_speed')
+      .registerArgumentAutocompleteListener('fan_speed', fanAC)
       .registerRunListener(async (args) => {
         if (!args.device.hasCapability('fan_speed')) return;
-        await args.device.setCapabilityValue('fan_speed', args.fan_speed);
-        return args.device.triggerCapabilityListener('fan_speed', args.fan_speed);
+        await args.device.setCapabilityValue('fan_speed', args.fan_speed.id);
+        return args.device.triggerCapabilityListener('fan_speed', args.fan_speed.id);
       });
 
     this.homey.flow.getActionCard('fan_set_oscillate')

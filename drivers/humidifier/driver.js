@@ -39,15 +39,31 @@ class HumidifierDriver extends Homey.Driver {
         await args.device.setCapabilityValue('target_humidity', args.humidity);
         return args.device.triggerCapabilityListener('target_humidity', args.humidity);
       });
+    const cap = (v) => v.charAt(0).toUpperCase() + v.slice(1).replace(/_/g, ' ');
+    const modeAC = async (query, args) => {
+      const values = (args.device.getSetting('mode_values') || 'auto,manual,normal,sleep,eco,boost')
+        .split(',').map((s) => s.trim()).filter(Boolean);
+      const q = query.toLowerCase();
+      return values.filter((v) => v.toLowerCase().includes(q)).map((v) => ({ id: v, name: cap(v) }));
+    };
+    const fanAC = async (query, args) => {
+      const values = (args.device.getSetting('fan_speed_values') || 'low,medium,high,auto')
+        .split(',').map((s) => s.trim()).filter(Boolean);
+      const q = query.toLowerCase();
+      return values.filter((v) => v.toLowerCase().includes(q)).map((v) => ({ id: v, name: cap(v) }));
+    };
+
     this.homey.flow.getActionCard('humidifier_set_mode')
+      .registerArgumentAutocompleteListener('mode', modeAC)
       .registerRunListener(async (args) => {
-        await args.device.setCapabilityValue('mode', args.mode);
-        return args.device.triggerCapabilityListener('mode', args.mode);
+        await args.device.setCapabilityValue('mode', args.mode.id);
+        return args.device.triggerCapabilityListener('mode', args.mode.id);
       });
     this.homey.flow.getActionCard('humidifier_set_fan_speed')
+      .registerArgumentAutocompleteListener('fan_speed', fanAC)
       .registerRunListener(async (args) => {
-        await args.device.setCapabilityValue('fan_speed', args.fan_speed);
-        return args.device.triggerCapabilityListener('fan_speed', args.fan_speed);
+        await args.device.setCapabilityValue('fan_speed', args.fan_speed.id);
+        return args.device.triggerCapabilityListener('fan_speed', args.fan_speed.id);
       });
     this.homey.flow.getActionCard('humidifier_force_reconnect')
       .registerRunListener(async (args) => args.device.forceReconnect());

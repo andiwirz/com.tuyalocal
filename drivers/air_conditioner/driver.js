@@ -13,14 +13,30 @@ class AirConditionerDriver extends Homey.Driver {
     this.homey.flow.getConditionCard('ac_device_is_connected')
       .registerRunListener(async (args) => args.device._conn?.connected === true);
 
+    const cap = (v) => v.charAt(0).toUpperCase() + v.slice(1).replace(/_/g, ' ');
+    const modeAC = async (query, args) => {
+      const values = (args.device.getSetting('mode_values') || 'cool,heat,auto,dry,fan')
+        .split(',').map((s) => s.trim()).filter(Boolean);
+      const q = query.toLowerCase();
+      return values.filter((v) => v.toLowerCase().includes(q)).map((v) => ({ id: v, name: cap(v) }));
+    };
+    const fanAC = async (query, args) => {
+      const values = (args.device.getSetting('fan_speed_values') || 'auto,low,medium,high,turbo')
+        .split(',').map((s) => s.trim()).filter(Boolean);
+      const q = query.toLowerCase();
+      return values.filter((v) => v.toLowerCase().includes(q)).map((v) => ({ id: v, name: cap(v) }));
+    };
+
     this.homey.flow.getConditionCard('ac_mode_is')
+      .registerArgumentAutocompleteListener('mode', modeAC)
       .registerRunListener(async (args) =>
-        args.device.getCapabilityValue('ac_mode') === args.mode
+        args.device.getCapabilityValue('ac_mode') === args.mode.id
       );
 
     this.homey.flow.getConditionCard('ac_fan_speed_is')
+      .registerArgumentAutocompleteListener('fan_speed', fanAC)
       .registerRunListener(async (args) =>
-        args.device.getCapabilityValue('ac_fan_speed') === args.fan_speed
+        args.device.getCapabilityValue('ac_fan_speed') === args.fan_speed.id
       );
 
     this.homey.flow.getConditionCard('ac_sleep_is_on')
@@ -35,15 +51,17 @@ class AirConditionerDriver extends Homey.Driver {
 
     // ── Actions ─────────────────────────────────────────────────────────────
     this.homey.flow.getActionCard('ac_set_mode')
+      .registerArgumentAutocompleteListener('mode', modeAC)
       .registerRunListener(async (args) => {
-        await args.device.setCapabilityValue('ac_mode', args.mode);
-        return args.device.triggerCapabilityListener('ac_mode', args.mode);
+        await args.device.setCapabilityValue('ac_mode', args.mode.id);
+        return args.device.triggerCapabilityListener('ac_mode', args.mode.id);
       });
 
     this.homey.flow.getActionCard('ac_set_fan_speed')
+      .registerArgumentAutocompleteListener('fan_speed', fanAC)
       .registerRunListener(async (args) => {
-        await args.device.setCapabilityValue('ac_fan_speed', args.fan_speed);
-        return args.device.triggerCapabilityListener('ac_fan_speed', args.fan_speed);
+        await args.device.setCapabilityValue('ac_fan_speed', args.fan_speed.id);
+        return args.device.triggerCapabilityListener('ac_fan_speed', args.fan_speed.id);
       });
 
     this.homey.flow.getActionCard('ac_set_target_temp')

@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.49",
+  "version": "1.0.50",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -145,6 +145,10 @@
     "1.0.18": {
       "en": "Initial public release.",
       "de": "Erste öffentliche Version."
+    },
+    "1.0.50": {
+      "en": "Fixed: mode and fan-speed choices in flow cards (Set mode, Mode is, Set fan speed, Fan speed is) now read from the device's mode_values / fan_speed_values settings instead of a hardcoded list. Affects Dehumidifier, Air Conditioner, Fan, Humidifier and Heater drivers. Existing flows that used the old dropdown choices must be re-saved to pick the new values from the autocomplete.",
+      "de": "Behoben: Modus- und Lüftergeschwindigkeit-Auswahlen in Flow-Karten lesen jetzt aus den Geräte-Einstellungen mode_values / fan_speed_values statt aus einer fest codierten Liste. Betrifft Entfeuchter, Klimaanlage, Lüfter, Luftbefeuchter und Heizgerät. Bestehende Flows die die alten Auswahlfelder verwenden müssen erneut gespeichert werden."
     }
   },
   "permissions": [],
@@ -2958,57 +2962,142 @@
       },
       {
         "id": "curtain_opened",
-        "title": { "en": "Curtain fully opened", "de": "Rollo vollständig geöffnet" },
-        "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }]
+        "title": {
+          "en": "Curtain fully opened",
+          "de": "Rollo vollständig geöffnet"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=curtain_motor"
+          }
+        ]
       },
       {
         "id": "curtain_closed",
-        "title": { "en": "Curtain fully closed", "de": "Rollo vollständig geschlossen" },
-        "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }]
+        "title": {
+          "en": "Curtain fully closed",
+          "de": "Rollo vollständig geschlossen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=curtain_motor"
+          }
+        ]
       },
       {
         "id": "curtain_position_changed",
-        "title": { "en": "Curtain position changed", "de": "Rollo-Position geändert" },
-        "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }],
+        "title": {
+          "en": "Curtain position changed",
+          "de": "Rollo-Position geändert"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=curtain_motor"
+          }
+        ],
         "tokens": [
           {
             "name": "position",
             "type": "number",
-            "title": { "en": "Position (%)", "de": "Position (%)" },
+            "title": {
+              "en": "Position (%)",
+              "de": "Position (%)"
+            },
             "example": 50
           }
         ]
       },
       {
         "id": "curtain_fault_triggered",
-        "title": { "en": "Curtain motor fault triggered", "de": "Rolladenmotor: Fehleralarm ausgelöst" },
-        "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }],
+        "title": {
+          "en": "Curtain motor fault triggered",
+          "de": "Rolladenmotor: Fehleralarm ausgelöst"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=curtain_motor"
+          }
+        ],
         "tokens": [
           {
             "name": "fault_code",
             "type": "string",
-            "title": { "en": "Fault code", "de": "Fehlercode" },
+            "title": {
+              "en": "Fault code",
+              "de": "Fehlercode"
+            },
             "example": "1"
           }
         ]
       },
       {
         "id": "curtain_device_connected",
-        "title": { "en": "Curtain motor connected", "de": "Rolladenmotor verbunden" },
-        "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }]
+        "title": {
+          "en": "Curtain motor connected",
+          "de": "Rolladenmotor verbunden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=curtain_motor"
+          }
+        ]
       },
       {
         "id": "curtain_device_disconnected",
-        "title": { "en": "Curtain motor disconnected", "de": "Rolladenmotor getrennt" },
-        "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }]
+        "title": {
+          "en": "Curtain motor disconnected",
+          "de": "Rolladenmotor getrennt"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=curtain_motor"
+          }
+        ]
       },
       {
         "id": "curtain_dp_changed",
-        "title": { "en": "Curtain motor data point changed", "de": "Rolladenmotor: Datenpunkt geändert" },
-        "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }],
+        "title": {
+          "en": "Curtain motor data point changed",
+          "de": "Rolladenmotor: Datenpunkt geändert"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=curtain_motor"
+          }
+        ],
         "tokens": [
-          { "name": "dp",    "type": "string", "title": { "en": "DP number", "de": "DP-Nummer" }, "example": "1" },
-          { "name": "value", "type": "string", "title": { "en": "Value",     "de": "Wert"      }, "example": "open" }
+          {
+            "name": "dp",
+            "type": "string",
+            "title": {
+              "en": "DP number",
+              "de": "DP-Nummer"
+            },
+            "example": "1"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "title": {
+              "en": "Value",
+              "de": "Wert"
+            },
+            "example": "open"
+          }
         ]
       }
     ],
@@ -3188,27 +3277,11 @@
           },
           {
             "name": "mode",
-            "type": "dropdown",
-            "title": {
+            "type": "autocomplete",
+            "placeholder": {
               "en": "Mode",
               "de": "Modus"
-            },
-            "values": [
-              {
-                "id": "manual",
-                "label": {
-                  "en": "Manual",
-                  "de": "Manuell"
-                }
-              },
-              {
-                "id": "laundry",
-                "label": {
-                  "en": "Laundry",
-                  "de": "Wäsche"
-                }
-              }
-            ]
+            }
           }
         ]
       },
@@ -3244,48 +3317,11 @@
           },
           {
             "name": "mode",
-            "type": "dropdown",
-            "title": {
+            "type": "autocomplete",
+            "placeholder": {
               "en": "Mode",
               "de": "Modus"
-            },
-            "values": [
-              {
-                "id": "cool",
-                "label": {
-                  "en": "Cool",
-                  "de": "Kühlen"
-                }
-              },
-              {
-                "id": "heat",
-                "label": {
-                  "en": "Heat",
-                  "de": "Heizen"
-                }
-              },
-              {
-                "id": "auto",
-                "label": {
-                  "en": "Auto",
-                  "de": "Auto"
-                }
-              },
-              {
-                "id": "dry",
-                "label": {
-                  "en": "Dry",
-                  "de": "Entfeuchten"
-                }
-              },
-              {
-                "id": "fan",
-                "label": {
-                  "en": "Fan Only",
-                  "de": "Nur Lüfter"
-                }
-              }
-            ]
+            }
           }
         ]
       },
@@ -3307,48 +3343,11 @@
           },
           {
             "name": "fan_speed",
-            "type": "dropdown",
-            "title": {
-              "en": "Fan speed",
+            "type": "autocomplete",
+            "placeholder": {
+              "en": "Fan Speed",
               "de": "Lüftergeschwindigkeit"
-            },
-            "values": [
-              {
-                "id": "auto",
-                "label": {
-                  "en": "Auto",
-                  "de": "Automatisch"
-                }
-              },
-              {
-                "id": "low",
-                "label": {
-                  "en": "Low",
-                  "de": "Niedrig"
-                }
-              },
-              {
-                "id": "medium",
-                "label": {
-                  "en": "Medium",
-                  "de": "Mittel"
-                }
-              },
-              {
-                "id": "high",
-                "label": {
-                  "en": "High",
-                  "de": "Hoch"
-                }
-              },
-              {
-                "id": "turbo",
-                "label": {
-                  "en": "Turbo",
-                  "de": "Turbo"
-                }
-              }
-            ]
+            }
           }
         ]
       },
@@ -3412,48 +3411,11 @@
           },
           {
             "name": "mode",
-            "type": "dropdown",
-            "title": {
+            "type": "autocomplete",
+            "placeholder": {
               "en": "Mode",
               "de": "Modus"
-            },
-            "values": [
-              {
-                "id": "normal",
-                "label": {
-                  "en": "Normal",
-                  "de": "Normal"
-                }
-              },
-              {
-                "id": "sleep",
-                "label": {
-                  "en": "Sleep",
-                  "de": "Schlaf"
-                }
-              },
-              {
-                "id": "nature",
-                "label": {
-                  "en": "Nature",
-                  "de": "Natur"
-                }
-              },
-              {
-                "id": "breeze",
-                "label": {
-                  "en": "Breeze",
-                  "de": "Brise"
-                }
-              },
-              {
-                "id": "smart",
-                "label": {
-                  "en": "Smart",
-                  "de": "Smart"
-                }
-              }
-            ]
+            }
           }
         ]
       },
@@ -3589,48 +3551,11 @@
           },
           {
             "name": "mode",
-            "type": "dropdown",
-            "title": {
+            "type": "autocomplete",
+            "placeholder": {
               "en": "Mode",
               "de": "Modus"
-            },
-            "values": [
-              {
-                "id": "eco",
-                "label": {
-                  "en": "Eco",
-                  "de": "Eco"
-                }
-              },
-              {
-                "id": "comfort",
-                "label": {
-                  "en": "Comfort",
-                  "de": "Komfort"
-                }
-              },
-              {
-                "id": "boost",
-                "label": {
-                  "en": "Boost",
-                  "de": "Boost"
-                }
-              },
-              {
-                "id": "away",
-                "label": {
-                  "en": "Away",
-                  "de": "Abwesend"
-                }
-              },
-              {
-                "id": "auto",
-                "label": {
-                  "en": "Auto",
-                  "de": "Auto"
-                }
-              }
-            ]
+            }
           }
         ]
       },
@@ -3786,23 +3711,59 @@
       },
       {
         "id": "curtain_is_open",
-        "title": { "en": "Curtain !{{is|is not}} open (> 50%)", "de": "Rollo !{{ist|ist nicht}} geöffnet (> 50%)" },
-        "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }]
+        "title": {
+          "en": "Curtain !{{is|is not}} open (> 50%)",
+          "de": "Rollo !{{ist|ist nicht}} geöffnet (> 50%)"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=curtain_motor"
+          }
+        ]
       },
       {
         "id": "curtain_is_closed",
-        "title": { "en": "Curtain !{{is|is not}} fully closed", "de": "Rollo !{{ist|ist nicht}} vollständig geschlossen" },
-        "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }]
+        "title": {
+          "en": "Curtain !{{is|is not}} fully closed",
+          "de": "Rollo !{{ist|ist nicht}} vollständig geschlossen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=curtain_motor"
+          }
+        ]
       },
       {
         "id": "curtain_is_moving",
-        "title": { "en": "Curtain !{{is|is not}} moving", "de": "Rollo !{{bewegt sich|bewegt sich nicht}}" },
-        "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }]
+        "title": {
+          "en": "Curtain !{{is|is not}} moving",
+          "de": "Rollo !{{bewegt sich|bewegt sich nicht}}"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=curtain_motor"
+          }
+        ]
       },
       {
         "id": "curtain_device_is_connected",
-        "title": { "en": "Curtain motor !{{is|is not}} connected", "de": "Rolladenmotor !{{ist|ist nicht}} verbunden" },
-        "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }]
+        "title": {
+          "en": "Curtain motor !{{is|is not}} connected",
+          "de": "Rolladenmotor !{{ist|ist nicht}} verbunden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=curtain_motor"
+          }
+        ]
       }
     ],
     "actions": [
@@ -3853,27 +3814,11 @@
           },
           {
             "name": "mode",
-            "type": "dropdown",
-            "title": {
+            "type": "autocomplete",
+            "placeholder": {
               "en": "Mode",
               "de": "Modus"
-            },
-            "values": [
-              {
-                "id": "manual",
-                "label": {
-                  "en": "Manual",
-                  "de": "Manuell"
-                }
-              },
-              {
-                "id": "laundry",
-                "label": {
-                  "en": "Laundry",
-                  "de": "Wäsche"
-                }
-              }
-            ]
+            }
           }
         ]
       },
@@ -3895,27 +3840,11 @@
           },
           {
             "name": "fan_speed",
-            "type": "dropdown",
-            "title": {
+            "type": "autocomplete",
+            "placeholder": {
               "en": "Fan Speed",
               "de": "Lüftergeschwindigkeit"
-            },
-            "values": [
-              {
-                "id": "low",
-                "label": {
-                  "en": "Low",
-                  "de": "Niedrig"
-                }
-              },
-              {
-                "id": "high",
-                "label": {
-                  "en": "High",
-                  "de": "Hoch"
-                }
-              }
-            ]
+            }
           }
         ]
       },
@@ -4379,48 +4308,11 @@
           },
           {
             "name": "mode",
-            "type": "dropdown",
-            "title": {
+            "type": "autocomplete",
+            "placeholder": {
               "en": "Mode",
               "de": "Modus"
-            },
-            "values": [
-              {
-                "id": "cool",
-                "label": {
-                  "en": "Cool",
-                  "de": "Kühlen"
-                }
-              },
-              {
-                "id": "heat",
-                "label": {
-                  "en": "Heat",
-                  "de": "Heizen"
-                }
-              },
-              {
-                "id": "auto",
-                "label": {
-                  "en": "Auto",
-                  "de": "Auto"
-                }
-              },
-              {
-                "id": "dry",
-                "label": {
-                  "en": "Dry",
-                  "de": "Entfeuchten"
-                }
-              },
-              {
-                "id": "fan",
-                "label": {
-                  "en": "Fan Only",
-                  "de": "Nur Lüfter"
-                }
-              }
-            ]
+            }
           }
         ]
       },
@@ -4442,48 +4334,11 @@
           },
           {
             "name": "fan_speed",
-            "type": "dropdown",
-            "title": {
+            "type": "autocomplete",
+            "placeholder": {
               "en": "Fan Speed",
               "de": "Lüftergeschwindigkeit"
-            },
-            "values": [
-              {
-                "id": "auto",
-                "label": {
-                  "en": "Auto",
-                  "de": "Auto"
-                }
-              },
-              {
-                "id": "low",
-                "label": {
-                  "en": "Low",
-                  "de": "Niedrig"
-                }
-              },
-              {
-                "id": "medium",
-                "label": {
-                  "en": "Medium",
-                  "de": "Mittel"
-                }
-              },
-              {
-                "id": "high",
-                "label": {
-                  "en": "High",
-                  "de": "Hoch"
-                }
-              },
-              {
-                "id": "turbo",
-                "label": {
-                  "en": "Turbo",
-                  "de": "Turbo"
-                }
-              }
-            ]
+            }
           }
         ]
       },
@@ -4842,48 +4697,11 @@
           },
           {
             "name": "mode",
-            "type": "dropdown",
-            "title": {
+            "type": "autocomplete",
+            "placeholder": {
               "en": "Mode",
               "de": "Modus"
-            },
-            "values": [
-              {
-                "id": "normal",
-                "label": {
-                  "en": "Normal",
-                  "de": "Normal"
-                }
-              },
-              {
-                "id": "sleep",
-                "label": {
-                  "en": "Sleep",
-                  "de": "Schlaf"
-                }
-              },
-              {
-                "id": "nature",
-                "label": {
-                  "en": "Nature",
-                  "de": "Natur"
-                }
-              },
-              {
-                "id": "breeze",
-                "label": {
-                  "en": "Breeze",
-                  "de": "Brise"
-                }
-              },
-              {
-                "id": "smart",
-                "label": {
-                  "en": "Smart",
-                  "de": "Smart"
-                }
-              }
-            ]
+            }
           }
         ]
       },
@@ -4905,48 +4723,11 @@
           },
           {
             "name": "fan_speed",
-            "type": "dropdown",
-            "title": {
+            "type": "autocomplete",
+            "placeholder": {
               "en": "Fan Speed",
               "de": "Lüftergeschwindigkeit"
-            },
-            "values": [
-              {
-                "id": "low",
-                "label": {
-                  "en": "Low",
-                  "de": "Niedrig"
-                }
-              },
-              {
-                "id": "medium",
-                "label": {
-                  "en": "Medium",
-                  "de": "Mittel"
-                }
-              },
-              {
-                "id": "high",
-                "label": {
-                  "en": "High",
-                  "de": "Hoch"
-                }
-              },
-              {
-                "id": "auto",
-                "label": {
-                  "en": "Auto",
-                  "de": "Auto"
-                }
-              },
-              {
-                "id": "turbo",
-                "label": {
-                  "en": "Turbo",
-                  "de": "Turbo"
-                }
-              }
-            ]
+            }
           }
         ]
       },
@@ -5067,55 +4848,11 @@
           },
           {
             "name": "mode",
-            "type": "dropdown",
-            "title": {
+            "type": "autocomplete",
+            "placeholder": {
               "en": "Mode",
               "de": "Modus"
-            },
-            "values": [
-              {
-                "id": "auto",
-                "label": {
-                  "en": "Auto",
-                  "de": "Auto"
-                }
-              },
-              {
-                "id": "manual",
-                "label": {
-                  "en": "Manual",
-                  "de": "Manuell"
-                }
-              },
-              {
-                "id": "normal",
-                "label": {
-                  "en": "Normal",
-                  "de": "Normal"
-                }
-              },
-              {
-                "id": "sleep",
-                "label": {
-                  "en": "Sleep",
-                  "de": "Schlaf"
-                }
-              },
-              {
-                "id": "eco",
-                "label": {
-                  "en": "Eco",
-                  "de": "Eco"
-                }
-              },
-              {
-                "id": "boost",
-                "label": {
-                  "en": "Boost",
-                  "de": "Boost"
-                }
-              }
-            ]
+            }
           }
         ]
       },
@@ -5137,41 +4874,11 @@
           },
           {
             "name": "fan_speed",
-            "type": "dropdown",
-            "title": {
+            "type": "autocomplete",
+            "placeholder": {
               "en": "Fan Speed",
               "de": "Lüftergeschwindigkeit"
-            },
-            "values": [
-              {
-                "id": "low",
-                "label": {
-                  "en": "Low",
-                  "de": "Niedrig"
-                }
-              },
-              {
-                "id": "medium",
-                "label": {
-                  "en": "Medium",
-                  "de": "Mittel"
-                }
-              },
-              {
-                "id": "high",
-                "label": {
-                  "en": "High",
-                  "de": "Hoch"
-                }
-              },
-              {
-                "id": "auto",
-                "label": {
-                  "en": "Auto",
-                  "de": "Auto"
-                }
-              }
-            ]
+            }
           }
         ]
       },
@@ -5221,48 +4928,11 @@
           },
           {
             "name": "mode",
-            "type": "dropdown",
-            "title": {
+            "type": "autocomplete",
+            "placeholder": {
               "en": "Mode",
               "de": "Modus"
-            },
-            "values": [
-              {
-                "id": "eco",
-                "label": {
-                  "en": "Eco",
-                  "de": "Eco"
-                }
-              },
-              {
-                "id": "comfort",
-                "label": {
-                  "en": "Comfort",
-                  "de": "Komfort"
-                }
-              },
-              {
-                "id": "boost",
-                "label": {
-                  "en": "Boost",
-                  "de": "Boost"
-                }
-              },
-              {
-                "id": "away",
-                "label": {
-                  "en": "Away",
-                  "de": "Abwesend"
-                }
-              },
-              {
-                "id": "auto",
-                "label": {
-                  "en": "Auto",
-                  "de": "Auto"
-                }
-              }
-            ]
+            }
           }
         ]
       },
@@ -5654,53 +5324,120 @@
       },
       {
         "id": "curtain_open",
-        "title": { "en": "Open curtain", "de": "Rollo öffnen" },
-        "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }]
+        "title": {
+          "en": "Open curtain",
+          "de": "Rollo öffnen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=curtain_motor"
+          }
+        ]
       },
       {
         "id": "curtain_close",
-        "title": { "en": "Close curtain", "de": "Rollo schließen" },
-        "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }]
+        "title": {
+          "en": "Close curtain",
+          "de": "Rollo schließen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=curtain_motor"
+          }
+        ]
       },
       {
         "id": "curtain_stop",
-        "title": { "en": "Stop curtain", "de": "Rollo stoppen" },
-        "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }]
+        "title": {
+          "en": "Stop curtain",
+          "de": "Rollo stoppen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=curtain_motor"
+          }
+        ]
       },
       {
         "id": "curtain_set_position",
-        "title": { "en": "Set curtain position", "de": "Rollo-Position setzen" },
+        "title": {
+          "en": "Set curtain position",
+          "de": "Rollo-Position setzen"
+        },
         "titleFormatted": {
           "en": "Set curtain position to [[position]]%",
           "de": "Rollo-Position auf [[position]]% setzen"
         },
         "args": [
-          { "name": "device", "type": "device", "filter": "driver_id=curtain_motor" },
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=curtain_motor"
+          },
           {
             "name": "position",
             "type": "number",
             "min": 0,
             "max": 100,
             "step": 1,
-            "title": { "en": "Position (%)", "de": "Position (%)" },
-            "placeholder": { "en": "0 = closed, 100 = open", "de": "0 = geschlossen, 100 = offen" }
+            "title": {
+              "en": "Position (%)",
+              "de": "Position (%)"
+            },
+            "placeholder": {
+              "en": "0 = closed, 100 = open",
+              "de": "0 = geschlossen, 100 = offen"
+            }
           }
         ]
       },
       {
         "id": "curtain_goto_favourite",
-        "title": { "en": "Move curtain to favourite position", "de": "Rollo zur Lieblingsposition fahren" },
-        "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }]
+        "title": {
+          "en": "Move curtain to favourite position",
+          "de": "Rollo zur Lieblingsposition fahren"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=curtain_motor"
+          }
+        ]
       },
       {
         "id": "curtain_force_reconnect",
-        "title": { "en": "Force curtain motor reconnect", "de": "Rolladenmotor: Verbindung neu aufbauen" },
-        "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }]
+        "title": {
+          "en": "Force curtain motor reconnect",
+          "de": "Rolladenmotor: Verbindung neu aufbauen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=curtain_motor"
+          }
+        ]
       },
       {
         "id": "curtain_refresh_device",
-        "title": { "en": "Refresh curtain motor values", "de": "Rolladenmotor: Daten aktualisieren" },
-        "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }]
+        "title": {
+          "en": "Refresh curtain motor values",
+          "de": "Rolladenmotor: Daten aktualisieren"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=curtain_motor"
+          }
+        ]
       }
     ]
   },
@@ -9751,7 +9488,10 @@
     },
     {
       "id": "curtain_motor",
-      "name": { "en": "Curtain Motor", "de": "Rolladenmotor" },
+      "name": {
+        "en": "Curtain Motor",
+        "de": "Rolladenmotor"
+      },
       "class": "blinds",
       "capabilities": [
         "windowcoverings_state",
@@ -9763,127 +9503,306 @@
             "en": "Motor Fault",
             "de": "Motorfehler"
           },
-          "insightsTitleTrue":  { "en": "Motor fault triggered", "de": "Motorfehler ausgelöst" },
-          "insightsTitleFalse": { "en": "Motor fault cleared",   "de": "Motorfehler behoben"   }
+          "insightsTitleTrue": {
+            "en": "Motor fault triggered",
+            "de": "Motorfehler ausgelöst"
+          },
+          "insightsTitleFalse": {
+            "en": "Motor fault cleared",
+            "de": "Motorfehler behoben"
+          }
         }
       },
       "settings": [
         {
           "type": "group",
-          "label": { "en": "Connection", "de": "Verbindung" },
+          "label": {
+            "en": "Connection",
+            "de": "Verbindung"
+          },
           "children": [
             {
-              "id": "ip", "type": "text",
-              "label": { "en": "IP Address", "de": "IP-Adresse" }, "value": "",
-              "hint":  { "en": "Local IP address of your device.", "de": "Lokale IP-Adresse des Geräts." }
+              "id": "ip",
+              "type": "text",
+              "label": {
+                "en": "IP Address",
+                "de": "IP-Adresse"
+              },
+              "value": "",
+              "hint": {
+                "en": "Local IP address of your device.",
+                "de": "Lokale IP-Adresse des Geräts."
+              }
             },
-            { "id": "device_id",  "type": "text",   "label": { "en": "Device ID",    "de": "Geräte-ID"          }, "value": "" },
-            { "id": "local_key",  "type": "text",   "label": { "en": "Local Key",    "de": "Lokaler Schlüssel"  }, "value": "" },
             {
-              "id": "version", "type": "dropdown",
-              "label": { "en": "Protocol Version", "de": "Protokollversion" }, "value": "3.3",
+              "id": "device_id",
+              "type": "text",
+              "label": {
+                "en": "Device ID",
+                "de": "Geräte-ID"
+              },
+              "value": ""
+            },
+            {
+              "id": "local_key",
+              "type": "text",
+              "label": {
+                "en": "Local Key",
+                "de": "Lokaler Schlüssel"
+              },
+              "value": ""
+            },
+            {
+              "id": "version",
+              "type": "dropdown",
+              "label": {
+                "en": "Protocol Version",
+                "de": "Protokollversion"
+              },
+              "value": "3.3",
               "values": [
-                { "id": "3.1",  "label": { "en": "3.1 (legacy)",     "de": "3.1 (veraltet)"   } },
-                { "id": "3.3",  "label": { "en": "3.3",              "de": "3.3"               } },
-                { "id": "3.4",  "label": { "en": "3.4",              "de": "3.4"               } },
-                { "id": "3.5",  "label": { "en": "3.5",              "de": "3.5"               } },
-                { "id": "3.22", "label": { "en": "3.22 (newer chips)","de": "3.22 (neuere Chips)" } }
+                {
+                  "id": "3.1",
+                  "label": {
+                    "en": "3.1 (legacy)",
+                    "de": "3.1 (veraltet)"
+                  }
+                },
+                {
+                  "id": "3.3",
+                  "label": {
+                    "en": "3.3",
+                    "de": "3.3"
+                  }
+                },
+                {
+                  "id": "3.4",
+                  "label": {
+                    "en": "3.4",
+                    "de": "3.4"
+                  }
+                },
+                {
+                  "id": "3.5",
+                  "label": {
+                    "en": "3.5",
+                    "de": "3.5"
+                  }
+                },
+                {
+                  "id": "3.22",
+                  "label": {
+                    "en": "3.22 (newer chips)",
+                    "de": "3.22 (neuere Chips)"
+                  }
+                }
               ]
             },
             {
-              "id": "polling_interval", "type": "number",
-              "label": { "en": "Polling Interval (seconds)", "de": "Abfrageintervall (Sekunden)" },
-              "value": 30, "min": 0, "max": 3600, "step": 1,
-              "hint": { "en": "0 disables active polling — the device still pushes state changes proactively.", "de": "0 deaktiviert aktives Polling — das Gerät meldet Änderungen weiterhin proaktiv." }
+              "id": "polling_interval",
+              "type": "number",
+              "label": {
+                "en": "Polling Interval (seconds)",
+                "de": "Abfrageintervall (Sekunden)"
+              },
+              "value": 30,
+              "min": 0,
+              "max": 3600,
+              "step": 1,
+              "hint": {
+                "en": "0 disables active polling — the device still pushes state changes proactively.",
+                "de": "0 deaktiviert aktives Polling — das Gerät meldet Änderungen weiterhin proaktiv."
+              }
             },
             {
-              "id": "offline_grace_seconds", "type": "number",
-              "label": { "en": "Offline Grace Period (seconds)", "de": "Offline-Karenzzeit (Sekunden)" },
-              "value": 60, "min": 0, "max": 600, "step": 5,
-              "hint": { "en": "Seconds to wait before triggering the 'device disconnected' flow.", "de": "Sekunden bis der 'Gerät getrennt'-Flow ausgelöst wird." }
+              "id": "offline_grace_seconds",
+              "type": "number",
+              "label": {
+                "en": "Offline Grace Period (seconds)",
+                "de": "Offline-Karenzzeit (Sekunden)"
+              },
+              "value": 60,
+              "min": 0,
+              "max": 600,
+              "step": 5,
+              "hint": {
+                "en": "Seconds to wait before triggering the 'device disconnected' flow.",
+                "de": "Sekunden bis der 'Gerät getrennt'-Flow ausgelöst wird."
+              }
             }
           ]
         },
         {
           "type": "group",
-          "label": { "en": "Data Points (DPs)", "de": "Datenpunkte (DPs)" },
+          "label": {
+            "en": "Data Points (DPs)",
+            "de": "Datenpunkte (DPs)"
+          },
           "children": [
             {
-              "id": "dp_control", "type": "number",
-              "label": { "en": "Control DP",  "de": "Steuerungs-DP" },
-              "value": 1, "min": 0, "max": 255, "step": 1,
-              "hint": { "en": "DP for open/stop/close commands. Zemismart: DP 1.", "de": "DP für Auf/Stop/Zu-Befehle. Zemismart: DP 1." }
+              "id": "dp_control",
+              "type": "number",
+              "label": {
+                "en": "Control DP",
+                "de": "Steuerungs-DP"
+              },
+              "value": 1,
+              "min": 0,
+              "max": 255,
+              "step": 1,
+              "hint": {
+                "en": "DP for open/stop/close commands. Zemismart: DP 1.",
+                "de": "DP für Auf/Stop/Zu-Befehle. Zemismart: DP 1."
+              }
             },
             {
-              "id": "dp_percent_control", "type": "number",
-              "label": { "en": "Position DP",  "de": "Positions-DP" },
-              "value": 2, "min": 0, "max": 255, "step": 1,
-              "hint": { "en": "DP for position 0–100 %. Zemismart: DP 2.", "de": "DP für Position 0–100 %. Zemismart: DP 2." }
+              "id": "dp_percent_control",
+              "type": "number",
+              "label": {
+                "en": "Position DP",
+                "de": "Positions-DP"
+              },
+              "value": 2,
+              "min": 0,
+              "max": 255,
+              "step": 1,
+              "hint": {
+                "en": "DP for position 0–100 %. Zemismart: DP 2.",
+                "de": "DP für Position 0–100 %. Zemismart: DP 2."
+              }
             },
             {
-              "id": "dp_work_state", "type": "number",
-              "label": { "en": "Work State DP",  "de": "Bewegungsstatus-DP" },
-              "value": 7, "min": 0, "max": 255, "step": 1,
-              "hint": { "en": "DP for opening/closing state (read-only). Zemismart: DP 7. 0 = disabled.", "de": "DP für Bewegungsstatus (nur lesen). Zemismart: DP 7. 0 = deaktiviert." }
+              "id": "dp_work_state",
+              "type": "number",
+              "label": {
+                "en": "Work State DP",
+                "de": "Bewegungsstatus-DP"
+              },
+              "value": 7,
+              "min": 0,
+              "max": 255,
+              "step": 1,
+              "hint": {
+                "en": "DP for opening/closing state (read-only). Zemismart: DP 7. 0 = disabled.",
+                "de": "DP für Bewegungsstatus (nur lesen). Zemismart: DP 7. 0 = deaktiviert."
+              }
             },
             {
-              "id": "dp_fault", "type": "number",
-              "label": { "en": "Fault Alarm DP",  "de": "Fehleralarm-DP" },
-              "value": 0, "min": 0, "max": 255, "step": 1,
-              "hint": { "en": "DP for motor fault bitmap. Zemismart v1: DP 10, v2: DP 12. 0 = disabled.", "de": "DP für Motorfehler-Bitmap. Zemismart v1: DP 10, v2: DP 12. 0 = deaktiviert." }
+              "id": "dp_fault",
+              "type": "number",
+              "label": {
+                "en": "Fault Alarm DP",
+                "de": "Fehleralarm-DP"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "step": 1,
+              "hint": {
+                "en": "DP for motor fault bitmap. Zemismart v1: DP 10, v2: DP 12. 0 = disabled.",
+                "de": "DP für Motorfehler-Bitmap. Zemismart v1: DP 10, v2: DP 12. 0 = deaktiviert."
+              }
             }
           ]
         },
         {
           "type": "group",
-          "label": { "en": "Device", "de": "Gerät" },
+          "label": {
+            "en": "Device",
+            "de": "Gerät"
+          },
           "children": [
             {
-              "id": "invert_position", "type": "checkbox",
-              "label": { "en": "Invert position", "de": "Position invertieren" },
+              "id": "invert_position",
+              "type": "checkbox",
+              "label": {
+                "en": "Invert position",
+                "de": "Position invertieren"
+              },
               "value": false,
-              "hint": { "en": "Enable if 0% shows as open and 100% as closed (direction reversed from Homey convention).", "de": "Aktivieren wenn 0% = offen und 100% = geschlossen ist." }
+              "hint": {
+                "en": "Enable if 0% shows as open and 100% as closed (direction reversed from Homey convention).",
+                "de": "Aktivieren wenn 0% = offen und 100% = geschlossen ist."
+              }
             },
             {
-              "id": "invert_control", "type": "checkbox",
-              "label": { "en": "Invert open/close direction", "de": "Öffnen/Schließen-Richtung umkehren" },
+              "id": "invert_control",
+              "type": "checkbox",
+              "label": {
+                "en": "Invert open/close direction",
+                "de": "Öffnen/Schließen-Richtung umkehren"
+              },
               "value": false,
-              "hint": { "en": "Enable if the Open action physically closes the curtain and vice versa. Usually caused by motor installation direction or wiring.", "de": "Aktivieren wenn die Öffnen-Aktion den Vorhang physisch schließt. Tritt auf wenn der Motor verkehrt eingebaut oder verdrahtet ist." }
+              "hint": {
+                "en": "Enable if the Open action physically closes the curtain and vice versa. Usually caused by motor installation direction or wiring.",
+                "de": "Aktivieren wenn die Öffnen-Aktion den Vorhang physisch schließt. Tritt auf wenn der Motor verkehrt eingebaut oder verdrahtet ist."
+              }
             },
             {
-              "id": "dp_position_best", "type": "number",
-              "label": { "en": "Favourite Position DP", "de": "Lieblingsposition-DP" },
-              "value": 0, "min": 0, "max": 255, "step": 1,
-              "hint": { "en": "DP to move to a preset favourite position. Zemismart v2: DP 19. 0 = disabled.", "de": "DP für die voreingestellte Lieblingsposition. Zemismart v2: DP 19. 0 = deaktiviert." }
+              "id": "dp_position_best",
+              "type": "number",
+              "label": {
+                "en": "Favourite Position DP",
+                "de": "Lieblingsposition-DP"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "step": 1,
+              "hint": {
+                "en": "DP to move to a preset favourite position. Zemismart v2: DP 19. 0 = disabled.",
+                "de": "DP für die voreingestellte Lieblingsposition. Zemismart v2: DP 19. 0 = deaktiviert."
+              }
             }
           ]
         },
         {
           "type": "group",
-          "label": { "en": "Diagnostics", "de": "Diagnose" },
+          "label": {
+            "en": "Diagnostics",
+            "de": "Diagnose"
+          },
           "children": [
             {
-              "id": "connection_status", "type": "text",
-              "label": { "en": "Connection status", "de": "Verbindungsstatus" },
+              "id": "connection_status",
+              "type": "text",
+              "label": {
+                "en": "Connection status",
+                "de": "Verbindungsstatus"
+              },
               "value": "—",
-              "hint": { "en": "Updated automatically.", "de": "Wird automatisch aktualisiert." }
+              "hint": {
+                "en": "Updated automatically.",
+                "de": "Wird automatisch aktualisiert."
+              }
             },
             {
-              "id": "last_seen", "type": "text",
-              "label": { "en": "Last data received", "de": "Zuletzt Daten empfangen" },
+              "id": "last_seen",
+              "type": "text",
+              "label": {
+                "en": "Last data received",
+                "de": "Zuletzt Daten empfangen"
+              },
               "value": "—",
-              "hint": { "en": "Updated automatically.", "de": "Wird automatisch aktualisiert." }
+              "hint": {
+                "en": "Updated automatically.",
+                "de": "Wird automatisch aktualisiert."
+              }
             }
           ]
         }
       ],
       "pair": [
-        { "id": "credentials" },
-        { "id": "list_devices" }
+        {
+          "id": "credentials"
+        },
+        {
+          "id": "list_devices"
+        }
       ],
       "images": {
-        "small":  "/drivers/curtain_motor/assets/images/small.png",
-        "large":  "/drivers/curtain_motor/assets/images/large.png",
+        "small": "/drivers/curtain_motor/assets/images/small.png",
+        "large": "/drivers/curtain_motor/assets/images/large.png",
         "xlarge": "/drivers/curtain_motor/assets/images/xlarge.png"
       }
     }
