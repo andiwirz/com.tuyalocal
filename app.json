@@ -876,7 +876,8 @@
       "setable": true,
       "uiComponent": "picker",
       "uiQuickAction": false,
-      "insights": false
+      "insights": false,
+      "icon": "/assets/capabilities/relay_status.svg"
     },
     "ac_mode": {
       "type": "enum",
