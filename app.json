@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.46",
+  "version": "1.0.47",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -18,6 +18,10 @@
     "appliances"
   ],
   "changelog": {
+    "1.0.47": {
+      "en": "Garage Door: fixed 'works only once' bug on WOFEA and other single-relay openers. Root cause: the device drops the TCP connection immediately after a relay pulse, causing a 10 s reconnect delay before the next command could be sent. Fix: relay-pulse commands now use fire-and-forget (no response echo awaited, no spurious error shown) and the reconnect delay is reduced from 10 s to 3 s.",
+      "de": "Garagentor: 'Funktioniert nur einmal'-Fehler bei WOFEA und ähnlichen Einkanal-Antrieben behoben. Ursache: Gerät trennt die TCP-Verbindung sofort nach dem Relaisimpuls, wodurch 10 s Wartezeit bis zum nächsten Befehl entstanden. Fix: Relaisimpuls-Befehle nutzen jetzt Fire-and-Forget (keine Antwort abgewartet, kein falscher Fehler angezeigt) und die Wiederverbindungszeit wurde von 10 s auf 3 s reduziert."
+    },
     "1.0.46": {
       "en": "Code quality fixes: Heat Pump — added fault alarm debounce (suppresses false alarms on reconnect), mode/preset listeners now correctly re-register when DP is enabled via settings, _syncModeOptions/_syncPresetOptions called on DP change. Garage Door — push notifications now fire for all alarm states (not just left-open). Shared: isNewProtocol extracted to getter in TuyaConnection; capitalize() helper extracted to lib/utils; changelog sorted correctly.",
       "de": "Code-Qualitätsfixes: Wärmepumpe — Fehleralarm-Entprellung hinzugefügt (unterdrückt Fehlalarme beim Reconnect), Modus-/Voreinstellungs-Listener werden bei DP-Änderung in Einstellungen korrekt neu registriert, _syncModeOptions/_syncPresetOptions bei DP-Änderung aufgerufen. Garagentor — Push-Benachrichtigungen werden jetzt für alle Alarmzustände ausgelöst. Allgemein: isNewProtocol als Getter in TuyaConnection; capitalize()-Hilfsfunktion nach lib/utils extrahiert; Changelog korrekt sortiert."

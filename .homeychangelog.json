@@ -1,4 +1,8 @@
 {
+  "1.0.47": {
+    "en": "Garage Door: fixed 'works only once' on WOFEA and single-relay openers. Relay pulses now use fire-and-forget so no error is shown when the device drops the connection after the command. Reconnect delay reduced from 10 s to 3 s so the door is controllable again within seconds.",
+    "de": "Garagentor: 'Funktioniert nur einmal'-Fehler bei WOFEA und Einkanal-Antrieben behoben. Relaisimpulse nutzen jetzt Fire-and-Forget — kein Fehler wenn Gerät die Verbindung nach dem Befehl trennt. Wiederverbindungszeit von 10 s auf 3 s reduziert."
+  },
   "1.0.46": {
     "en": "Heat Pump: fault alarm now debounced (suppresses false alarms on reconnect). Mode/preset listeners re-register correctly when a DP is enabled after initial pairing. Garage Door: push notifications now fire for all alarm states. Internal code quality improvements.",
     "de": "Wärmepumpe: Fehleralarm jetzt entprellt (unterdrückt Fehlalarme beim Reconnect). Modus-/Voreinstellungs-Listener werden bei nachträglicher DP-Aktivierung korrekt registriert. Garagentor: Push-Benachrichtigungen für alle Alarmzustände. Interne Code-Qualitätsverbesserungen."

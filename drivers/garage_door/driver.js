@@ -40,12 +40,13 @@ class GarageDoorDriver extends Homey.Driver {
         args.device.triggerCapabilityListener('garagedoor_closed', true)
       );
 
-    // Toggle sends a pulse on the relay switch DP (DP 1) — equivalent to pressing the button
+    // Toggle sends a pulse on the relay switch DP (DP 1) — equivalent to pressing the button.
+    // fireAndForget: same reason as in device.js — relay-pulse devices drop TCP after the command.
     this.homey.flow.getActionCard('garage_door_toggle')
       .registerRunListener(async (args) => {
         const dp = args.device.getSetting('dp_switch');
         if (!dp || dp === 0) throw new Error('Switch DP not configured');
-        return args.device._conn?.set(dp, true);
+        return args.device._conn?.set(dp, true, { fireAndForget: true });
       });
 
     // Stop:

@@ -81,8 +81,13 @@ class GarageDoorDevice extends BaseTuyaDevice {
       if (useToggle && dpSwitch > 0) {
         // 1-button cycle door: pulse the relay regardless of target state.
         // Physical cycle: open → stop → close → stop → open …
+        // fireAndForget: WOFEA (and similar single-relay openers) drop the TCP connection
+        // immediately after processing the relay pulse.  Awaiting an echo would either
+        // block for 5 s (timeout) or throw ECONNRESET — both give the user a spurious
+        // error even though the relay DID fire.  With fireAndForget the Promise resolves
+        // as soon as the command is dispatched; the reconnect happens transparently.
         this.log(`Relay pulse (toggle mode): set(${dpSwitch}, true)`);
-        await this._conn?.set(dpSwitch, true);
+        await this._conn?.set(dpSwitch, true, { fireAndForget: true });
       } else if (!value && dpOpen > 0) {
         this.log(`Sending open command: set(${dpOpen}, true)`);
         await this._conn?.set(dpOpen, true);
@@ -96,7 +101,7 @@ class GarageDoorDevice extends BaseTuyaDevice {
       } else if (dpSwitch > 0) {
         // Fallback: no control DP configured — pulse relay.
         this.log(`Relay pulse (fallback): set(${dpSwitch}, true)`);
-        await this._conn?.set(dpSwitch, true);
+        await this._conn?.set(dpSwitch, true, { fireAndForget: true });
       } else {
         throw new Error('No door control DP configured (set dp_door_control or dp_switch)');
       }
