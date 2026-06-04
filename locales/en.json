@@ -11,7 +11,8 @@
       "light":           "Light",
       "pet_feeder":      "Pet Feeder",
       "garage_door":     "Garage Door",
-      "heat_pump":       "Heat Pump"
+      "heat_pump":       "Heat Pump",
+      "curtain_motor":   "Curtain Motor"
     }
   },
   "notifications": {
@@ -121,6 +122,12 @@
         "preset":      "Preset  (0 = disabled)",
         "fault":       "Fault Alarm  (0 = disabled)",
         "powerLevel":  "Power Level %  (0 = disabled)"
+      },
+      "curtain_motor": {
+        "control":        "Control  (DP 1, enum open|stop|close)",
+        "percentControl": "Position %  (DP 2, integer 0–100)",
+        "workState":      "Work State  (DP 7, enum opening|closing — 0 = disabled)",
+        "fault":          "Fault Alarm  (DP 10 or 12, 0 = disabled)"
       }
     }
   },

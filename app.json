@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.47",
+  "version": "1.0.48",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -18,6 +18,10 @@
     "appliances"
   ],
   "changelog": {
+    "1.0.48": {
+      "en": "New Curtain Motor driver: supports Zemismart v1/v2 and compatible Tuya category-cl curtain motors. Open/stop/close commands, position slider (0–100 %), invert position option, fault alarm. Auto-detects all DP layouts at pairing time. Full flow card support.",
+      "de": "Neuer Rollladenmotor-Treiber: Zemismart v1/v2 und kompatible Tuya-Rollladenmotoren (Kategorie cl). Auf/Stop/Zu-Befehle, Positionsregler (0–100 %), invertierbare Position, Fehleralarm. Auto-Erkennung aller DP-Layouts beim Einrichten. Vollständige Flow-Karten-Unterstützung."
+    },
     "1.0.47": {
       "en": "Garage Door: fixed 'works only once' bug on WOFEA and other single-relay openers. Root cause: the device drops the TCP connection immediately after a relay pulse, causing a 10 s reconnect delay before the next command could be sent. Fix: relay-pulse commands now use fire-and-forget (no response echo awaited, no spurious error shown) and the reconnect delay is reduced from 10 s to 3 s.",
       "de": "Garagentor: 'Funktioniert nur einmal'-Fehler bei WOFEA und ähnlichen Einkanal-Antrieben behoben. Ursache: Gerät trennt die TCP-Verbindung sofort nach dem Relaisimpuls, wodurch 10 s Wartezeit bis zum nächsten Befehl entstanden. Fix: Relaisimpuls-Befehle nutzen jetzt Fire-and-Forget (keine Antwort abgewartet, kein falscher Fehler angezeigt) und die Wiederverbindungszeit wurde von 10 s auf 3 s reduziert."
@@ -2946,6 +2950,61 @@
             "example": "warm"
           }
         ]
+      },
+      {
+        "id": "curtain_opened",
+        "title": { "en": "Curtain fully opened", "de": "Rollo vollständig geöffnet" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }]
+      },
+      {
+        "id": "curtain_closed",
+        "title": { "en": "Curtain fully closed", "de": "Rollo vollständig geschlossen" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }]
+      },
+      {
+        "id": "curtain_position_changed",
+        "title": { "en": "Curtain position changed", "de": "Rollo-Position geändert" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }],
+        "tokens": [
+          {
+            "name": "position",
+            "type": "number",
+            "title": { "en": "Position (%)", "de": "Position (%)" },
+            "example": 50
+          }
+        ]
+      },
+      {
+        "id": "curtain_fault_triggered",
+        "title": { "en": "Curtain motor fault triggered", "de": "Rolladenmotor: Fehleralarm ausgelöst" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }],
+        "tokens": [
+          {
+            "name": "fault_code",
+            "type": "string",
+            "title": { "en": "Fault code", "de": "Fehlercode" },
+            "example": "1"
+          }
+        ]
+      },
+      {
+        "id": "curtain_device_connected",
+        "title": { "en": "Curtain motor connected", "de": "Rolladenmotor verbunden" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }]
+      },
+      {
+        "id": "curtain_device_disconnected",
+        "title": { "en": "Curtain motor disconnected", "de": "Rolladenmotor getrennt" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }]
+      },
+      {
+        "id": "curtain_dp_changed",
+        "title": { "en": "Curtain motor data point changed", "de": "Rolladenmotor: Datenpunkt geändert" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }],
+        "tokens": [
+          { "name": "dp",    "type": "string", "title": { "en": "DP number", "de": "DP-Nummer" }, "example": "1" },
+          { "name": "value", "type": "string", "title": { "en": "Value",     "de": "Wert"      }, "example": "open" }
+        ]
       }
     ],
     "conditions": [
@@ -3719,6 +3778,26 @@
             "filter": "driver_id=heat_pump"
           }
         ]
+      },
+      {
+        "id": "curtain_is_open",
+        "title": { "en": "Curtain !{{is|is not}} open (> 50%)", "de": "Rollo !{{ist|ist nicht}} geöffnet (> 50%)" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }]
+      },
+      {
+        "id": "curtain_is_closed",
+        "title": { "en": "Curtain !{{is|is not}} fully closed", "de": "Rollo !{{ist|ist nicht}} vollständig geschlossen" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }]
+      },
+      {
+        "id": "curtain_is_moving",
+        "title": { "en": "Curtain !{{is|is not}} moving", "de": "Rollo !{{bewegt sich|bewegt sich nicht}}" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }]
+      },
+      {
+        "id": "curtain_device_is_connected",
+        "title": { "en": "Curtain motor !{{is|is not}} connected", "de": "Rolladenmotor !{{ist|ist nicht}} verbunden" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }]
       }
     ],
     "actions": [
@@ -5567,6 +5646,51 @@
             "filter": "driver_id=heat_pump"
           }
         ]
+      },
+      {
+        "id": "curtain_open",
+        "title": { "en": "Open curtain", "de": "Rollo öffnen" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }]
+      },
+      {
+        "id": "curtain_close",
+        "title": { "en": "Close curtain", "de": "Rollo schließen" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }]
+      },
+      {
+        "id": "curtain_stop",
+        "title": { "en": "Stop curtain", "de": "Rollo stoppen" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }]
+      },
+      {
+        "id": "curtain_set_position",
+        "title": { "en": "Set curtain position", "de": "Rollo-Position setzen" },
+        "titleFormatted": {
+          "en": "Set curtain position to [[position]]%",
+          "de": "Rollo-Position auf [[position]]% setzen"
+        },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=curtain_motor" },
+          {
+            "name": "position",
+            "type": "number",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "title": { "en": "Position (%)", "de": "Position (%)" },
+            "placeholder": { "en": "0 = closed, 100 = open", "de": "0 = geschlossen, 100 = offen" }
+          }
+        ]
+      },
+      {
+        "id": "curtain_force_reconnect",
+        "title": { "en": "Force curtain motor reconnect", "de": "Rolladenmotor: Verbindung neu aufbauen" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }]
+      },
+      {
+        "id": "curtain_refresh_device",
+        "title": { "en": "Refresh curtain motor values", "de": "Rolladenmotor: Daten aktualisieren" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }]
       }
     ]
   },
@@ -9614,6 +9738,132 @@
         "large": "/drivers/heat_pump/assets/images/large.png",
         "xlarge": "/drivers/heat_pump/assets/images/xlarge.png"
       }
+    },
+    {
+      "id": "curtain_motor",
+      "name": { "en": "Curtain Motor", "de": "Rolladenmotor" },
+      "class": "blinds",
+      "capabilities": [
+        "windowcoverings_state",
+        "windowcoverings_set"
+      ],
+      "capabilitiesOptions": {
+        "alarm_generic": {
+          "title": {
+            "en": "Motor Fault",
+            "de": "Motorfehler"
+          },
+          "insightsTitleTrue":  { "en": "Motor fault triggered", "de": "Motorfehler ausgelöst" },
+          "insightsTitleFalse": { "en": "Motor fault cleared",   "de": "Motorfehler behoben"   }
+        }
+      },
+      "settings": [
+        {
+          "type": "group",
+          "label": { "en": "Connection", "de": "Verbindung" },
+          "children": [
+            {
+              "id": "ip", "type": "text",
+              "label": { "en": "IP Address", "de": "IP-Adresse" }, "value": "",
+              "hint":  { "en": "Local IP address of your device.", "de": "Lokale IP-Adresse des Geräts." }
+            },
+            { "id": "device_id",  "type": "text",   "label": { "en": "Device ID",    "de": "Geräte-ID"          }, "value": "" },
+            { "id": "local_key",  "type": "text",   "label": { "en": "Local Key",    "de": "Lokaler Schlüssel"  }, "value": "" },
+            {
+              "id": "version", "type": "dropdown",
+              "label": { "en": "Protocol Version", "de": "Protokollversion" }, "value": "3.3",
+              "values": [
+                { "id": "3.1",  "label": { "en": "3.1 (legacy)",     "de": "3.1 (veraltet)"   } },
+                { "id": "3.3",  "label": { "en": "3.3",              "de": "3.3"               } },
+                { "id": "3.4",  "label": { "en": "3.4",              "de": "3.4"               } },
+                { "id": "3.5",  "label": { "en": "3.5",              "de": "3.5"               } },
+                { "id": "3.22", "label": { "en": "3.22 (newer chips)","de": "3.22 (neuere Chips)" } }
+              ]
+            },
+            {
+              "id": "polling_interval", "type": "number",
+              "label": { "en": "Polling Interval (seconds)", "de": "Abfrageintervall (Sekunden)" },
+              "value": 30, "min": 0, "max": 3600, "step": 1,
+              "hint": { "en": "0 disables active polling — the device still pushes state changes proactively.", "de": "0 deaktiviert aktives Polling — das Gerät meldet Änderungen weiterhin proaktiv." }
+            },
+            {
+              "id": "offline_grace_seconds", "type": "number",
+              "label": { "en": "Offline Grace Period (seconds)", "de": "Offline-Karenzzeit (Sekunden)" },
+              "value": 60, "min": 0, "max": 600, "step": 5,
+              "hint": { "en": "Seconds to wait before triggering the 'device disconnected' flow.", "de": "Sekunden bis der 'Gerät getrennt'-Flow ausgelöst wird." }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": { "en": "Data Points (DPs)", "de": "Datenpunkte (DPs)" },
+          "children": [
+            {
+              "id": "dp_control", "type": "number",
+              "label": { "en": "Control DP",  "de": "Steuerungs-DP" },
+              "value": 1, "min": 0, "max": 255, "step": 1,
+              "hint": { "en": "DP for open/stop/close commands. Zemismart: DP 1.", "de": "DP für Auf/Stop/Zu-Befehle. Zemismart: DP 1." }
+            },
+            {
+              "id": "dp_percent_control", "type": "number",
+              "label": { "en": "Position DP",  "de": "Positions-DP" },
+              "value": 2, "min": 0, "max": 255, "step": 1,
+              "hint": { "en": "DP for position 0–100 %. Zemismart: DP 2.", "de": "DP für Position 0–100 %. Zemismart: DP 2." }
+            },
+            {
+              "id": "dp_work_state", "type": "number",
+              "label": { "en": "Work State DP",  "de": "Bewegungsstatus-DP" },
+              "value": 7, "min": 0, "max": 255, "step": 1,
+              "hint": { "en": "DP for opening/closing state (read-only). Zemismart: DP 7. 0 = disabled.", "de": "DP für Bewegungsstatus (nur lesen). Zemismart: DP 7. 0 = deaktiviert." }
+            },
+            {
+              "id": "dp_fault", "type": "number",
+              "label": { "en": "Fault Alarm DP",  "de": "Fehleralarm-DP" },
+              "value": 0, "min": 0, "max": 255, "step": 1,
+              "hint": { "en": "DP for motor fault bitmap. Zemismart v1: DP 10, v2: DP 12. 0 = disabled.", "de": "DP für Motorfehler-Bitmap. Zemismart v1: DP 10, v2: DP 12. 0 = deaktiviert." }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": { "en": "Device", "de": "Gerät" },
+          "children": [
+            {
+              "id": "invert_position", "type": "checkbox",
+              "label": { "en": "Invert position", "de": "Position invertieren" },
+              "value": false,
+              "hint": { "en": "Enable if 0% shows as open and 100% as closed (direction reversed from Homey convention).", "de": "Aktivieren wenn 0% = offen und 100% = geschlossen ist." }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": { "en": "Diagnostics", "de": "Diagnose" },
+          "children": [
+            {
+              "id": "connection_status", "type": "text",
+              "label": { "en": "Connection status", "de": "Verbindungsstatus" },
+              "value": "—",
+              "hint": { "en": "Updated automatically.", "de": "Wird automatisch aktualisiert." }
+            },
+            {
+              "id": "last_seen", "type": "text",
+              "label": { "en": "Last data received", "de": "Zuletzt Daten empfangen" },
+              "value": "—",
+              "hint": { "en": "Updated automatically.", "de": "Wird automatisch aktualisiert." }
+            }
+          ]
+        }
+      ],
+      "pair": [
+        { "id": "credentials" },
+        { "id": "list_devices" }
+      ],
+      "images": {
+        "small":  "/drivers/curtain_motor/assets/images/small.png",
+        "large":  "/drivers/curtain_motor/assets/images/large.png",
+        "xlarge": "/drivers/curtain_motor/assets/images/xlarge.png"
+      }
     }
   ],
   "brandColor": "#ED5308",
@@ -9630,6 +9880,10 @@
       "garage door",
       "heat pump",
       "pool heater",
+      "curtain",
+      "blind",
+      "shutter",
+      "roller",
       "local",
       "lan"
     ],
@@ -9645,6 +9899,10 @@
       "garagentor",
       "wärmepumpe",
       "poolheizung",
+      "rollo",
+      "rollladen",
+      "vorhang",
+      "jalousie",
       "lokal",
       "lan"
     ]

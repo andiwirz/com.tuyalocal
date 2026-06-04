@@ -11,7 +11,8 @@
       "light":           "Licht",
       "pet_feeder":      "Futterautomat",
       "garage_door":     "Garagentor",
-      "heat_pump":       "Wärmepumpe"
+      "heat_pump":       "Wärmepumpe",
+      "curtain_motor":   "Rolladenmotor"
     }
   },
   "notifications": {
@@ -121,6 +122,12 @@
         "preset":      "Voreinstellung  (0 = deaktiviert)",
         "fault":       "Fehleralarm  (0 = deaktiviert)",
         "powerLevel":  "Leistungsstufe %  (0 = deaktiviert)"
+      },
+      "curtain_motor": {
+        "control":        "Steuerung  (DP 1, Enum open|stop|close)",
+        "percentControl": "Position %  (DP 2, Integer 0–100)",
+        "workState":      "Bewegungsstatus  (DP 7, Enum opening|closing — 0 = deaktiviert)",
+        "fault":          "Fehleralarm  (DP 10 oder 12, 0 = deaktiviert)"
       }
     }
   },
