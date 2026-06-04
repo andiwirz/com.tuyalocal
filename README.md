@@ -1,6 +1,6 @@
 # Tuya Local — Homey App
 
-**Version 1.0.46** · Local control of Tuya smart devices — no cloud, no internet dependency.
+**Version 1.0.47** · Local WiFi/LAN control of Tuya smart devices — no cloud, no Zigbee hub required.
 
 All communication happens over your local network via the Tuya LAN protocol. Eleven built-in drivers cover the most common device types; a fully generic driver handles anything else.
 

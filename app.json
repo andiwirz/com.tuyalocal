@@ -11,8 +11,8 @@
     "de": "Tuya Local"
   },
   "description": {
-    "en": "Control Tuya-based devices over local LAN",
-    "de": "Tuya-Geräte über lokales LAN steuern"
+    "en": "Local WiFi/LAN control of Tuya devices — no cloud, no Zigbee hub required",
+    "de": "Lokale WLAN/LAN-Steuerung von Tuya-Geräten — ohne Cloud, ohne Zigbee-Hub"
   },
   "category": [
     "appliances"
