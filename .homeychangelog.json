@@ -1,4 +1,8 @@
 {
+  "1.0.51": {
+    "en": "App Store description updated to comply with Homey guidelines.",
+    "de": "App-Store-Beschreibung gemäss Homey-Richtlinien aktualisiert."
+  },
   "1.0.50": {
     "en": "Fixed: mode and fan-speed choices in flow cards now dynamically read from device settings (mode_values / fan_speed_values) — no more hardcoded Eco/Comfort/Boost etc. Affects Dehumidifier, AC, Fan, Humidifier, Heater.",
     "de": "Behoben: Modus- und Lüftergeschwindigkeit-Auswahlen in Flow-Karten werden jetzt dynamisch aus den Geräte-Einstellungen gelesen — keine fest codierten Werte mehr. Betrifft Entfeuchter, Klimaanlage, Lüfter, Luftbefeuchter, Heizgerät."

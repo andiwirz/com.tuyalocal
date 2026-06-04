@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.50",
+  "version": "1.0.51",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -149,6 +149,10 @@
     "1.0.50": {
       "en": "Fixed: mode and fan-speed choices in flow cards (Set mode, Mode is, Set fan speed, Fan speed is) now read from the device's mode_values / fan_speed_values settings instead of a hardcoded list. Affects Dehumidifier, Air Conditioner, Fan, Humidifier and Heater drivers. Existing flows that used the old dropdown choices must be re-saved to pick the new values from the autocomplete.",
       "de": "Behoben: Modus- und Lüftergeschwindigkeit-Auswahlen in Flow-Karten lesen jetzt aus den Geräte-Einstellungen mode_values / fan_speed_values statt aus einer fest codierten Liste. Betrifft Entfeuchter, Klimaanlage, Lüfter, Luftbefeuchter und Heizgerät. Bestehende Flows die die alten Auswahlfelder verwenden müssen erneut gespeichert werden."
+    },
+    "1.0.51": {
+      "en": "App Store description updated to comply with Homey guidelines.",
+      "de": "App-Store-Beschreibung gemäss Homey-Richtlinien aktualisiert."
     }
   },
   "permissions": [],
