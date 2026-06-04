@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.51",
+  "version": "1.0.52",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -153,6 +153,10 @@
     "1.0.51": {
       "en": "App Store description updated to comply with Homey guidelines.",
       "de": "App-Store-Beschreibung gemäss Homey-Richtlinien aktualisiert."
+    },
+    "1.0.52": {
+      "en": "Heater: added Work State DP support (e.g. DP 11 \"heating\"/\"no_heating\"). New Heating tile indicator and flow cards: \"Heater started heating\" and \"Heater stopped heating\" triggers, \"Heater is heating\" condition.",
+      "de": "Heizgerät: Arbeitsstatus-DP hinzugefügt (z.B. DP 11 \"heating\"/\"no_heating\"). Neue Heizstatus-Kachel und Flow-Karten: Auslöser \"Heizt jetzt\" / \"Heizt nicht mehr\", Bedingung \"Heizt\"."
     }
   },
   "permissions": [],
@@ -1597,6 +1601,27 @@
       "max": 100,
       "insights": true,
       "icon": "/assets/capabilities/power_level.svg"
+    },
+    "heater_active": {
+      "type": "boolean",
+      "title": {
+        "en": "Heating",
+        "de": "Heizt"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "uiQuickAction": false,
+      "insights": true,
+      "insightsTitleTrue": {
+        "en": "Heating started",
+        "de": "Heizvorgang gestartet"
+      },
+      "insightsTitleFalse": {
+        "en": "Heating stopped",
+        "de": "Heizvorgang gestoppt"
+      },
+      "icon": "/assets/capabilities/heater_active.svg"
     }
   },
   "flow": {
@@ -2507,6 +2532,34 @@
               "de": "Wert"
             },
             "example": "true"
+          }
+        ]
+      },
+      {
+        "id": "heater_started_heating",
+        "title": {
+          "en": "Heater started heating",
+          "de": "Heizgerät heizt jetzt"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=heater"
+          }
+        ]
+      },
+      {
+        "id": "heater_stopped_heating",
+        "title": {
+          "en": "Heater stopped heating",
+          "de": "Heizgerät heizt nicht mehr"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=heater"
           }
         ]
       },
@@ -3514,6 +3567,20 @@
         "title": {
           "en": "Heater !{{is|is not}} connected",
           "de": "Heizgerät !{{ist|ist nicht}} verbunden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=heater"
+          }
+        ]
+      },
+      {
+        "id": "heater_is_heating",
+        "title": {
+          "en": "Heater !{{is|is not}} actively heating",
+          "de": "Heizgerät !{{heizt|heizt nicht}}"
         },
         "args": [
           {
@@ -7635,6 +7702,20 @@
             "en": "Current Temperature",
             "de": "Aktuelle Temperatur"
           }
+        },
+        "heater_active": {
+          "title": {
+            "en": "Heating",
+            "de": "Heizt"
+          },
+          "insightsTitleTrue": {
+            "en": "Heating started",
+            "de": "Heizvorgang gestartet"
+          },
+          "insightsTitleFalse": {
+            "en": "Heating stopped",
+            "de": "Heizvorgang gestoppt"
+          }
         }
       },
       "settings": [
@@ -7953,6 +8034,22 @@
               "hint": {
                 "en": "Read-only. Set to 0 to disable.",
                 "de": "Nur lesen. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_work_state",
+              "type": "number",
+              "label": {
+                "en": "Work State DP",
+                "de": "Arbeitsstatus DP"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "step": 1,
+              "hint": {
+                "en": "Read-only DP reporting heating/idle state (e.g. DP 11: \"heating\" or \"no_heating\"). 0 = disabled.",
+                "de": "Nur-Lese-DP für Heizstatus (z.B. DP 11: \"heating\" oder \"no_heating\"). 0 = deaktiviert."
               }
             }
           ]

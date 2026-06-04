@@ -13,6 +13,8 @@ const DP_PROFILE = [
   { settingKey: 'dp_child_lock',      capability: 'child_lock',      transform: (v) => Boolean(v),  settable: true  },
   { settingKey: 'dp_countdown_timer', capability: 'countdown_timer', transform: (v) => String(v),   settable: true  },
   { settingKey: 'dp_countdown_left',  capability: 'countdown_left',  transform: (v) => Number(v),   settable: false },
+  // Work state: "heating" = true, anything else (e.g. "no_heating") = false
+  { settingKey: 'dp_work_state',      capability: 'heater_active',   transform: (v) => String(v).toLowerCase() === 'heating', settable: false },
 ];
 
 const OPTIONAL_CAPABILITIES = [
@@ -23,6 +25,7 @@ const OPTIONAL_CAPABILITIES = [
   { setting: 'dp_countdown_timer', capability: 'countdown_timer' },
   { setting: 'dp_countdown_left',  capability: 'countdown_left'  },
   { setting: 'dp_current_temp',    capability: 'measure_temperature' },
+  { setting: 'dp_work_state',      capability: 'heater_active'   },
 ];
 
 class HeaterDevice extends BaseTuyaDevice {
@@ -45,6 +48,8 @@ class HeaterDevice extends BaseTuyaDevice {
     this._triggerDeviceDisconnected = this.homey.flow.getDeviceTriggerCard('heater_device_disconnected');
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('heater_dp_changed');
     this._triggerFaultOn            = this.homey.flow.getDeviceTriggerCard('heater_fault_alarm_on');
+    this._triggerStartedHeating     = this.homey.flow.getDeviceTriggerCard('heater_started_heating');
+    this._triggerStoppedHeating     = this.homey.flow.getDeviceTriggerCard('heater_stopped_heating');
 
     // ── Capability listeners — DP_PROFILE ───────────────────────────────────
     for (const entry of DP_PROFILE) {
@@ -161,7 +166,25 @@ class HeaterDevice extends BaseTuyaDevice {
         continue;
       }
 
-      await this.setCapabilityValue(entry.capability, entry.transform(value)).catch(() => {});
+      const converted = entry.transform(value);
+
+      // Fire started/stopped heating triggers on state change
+      if (entry.capability === 'heater_active') {
+        const prev = this.getCapabilityValue('heater_active');
+        await this.setCapabilityValue('heater_active', converted).catch(() => {});
+        if (prev !== converted) {
+          if (converted) {
+            this._triggerStartedHeating.trigger(this).catch(() => {});
+            this.log('Heater started heating');
+          } else {
+            this._triggerStoppedHeating.trigger(this).catch(() => {});
+            this.log('Heater stopped heating');
+          }
+        }
+        continue;
+      }
+
+      await this.setCapabilityValue(entry.capability, converted).catch(() => {});
     }
 
     if (changed) {

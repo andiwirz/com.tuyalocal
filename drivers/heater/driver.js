@@ -52,6 +52,11 @@ class HeaterDriver extends Homey.Driver {
         return args.device.triggerCapabilityListener('child_lock', enabled);
       });
 
+    this.homey.flow.getConditionCard('heater_is_heating')
+      .registerRunListener(async (args) =>
+        args.device.getCapabilityValue('heater_active') === true
+      );
+
     this.homey.flow.getActionCard('heater_force_reconnect')
       .registerRunListener(async (args) => args.device.forceReconnect());
 

@@ -1,4 +1,8 @@
 {
+  "1.0.52": {
+    "en": "Heater: new Work State DP setting — map DP 11 (or similar) to show whether the heater is actively heating. New tile indicator + flow triggers 'started heating' / 'stopped heating' and condition 'is heating'.",
+    "de": "Heizgerät: neuer Arbeitsstatus-DP — z.B. DP 11 zuweisen um zu sehen ob aktiv geheizt wird. Neue Kachel-Anzeige und Flow-Auslöser 'heizt jetzt' / 'heizt nicht mehr' sowie Bedingung 'heizt'."
+  },
   "1.0.51": {
     "en": "App Store description updated to comply with Homey guidelines.",
     "de": "App-Store-Beschreibung gemäss Homey-Richtlinien aktualisiert."
