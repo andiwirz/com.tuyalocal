@@ -1,18 +1,3 @@
-Zwölf spezialisierte Treiber decken die gängigsten Tuya-Gerätekategorien ab — und ein vollständig generischer Treiber übernimmt alles andere. Nach dem Einrichten reagieren Geräte sofort auf Homey-Befehle und melden Zustandsänderungen in Echtzeit, auch ohne Internetverbindung.
+Zwölf integrierte Treiber decken die gängigsten Tuya-Smart-Home-Gerätekategorien ab — von Klimaanlagen, Smart Plugs und Lichtern bis hin zu Garagentoren, Wärmepumpen und Rollladenmotoren. Jeder Treiber erkennt beim Einrichten automatisch die Datenpunkte des Geräts und ordnet sie den richtigen Homey-Capabilities zu, sodass die meisten Geräte sofort einsatzbereit sind. Für Gerätetypen, die nicht von den speziellen Treibern abgedeckt werden, steht ein generischer Treiber zur Verfügung.
 
-Unterstützte Gerätetypen:
-Entfeuchter · Smart Plug · Klimaanlage · Lüfter · Luftbefeuchter · Heizgerät · Licht · Futterautomat · Garagentor · Wärmepumpe · Rolladenmotor · Generisches Tuya-Gerät
-
-Funktionen:
-- Automatische Datenpunkt-Erkennung beim Einrichten mit direktem DP-Editor
-- Optionale Capabilities werden anhand der Einstellungen dynamisch hinzugefügt oder entfernt
-- Netzwerk-Scanner — findet Geräte per UDP-Broadcast und TCP-Subnetz-Scan
-- Automatische Neuverbindung mit exponentiellem Backoff und Heartbeat-Watchdog
-- Push-Benachrichtigungen bei Alarm (Wassertank, Fehleralarm, Garagentor offen)
-- Diagnose-Protokoll, Live-DP-Debugansicht und Rohdaten-Viewer in den App-Einstellungen
-
-Homey Flow-Unterstützung:
-Jeder Treiber bietet Auslöser, Bedingungen und Aktionen passend zur Gerätekategorie — darunter Schwellenwert-Auslöser, Verbindungs-Events, Datenpunkt-Änderungs-Auslöser und Steuerungsaktionen. Der generische Treiber erlaubt es, beliebige Tuya-Datenpunkte in Flows einzusetzen.
-
-Einrichten:
-Für das Pairing werden die lokale IP-Adresse, die Geräte-ID und der Local Key benötigt. Diese sind über die Tuya IoT Platform (iot.tuya.com) oder das Community-Tool "npx @tuyapi/cli wizard" erhältlich. Eine ausführliche Anleitung steht im Hilfe-Tab der App und auf GitHub.
+Die gesamte Kommunikation läuft direkt über das lokale WLAN-Netzwerk. Geräte reagieren sofort auf Homey-Befehle und melden Zustandsänderungen in Echtzeit, auch ohne Internetverbindung. Jeder Treiber bringt einen vollständigen Satz an Flow-Karten mit — Auslöser, Bedingungen und Aktionen — abgestimmt auf die jeweilige Gerätekategorie, damit Automatisierungen direkt nach dem Einrichten erstellt werden können.
