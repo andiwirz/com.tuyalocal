@@ -13,28 +13,57 @@ body:
 
         ---
 
-        ### How to collect the required DP data from iot.tuya.com
+        ### How to collect the required DP data
 
-        You need **two API calls** from the Tuya IoT Platform. Both are found under
-        **Cloud → API Explorer → Device Control**.
+        You need the **current DP values** and the **DP type/range specifications** for your device.
+        There are two ways to get them — use whichever is easier for you.
 
-        #### Step 1 — Current DP values (Query Properties)
+        ---
 
-        > Cloud → API Explorer → Device Control → **Query Properties**
+        #### Option A — Homey DP Debug panel *(fastest, no extra account needed)*
 
-        Enter your **Device ID** and run the call. Paste the full JSON response into the
-        *"Current DP values (Query Properties)"* field below.
-        This shows every DP the device is currently reporting, with its live value.
+        1. Add your device to Homey as a **Generic Tuya Device** first.
+        2. Open **Homey app → More → Apps → Tuya Local → Settings**.
+        3. Go to **DP Debug** — select your device → screenshot the live DP value table.
+        4. Go to **Raw Data** — select your device → copy the full JSON.
 
-        #### Step 2 — Data types and allowed values (Standard Instruction Set)
+        Paste the Raw Data JSON into the *"Current DP values"* field below.
+        The DP Debug screenshot goes into the *"Screenshots"* field.
 
-        > Cloud → API Explorer → Device Control (Standard Instruction Set) →
-        > **Get the specifications and properties of the device**
+        > **Note:** The DP Debug panel shows current live values but not data types or allowed ranges.
+        > If you can also supply the API Explorer data (Option B), that gives us the full picture.
 
-        Enter your **Device ID** and run the call. Paste the full JSON response into the
-        *"DP specifications (types & allowed values)"* field below.
-        This gives you the data type (`Boolean`, `Integer`, `Enum`, …) and the full
-        set of allowed values / range for every DP — essential for building pickers and sliders.
+        ---
+
+        #### Option B — Tuya IoT Platform API Explorer *(most complete, shows types & ranges)*
+
+        **Prerequisites:** a free account at [iot.tuya.com](https://iot.tuya.com) with your device linked
+        (via Smart Life / Tuya Smart app). See the [README](https://github.com/andiwirz/com.tuyalocal#how-to-get-device-id-and-local-key) for setup steps.
+
+        **Open the API Explorer:**
+        > Log in → left sidebar → **Cloud** → your project → **API Explorer**
+        >
+        > ⚠️ **Select the correct Data Centre** at the top-right of the API Explorer page.
+        > It must match the region you used when creating your cloud project (e.g. Central Europe, Western America).
+        > Wrong region = empty results.
+
+        **Step 1 — Current DP values**
+        > API Explorer → **Device Control** → **Query Properties**
+        >
+        > Enter your **Device ID** and click **Submit Request**.
+        > Paste the full JSON response into the *"Step 1 — Current DP values"* field below.
+
+        **Step 2 — DP types & allowed values**
+        > API Explorer → **Device Control** → **Get the specifications and properties of the device**
+        >
+        > Enter your **Device ID** and click **Submit Request**.
+        > Paste the full JSON response into the *"Step 2 — DP specifications"* field below.
+        > This is the most important field — it shows exact data types, enum ranges, and integer min/max/step.
+
+        > **Can't find "Device Control"?** The API Explorer layout was reorganised in 2024/2025.
+        > Try using the **search box** at the top of the API Explorer page and search for
+        > *"Query Properties"* or *"specifications"*. Alternatively, check under
+        > **Devices Management → Query Device Details in Bulk** — this also returns the `local_key`.
 
         ---
 
@@ -75,18 +104,17 @@ body:
         - "3.4"
         - "3.1"
         - "3.5"
+        - "3.22"
     validations:
       required: true
 
   - type: textarea
     id: raw_dps
     attributes:
-      label: "Step 1 — Current DP values (Query Properties)"
+      label: "Current DP values (Option A: Raw Data JSON — or — Option B: Query Properties response)"
       description: >
-        Paste the JSON response from
-        Cloud → API Explorer → Device Control → Query Properties.
-        Alternatively use Homey app → More → Apps → Tuya Local → Settings → DP Debug → Raw Data
-        and copy the JSON for your device.
+        Either paste the Raw Data JSON from Homey → Settings → DP Debug → Raw Data,
+        or paste the full API response from Cloud → API Explorer → Device Control → Query Properties.
         Include every DP the device reports — even ones whose purpose is unclear.
       render: json
       placeholder: |
@@ -105,13 +133,13 @@ body:
   - type: textarea
     id: dp_specifications
     attributes:
-      label: "Step 2 — DP specifications (types & allowed values)"
+      label: "DP specifications — types & allowed values (Option B: API Explorer only)"
       description: >
         Paste the JSON response from
-        Cloud → API Explorer → Device Control (Standard Instruction Set) →
-        Get the specifications and properties of the device.
-        This is the most important field — it tells us the exact data type and every
-        allowed value for each DP (enum ranges, integer min/max/step/scale, etc.).
+        Cloud → API Explorer → Device Control → Get the specifications and properties of the device.
+        This tells us the exact data type and every allowed value for each DP
+        (enum ranges, integer min/max/step/scale, etc.).
+        Leave blank if you only have the Homey DP Debug data — we can work with that too.
       render: json
       placeholder: |
         {
@@ -134,12 +162,6 @@ body:
                 "dp_id":  3,
                 "type":   "Integer",
                 "values": "{\"unit\":\"℃\",\"min\":16,\"max\":30,\"scale\":0,\"step\":1}"
-              },
-              {
-                "code":   "temp_current",
-                "dp_id":  4,
-                "type":   "Integer",
-                "values": "{\"unit\":\"℃\",\"min\":0,\"max\":50,\"scale\":0,\"step\":1}"
               }
             ],
             "status": [
@@ -153,8 +175,6 @@ body:
           },
           "success": true
         }
-    validations:
-      required: true
 
   - type: checkboxes
     id: capabilities
@@ -188,23 +208,13 @@ body:
   - type: textarea
     id: screenshot_device
     attributes:
-      label: Screenshot — device tile in Homey
+      label: Screenshots — device tile and DP Debug panel
       description: >
-        Add the device to Homey as a **Generic Tuya Device** first, then take a screenshot
-        of its tile / detail view so we can see which capabilities are currently visible
-        and how the values are displayed.
-        **Drag and drop your screenshot directly into this field.**
-      placeholder: "Drag & drop screenshot here, or click to attach"
+        1. Screenshot of the device **tile / detail view** in Homey (after adding as Generic Tuya Device).
+        2. Screenshot of **Settings → DP Debug** — the live DP value table for this device.
+        3. Screenshot of **Settings → DP Debug → Raw Data** — full JSON payload.
 
-  - type: textarea
-    id: screenshot_dp_debug
-    attributes:
-      label: Screenshot — DP Debug panel (DP values & Raw Data)
-      description: >
-        Open **Homey app → More → Apps → Tuya Local → Settings** and take two screenshots:
-        1. **DP Debug** — the live DP value table for this device (DP number, value, type columns).
-        2. **Raw Data** — the full unprocessed JSON payload for the same device.
-        **Drag and drop both screenshots into this field** (you can attach multiple images at once).
+        **Drag and drop all screenshots directly into this field.**
       placeholder: "Drag & drop screenshots here, or click to attach"
 
   - type: dropdown
@@ -221,4 +231,4 @@ body:
     id: context
     attributes:
       label: Additional context
-      description: Screenshots, links to similar projects, manufacturer spec sheets, anything else useful.
+      description: Links to similar projects (e.g. tuya-local YAML), manufacturer spec sheets, anything else useful.
