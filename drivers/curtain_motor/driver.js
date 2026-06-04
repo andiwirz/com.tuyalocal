@@ -61,6 +61,16 @@ class CurtainMotorDriver extends Homey.Driver {
         args.device.triggerCapabilityListener('windowcoverings_set', args.position / 100)
       );
 
+    // Move to the pre-configured favourite position (Zemismart v2 DP 19 position_best).
+    // Sends the stored dp_position_best DP value (0–100) to trigger the motor.
+    this.homey.flow.getActionCard('curtain_goto_favourite')
+      .registerRunListener(async (args) => {
+        const dp = args.device.getSetting('dp_position_best');
+        if (!dp || dp === 0) throw new Error('Favourite Position DP not configured (set dp_position_best in device settings)');
+        const pos = args.device.getSetting('position_best') ?? 50;
+        return args.device._conn?.set(dp, Math.round(pos));
+      });
+
     this.homey.flow.getActionCard('curtain_force_reconnect')
       .registerRunListener(async (args) => args.device.forceReconnect());
 

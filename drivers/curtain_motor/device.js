@@ -69,12 +69,18 @@ class CurtainMotorDevice extends BaseTuyaDevice {
     // ── Capability listeners ─────────────────────────────────────────────────
 
     // windowcoverings_state: "up"/"idle"/"down" → open/stop/close
+    // invert_control swaps open↔close for devices where the Tuya "open" command
+    // physically closes the curtain (common on some Zemismart installations).
     this.registerCapabilityListener('windowcoverings_state', async (value) => {
-      const dp  = this.getSetting('dp_control');
-      const cmd = STATE_TO_CONTROL[value];
+      const dp     = this.getSetting('dp_control');
+      const invert = this.getSetting('invert_control') || false;
       if (!dp || dp === 0) throw new Error('Control DP not configured');
+      const cmdMap = invert
+        ? { up: 'close', idle: 'stop', down: 'open' }
+        : STATE_TO_CONTROL;
+      const cmd = cmdMap[value];
       if (!cmd) throw new Error(`Unknown state: ${value}`);
-      this.log(`Curtain ${cmd} (DP ${dp})`);
+      this.log(`Curtain ${cmd} (DP ${dp})${invert ? ' [inverted]' : ''}`);
       await this._conn?.set(dp, cmd);
     });
 

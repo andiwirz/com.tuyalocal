@@ -1,4 +1,8 @@
 {
+  "1.0.49": {
+    "en": "Curtain Motor: 'Invert open/close direction' setting fixes reversed Open/Close actions. Added 'Move to favourite position' flow action (Zemismart v2 DP 19).",
+    "de": "Rolladenmotor: 'Öffnen/Schließen umkehren'-Einstellung behebt vertauschte Auf/Zu-Aktionen. 'Zur Lieblingsposition'-Flow-Aktion hinzugefügt (Zemismart v2 DP 19)."
+  },
   "1.0.48": {
     "en": "New Curtain Motor driver: Zemismart v1/v2 and compatible Tuya curtain motors. Open/stop/close tile, position slider, invert option, fault alarm. Full flow card support.",
     "de": "Neuer Rolladenmotor-Treiber: Zemismart v1/v2 und kompatible Tuya-Rollladenmotoren. Auf/Stop/Zu-Kachel, Positionsregler, Invertierungs-Option, Fehleralarm. Vollständige Flow-Karten."

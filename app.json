@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.48",
+  "version": "1.0.49",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -18,6 +18,10 @@
     "appliances"
   ],
   "changelog": {
+    "1.0.49": {
+      "en": "Curtain Motor: added 'Invert open/close direction' setting — enable when the Open action physically closes the curtain (motor wired in reverse). Added 'Favourite Position DP' setting and 'Move to favourite position' flow action for Zemismart v2 (DP 19 position_best).",
+      "de": "Rolladenmotor: 'Öffnen/Schließen-Richtung umkehren'-Einstellung hinzugefügt — aktivieren wenn Öffnen-Aktion den Vorhang schließt (Motor verkehrt verdrahtet). 'Lieblingsposition-DP'-Einstellung und 'Zur Lieblingsposition fahren'-Flow-Aktion für Zemismart v2 (DP 19 position_best) hinzugefügt."
+    },
     "1.0.48": {
       "en": "New Curtain Motor driver: supports Zemismart v1/v2 and compatible Tuya category-cl curtain motors. Open/stop/close commands, position slider (0–100 %), invert position option, fault alarm. Auto-detects all DP layouts at pairing time. Full flow card support.",
       "de": "Neuer Rollladenmotor-Treiber: Zemismart v1/v2 und kompatible Tuya-Rollladenmotoren (Kategorie cl). Auf/Stop/Zu-Befehle, Positionsregler (0–100 %), invertierbare Position, Fehleralarm. Auto-Erkennung aller DP-Layouts beim Einrichten. Vollständige Flow-Karten-Unterstützung."
@@ -5684,6 +5688,11 @@
         ]
       },
       {
+        "id": "curtain_goto_favourite",
+        "title": { "en": "Move curtain to favourite position", "de": "Rollo zur Lieblingsposition fahren" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }]
+      },
+      {
         "id": "curtain_force_reconnect",
         "title": { "en": "Force curtain motor reconnect", "de": "Rolladenmotor: Verbindung neu aufbauen" },
         "args": [{ "name": "device", "type": "device", "filter": "driver_id=curtain_motor" }]
@@ -9834,6 +9843,18 @@
               "label": { "en": "Invert position", "de": "Position invertieren" },
               "value": false,
               "hint": { "en": "Enable if 0% shows as open and 100% as closed (direction reversed from Homey convention).", "de": "Aktivieren wenn 0% = offen und 100% = geschlossen ist." }
+            },
+            {
+              "id": "invert_control", "type": "checkbox",
+              "label": { "en": "Invert open/close direction", "de": "Öffnen/Schließen-Richtung umkehren" },
+              "value": false,
+              "hint": { "en": "Enable if the Open action physically closes the curtain and vice versa. Usually caused by motor installation direction or wiring.", "de": "Aktivieren wenn die Öffnen-Aktion den Vorhang physisch schließt. Tritt auf wenn der Motor verkehrt eingebaut oder verdrahtet ist." }
+            },
+            {
+              "id": "dp_position_best", "type": "number",
+              "label": { "en": "Favourite Position DP", "de": "Lieblingsposition-DP" },
+              "value": 0, "min": 0, "max": 255, "step": 1,
+              "hint": { "en": "DP to move to a preset favourite position. Zemismart v2: DP 19. 0 = disabled.", "de": "DP für die voreingestellte Lieblingsposition. Zemismart v2: DP 19. 0 = deaktiviert." }
             }
           ]
         },
