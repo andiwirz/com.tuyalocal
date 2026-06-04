@@ -310,6 +310,43 @@
     </div>
 
     <div class="section">
+      <h2>Heat Pump — DP reference</h2>
+      <p>Universal pool / air-water heat pump driver. Covers Phalén Calidi XP, Fairland InverterPlus, Brustec, BWT, CBC, Madimack, Mountfield, Waterco, Aquastrong, Arcelik/Axen, Apricus, ITS 45HD and more. All DPs are auto-detected at pairing time.</p>
+      <table class="help-table">
+        <thead><tr><th>Setting</th><th>Typical DP</th><th>Capability</th><th>Notes</th><th>R/W</th></tr></thead>
+        <tbody>
+          <tr><td>dp_onoff</td>         <td>1</td>   <td>On / Off</td>                  <td>DP 101 on Waterco ECO-VS</td>                                                                              <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_target_temp</td>   <td>2</td>   <td>Target Temperature</td>        <td>Phalén: DP 106 · Waterco: DP 104. Divided by <em>temp_divisor</em></td>                                   <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_current_temp</td>  <td>3</td>   <td>Current Temperature</td>       <td>Phalén: DP 102. 0 = disabled. Divided by <em>temp_divisor</em></td>                                       <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_mode</td>          <td>0</td>   <td>Mode (picker)</td>             <td>0 = disabled. Set <em>mode_values</em> to match your device, e.g. <code>heat,cool,auto</code> or <code>warm,smart,cool</code> (Phalén)</td>  <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_preset</td>        <td>0</td>   <td>Preset (picker)</td>           <td>0 = disabled. Bool DPs supported (e.g. Phalén DP 117: false=sleep, true=boost). Set <em>preset_values</em></td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_fault</td>         <td>0</td>   <td>Fault Alarm</td>               <td>0 = disabled. Bitfield or bool. DP 115/116 on Phalén, DP 107 on Waterco</td>                              <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_power_level</td>   <td>0</td>   <td>Power Level (%)</td>           <td>0 = disabled. Inverter power output %. DP 104 on Phalén, DP 109 on Waterco, DP 20 on Madimack</td>       <td><span class="help-badge badge-ro">Read</span></td></tr>
+        </tbody>
+      </table>
+      <div class="note"><strong>Temperature divisor:</strong> Devices that send temperatures ×10 (e.g. 350 for 35 °C) are auto-detected at pairing. If the displayed temperature is 10× too high, set <em>temp_divisor = 10</em> in device settings.</div>
+      <div class="note"><strong>Mode / preset values:</strong> Check the DP Debug tab while switching modes manually to find the exact strings your device sends, then update <em>mode_values</em> and/or <em>preset_values</em> in device settings. For bool preset DPs (e.g. Phalén DP 117) set <em>preset_values = sleep,boost</em> — the first value maps to <em>false</em>, the second to <em>true</em>.</div>
+      <div class="note"><strong>Temperature range:</strong> Use <em>temp_min</em>, <em>temp_max</em> and <em>temp_step</em> to configure the target temperature slider (defaults: 12–45 °C, step 1).</div>
+    </div>
+
+    <div class="section">
+      <h2>Curtain Motor — DP reference</h2>
+      <p>Universal curtain / blind motor driver. Supports Zemismart v1 &amp; v2 and any compatible Tuya category-cl curtain motor. All DPs are auto-detected at pairing time.</p>
+      <table class="help-table">
+        <thead><tr><th>Setting</th><th>Default DP</th><th>Capability / Use</th><th>Notes</th><th>R/W</th></tr></thead>
+        <tbody>
+          <tr><td>dp_control</td>          <td>1</td>  <td>windowcoverings_state</td>  <td>Enum: <code>open</code> / <code>stop</code> / <code>close</code></td>                                  <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_percent_control</td>  <td>2</td>  <td>windowcoverings_set</td>    <td>Integer 0–100. 0 = fully closed, 100 = fully open (default convention). Enable <em>invert_position</em> if reversed.</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_work_state</td>       <td>7</td>  <td>windowcoverings_state</td>  <td>Read-only movement state: <code>opening</code> / <code>closing</code>. 0 = disabled.</td>             <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_fault</td>            <td>0</td>  <td>Fault Alarm</td>            <td>Bitmap. Zemismart v1: DP 10 · v2: DP 12. 0 = disabled.</td>                                            <td><span class="help-badge badge-ro">Read</span></td></tr>
+        </tbody>
+      </table>
+      <div class="note"><strong>invert_position:</strong> Enable in device settings if 0% shows as "open" and 100% as "closed" on your device. This inverts the position slider so Homey's 0 = closed, 100 = open convention is respected.</div>
+      <div class="note"><strong>Zemismart v2 extra DPs:</strong> DP 16 (border / limit calibration) and DP 19 (favourite position) are motor-setup commands not exposed as Homey tiles. They can be sent via the Generic Tuya Device driver if needed.</div>
+      <div class="note"><strong>control_back / motor direction:</strong> DP 5 reverses the motor spin direction. This is a physical wiring compensation setting — change it in the Tuya / Smart Life app, not via Homey.</div>
+    </div>
+
+    <div class="section">
       <h2>Troubleshooting</h2>
       <table class="help-table">
         <thead><tr><th>Symptom</th><th>Fix</th></tr></thead>
@@ -333,6 +370,12 @@
           <tr><td>Garage door open/close action doesn't work (BoboYun)</td> <td>BoboYun uses separate open/close DPs. Set <em>dp_door_open = 106</em> and <em>dp_door_close = 107</em> in device settings.</td></tr>
           <tr><td>Garage door alarm never fires (BoboYun)</td>           <td>BoboYun alarm DP 141 is not auto-detected. Set <em>dp_door_state = 141</em> manually in device settings after pairing.</td></tr>
           <tr><td>AOSD light not controllable</td>                       <td>Set <em>dp_light = 105</em> in device settings (auto-detected at pairing, but verify in DP Debug tab).</td></tr>
+          <tr><td>Heat pump mode picker does nothing after enabling dp_mode</td> <td>Restart the Tuya Local app — the capability listener is registered at startup. Future changes re-register automatically without a restart.</td></tr>
+          <tr><td>Heat pump temperature is wrong or 10× off</td>        <td>Set <em>temp_divisor = 10</em> if the device sends temperatures ×10 (e.g. 350 for 35 °C). Auto-detected at pairing for most devices.</td></tr>
+          <tr><td>Heat pump spurious fault alarm on connect</td>         <td>Built-in 30 s grace period suppresses transient faults after reconnect. If alarms persist longer, check the Logs and DP Debug tabs.</td></tr>
+          <tr><td>Curtain position slider is inverted (0% = open)</td>   <td>Enable <em>invert_position</em> in device settings to swap the direction.</td></tr>
+          <tr><td>Curtain motor doesn't stop at the right position</td>  <td>The motor limit positions are set in the Tuya / Smart Life app (DP 16 border calibration), not in Homey. Run the limit calibration from the original app first.</td></tr>
+          <tr><td>Curtain tile shows "moving" but motor has stopped</td> <td>The <em>work_state</em> DP may not be resetting to idle on your device. Set <em>dp_work_state = 0</em> to disable it — the tile state will then follow the <em>control</em> DP echo instead.</td></tr>
         </tbody>
       </table>
     </div>
