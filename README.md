@@ -1,8 +1,8 @@
 # Tuya Local — Homey App
 
-**Version 1.0.47** · Local WiFi/LAN control of Tuya smart devices — no cloud, no Zigbee hub required.
+**Version 1.0.48** · Local WiFi/LAN control of Tuya smart devices — no cloud, no Zigbee hub required.
 
-All communication happens over your local network via the Tuya LAN protocol. Eleven built-in drivers cover the most common device types; a fully generic driver handles anything else.
+All communication happens over your local network via the Tuya LAN protocol. Twelve built-in drivers cover the most common device types; a fully generic driver handles anything else.
 
 ---
 
@@ -20,6 +20,7 @@ All communication happens over your local network via the Tuya LAN protocol. Ele
 | [Pet Feeder](#pet-feeder-1) | Automatic pet feeders (e.g. WOFEA, Mypin, PETKIT) | Pet Feeder |
 | [Garage Door](#garage-door-1) | Garage door openers (WOFEA, AOSD, ZC34T, BoboYun gatePro) | Garage Door |
 | [Heat Pump](#heat-pump-1) | Pool / air-water heat pumps (Phalén, Fairland, Brustec, BWT, Waterco, …) | Heat Pump |
+| [Curtain Motor](#curtain-motor-1) | Curtain / blind / roller motors (Zemismart v1 & v2 and compatible) | Blinds |
 | [Generic Tuya Device](#generic-tuya-device-1) | Any Tuya device not covered above | Other |
 
 ---
@@ -433,6 +434,41 @@ Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polli
 | `preset_values` | Comma-separated preset names — for bool DPs the first value = false, second = true | `sleep,comfort,boost` |
 
 Check the **Raw Data** panel in app settings to find the exact strings your device sends. A bool preset DP (e.g. Phalén DP 117: `false` = sleep, `true` = boost) is handled automatically — set `preset_values = sleep,boost`.
+
+---
+
+### Curtain Motor
+
+Universal driver for curtain, blind and roller motors (Tuya category `cl`). Auto-detects all DP layouts at pairing time.
+
+| Device | Control DP | Position DP | Work state DP | Fault DP |
+|---|---|---|---|---|
+| Zemismart v1 | DP 1 `open`/`stop`/`close` | DP 2 (0–100 %) | DP 7 | DP 10 |
+| Zemismart v2 | DP 1 | DP 2 | DP 7 | DP 12 |
+| Most category-cl motors | DP 1 | DP 2 | DP 7 | DP 10 or 12 |
+
+#### Connection
+
+Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polling Interval, Offline Grace Period).
+
+#### Data Points
+
+| Setting | Capability | Type | Default DP | Optional |
+|---|---|---|---|---|
+| `dp_control` | `windowcoverings_state` | enum `open`/`stop`/`close` | 1 | — |
+| `dp_percent_control` | `windowcoverings_set` | integer 0–100 % | 2 | — |
+| `dp_work_state` | `windowcoverings_state` | enum `opening`/`closing` (read-only) | 7 | ✓ `0` = disabled |
+| `dp_fault` | `alarm_generic` | bitmap | 0 | ✓ `0` = disabled |
+
+#### Device Settings
+
+| Setting | Description | Default |
+|---|---|---|
+| `invert_position` | Enable if `0 %` = open and `100 %` = closed on your device | `false` |
+
+> **Position convention:** The driver maps `percent_control` where `0` = fully closed and `100` = fully open to Homey's `windowcoverings_set` (0.0–1.0). Enable `invert_position` if your device uses the opposite convention.
+
+> **Zemismart v2 extra DPs:** DP 16 (`border` / limit calibration) and DP 19 (`position_best` / favourite position) are motor-setup commands — run the limit calibration from the Tuya/Smart Life app first, then use Homey for daily control.
 
 ---
 
@@ -938,6 +974,44 @@ All DPs are auto-detected at pairing time. For AOSD and BoboYun, `dp_door_action
 
 ---
 
+### Curtain Motor
+
+#### Triggers
+
+| Trigger | Flow tokens |
+|---|---|
+| Curtain fully opened | — |
+| Curtain fully closed | — |
+| Curtain position changed | `position` (number, %) |
+| Motor fault triggered | `fault_code` (string) |
+| Curtain motor connected | — |
+| Curtain motor disconnected | — |
+| Curtain motor data point changed | `dp` (string), `value` (string) |
+
+> **Opened / closed triggers** fire when the position reaches 100 % (opened) or 0 % (closed). They do **not** fire during intermediate movement.
+
+#### Conditions
+
+| Condition |
+|---|
+| Curtain is / is not open (> 50 %) |
+| Curtain is / is not fully closed (= 0 %) |
+| Curtain is / is not moving |
+| Curtain motor is / is not connected |
+
+#### Actions
+
+| Action | Notes |
+|---|---|
+| Open curtain | Sends `open` on `dp_control` |
+| Close curtain | Sends `close` on `dp_control` |
+| Stop curtain | Sends `stop` on `dp_control` |
+| Set curtain position to [%] | 0 = fully closed, 100 = fully open |
+| Force curtain motor reconnect | Drops and re-establishes the TCP connection |
+| Refresh curtain motor values | Triggers an immediate GET request |
+
+---
+
 ## Push Notifications
 
 | Event | Driver | Condition |
@@ -952,6 +1026,7 @@ All DPs are auto-detected at pairing time. For AOSD and BoboYun, `dp_door_action
 | Motor reports no food | Pet Feeder | `motor_state` = `no_food` — hopper empty during feeding attempt |
 | Garage door left open | Garage Door | Alarm state `unclosed_time` (WOFEA) or `openLongTime` (BoboYun) — uses "left open" message |
 | Garage door alarm | Garage Door | Any other alarm state (e.g. `close_time_alarm`, `closeLongTime`) — uses generic fault message |
+| Motor fault detected | Curtain Motor | `alarm_generic` transitions `false` → `true` (debounced, 30 s grace on reconnect) |
 
 ---
 
@@ -1007,6 +1082,9 @@ Full unprocessed payload for the selected device:
 | Heat pump mode/preset picker does nothing | DP was enabled after initial pairing — listener not registered | Restart the Tuya Local app; the listener is re-registered on next `onInit` |
 | Pet feeder sends 3–4 "disconnected" notifications per night | Tuya firmware briefly drops TCP connection at timed intervals | Increase **Offline Grace Period** in device settings (default 60 s already handles most cases; try 120 s if it still fires) |
 | Generic device shows raw key as label | Missing locale key | Set labels via the `label` field in the dp_config mapping |
+| Curtain position slider is inverted | Device uses 0 = open, 100 = closed | Enable `invert_position` in device settings |
+| Curtain tile shows "moving" but motor has stopped | `work_state` DP not resetting on this device | Set `dp_work_state = 0` to disable it |
+| Curtain motor limit positions are wrong | Motor limits not calibrated | Run limit calibration from the Tuya / Smart Life app (DP 16 `border`) before using Homey |
 
 ---
 
