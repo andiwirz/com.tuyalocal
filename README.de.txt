@@ -1,20 +1,18 @@
-Tuya Local ermöglicht die direkte, lokale Steuerung von Tuya-basierten Smart-Home-Geräten — ohne Cloud, ohne Internetabhängigkeit, ohne Verzögerung.
+Zwölf spezialisierte Treiber decken die gängigsten Tuya-Gerätekategorien ab — und ein vollständig generischer Treiber übernimmt alles andere. Nach dem Einrichten reagieren Geräte sofort auf Homey-Befehle und melden Zustandsänderungen in Echtzeit, auch ohne Internetverbindung.
 
-Die App kommuniziert über das lokale Netzwerk direkt mit den Geräten und nutzt das Tuya-LAN-Protokoll. Nach dem Einrichten reagieren die Geräte sofort auf Befehle und melden ihren Status in Echtzeit — auch ohne Internetverbindung. Alle Daten bleiben im Heimnetzwerk.
-
-Jeder Treiber ist auf seine Gerätekategorie zugeschnitten und erkennt optionale Funktionen und Datenpunkte beim Einrichten automatisch. Der generische Treiber erlaubt es, jeden Tuya-Datenpunkt einer beliebigen Homey-Capability zuzuweisen — für Geräte, die von den speziellen Treibern nicht abgedeckt werden.
+Unterstützte Gerätetypen:
+Entfeuchter · Smart Plug · Klimaanlage · Lüfter · Luftbefeuchter · Heizgerät · Licht · Futterautomat · Garagentor · Wärmepumpe · Rolladenmotor · Generisches Tuya-Gerät
 
 Funktionen:
-- Cloud-frei — kein Datenverkehr verlässt das lokale Netzwerk
-- Echtzeit-Push-Updates — kein Polling erforderlich (optional konfigurierbar)
-- Automatische Neuverbindung mit exponentiellem Backoff und Watchdog
-- Netzwerk-Scanner — findet Geräte per UDP-Broadcast und TCP-Subnetz-Scan
 - Automatische Datenpunkt-Erkennung beim Einrichten mit direktem DP-Editor
-- Reparatur-Funktion — IP oder Local Key aktualisieren ohne erneutes Einrichten
-- Push-Benachrichtigungen bei Alarm (Wassertank voll, Fehleralarm)
+- Optionale Capabilities werden anhand der Einstellungen dynamisch hinzugefügt oder entfernt
+- Netzwerk-Scanner — findet Geräte per UDP-Broadcast und TCP-Subnetz-Scan
+- Automatische Neuverbindung mit exponentiellem Backoff und Heartbeat-Watchdog
+- Push-Benachrichtigungen bei Alarm (Wassertank, Fehleralarm, Garagentor offen)
 - Diagnose-Protokoll, Live-DP-Debugansicht und Rohdaten-Viewer in den App-Einstellungen
 
 Homey Flow-Unterstützung:
 Jeder Treiber bietet Auslöser, Bedingungen und Aktionen passend zur Gerätekategorie — darunter Schwellenwert-Auslöser, Verbindungs-Events, Datenpunkt-Änderungs-Auslöser und Steuerungsaktionen. Der generische Treiber erlaubt es, beliebige Tuya-Datenpunkte in Flows einzusetzen.
 
-Für das Einrichten werden die lokale IP-Adresse, die Geräte-ID und der Local Key benötigt. Diese sind über die Tuya IoT Platform (iot.tuya.com) oder das Community-Tool "npx @tuyapi/cli wizard" erhältlich. Eine ausführliche Anleitung steht im README auf GitHub.
+Einrichten:
+Für das Pairing werden die lokale IP-Adresse, die Geräte-ID und der Local Key benötigt. Diese sind über die Tuya IoT Platform (iot.tuya.com) oder das Community-Tool "npx @tuyapi/cli wizard" erhältlich. Eine ausführliche Anleitung steht im Hilfe-Tab der App und auf GitHub.
