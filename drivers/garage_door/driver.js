@@ -46,7 +46,7 @@ class GarageDoorDriver extends Homey.Driver {
       .registerRunListener(async (args) => {
         const dp = args.device.getSetting('dp_switch');
         if (!dp || dp === 0) throw new Error('Switch DP not configured');
-        return args.device._conn?.set(dp, true, { fireAndForget: true });
+        return args.device._set(dp, true, { fireAndForget: true });
       });
 
     // Stop:
@@ -57,8 +57,8 @@ class GarageDoorDriver extends Homey.Driver {
       .registerRunListener(async (args) => {
         const dpControl = args.device.getSetting('dp_door_control');
         const dpSwitch  = args.device.getSetting('dp_switch');
-        if (dpControl > 0) return args.device._conn?.set(dpControl, 'stop');
-        if (dpSwitch  > 0) return args.device._conn?.set(dpSwitch, true);
+        if (dpControl > 0) return args.device._set(dpControl, 'stop');
+        if (dpSwitch  > 0) return args.device._set(dpSwitch, true);
         throw new Error('No stop DP configured (set dp_door_control or dp_switch)');
       });
 

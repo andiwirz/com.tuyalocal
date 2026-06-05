@@ -51,7 +51,7 @@ class FanDevice extends BaseTuyaDevice {
       if (!entry.settable) continue;
       if (!this.hasCapability(entry.capability)) continue;
       this.registerCapabilityListener(entry.capability, async (value) => {
-        await this._conn?.set(this.getSetting(entry.settingKey), value);
+        await this._set(this.getSetting(entry.settingKey), value);
       });
     }
 
@@ -66,7 +66,7 @@ class FanDevice extends BaseTuyaDevice {
             const min = this.getSetting('speed_min') ?? 1;
             const max = this.getSetting('speed_max') ?? 6;
             const raw = Math.round(min + (max - min) * Math.max(0, Math.min(1, value)));
-            await this._conn?.set(dp, raw).catch(() => {});
+            await this._set(dp, raw).catch(() => {});
           }
           resolve();
         }, DEBOUNCE_MS);

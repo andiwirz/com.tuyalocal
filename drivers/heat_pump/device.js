@@ -97,14 +97,14 @@ class HeatPumpDevice extends BaseTuyaDevice {
     this.registerCapabilityListener('onoff', async (value) => {
       const dp = this.getSetting('dp_onoff');
       if (!dp || dp === 0) throw new Error('On/Off DP not configured');
-      await this._conn?.set(dp, value);
+      await this._set(dp, value);
     });
 
     this.registerCapabilityListener('target_temperature', async (value) => {
       const dp  = this.getSetting('dp_target_temp');
       const div = this.getSetting('temp_divisor') || 1;
       if (!dp || dp === 0) throw new Error('Target temperature DP not configured');
-      await this._conn?.set(dp, Math.round(value * div));
+      await this._set(dp, Math.round(value * div));
     });
 
     await this._connect();
@@ -136,7 +136,7 @@ class HeatPumpDevice extends BaseTuyaDevice {
       this.registerCapabilityListener('heat_pump_mode', async (value) => {
         const dp = this.getSetting('dp_mode');
         if (!dp || dp === 0) throw new Error('Mode DP not configured');
-        await this._conn?.set(dp, value);
+        await this._set(dp, value);
       });
     }
     if (this.hasCapability('heat_pump_preset')) {
@@ -148,9 +148,9 @@ class HeatPumpDevice extends BaseTuyaDevice {
           // Bool preset: false = first value (e.g. sleep), true = second value (e.g. boost)
           const vals = (this.getSetting('preset_values') || 'sleep,comfort,boost')
             .split(',').map((s) => s.trim()).filter(Boolean);
-          await this._conn?.set(dp, value === (vals[1] ?? 'boost'));
+          await this._set(dp, value === (vals[1] ?? 'boost'));
         } else {
-          await this._conn?.set(dp, value);
+          await this._set(dp, value);
         }
       });
     }

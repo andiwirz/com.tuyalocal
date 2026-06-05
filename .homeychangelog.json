@@ -1,4 +1,12 @@
 {
+  "1.0.54": {
+    "en": "Garage door: relay pulse now sends a false-reset 300 ms after the true pulse, so edge-triggered devices (e.g. WOFEA) reliably fire on every button press instead of only the first.",
+    "de": "Garagentor: Nach jedem Relais-Puls wird 300 ms später ein false-Reset gesendet, damit flankengetriggerte Geräte (z.B. WOFEA) bei jedem Tastendruck auslösen, nicht nur beim ersten."
+  },
+  "1.0.53": {
+    "en": "Heater pairing improvements: auto-detect Work State DP (heating/no_heating), smarter mode_values seeding, and °F mirror DP exclusion from temperature detection. New app-wide 'Fire and forget' setting for devices that drop the TCP connection after SET commands.",
+    "de": "Heizgerät-Kopplung verbessert: automatische Erkennung des Arbeitsstatus-DP, intelligenteres mode_values-Seeding, Ausschluss von °F-Spiegel-DPs aus der Temperaturerkennung. Neue App-weite 'Fire and forget'-Einstellung für Geräte, die die TCP-Verbindung nach SET-Befehlen trennen."
+  },
   "1.0.52": {
     "en": "Heater: new Work State DP setting — map DP 11 (or similar) to show whether the heater is actively heating. New tile indicator + flow triggers 'started heating' / 'stopped heating' and condition 'is heating'.",
     "de": "Heizgerät: neuer Arbeitsstatus-DP — z.B. DP 11 zuweisen um zu sehen ob aktiv geheizt wird. Neue Kachel-Anzeige und Flow-Auslöser 'heizt jetzt' / 'heizt nicht mehr' sowie Bedingung 'heizt'."

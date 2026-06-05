@@ -65,7 +65,7 @@ class SmartPlugDevice extends BaseTuyaDevice {
       if (!entry.settable) continue;
 
       this.registerCapabilityListener(entry.capability, async (value) => {
-        await this._conn?.set(this.getSetting(entry.settingKey), value);
+        await this._set(this.getSetting(entry.settingKey), value);
       });
     }
 
@@ -256,7 +256,7 @@ class SmartPlugDevice extends BaseTuyaDevice {
   async setCountdown(seconds) {
     const dp = this.getSetting('dp_countdown');
     if (!dp || dp <= 0) throw new Error('Countdown DP not configured (set dp_countdown in device settings)');
-    await this._conn?.set(dp, Math.round(seconds));
+    await this._set(dp, Math.round(seconds));
   }
 
   // ── Homey lifecycle ──────────────────────────────────────────────────────────
@@ -282,7 +282,7 @@ class SmartPlugDevice extends BaseTuyaDevice {
     if (changedKeys.includes('relay_status')) {
       const dp = this.getSetting('dp_relay_status');
       if (dp > 0) {
-        await this._conn?.set(dp, this.getSetting('relay_status'))
+        await this._set(dp, this.getSetting('relay_status'))
           .catch((err) => this._appLog(`relay_status set failed: ${err.message}`, 'warn'));
       } else {
         this._appLog('Turn On Behavior changed but dp_relay_status = 0 — no command sent. Set the DP number first.', 'warn');

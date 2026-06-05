@@ -86,22 +86,36 @@ class GarageDoorDevice extends BaseTuyaDevice {
         // block for 5 s (timeout) or throw ECONNRESET — both give the user a spurious
         // error even though the relay DID fire.  With fireAndForget the Promise resolves
         // as soon as the command is dispatched; the reconnect happens transparently.
+        //
+        // Reset pulse: some devices are edge-triggered — they only fire the relay on a
+        // false→true transition.  If DP stays at true after the pulse (no auto-reset),
+        // a second set(true) is ignored as "no change".  We send a false reset 300 ms
+        // after the pulse so the device DP returns to false, making the next press a
+        // valid false→true edge.
         this.log(`Relay pulse (toggle mode): set(${dpSwitch}, true)`);
-        await this._conn?.set(dpSwitch, true, { fireAndForget: true });
+        await this._set(dpSwitch, true, { fireAndForget: true });
+        this.homey.setTimeout(
+          () => this._set(dpSwitch, false, { fireAndForget: true }).catch(() => {}),
+          300,
+        );
       } else if (!value && dpOpen > 0) {
         this.log(`Sending open command: set(${dpOpen}, true)`);
-        await this._conn?.set(dpOpen, true);
+        await this._set(dpOpen, true);
       } else if (value && dpClose > 0) {
         this.log(`Sending close command: set(${dpClose}, true)`);
-        await this._conn?.set(dpClose, true);
+        await this._set(dpClose, true);
       } else if (dpControl > 0) {
         const cmd = value ? 'close' : 'open';
         this.log(`Sending door command: ${cmd} (DP ${dpControl})`);
-        await this._conn?.set(dpControl, cmd);
+        await this._set(dpControl, cmd);
       } else if (dpSwitch > 0) {
-        // Fallback: no control DP configured — pulse relay.
+        // Fallback: no control DP configured — pulse relay (same edge-reset logic as above).
         this.log(`Relay pulse (fallback): set(${dpSwitch}, true)`);
-        await this._conn?.set(dpSwitch, true, { fireAndForget: true });
+        await this._set(dpSwitch, true, { fireAndForget: true });
+        this.homey.setTimeout(
+          () => this._set(dpSwitch, false, { fireAndForget: true }).catch(() => {}),
+          300,
+        );
       } else {
         throw new Error('No door control DP configured (set dp_door_control or dp_switch)');
       }
@@ -271,7 +285,7 @@ class GarageDoorDevice extends BaseTuyaDevice {
     this.registerCapabilityListener('onoff.light', async (value) => {
       const dp = this.getSetting('dp_light');
       if (!dp || dp === 0) throw new Error('Light DP not configured');
-      await this._conn?.set(dp, Boolean(value));
+      await this._set(dp, Boolean(value));
     });
     this._lightListenerRegistered = true;
     this.log('onoff.light capability listener registered');

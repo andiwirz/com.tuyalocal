@@ -76,14 +76,14 @@ class DehumidifierDevice extends BaseTuyaDevice {
           // Resolve immediately so Homey UI stays responsive; command is delayed.
           return new Promise((resolve) => {
             timer = setTimeout(() => {
-              this._conn?.set(this.getSetting(entry.settingKey), value)
+              this._set(this.getSetting(entry.settingKey), value)
                 .then(resolve).catch(resolve);
             }, DEBOUNCE_MS);
           });
         });
       } else {
         this.registerCapabilityListener(entry.capability, async (value) => {
-          await this._conn?.set(this.getSetting(entry.settingKey), value);
+          await this._set(this.getSetting(entry.settingKey), value);
         });
       }
     }

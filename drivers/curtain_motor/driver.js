@@ -68,7 +68,7 @@ class CurtainMotorDriver extends Homey.Driver {
         const dp = args.device.getSetting('dp_position_best');
         if (!dp || dp === 0) throw new Error('Favourite Position DP not configured (set dp_position_best in device settings)');
         const pos = args.device.getSetting('position_best') ?? 50;
-        return args.device._conn?.set(dp, Math.round(pos));
+        return args.device._set(dp, Math.round(pos));
       });
 
     this.homey.flow.getActionCard('curtain_force_reconnect')

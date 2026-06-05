@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.52",
+  "version": "1.0.54",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -5860,6 +5860,28 @@
         {
           "type": "group",
           "label": {
+            "en": "Device",
+            "de": "Gerät"
+          },
+          "children": [
+            {
+              "id": "fire_and_forget",
+              "type": "checkbox",
+              "label": {
+                "en": "Fire and forget",
+                "de": "Fire and forget"
+              },
+              "value": false,
+              "hint": {
+                "en": "Enable for devices that drop the TCP connection immediately after receiving a SET command (e.g. some heaters or single-relay garage door openers). Commands are sent without waiting for an acknowledgement.",
+                "de": "Aktivieren für Geräte, die die TCP-Verbindung unmittelbar nach einem SET-Befehl trennen (z. B. manche Heizungen oder Garagentore mit einem Relais). Befehle werden ohne Warten auf eine Bestätigung gesendet."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
             "en": "Status",
             "de": "Status"
           },
@@ -6042,6 +6064,28 @@
               "hint": {
                 "en": "JSON array configured during pairing. Each entry: {\"dp\":1,\"cap\":\"onoff\",\"label\":\"Power\",\"settable\":true,\"scale\":1}. After editing, the Tuya Local app must be restarted.",
                 "de": "JSON-Array, das beim Pairing konfiguriert wird. Jeder Eintrag: {\"dp\":1,\"cap\":\"onoff\",\"label\":\"Power\",\"settable\":true,\"scale\":1}. Nach Änderungen die Tuya Local App neu starten."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Device",
+            "de": "Gerät"
+          },
+          "children": [
+            {
+              "id": "fire_and_forget",
+              "type": "checkbox",
+              "label": {
+                "en": "Fire and forget",
+                "de": "Fire and forget"
+              },
+              "value": false,
+              "hint": {
+                "en": "Enable for devices that drop the TCP connection immediately after receiving a SET command (e.g. some heaters or single-relay garage door openers). Commands are sent without waiting for an acknowledgement.",
+                "de": "Aktivieren für Geräte, die die TCP-Verbindung unmittelbar nach einem SET-Befehl trennen (z. B. manche Heizungen oder Garagentore mit einem Relais). Befehle werden ohne Warten auf eine Bestätigung gesendet."
               }
             }
           ]
@@ -6409,6 +6453,28 @@
                   }
                 }
               ]
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Device",
+            "de": "Gerät"
+          },
+          "children": [
+            {
+              "id": "fire_and_forget",
+              "type": "checkbox",
+              "label": {
+                "en": "Fire and forget",
+                "de": "Fire and forget"
+              },
+              "value": false,
+              "hint": {
+                "en": "Enable for devices that drop the TCP connection immediately after receiving a SET command (e.g. some heaters or single-relay garage door openers). Commands are sent without waiting for an acknowledgement.",
+                "de": "Aktivieren für Geräte, die die TCP-Verbindung unmittelbar nach einem SET-Befehl trennen (z. B. manche Heizungen oder Garagentore mit einem Relais). Befehle werden ohne Warten auf eine Bestätigung gesendet."
+              }
             }
           ]
         },
@@ -6924,6 +6990,28 @@
         {
           "type": "group",
           "label": {
+            "en": "Device",
+            "de": "Gerät"
+          },
+          "children": [
+            {
+              "id": "fire_and_forget",
+              "type": "checkbox",
+              "label": {
+                "en": "Fire and forget",
+                "de": "Fire and forget"
+              },
+              "value": false,
+              "hint": {
+                "en": "Enable for devices that drop the TCP connection immediately after receiving a SET command (e.g. some heaters or single-relay garage door openers). Commands are sent without waiting for an acknowledgement.",
+                "de": "Aktivieren für Geräte, die die TCP-Verbindung unmittelbar nach einem SET-Befehl trennen (z. B. manche Heizungen oder Garagentore mit einem Relais). Befehle werden ohne Warten auf eine Bestätigung gesendet."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
             "en": "Status",
             "de": "Status"
           },
@@ -7267,6 +7355,28 @@
               "hint": {
                 "en": "Read-only. Set to 0 to disable.",
                 "de": "Nur lesen. 0 = deaktiviert."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Device",
+            "de": "Gerät"
+          },
+          "children": [
+            {
+              "id": "fire_and_forget",
+              "type": "checkbox",
+              "label": {
+                "en": "Fire and forget",
+                "de": "Fire and forget"
+              },
+              "value": false,
+              "hint": {
+                "en": "Enable for devices that drop the TCP connection immediately after receiving a SET command (e.g. some heaters or single-relay garage door openers). Commands are sent without waiting for an acknowledgement.",
+                "de": "Aktivieren für Geräte, die die TCP-Verbindung unmittelbar nach einem SET-Befehl trennen (z. B. manche Heizungen oder Garagentore mit einem Relais). Befehle werden ohne Warten auf eine Bestätigung gesendet."
               }
             }
           ]
@@ -7626,6 +7736,28 @@
               "hint": {
                 "en": "DP for ioniser. Set to 0 to disable.",
                 "de": "DP für den Ionisator. 0 = deaktiviert."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Device",
+            "de": "Gerät"
+          },
+          "children": [
+            {
+              "id": "fire_and_forget",
+              "type": "checkbox",
+              "label": {
+                "en": "Fire and forget",
+                "de": "Fire and forget"
+              },
+              "value": false,
+              "hint": {
+                "en": "Enable for devices that drop the TCP connection immediately after receiving a SET command (e.g. some heaters or single-relay garage door openers). Commands are sent without waiting for an acknowledgement.",
+                "de": "Aktivieren für Geräte, die die TCP-Verbindung unmittelbar nach einem SET-Befehl trennen (z. B. manche Heizungen oder Garagentore mit einem Relais). Befehle werden ohne Warten auf eine Bestätigung gesendet."
               }
             }
           ]
@@ -8057,6 +8189,28 @@
         {
           "type": "group",
           "label": {
+            "en": "Device",
+            "de": "Gerät"
+          },
+          "children": [
+            {
+              "id": "fire_and_forget",
+              "type": "checkbox",
+              "label": {
+                "en": "Fire and forget",
+                "de": "Fire and forget"
+              },
+              "value": false,
+              "hint": {
+                "en": "Enable for devices that drop the TCP connection immediately after receiving a SET command (e.g. some heaters or single-relay garage door openers). Commands are sent without waiting for an acknowledgement.",
+                "de": "Aktivieren für Geräte, die die TCP-Verbindung unmittelbar nach einem SET-Befehl trennen (z. B. manche Heizungen oder Garagentore mit einem Relais). Befehle werden ohne Warten auf eine Bestätigung gesendet."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
             "en": "Status",
             "de": "Status"
           },
@@ -8356,6 +8510,28 @@
               "hint": {
                 "en": "DP for HSV hex color string (default: 24 or 5). Set to 0 to disable.",
                 "de": "DP für den HSV-Farbstring (Standard: 24 oder 5). 0 = deaktiviert."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Device",
+            "de": "Gerät"
+          },
+          "children": [
+            {
+              "id": "fire_and_forget",
+              "type": "checkbox",
+              "label": {
+                "en": "Fire and forget",
+                "de": "Fire and forget"
+              },
+              "value": false,
+              "hint": {
+                "en": "Enable for devices that drop the TCP connection immediately after receiving a SET command (e.g. some heaters or single-relay garage door openers). Commands are sent without waiting for an acknowledgement.",
+                "de": "Aktivieren für Geräte, die die TCP-Verbindung unmittelbar nach einem SET-Befehl trennen (z. B. manche Heizungen oder Garagentore mit einem Relais). Befehle werden ohne Warten auf eine Bestätigung gesendet."
               }
             }
           ]
@@ -8793,6 +8969,28 @@
         {
           "type": "group",
           "label": {
+            "en": "Device",
+            "de": "Gerät"
+          },
+          "children": [
+            {
+              "id": "fire_and_forget",
+              "type": "checkbox",
+              "label": {
+                "en": "Fire and forget",
+                "de": "Fire and forget"
+              },
+              "value": false,
+              "hint": {
+                "en": "Enable for devices that drop the TCP connection immediately after receiving a SET command (e.g. some heaters or single-relay garage door openers). Commands are sent without waiting for an acknowledgement.",
+                "de": "Aktivieren für Geräte, die die TCP-Verbindung unmittelbar nach einem SET-Befehl trennen (z. B. manche Heizungen oder Garagentore mit einem Relais). Befehle werden ohne Warten auf eine Bestätigung gesendet."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
             "en": "Diagnostics",
             "de": "Diagnose"
           },
@@ -9103,6 +9301,19 @@
             "de": "Gerät"
           },
           "children": [
+            {
+              "id": "fire_and_forget",
+              "type": "checkbox",
+              "label": {
+                "en": "Fire and forget",
+                "de": "Fire and forget"
+              },
+              "value": false,
+              "hint": {
+                "en": "Enable for devices that drop the TCP connection immediately after receiving a SET command (e.g. some heaters or single-relay garage door openers). Commands are sent without waiting for an acknowledgement.",
+                "de": "Aktivieren für Geräte, die die TCP-Verbindung unmittelbar nach einem SET-Befehl trennen (z. B. manche Heizungen oder Garagentore mit einem Relais). Befehle werden ohne Warten auf eine Bestätigung gesendet."
+              }
+            },
             {
               "id": "use_relay_toggle",
               "type": "checkbox",
@@ -9540,6 +9751,28 @@
         {
           "type": "group",
           "label": {
+            "en": "Device",
+            "de": "Gerät"
+          },
+          "children": [
+            {
+              "id": "fire_and_forget",
+              "type": "checkbox",
+              "label": {
+                "en": "Fire and forget",
+                "de": "Fire and forget"
+              },
+              "value": false,
+              "hint": {
+                "en": "Enable for devices that drop the TCP connection immediately after receiving a SET command (e.g. some heaters or single-relay garage door openers). Commands are sent without waiting for an acknowledgement.",
+                "de": "Aktivieren für Geräte, die die TCP-Verbindung unmittelbar nach einem SET-Befehl trennen (z. B. manche Heizungen oder Garagentore mit einem Relais). Befehle werden ohne Warten auf eine Bestätigung gesendet."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
             "en": "Diagnostics",
             "de": "Diagnose"
           },
@@ -9813,6 +10046,19 @@
             "de": "Gerät"
           },
           "children": [
+            {
+              "id": "fire_and_forget",
+              "type": "checkbox",
+              "label": {
+                "en": "Fire and forget",
+                "de": "Fire and forget"
+              },
+              "value": false,
+              "hint": {
+                "en": "Enable for devices that drop the TCP connection immediately after receiving a SET command (e.g. some heaters or single-relay garage door openers). Commands are sent without waiting for an acknowledgement.",
+                "de": "Aktivieren für Geräte, die die TCP-Verbindung unmittelbar nach einem SET-Befehl trennen (z. B. manche Heizungen oder Garagentore mit einem Relais). Befehle werden ohne Warten auf eine Bestätigung gesendet."
+              }
+            },
             {
               "id": "invert_position",
               "type": "checkbox",

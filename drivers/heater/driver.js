@@ -145,12 +145,28 @@ class HeaterDriver extends Homey.Driver {
 
     const dp_onoff = (boolDps.find((d) => d.dp === 1) || boolDps[0])?.dp ?? 1;
 
-    // Temperatures: integers in typical range 50–500 (stored as 10× °C)
-    //   or 5–45 if stored as direct °C
-    const tempDps = intDps.filter((d) => d.dp !== dp_onoff && (
+    // ── Temperatures ──────────────────────────────────────────────────────────
+    // Step 1: collect all integer DPs in a plausible temperature range
+    //   direct °C: 5–45  |  ×10 encoded °C: 50–450
+    const potentialTempDps = intDps.filter((d) => d.dp !== dp_onoff && (
       (d.val >= 5 && d.val <= 45) ||
       (d.val >= 50 && d.val <= 450)
     ));
+
+    // Step 2: identify °F mirror DPs and exclude them.
+    //   A °F mirror DP has a value that is ≈ (some celsius candidate × 9/5 + 32).
+    //   We compare each high-range DP against every direct-°C candidate.
+    const celsiusCandidates = potentialTempDps.filter((d) => d.val >= 5 && d.val <= 45);
+    const fahrenheitDpSet   = new Set(
+      potentialTempDps
+        .filter((d) => d.val > 45)
+        .filter((d) => celsiusCandidates.some(
+          (c) => Math.abs(d.val - Math.round(c.val * 9 / 5 + 32)) <= 2,
+        ))
+        .map((d) => d.dp),
+    );
+    const tempDps = potentialTempDps.filter((d) => !fahrenheitDpSet.has(d.dp));
+
     tempDps.sort((a, b) => a.dp - b.dp);
 
     // DP 2 = target temp, DP 3 = current temp is the standard Tuya heater layout
@@ -161,12 +177,38 @@ class HeaterDriver extends Homey.Driver {
     const dp_current_temp = currentEntry?.dp ?? 0;
 
     // Divisor: 1 if raw value is in normal range, 10 if ×10 encoded
-    const rawTarget  = targetEntry?.val ?? 20;
+    const rawTarget    = targetEntry?.val ?? 20;
     const temp_divisor = rawTarget > 45 ? 10 : 1;
 
-    const KNOWN_MODES  = ['eco', 'comfort', 'boost', 'away', 'auto', 'low', 'high', 'sleep'];
-    const modeEntry    = enumDps.find((d) => KNOWN_MODES.includes(String(d.val).toLowerCase()));
-    const dp_mode      = modeEntry?.dp ?? 0;
+    // ── Mode ──────────────────────────────────────────────────────────────────
+    const KNOWN_MODES = ['eco', 'comfort', 'boost', 'away', 'auto', 'low', 'high', 'sleep'];
+    const modeEntry   = enumDps.find((d) => KNOWN_MODES.includes(String(d.val).toLowerCase()));
+    const dp_mode     = modeEntry?.dp ?? 0;
+
+    // Seed mode_values from the detected mode value so the flow card autocomplete
+    // shows a sensible set of choices without manual configuration.
+    const MODE_FAMILIES = {
+      low:     'low,high',
+      high:    'low,high',
+      eco:     'eco,comfort,boost,away,auto',
+      comfort: 'eco,comfort,boost,away,auto',
+      boost:   'eco,comfort,boost,away,auto',
+      away:    'eco,comfort,boost,away,auto',
+      auto:    'eco,comfort,boost,away,auto',
+      sleep:   'sleep,auto',
+    };
+    const detectedMode = modeEntry?.val ? String(modeEntry.val).toLowerCase() : null;
+    const mode_values  = (detectedMode && MODE_FAMILIES[detectedMode])
+      ? MODE_FAMILIES[detectedMode]
+      : 'eco,comfort,boost,away,auto';
+
+    // ── Work-state DP ─────────────────────────────────────────────────────────
+    // Detect a DP whose current value indicates active/idle heating state.
+    const WORK_STATES = new Set(['heating', 'no_heating', 'standby', 'idle']);
+    const workEntry   = enumDps.find(
+      (d) => WORK_STATES.has(String(d.val).toLowerCase()) && d.dp !== dp_mode,
+    );
+    const dp_work_state = workEntry?.dp ?? 0;
 
     const timerEntry = enumDps.find((d) => String(d.val) === 'cancel' || /^\d+h$/.test(String(d.val)));
     const dp_countdown_timer = timerEntry?.dp ?? 0;
@@ -177,9 +219,10 @@ class HeaterDriver extends Homey.Driver {
     return {
       dp_onoff, dp_target_temp, dp_current_temp, dp_mode, dp_oscillate,
       dp_child_lock: 0, dp_fault: 0, dp_countdown_timer, dp_countdown_left: 0,
+      dp_work_state,
       temp_divisor,
       temp_min: 5, temp_max: 35, temp_step: 1,
-      mode_values: 'eco,comfort,boost,away,auto',
+      mode_values,
     };
   }
 

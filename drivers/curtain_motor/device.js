@@ -81,7 +81,7 @@ class CurtainMotorDevice extends BaseTuyaDevice {
       const cmd = cmdMap[value];
       if (!cmd) throw new Error(`Unknown state: ${value}`);
       this.log(`Curtain ${cmd} (DP ${dp})${invert ? ' [inverted]' : ''}`);
-      await this._conn?.set(dp, cmd);
+      await this._set(dp, cmd);
     });
 
     // windowcoverings_set: 0.0–1.0 → 0–100 (with optional inversion)
@@ -91,7 +91,7 @@ class CurtainMotorDevice extends BaseTuyaDevice {
       if (!dp || dp === 0) throw new Error('Position DP not configured');
       const raw = Math.round(invert ? (1 - value) * 100 : value * 100);
       this.log(`Curtain position → ${raw}% (DP ${dp})`);
-      await this._conn?.set(dp, raw);
+      await this._set(dp, raw);
     });
 
     await this._connect();

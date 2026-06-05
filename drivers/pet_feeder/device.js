@@ -92,7 +92,7 @@ class PetFeederDevice extends BaseTuyaDevice {
         // The reset is delayed 3 s to allow the device to process the command first.
         // The capability is an enum — values are strings; send as Number to the device.
         this.registerCapabilityListener('feed_portions', async (value) => {
-          await this._conn?.set(this.getSetting('dp_portions'), Number(value));
+          await this._set(this.getSetting('dp_portions'), Number(value));
           setTimeout(() => {
             const resetTo = String(this.getSetting('portions_min') ?? 1);
             this.setCapabilityValue('feed_portions', resetTo).catch(() => {});
@@ -100,7 +100,7 @@ class PetFeederDevice extends BaseTuyaDevice {
         });
       } else {
         this.registerCapabilityListener(entry.capability, async (value) => {
-          await this._conn?.set(this.getSetting(entry.settingKey), value);
+          await this._set(this.getSetting(entry.settingKey), value);
         });
       }
     }
@@ -259,7 +259,7 @@ class PetFeederDevice extends BaseTuyaDevice {
       if (!changedKeys.includes(entry.valueSetting)) continue;
       const dp = newSettings[entry.settingKey] ?? this.getSetting(entry.settingKey);
       if (dp > 0) {
-        await this._conn?.set(dp, newSettings[entry.valueSetting]).catch((err) => {
+        await this._set(dp, newSettings[entry.valueSetting]).catch((err) => {
           this.log(`Failed to write ${entry.valueSetting} to DP ${dp}:`, err.message);
         });
       }

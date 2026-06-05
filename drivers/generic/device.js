@@ -196,7 +196,7 @@ class GenericDevice extends BaseTuyaDevice {
           return new Promise((resolve) => {
             this._debounceTimers.set(mapping.cap, setTimeout(() => {
               const dpValue = this._capToDP(value, mapping);
-              this._conn?.set(mapping.dp, dpValue)
+              this._set(mapping.dp, dpValue)
                 .then(resolve).catch(resolve);
             }, DEBOUNCE_MS));
           });
@@ -204,7 +204,7 @@ class GenericDevice extends BaseTuyaDevice {
       } else {
         this.registerCapabilityListener(mapping.cap, async (value) => {
           const dpValue = this._capToDP(value, mapping);
-          await this._conn?.set(mapping.dp, dpValue);
+          await this._set(mapping.dp, dpValue);
         });
       }
     }

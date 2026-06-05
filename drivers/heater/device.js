@@ -56,7 +56,7 @@ class HeaterDevice extends BaseTuyaDevice {
       if (!entry.settable) continue;
       if (!this.hasCapability(entry.capability)) continue;
       this.registerCapabilityListener(entry.capability, async (value) => {
-        await this._conn?.set(this.getSetting(entry.settingKey), value);
+        await this._set(this.getSetting(entry.settingKey), value);
       });
     }
 
@@ -69,7 +69,7 @@ class HeaterDevice extends BaseTuyaDevice {
           const dp      = this.getSetting('dp_target_temp');
           const divisor = this.getSetting('temp_divisor') || 1;
           if (dp > 0) {
-            await this._conn?.set(dp, Math.round(value * divisor)).catch(() => {});
+            await this._set(dp, Math.round(value * divisor)).catch(() => {});
           }
           resolve();
         }, DEBOUNCE_MS);

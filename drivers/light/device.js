@@ -54,7 +54,7 @@ class LightDevice extends BaseTuyaDevice {
     // ── Capability listeners ─────────────────────────────────────────────────
     this.registerCapabilityListener('onoff', async (value) => {
       const dp = this.getSetting('dp_onoff');
-      if (dp > 0) await this._conn?.set(dp, value);
+      if (dp > 0) await this._set(dp, value);
     });
 
     let dimTimer = null;
@@ -70,7 +70,7 @@ class LightDevice extends BaseTuyaDevice {
             // In white mode, update brightness DP directly
             const dp  = this.getSetting('dp_brightness');
             const max = this.getSetting('brightness_max') ?? 1000;
-            if (dp > 0) await this._conn?.set(dp, dimToRaw(value, max)).catch(() => {});
+            if (dp > 0) await this._set(dp, dimToRaw(value, max)).catch(() => {});
           }
           resolve();
         }, DEBOUNCE_MS);
@@ -87,7 +87,7 @@ class LightDevice extends BaseTuyaDevice {
           const inv = this.getSetting('color_temp_invert') ?? false;
           if (dp > 0) {
             const raw = inv ? (max - dimToRaw(value, max)) : dimToRaw(value, max);
-            await this._conn?.set(dp, raw).catch(() => {});
+            await this._set(dp, raw).catch(() => {});
           }
           resolve();
         }, DEBOUNCE_MS);
@@ -122,7 +122,7 @@ class LightDevice extends BaseTuyaDevice {
         // Map Homey light_mode to device string
         const deviceVal = value === 'color' ? this.getSetting('color_mode_color_val') || 'colour'
                                             : this.getSetting('color_mode_white_val') || 'white';
-        await this._conn?.set(dp, deviceVal);
+        await this._set(dp, deviceVal);
       }
     });
 
@@ -144,7 +144,7 @@ class LightDevice extends BaseTuyaDevice {
     const s = Math.round((sNew !== undefined ? sNew : curSat) * 1000);
     const v = Math.round((vNew !== undefined ? vNew : curDim) * 1000);
 
-    await this._conn?.set(dp, buildColorHex(h, s, v));
+    await this._set(dp, buildColorHex(h, s, v));
   }
 
   // ── DPS handling ─────────────────────────────────────────────────────────────
