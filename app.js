@@ -21,6 +21,11 @@ class TuyaLocalApp extends Homey.App {
     // Persist version so the settings page can display it without a build-time template.
     try { this.homey.settings.set('app_version', version); } catch (e) {}
 
+    // Prune orphaned dp_snapshot entries (ghost devices left over from deletions before
+    // v1.0.54 that didn't clean up after themselves).  We defer by 15 s to give all
+    // device onInit() calls time to complete before we query the live device list.
+    setTimeout(() => this._pruneOrphanSnapshots(), 15000);
+
     // ── Process-level safety net ─────────────────────────────────────────────
     // TuyAPI can throw errors inside socket data/timeout handlers that bypass all
     // per-device error handlers (e.g. HMAC mismatch, connection timed out thrown
@@ -65,6 +70,37 @@ class TuyaLocalApp extends Homey.App {
     this._flushTimer = setTimeout(() => {
       try { this.homey.settings.set('diagnostic_logs', this._logs); } catch (e) {}
     }, 5000);
+  }
+
+  /**
+   * Remove dp_snapshot entries for devices that no longer exist in Homey.
+   * Runs 15 s after startup so all device onInit() calls have completed.
+   */
+  _pruneOrphanSnapshots() {
+    try {
+      const snapshot = this.homey.settings.get('dp_snapshot');
+      if (!snapshot || typeof snapshot !== 'object') return;
+
+      // Collect all Tuya device IDs that are currently live
+      const liveIds = new Set();
+      for (const driver of Object.values(this.homey.drivers.getDrivers())) {
+        for (const device of driver.getDevices()) {
+          try { liveIds.add(device.getData().id); } catch (e) {}
+        }
+      }
+
+      let changed = false;
+      for (const id of Object.keys(snapshot)) {
+        if (!liveIds.has(id)) {
+          delete snapshot[id];
+          changed = true;
+          this.log(`Pruned orphaned dp_snapshot entry: ${id}`);
+        }
+      }
+      if (changed) this.homey.settings.set('dp_snapshot', snapshot);
+    } catch (e) {
+      this.error('_pruneOrphanSnapshots failed:', e.message);
+    }
   }
 
   async onUninit() {

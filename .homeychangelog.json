@@ -1,4 +1,8 @@
 {
+  "1.0.55": {
+    "en": "Fix: deleting a device now removes it from the DP Debug panel immediately. Ghost entries from past deletions are automatically pruned 15 s after app startup.",
+    "de": "Behoben: Beim Löschen eines Geräts wird dessen Eintrag sofort aus dem DP-Debug-Panel entfernt. Veraltete Einträge früherer Löschungen werden 15 s nach App-Start automatisch bereinigt."
+  },
   "1.0.54": {
     "en": "Garage door: relay pulse now sends a false-reset 300 ms after the true pulse, so edge-triggered devices (e.g. WOFEA) reliably fire on every button press instead of only the first.",
     "de": "Garagentor: Nach jedem Relais-Puls wird 300 ms später ein false-Reset gesendet, damit flankengetriggerte Geräte (z.B. WOFEA) bei jedem Tastendruck auslösen, nicht nur beim ersten."
