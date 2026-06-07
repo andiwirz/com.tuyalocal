@@ -1,4 +1,8 @@
 {
+  "1.0.56": {
+    "en": "Fix: zombie connection after device deletion — deleting a device now fully stops its TuyaConnection so it can never reconnect and fight the replacement device over the same socket.",
+    "de": "Behoben: Zombie-Verbindung nach Gerät-Löschung — beim Löschen wird die TuyaConnection jetzt vollständig beendet und kann nicht mehr reconnecten oder das Ersatzgerät von der Verbindung verdrängen."
+  },
   "1.0.55": {
     "en": "Fix: deleting a device now removes it from the DP Debug panel immediately. Ghost entries from past deletions are automatically pruned 15 s after app startup.",
     "de": "Behoben: Beim Löschen eines Geräts wird dessen Eintrag sofort aus dem DP-Debug-Panel entfernt. Veraltete Einträge früherer Löschungen werden 15 s nach App-Start automatisch bereinigt."
