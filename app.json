@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.56",
+  "version": "1.0.57",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -4212,10 +4212,6 @@
           "en": "Force reconnect",
           "de": "Verbindung neu aufbauen"
         },
-        "titleFormatted": {
-          "en": "Force [[device]] to reconnect",
-          "de": "[[device]] neu verbinden"
-        },
         "args": [
           {
             "name": "device",
@@ -4229,10 +4225,6 @@
         "title": {
           "en": "Refresh device values",
           "de": "Gerätewerte aktualisieren"
-        },
-        "titleFormatted": {
-          "en": "Refresh values of [[device]]",
-          "de": "Werte von [[device]] aktualisieren"
         },
         "args": [
           {
@@ -4248,10 +4240,6 @@
           "en": "Force reconnect",
           "de": "Verbindung neu aufbauen"
         },
-        "titleFormatted": {
-          "en": "Force [[device]] to reconnect",
-          "de": "[[device]] neu verbinden"
-        },
         "args": [
           {
             "name": "device",
@@ -4265,10 +4253,6 @@
         "title": {
           "en": "Refresh device values",
           "de": "Gerätewerte aktualisieren"
-        },
-        "titleFormatted": {
-          "en": "Refresh values of [[device]]",
-          "de": "Werte von [[device]] aktualisieren"
         },
         "args": [
           {
@@ -4284,10 +4268,6 @@
           "en": "Force reconnect",
           "de": "Verbindung neu aufbauen"
         },
-        "titleFormatted": {
-          "en": "Force [[device]] to reconnect",
-          "de": "[[device]] neu verbinden"
-        },
         "args": [
           {
             "name": "device",
@@ -4301,10 +4281,6 @@
         "title": {
           "en": "Refresh device values",
           "de": "Gerätewerte aktualisieren"
-        },
-        "titleFormatted": {
-          "en": "Refresh values of [[device]]",
-          "de": "Werte von [[device]] aktualisieren"
         },
         "args": [
           {
@@ -4348,10 +4324,6 @@
         "title": {
           "en": "Reset energy meter",
           "de": "Energiemesser zurücksetzen"
-        },
-        "titleFormatted": {
-          "en": "Reset energy meter of [[device]]",
-          "de": "Energiemesser von [[device]] zurücksetzen"
         },
         "args": [
           {

@@ -1,4 +1,8 @@
 {
+  "1.0.57": {
+    "en": "Fix: removed invalid [[device]] placeholder from flow action card titles — the App Store now displays them correctly instead of showing the raw placeholder text.",
+    "de": "Behoben: Ungültiger [[device]]-Platzhalter aus den Titeln der Flow-Aktionskarten entfernt — der App Store zeigt diese jetzt korrekt an, statt den Platzhaltertext anzuzeigen."
+  },
   "1.0.56": {
     "en": "Fix: zombie connection after device deletion — deleting a device now fully stops its TuyaConnection so it can never reconnect and fight the replacement device over the same socket.",
     "de": "Behoben: Zombie-Verbindung nach Gerät-Löschung — beim Löschen wird die TuyaConnection jetzt vollständig beendet und kann nicht mehr reconnecten oder das Ersatzgerät von der Verbindung verdrängen."
