@@ -3,16 +3,17 @@
 const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 
 // ── DP → capability mapping ──────────────────────────────────────────────────
-// DP 3  manual_feed     : integer 1–12 (portions to dispense)
+// DP 3  manual_feed     : integer 1–50 (portions to dispense; Petlibro up to 50, others up to 12)
 // DP 4  feed_state      : enum standby|feeding|no_food|error_ir|feed_timeout|(done)
 // DP 14 fault           : bitfield  1=no_food  2=jammed  4=feed_timeout  8=battery_low
-// DP 15 feed_report     : integer 0–12 (actual servings dispensed — report only)
+// DP 15 feed_report     : integer 0–50 (actual servings dispensed — report only)
 // DP 16 surplus_grain   : integer 0–100 % (remaining food — report only)
-// DP 102+ food_level    : non-standard enum full|low|empty (custom/legacy firmware)
+// DP 102+/108+ food_level : non-standard enum full|low|empty (custom/legacy firmware, e.g. Petlibro DP 108)
 
 const DP_PROFILE = [
   // feed_portions is an enum picker — device sends integers, we map to string IDs.
-  { settingKey: 'dp_portions',        capability: 'feed_portions',   transform: (v) => String(v),       settable: true  },
+  // Guard against 0: some devices (e.g. Petlibro Granary) echo 0 for write-only DPs on connect.
+  { settingKey: 'dp_portions',        capability: 'feed_portions',   transform: (v) => v > 0 ? String(v) : null, settable: true  },
   { settingKey: 'dp_motor_state',     capability: 'motor_state',     transform: (v) => String(v),       settable: false },
   { settingKey: 'dp_fault',           capability: 'alarm_generic',   transform: (v) => Number(v) > 0,   settable: false },
   { settingKey: 'dp_food_level',      capability: 'food_status',     transform: (v) => String(v),       settable: false },

@@ -206,6 +206,15 @@ class PetFeederDriver extends Homey.Driver {
     );
     const dp_child_lock = childLockEntry?.dp ?? 0;
 
+    // ── Indicator light ──────────────────────────────────────────────────────
+    // Not in the standard Tuya pet-feeder spec. Petlibro Granary reports it on DP 113.
+    // wifi_off (DP 117) and log (DP 112) are excluded by the known-non-indicator list.
+    const INDICATOR_EXCLUDED_DPS = new Set([9, 112, 117, 119]);
+    const indicatorEntry = boolDps.find(
+      (d) => d.dp > 20 && !INDICATOR_EXCLUDED_DPS.has(d.dp)
+    );
+    const dp_indicator_light = indicatorEntry?.dp ?? 0;
+
     return {
       dp_portions,
       dp_motor_state,
@@ -215,6 +224,7 @@ class PetFeederDriver extends Homey.Driver {
       dp_feed_report,
       dp_child_lock,
       dp_battery,
+      dp_indicator_light,
       food_empty_values: 'low,less,empty,lack',
     };
   }
