@@ -1,4 +1,8 @@
 {
+  "1.0.59": {
+    "en": "Pet Feeder: fix crash on device init when Homey's capability registry does not yet have the feed_portions definition — onInit now handles this gracefully so the device comes online correctly.",
+    "de": "Futterautomat: Absturz beim Gerätestart behoben, wenn Homeys Capability-Register die feed_portions-Definition noch nicht enthält — onInit behandelt diesen Fall jetzt korrekt, sodass das Gerät normal online geht."
+  },
   "1.0.58": {
     "en": "Pet Feeder: improved auto-detection for Petlibro Granary and similar devices — indicator light DP now detected automatically, portions 13–50 added to the picker, and a guard prevents a stale value-0 echo from breaking the capability on first connect.",
     "de": "Futterautomat: verbesserte Auto-Erkennung für Petlibro Granary und ähnliche Geräte — Indikatorlicht-DP wird jetzt automatisch erkannt, Portionen 13–50 im Picker ergänzt, und ein Schutz verhindert, dass ein veralteter Wert-0-Echo beim ersten Verbinden die Capability beschädigt."

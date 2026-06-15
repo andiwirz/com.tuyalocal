@@ -64,7 +64,8 @@ class PetFeederDevice extends BaseTuyaDevice {
     // If the old capability options contain a numeric 'min' key it was the legacy
     // slider type — remove and re-add so Homey registers it as an enum.
     if (this.hasCapability('feed_portions')) {
-      const opts = this.getCapabilityOptions('feed_portions') || {};
+      let opts = {};
+      try { opts = this.getCapabilityOptions('feed_portions') ?? {}; } catch (_) {}
       if (opts.min !== undefined) {
         this.log('Migrating feed_portions: slider → picker');
         await this.removeCapability('feed_portions').catch(() => {});
