@@ -1,4 +1,8 @@
 {
+  "1.0.60": {
+    "en": "Pairing: added dp_refresh fallback — devices that ignore the initial dp_query (e.g. multi-gang switches) now get a second DP request so their data points are detected during pairing. Also improved protocol auto-detection timing.",
+    "de": "Pairing: dp_refresh-Fallback ergänzt — Geräte die die initiale dp_query ignorieren (z.B. Mehrfach-Schalter) erhalten jetzt eine zweite DP-Abfrage, damit ihre Datenpunkte beim Pairing erkannt werden. Timing der Auto-Erkennung verbessert."
+  },
   "1.0.59": {
     "en": "Pet Feeder: fix crash on device init when Homey's capability registry does not yet have the feed_portions definition — onInit now handles this gracefully so the device comes online correctly.",
     "de": "Futterautomat: Absturz beim Gerätestart behoben, wenn Homeys Capability-Register die feed_portions-Definition noch nicht enthält — onInit behandelt diesen Fall jetzt korrekt, sodass das Gerät normal online geht."

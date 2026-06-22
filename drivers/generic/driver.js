@@ -75,7 +75,11 @@ class GenericDriver extends Homey.Driver {
             device.connect(),
             new Promise((_, rej) => setTimeout(() => rej(new Error('Connection timed out')), 8000)),
           ]);
-          await new Promise((resolve) => setTimeout(resolve, 4000));
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+          if (Object.keys(tmpDps).length === 0) {
+            try { device.refresh(); } catch (_) {}
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+          }
           device.disconnect();
           rawDps = tmpDps;
         }
