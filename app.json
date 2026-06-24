@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.60",
+  "version": "1.0.62",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -1943,6 +1943,85 @@
         ]
       },
       {
+        "id": "switch_device_connected",
+        "title": {
+          "en": "Device connected",
+          "de": "Gerät verbunden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=wall_switch"
+          }
+        ]
+      },
+      {
+        "id": "switch_device_disconnected",
+        "title": {
+          "en": "Device disconnected",
+          "de": "Gerät getrennt"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=wall_switch"
+          }
+        ]
+      },
+      {
+        "id": "switch_dp_changed",
+        "title": {
+          "en": "A data point changed",
+          "de": "Ein Datenpunkt hat sich geändert"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=wall_switch"
+          }
+        ],
+        "tokens": [
+          { "name": "dp",    "type": "string", "title": { "en": "DP number", "de": "DP-Nummer" } },
+          { "name": "value", "type": "string", "title": { "en": "Value",     "de": "Wert" } }
+        ]
+      },
+      {
+        "id": "switch_gang_changed",
+        "title": {
+          "en": "A switch gang changed",
+          "de": "Ein Schalterkanal hat sich geändert"
+        },
+        "titleFormatted": {
+          "en": "Switch [[gang]] changed",
+          "de": "Schalter [[gang]] hat sich geändert"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=wall_switch"
+          },
+          {
+            "name": "gang",
+            "type": "dropdown",
+            "title": { "en": "Gang", "de": "Kanal" },
+            "values": [
+              { "id": "1", "label": { "en": "Switch 1", "de": "Schalter 1" } },
+              { "id": "2", "label": { "en": "Switch 2", "de": "Schalter 2" } },
+              { "id": "3", "label": { "en": "Switch 3", "de": "Schalter 3" } },
+              { "id": "4", "label": { "en": "Switch 4", "de": "Schalter 4" } }
+            ]
+          }
+        ],
+        "tokens": [
+          { "name": "gang",  "type": "string",  "title": { "en": "Gang",  "de": "Kanal" } },
+          { "name": "state", "type": "boolean", "title": { "en": "State", "de": "Zustand" } }
+        ]
+      },
+      {
         "id": "plug_device_connected",
         "title": {
           "en": "Device connected",
@@ -3308,6 +3387,49 @@
         ]
       },
       {
+        "id": "switch_device_is_connected",
+        "title": {
+          "en": "Device !{{is|is not}} connected",
+          "de": "Gerät ist !{{verbunden|nicht verbunden}}"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=wall_switch"
+          }
+        ]
+      },
+      {
+        "id": "switch_gang_is_on",
+        "title": {
+          "en": "Switch gang !{{is|is not}} on",
+          "de": "Schalterkanal ist !{{ein|aus}}"
+        },
+        "titleFormatted": {
+          "en": "Switch [[gang]] !{{is|is not}} on",
+          "de": "Schalter [[gang]] ist !{{ein|aus}}"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=wall_switch"
+          },
+          {
+            "name": "gang",
+            "type": "dropdown",
+            "title": { "en": "Gang", "de": "Kanal" },
+            "values": [
+              { "id": "1", "label": { "en": "Switch 1", "de": "Schalter 1" } },
+              { "id": "2", "label": { "en": "Switch 2", "de": "Schalter 2" } },
+              { "id": "3", "label": { "en": "Switch 3", "de": "Schalter 3" } },
+              { "id": "4", "label": { "en": "Switch 4", "de": "Schalter 4" } }
+            ]
+          }
+        ]
+      },
+      {
         "id": "plug_device_is_connected",
         "title": {
           "en": "Device !{{is|is not}} connected",
@@ -4307,6 +4429,101 @@
             "name": "device",
             "type": "device",
             "filter": "driver_id=generic"
+          }
+        ]
+      },
+      {
+        "id": "switch_force_reconnect",
+        "title": {
+          "en": "Force reconnect",
+          "de": "Verbindung neu aufbauen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=wall_switch"
+          }
+        ]
+      },
+      {
+        "id": "switch_refresh_device",
+        "title": {
+          "en": "Refresh device values",
+          "de": "Gerätewerte aktualisieren"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=wall_switch"
+          }
+        ]
+      },
+      {
+        "id": "switch_set_gang",
+        "title": {
+          "en": "Set switch gang on or off",
+          "de": "Schalterkanal ein- oder ausschalten"
+        },
+        "titleFormatted": {
+          "en": "Set switch [[gang]] to [[state]]",
+          "de": "Schalter [[gang]] auf [[state]] setzen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=wall_switch"
+          },
+          {
+            "name": "gang",
+            "type": "dropdown",
+            "title": { "en": "Gang", "de": "Kanal" },
+            "values": [
+              { "id": "1", "label": { "en": "Switch 1", "de": "Schalter 1" } },
+              { "id": "2", "label": { "en": "Switch 2", "de": "Schalter 2" } },
+              { "id": "3", "label": { "en": "Switch 3", "de": "Schalter 3" } },
+              { "id": "4", "label": { "en": "Switch 4", "de": "Schalter 4" } }
+            ]
+          },
+          {
+            "name": "state",
+            "type": "dropdown",
+            "title": { "en": "State", "de": "Zustand" },
+            "values": [
+              { "id": "on",  "label": { "en": "On",  "de": "Ein" } },
+              { "id": "off", "label": { "en": "Off", "de": "Aus" } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "switch_toggle_gang",
+        "title": {
+          "en": "Toggle switch gang",
+          "de": "Schalterkanal umschalten"
+        },
+        "titleFormatted": {
+          "en": "Toggle switch [[gang]]",
+          "de": "Schalter [[gang]] umschalten"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=wall_switch"
+          },
+          {
+            "name": "gang",
+            "type": "dropdown",
+            "title": { "en": "Gang", "de": "Kanal" },
+            "values": [
+              { "id": "1", "label": { "en": "Switch 1", "de": "Schalter 1" } },
+              { "id": "2", "label": { "en": "Switch 2", "de": "Schalter 2" } },
+              { "id": "3", "label": { "en": "Switch 3", "de": "Schalter 3" } },
+              { "id": "4", "label": { "en": "Switch 4", "de": "Schalter 4" } }
+            ]
           }
         ]
       },
@@ -5947,6 +6164,225 @@
         "small": "/drivers/dehumidifier/assets/images/small.png",
         "large": "/drivers/dehumidifier/assets/images/large.png",
         "xlarge": "/drivers/dehumidifier/assets/images/xlarge.png"
+      }
+    },
+    {
+      "id": "wall_switch",
+      "name": {
+        "en": "Wall Switch",
+        "de": "Wandschalter"
+      },
+      "class": "socket",
+      "capabilities": [
+        "onoff"
+      ],
+      "settings": [
+        {
+          "type": "group",
+          "label": {
+            "en": "Connection",
+            "de": "Verbindung"
+          },
+          "children": [
+            {
+              "id": "ip",
+              "type": "text",
+              "label": { "en": "IP Address", "de": "IP-Adresse" },
+              "value": ""
+            },
+            {
+              "id": "device_id",
+              "type": "text",
+              "label": { "en": "Device ID", "de": "Geräte-ID" },
+              "value": ""
+            },
+            {
+              "id": "local_key",
+              "type": "text",
+              "label": { "en": "Local Key", "de": "Lokaler Schlüssel" },
+              "value": ""
+            },
+            {
+              "id": "version",
+              "type": "dropdown",
+              "label": { "en": "Protocol Version", "de": "Protokollversion" },
+              "value": "3.3",
+              "values": [
+                { "id": "3.3", "label": "3.3" },
+                { "id": "3.4", "label": "3.4" },
+                { "id": "3.5", "label": "3.5" },
+                { "id": "3.1", "label": "3.1" }
+              ]
+            },
+            {
+              "id": "polling_interval",
+              "type": "number",
+              "label": { "en": "Polling Interval (s)", "de": "Abfrageintervall (s)" },
+              "hint": { "en": "0 = polling disabled (push only)", "de": "0 = Polling deaktiviert (nur Push)" },
+              "value": 30,
+              "min": 0,
+              "max": 3600,
+              "step": 1
+            },
+            {
+              "id": "offline_grace_period",
+              "type": "number",
+              "label": { "en": "Offline Grace Period (s)", "de": "Offline-Toleranz (s)" },
+              "hint": { "en": "Seconds to wait before triggering 'device disconnected' flows. 0 = immediate.", "de": "Sekunden bis 'Gerät getrennt'-Flows ausgelöst werden. 0 = sofort." },
+              "value": 60,
+              "min": 0,
+              "max": 3600,
+              "step": 1
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Switch Data Points",
+            "de": "Schalter-Datenpunkte"
+          },
+          "children": [
+            {
+              "id": "dp_switch_1",
+              "type": "number",
+              "label": { "en": "DP Switch 1 (main)", "de": "DP Schalter 1 (Haupt)" },
+              "hint": { "en": "Data point for gang 1. Default: 1", "de": "Datenpunkt für Kanal 1. Standard: 1" },
+              "value": 1,
+              "min": 0,
+              "max": 255,
+              "step": 1
+            },
+            {
+              "id": "dp_switch_2",
+              "type": "number",
+              "label": { "en": "DP Switch 2", "de": "DP Schalter 2" },
+              "hint": { "en": "Data point for gang 2. 0 = disabled.", "de": "Datenpunkt für Kanal 2. 0 = deaktiviert." },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "step": 1
+            },
+            {
+              "id": "dp_switch_3",
+              "type": "number",
+              "label": { "en": "DP Switch 3", "de": "DP Schalter 3" },
+              "hint": { "en": "Data point for gang 3. 0 = disabled.", "de": "Datenpunkt für Kanal 3. 0 = deaktiviert." },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "step": 1
+            },
+            {
+              "id": "dp_switch_4",
+              "type": "number",
+              "label": { "en": "DP Switch 4", "de": "DP Schalter 4" },
+              "hint": { "en": "Data point for gang 4. 0 = disabled.", "de": "Datenpunkt für Kanal 4. 0 = deaktiviert." },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "step": 1
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Optional Data Points",
+            "de": "Optionale Datenpunkte"
+          },
+          "children": [
+            {
+              "id": "dp_countdown_1",
+              "type": "number",
+              "label": { "en": "DP Countdown 1 (seconds)", "de": "DP Countdown 1 (Sekunden)" },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "step": 1
+            },
+            {
+              "id": "dp_countdown_2",
+              "type": "number",
+              "label": { "en": "DP Countdown 2 (seconds)", "de": "DP Countdown 2 (Sekunden)" },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "step": 1
+            },
+            {
+              "id": "dp_countdown_3",
+              "type": "number",
+              "label": { "en": "DP Countdown 3", "de": "DP Countdown 3" },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "step": 1
+            },
+            {
+              "id": "dp_countdown_4",
+              "type": "number",
+              "label": { "en": "DP Countdown 4", "de": "DP Countdown 4" },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "step": 1
+            },
+            {
+              "id": "dp_relay_status",
+              "type": "number",
+              "label": { "en": "DP Relay Status", "de": "DP Relaiszustand" },
+              "hint": { "en": "Power-on behavior: off/on/last. 0 = disabled.", "de": "Einschaltverhalten: off/on/last. 0 = deaktiviert." },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "step": 1
+            },
+            {
+              "id": "relay_status",
+              "type": "dropdown",
+              "label": { "en": "Turn On Behavior", "de": "Einschaltverhalten" },
+              "value": "off",
+              "values": [
+                { "id": "off", "label": { "en": "Off", "de": "Aus" } },
+                { "id": "on", "label": { "en": "On", "de": "Ein" } },
+                { "id": "last", "label": { "en": "Last state", "de": "Letzter Zustand" } }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Status",
+            "de": "Status"
+          },
+          "children": [
+            {
+              "id": "connection_status",
+              "type": "text",
+              "label": { "en": "Connection", "de": "Verbindung" },
+              "value": "—",
+              "hint": { "en": "Updated automatically by the app. Do not edit.", "de": "Wird automatisch aktualisiert. Nicht bearbeiten." }
+            },
+            {
+              "id": "last_seen",
+              "type": "text",
+              "label": { "en": "Last data received", "de": "Zuletzt Daten empfangen" },
+              "value": "—",
+              "hint": { "en": "Updated automatically by the app. Do not edit.", "de": "Wird automatisch aktualisiert. Nicht bearbeiten." }
+            }
+          ]
+        }
+      ],
+      "pair": [
+        { "id": "credentials", "navigation": { "next": "list_devices" } },
+        { "id": "list_devices" }
+      ],
+      "images": {
+        "small": "/drivers/wall_switch/assets/images/small.png",
+        "large": "/drivers/wall_switch/assets/images/large.png",
+        "xlarge": "/drivers/wall_switch/assets/images/xlarge.png"
       }
     },
     {

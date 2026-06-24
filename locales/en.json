@@ -12,7 +12,8 @@
       "pet_feeder":      "Pet Feeder",
       "garage_door":     "Garage Door",
       "heat_pump":       "Heat Pump",
-      "curtain_motor":   "Curtain Motor"
+      "curtain_motor":   "Curtain Motor",
+      "wall_switch":     "Wall Switch"
     }
   },
   "notifications": {

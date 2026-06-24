@@ -1,4 +1,12 @@
 {
+  "1.0.62": {
+    "en": "Wall Switch: added proper device images.",
+    "de": "Wandschalter: passende Gerätebilder hinzugefügt."
+  },
+  "1.0.61": {
+    "en": "New driver: Wall Switch — dedicated support for 1/2/3/4-gang WiFi wall switches with per-gang tiles, flow cards (set, toggle, condition, trigger), auto-detection of switch count, and countdown timer DPs.",
+    "de": "Neuer Treiber: Wandschalter — dedizierte Unterstützung für 1/2/3/4-fach WiFi-Wandschalter mit separaten Kacheln pro Kanal, Flow-Karten (setzen, umschalten, Bedingung, Trigger), automatische Erkennung der Schalteranzahl und Countdown-Timer-DPs."
+  },
   "1.0.60": {
     "en": "Pairing: added dp_refresh fallback — devices that ignore the initial dp_query (e.g. multi-gang switches) now get a second DP request so their data points are detected during pairing. Also improved protocol auto-detection timing.",
     "de": "Pairing: dp_refresh-Fallback ergänzt — Geräte die die initiale dp_query ignorieren (z.B. Mehrfach-Schalter) erhalten jetzt eine zweite DP-Abfrage, damit ihre Datenpunkte beim Pairing erkannt werden. Timing der Auto-Erkennung verbessert."

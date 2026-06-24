@@ -1,6 +1,6 @@
 # Tuya Local — Homey App
 
-**Version 1.0.60** · Local WiFi/LAN control of Tuya smart devices — no cloud, no Zigbee hub required.
+**Version 1.0.62** · Local WiFi/LAN control of Tuya smart devices — no cloud, no Zigbee hub required.
 
 All communication happens over your local network via the Tuya LAN protocol. Twelve built-in drivers cover the most common device types; a fully generic driver handles anything else.
 
@@ -21,6 +21,7 @@ All communication happens over your local network via the Tuya LAN protocol. Twe
 | [Garage Door](#garage-door-1) | Garage door openers (WOFEA, AOSD, ZC34T, BoboYun gatePro) | Garage Door |
 | [Heat Pump](#heat-pump-1) | Pool / air-water heat pumps (Phalén, Fairland, Brustec, BWT, Waterco, …) | Heat Pump |
 | [Curtain Motor](#curtain-motor-1) | Curtain / blind / roller motors (Zemismart v1 & v2 and compatible) | Blinds |
+| [Wall Switch](#wall-switch-1) | 1/2/3/4-gang WiFi wall switches | Socket |
 | [Generic Tuya Device](#generic-tuya-device-1) | Any Tuya device not covered above | Other |
 
 ---

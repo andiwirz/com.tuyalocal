@@ -12,7 +12,8 @@
       "pet_feeder":      "Futterautomat",
       "garage_door":     "Garagentor",
       "heat_pump":       "Wärmepumpe",
-      "curtain_motor":   "Rolladenmotor"
+      "curtain_motor":   "Rolladenmotor",
+      "wall_switch":     "Wandschalter"
     }
   },
   "notifications": {
