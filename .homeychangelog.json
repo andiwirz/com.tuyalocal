@@ -1,4 +1,12 @@
 {
+  "1.0.65": {
+    "en": "Wall Switch: added diagnostic logging for gang trigger events to investigate reports of switch 2+ triggers not firing on physical button press.",
+    "de": "Wandschalter: Diagnose-Logging für Gang-Trigger-Events hinzugefügt, um Berichte zu untersuchen, dass Trigger für Schalter 2+ bei physischem Tastendruck nicht auslösen."
+  },
+  "1.0.64": {
+    "en": "Wall Switch: fixed trigger not firing for switch 2/3/4 — a race condition between Homey's capability pre-set and the device echo caused the trigger check to fail for sub-capabilities. Also fixed pairing screen showing plug fields, added custom switch name settings, and corrected the offline grace period setting key.",
+    "de": "Wandschalter: Trigger für Schalter 2/3/4 repariert — eine Race-Condition zwischen Homeys Capability-Voreinstellung und der Geräteantwort führte dazu, dass der Trigger-Check bei Sub-Capabilities fehlschlug. Außerdem Pairing-Bildschirm korrigiert, benutzerdefinierte Schalternamen ergänzt und den Offline-Toleranz-Einstellungsschlüssel korrigiert."
+  },
   "1.0.63": {
     "en": "Wall Switch: fixed pairing screen (now shows switch-specific DP fields instead of plug fields), added custom switch name settings, and verified flow trigger logic for physical button presses.",
     "de": "Wandschalter: Pairing-Bildschirm korrigiert (zeigt jetzt Schalter-spezifische DP-Felder statt Steckdosen-Felder), benutzerdefinierte Schalternamen in den Einstellungen ergänzt, und Flow-Trigger-Logik für physische Tastendrücke verifiziert."

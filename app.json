@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.63",
+  "version": "1.0.65",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -6225,7 +6225,7 @@
               "step": 1
             },
             {
-              "id": "offline_grace_period",
+              "id": "offline_grace_seconds",
               "type": "number",
               "label": { "en": "Offline Grace Period (s)", "de": "Offline-Toleranz (s)" },
               "hint": { "en": "Seconds to wait before triggering 'device disconnected' flows. 0 = immediate.", "de": "Sekunden bis 'Gerät getrennt'-Flows ausgelöst werden. 0 = sofort." },

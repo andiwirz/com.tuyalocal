@@ -102,15 +102,13 @@ class WallSwitchDevice extends BaseTuyaDevice {
       });
 
       if (gangEntry && this.hasCapability(gangEntry.capability)) {
-        const prev = this.getCapabilityValue(gangEntry.capability);
         const bool = Boolean(value);
+        this.log(`Gang ${gangEntry.gang} (DP ${dp}) → ${bool}`);
         await this.setCapabilityValue(gangEntry.capability, bool).catch(() => {});
-
-        if (prev !== bool) {
-          this._triggerSwitchChanged
-            .trigger(this, { gang: String(gangEntry.gang), state: bool }, { gang: String(gangEntry.gang) })
-            .catch(() => {});
-        }
+        this._triggerSwitchChanged
+          .trigger(this, { gang: String(gangEntry.gang), state: bool }, { gang: String(gangEntry.gang) })
+          .then(() => this.log(`Trigger switch_gang_changed fired: gang=${gangEntry.gang} state=${bool}`))
+          .catch((err) => this.log(`Trigger switch_gang_changed FAILED: gang=${gangEntry.gang} err=${err.message}`));
         continue;
       }
 
