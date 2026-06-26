@@ -12,10 +12,10 @@ const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 // DP 14 relay_status  : enum off|on|last — power-on behavior
 
 const GANG_CAPS = [
-  { gang: 1, settingKey: 'dp_switch_1', capability: 'onoff'    },
-  { gang: 2, settingKey: 'dp_switch_2', capability: 'onoff.2'  },
-  { gang: 3, settingKey: 'dp_switch_3', capability: 'onoff.3'  },
-  { gang: 4, settingKey: 'dp_switch_4', capability: 'onoff.4'  },
+  { gang: 1, settingKey: 'dp_switch_1', nameSetting: 'name_switch_1', capability: 'onoff'    },
+  { gang: 2, settingKey: 'dp_switch_2', nameSetting: 'name_switch_2', capability: 'onoff.2'  },
+  { gang: 3, settingKey: 'dp_switch_3', nameSetting: 'name_switch_3', capability: 'onoff.3'  },
+  { gang: 4, settingKey: 'dp_switch_4', nameSetting: 'name_switch_4', capability: 'onoff.4'  },
 ];
 
 class WallSwitchDevice extends BaseTuyaDevice {
@@ -24,21 +24,7 @@ class WallSwitchDevice extends BaseTuyaDevice {
 
     await this._baseInit();
 
-    // ── Sync sub-capabilities based on configured DPs ────────────────────────
-    for (const gang of GANG_CAPS) {
-      const dp = this.getSetting(gang.settingKey) || 0;
-      if (dp > 0 && !this.hasCapability(gang.capability)) {
-        await this.addCapability(gang.capability);
-      }
-      if (dp > 0 && gang.gang > 1) {
-        await this.setCapabilityOptions(gang.capability, {
-          title: { en: `Switch ${gang.gang}`, de: `Schalter ${gang.gang}` },
-        }).catch(() => {});
-      }
-      if (dp <= 0 && gang.gang > 1 && this.hasCapability(gang.capability)) {
-        await this.removeCapability(gang.capability);
-      }
-    }
+    await this._syncGangCapabilities();
 
     // ── Flow trigger cards ───────────────────────────────────────────────────
     this._triggerDeviceConnected    = this.homey.flow.getDeviceTriggerCard('switch_device_connected');
@@ -47,6 +33,41 @@ class WallSwitchDevice extends BaseTuyaDevice {
     this._triggerSwitchChanged      = this.homey.flow.getDeviceTriggerCard('switch_gang_changed');
 
     // ── Capability listeners ─────────────────────────────────────────────────
+    this._registerGangListeners();
+
+    await this._connect();
+  }
+
+  // ── Gang capability sync ──────────────────────────────────────────────────────
+
+  async _syncGangCapabilities() {
+    for (const gang of GANG_CAPS) {
+      const dp = this.getSetting(gang.settingKey) || 0;
+
+      if (dp > 0 && !this.hasCapability(gang.capability)) {
+        await this.addCapability(gang.capability);
+      } else if (dp <= 0 && gang.gang > 1 && this.hasCapability(gang.capability)) {
+        await this.removeCapability(gang.capability);
+        continue;
+      }
+
+      if (dp > 0 && this.hasCapability(gang.capability)) {
+        await this._setGangTitle(gang);
+      }
+    }
+  }
+
+  async _setGangTitle(gang) {
+    const customName = (this.getSetting(gang.nameSetting) || '').trim();
+    const defaultEn  = gang.gang === 1 ? 'Power' : `Switch ${gang.gang}`;
+    const defaultDe  = gang.gang === 1 ? 'Ein/Aus' : `Schalter ${gang.gang}`;
+    const title = customName
+      ? { en: customName, de: customName }
+      : { en: defaultEn, de: defaultDe };
+    await this.setCapabilityOptions(gang.capability, { title }).catch(() => {});
+  }
+
+  _registerGangListeners() {
     for (const gang of GANG_CAPS) {
       const dp = this.getSetting(gang.settingKey) || 0;
       if (dp > 0 && this.hasCapability(gang.capability)) {
@@ -55,8 +76,6 @@ class WallSwitchDevice extends BaseTuyaDevice {
         });
       }
     }
-
-    await this._connect();
   }
 
   // ── DPS handling ─────────────────────────────────────────────────────────────
@@ -127,23 +146,15 @@ class WallSwitchDevice extends BaseTuyaDevice {
       this.log('Polling interval changed, restarting polling');
       this._startPolling();
     }
-    // Gang DPs changed → sync sub-capabilities
+
+    // Gang DPs or names changed → sync capabilities and titles
     const gangKeys = GANG_CAPS.map((g) => g.settingKey);
-    if (changedKeys.some((k) => gangKeys.includes(k))) {
-      for (const gang of GANG_CAPS) {
-        const dp = this.getSetting(gang.settingKey) || 0;
-        if (dp > 0 && !this.hasCapability(gang.capability)) {
-          await this.addCapability(gang.capability);
-          if (gang.gang > 1) {
-            await this.setCapabilityOptions(gang.capability, {
-              title: { en: `Switch ${gang.gang}`, de: `Schalter ${gang.gang}` },
-            }).catch(() => {});
-          }
-        } else if (dp <= 0 && gang.gang > 1 && this.hasCapability(gang.capability)) {
-          await this.removeCapability(gang.capability);
-        }
-      }
+    const nameKeys = GANG_CAPS.map((g) => g.nameSetting);
+    if (changedKeys.some((k) => gangKeys.includes(k) || nameKeys.includes(k))) {
+      await this._syncGangCapabilities();
+      this._registerGangListeners();
     }
+
     if (changedKeys.includes('relay_status')) {
       const dp = this.getSetting('dp_relay_status');
       if (dp > 0) {

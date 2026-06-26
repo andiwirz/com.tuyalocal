@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.62",
+  "version": "1.0.63",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -6282,6 +6282,41 @@
               "min": 0,
               "max": 255,
               "step": 1
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Switch Names",
+            "de": "Schalternamen"
+          },
+          "children": [
+            {
+              "id": "name_switch_1",
+              "type": "text",
+              "label": { "en": "Name Switch 1", "de": "Name Schalter 1" },
+              "hint": { "en": "Custom label for the main switch tile.", "de": "Benutzerdefinierter Name für die Hauptschalter-Kachel." },
+              "value": ""
+            },
+            {
+              "id": "name_switch_2",
+              "type": "text",
+              "label": { "en": "Name Switch 2", "de": "Name Schalter 2" },
+              "hint": { "en": "Custom label for switch 2 tile. Leave empty for default.", "de": "Benutzerdefinierter Name für Schalter 2. Leer = Standard." },
+              "value": ""
+            },
+            {
+              "id": "name_switch_3",
+              "type": "text",
+              "label": { "en": "Name Switch 3", "de": "Name Schalter 3" },
+              "value": ""
+            },
+            {
+              "id": "name_switch_4",
+              "type": "text",
+              "label": { "en": "Name Switch 4", "de": "Name Schalter 4" },
+              "value": ""
             }
           ]
         },

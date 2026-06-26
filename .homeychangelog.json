@@ -1,4 +1,8 @@
 {
+  "1.0.63": {
+    "en": "Wall Switch: fixed pairing screen (now shows switch-specific DP fields instead of plug fields), added custom switch name settings, and verified flow trigger logic for physical button presses.",
+    "de": "Wandschalter: Pairing-Bildschirm korrigiert (zeigt jetzt Schalter-spezifische DP-Felder statt Steckdosen-Felder), benutzerdefinierte Schalternamen in den Einstellungen ergänzt, und Flow-Trigger-Logik für physische Tastendrücke verifiziert."
+  },
   "1.0.62": {
     "en": "Wall Switch: added proper device images.",
     "de": "Wandschalter: passende Gerätebilder hinzugefügt."
