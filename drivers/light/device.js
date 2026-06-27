@@ -10,11 +10,11 @@ const DEBOUNCE_MS = 200;
 
 function parseColorHex(hex) {
   if (typeof hex !== 'string' || hex.length < 12) return null;
-  return {
-    h: parseInt(hex.slice(0, 4), 16),  // 0–360
-    s: parseInt(hex.slice(4, 8),  16), // 0–1000
-    v: parseInt(hex.slice(8, 12), 16), // 0–1000
-  };
+  const h = parseInt(hex.slice(0, 4), 16);
+  const s = parseInt(hex.slice(4, 8),  16);
+  const v = parseInt(hex.slice(8, 12), 16);
+  if (Number.isNaN(h) || Number.isNaN(s) || Number.isNaN(v)) return null;
+  return { h, s, v };
 }
 
 function buildColorHex(h, s, v) {
@@ -57,11 +57,11 @@ class LightDevice extends BaseTuyaDevice {
       if (dp > 0) await this._set(dp, value);
     });
 
-    let dimTimer = null;
+    this._dimTimer = null;
     this.registerCapabilityListener('dim', (value) => {
-      clearTimeout(dimTimer);
+      clearTimeout(this._dimTimer);
       return new Promise((resolve) => {
-        dimTimer = setTimeout(async () => {
+        this._dimTimer = setTimeout(async () => {
           const mode = this.getCapabilityValue('light_mode');
           if (mode === 'color' && this.hasCapability('light_hue')) {
             // In colour mode, update V component of the HSV hex
@@ -77,11 +77,11 @@ class LightDevice extends BaseTuyaDevice {
       });
     });
 
-    let tempTimer = null;
+    this._tempTimer = null;
     this.registerCapabilityListener('light_temperature', (value) => {
-      clearTimeout(tempTimer);
+      clearTimeout(this._tempTimer);
       return new Promise((resolve) => {
-        tempTimer = setTimeout(async () => {
+        this._tempTimer = setTimeout(async () => {
           const dp  = this.getSetting('dp_color_temp');
           const max = this.getSetting('color_temp_max') ?? 1000;
           const inv = this.getSetting('color_temp_invert') ?? false;
@@ -94,22 +94,22 @@ class LightDevice extends BaseTuyaDevice {
       });
     });
 
-    let hueTimer = null;
+    this._hueTimer = null;
     this.registerCapabilityListener('light_hue', (value) => {
-      clearTimeout(hueTimer);
+      clearTimeout(this._hueTimer);
       return new Promise((resolve) => {
-        hueTimer = setTimeout(async () => {
+        this._hueTimer = setTimeout(async () => {
           await this._sendColor({ h: value }).catch(() => {});
           resolve();
         }, DEBOUNCE_MS);
       });
     });
 
-    let satTimer = null;
+    this._satTimer = null;
     this.registerCapabilityListener('light_saturation', (value) => {
-      clearTimeout(satTimer);
+      clearTimeout(this._satTimer);
       return new Promise((resolve) => {
-        satTimer = setTimeout(async () => {
+        this._satTimer = setTimeout(async () => {
           await this._sendColor({ s: value }).catch(() => {});
           resolve();
         }, DEBOUNCE_MS);
@@ -244,6 +244,13 @@ class LightDevice extends BaseTuyaDevice {
         if (this.hasCapability(capability)) await this.removeCapability(capability).catch(() => {});
       }
     }
+  }
+
+  async _onDeleted() {
+    clearTimeout(this._dimTimer);
+    clearTimeout(this._tempTimer);
+    clearTimeout(this._hueTimer);
+    clearTimeout(this._satTimer);
   }
 
   // ── Homey lifecycle ──────────────────────────────────────────────────────────

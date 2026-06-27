@@ -1,4 +1,44 @@
 {
+  "1.0.75": {
+    "en": "Cloud Lookup: device detail view now shows DP numbers correctly by fetching from the shadow properties API. Three endpoints are queried in parallel for the most complete picture.",
+    "de": "Cloud-Lookup: Gerätedetail-Ansicht zeigt DP-Nummern jetzt korrekt an durch Abfrage der Shadow-Properties-API. Drei Endpoints werden parallel abgefragt für das vollständigste Bild."
+  },
+  "1.0.74": {
+    "en": "Cloud Lookup: fixed API signing (sorted query params), fixed region hostnames, added device detail view — click a device name to see all DPs with their types, current values, allowed ranges, and read/write status. Removed IP and Category columns for a cleaner layout. Updated README and in-app help with Cloud Lookup instructions.",
+    "de": "Cloud-Lookup: API-Signierung korrigiert (sortierte Query-Parameter), Region-Hostnames korrigiert, Gerätedetail-Ansicht hinzugefügt — Klick auf einen Gerätenamen zeigt alle DPs mit Typen, aktuellen Werten, erlaubten Bereichen und Lese-/Schreibstatus. IP- und Kategorie-Spalten für ein aufgeräumteres Layout entfernt. README und In-App-Hilfe mit Cloud-Lookup-Anleitung aktualisiert."
+  },
+  "1.0.73": {
+    "en": "New: Cloud Lookup tab in app settings — fetch Device ID, Local Key and IP directly from the Tuya IoT Platform without CLI tools. Enter your project's Access ID and Secret, select your data center, and get a full device list with copy buttons.",
+    "de": "Neu: Cloud-Lookup-Tab in den App-Einstellungen — Geräte-ID, Lokaler Schlüssel und IP direkt von der Tuya-IoT-Plattform abrufen, ohne CLI-Tools. Access ID und Secret des Projekts eingeben, Rechenzentrum wählen und die vollständige Geräteliste mit Kopier-Buttons erhalten."
+  },
+  "1.0.72": {
+    "en": "Polling now alternates between full GET and lightweight refresh (updatedps) — reduces traffic and improves responsiveness. Added protocol version 3.2 support to auto-detection and all pairing screens.",
+    "de": "Polling wechselt jetzt zwischen vollem GET und leichtgewichtigem Refresh (updatedps) — reduziert Traffic und verbessert die Reaktionszeit. Protokollversion 3.2 in Auto-Erkennung und alle Pairing-Screens aufgenommen."
+  },
+  "1.0.71": {
+    "en": "Quality: fixed timer leaks in fan, humidifier, and pet feeder drivers (debounce timers now properly cleaned up on device deletion). Fixed wrong default device name ('Dehumidifier') showing in pairing screens of fan, heater, humidifier, and light drivers.",
+    "de": "Qualität: Timer-Leaks in Fan-, Luftbefeuchter- und Futterautomaten-Treibern behoben (Debounce-Timer werden bei Gerätedeletion jetzt korrekt aufgeräumt). Falscher Standard-Gerätename ('Dehumidifier') in den Pairing-Screens von Fan, Heater, Humidifier und Light korrigiert."
+  },
+  "1.0.70": {
+    "en": "Updated README and in-app help with full documentation for Thermostat, Smart Kettle and Wall Switch drivers. Moved Donate button to top of help page. Fixed troubleshooting table layout overflow. Added new kettle flow actions: set mode and set keep warm.",
+    "de": "README und In-App-Hilfe mit vollständiger Dokumentation für Thermostat-, Wasserkocher- und Wandschalter-Treiber aktualisiert. Donate-Button an den Anfang der Hilfeseite verschoben. Troubleshooting-Tabellen-Layout korrigiert. Neue Wasserkocher-Flow-Actions: Modus setzen und Warmhalten setzen."
+  },
+  "1.0.69": {
+    "en": "New driver: Thermostat — supports floor heating, room thermostats, TRVs (radiator valves), and zone valves. Features: target/current temperature with ×10 divisor support, configurable mode picker, child lock, battery level for TRVs, fault alarm, and automatic DP detection.",
+    "de": "Neuer Treiber: Thermostat — unterstützt Fussbodenheizung, Raumthermostate, TRVs (Heizkörperventile) und Zonenventile. Features: Ziel-/Ist-Temperatur mit ×10-Divisor, konfigurierbarer Modus-Picker, Kindersicherung, Batteriestand für TRVs, Fehleralarm und automatische DP-Erkennung."
+  },
+  "1.0.68": {
+    "en": "New driver: Smart Kettle — temperature control, keep-warm toggle, mode picker, status display, boil-done trigger, and automatic DP detection for Anko, Aeno, Kogan and other Tuya kettles.",
+    "de": "Neuer Treiber: Smarter Wasserkocher — Temperatursteuerung, Warmhalten-Schalter, Modus-Auswahl, Status-Anzeige, Fertig-Trigger und automatische DP-Erkennung für Anko, Aeno, Kogan und andere Tuya-Wasserkocher."
+  },
+  "1.0.67": {
+    "en": "Wall Switch: fixed spurious flow triggers on reconnect — gang triggers now track state independently from the dedup cache, so reconnects no longer fire false triggers for unchanged switches. Also silenced countdown DP logging.",
+    "de": "Wandschalter: Falsche Flow-Trigger bei Reconnect behoben — Gang-Trigger verfolgen den Zustand jetzt unabhängig vom Dedup-Cache, sodass Reconnects keine falschen Trigger mehr für unveränderte Schalter auslösen. Countdown-DP-Logging stumm geschaltet."
+  },
+  "1.0.66": {
+    "en": "Light: fixed memory leak — debounce timers for dim, color temperature, hue and saturation are now properly cleaned up when a device is deleted. Added NaN guard to HSV hex parser.",
+    "de": "Licht: Speicherleck behoben — Debounce-Timer für Helligkeit, Farbtemperatur, Farbton und Sättigung werden jetzt bei Gerätedeletion korrekt aufgeräumt. NaN-Schutz im HSV-Hex-Parser ergänzt."
+  },
   "1.0.65": {
     "en": "Wall Switch: added diagnostic logging for gang trigger events to investigate reports of switch 2+ triggers not firing on physical button press.",
     "de": "Wandschalter: Diagnose-Logging für Gang-Trigger-Events hinzugefügt, um Berichte zu untersuchen, dass Trigger für Schalter 2+ bei physischem Tastendruck nicht auslösen."

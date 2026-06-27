@@ -48,15 +48,16 @@ class HumidifierDevice extends BaseTuyaDevice {
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('humidifier_dp_changed');
 
     // ── Capability listeners ─────────────────────────────────────────────────
+    this._debounceTimers = {};
     for (const entry of DP_PROFILE) {
       if (!entry.settable) continue;
       if (!this.hasCapability(entry.capability)) continue;
       if (entry.debounce) {
-        let timer = null;
-        this.registerCapabilityListener(entry.capability, (value) => {
-          clearTimeout(timer);
+        const cap = entry.capability;
+        this.registerCapabilityListener(cap, (value) => {
+          clearTimeout(this._debounceTimers[cap]);
           return new Promise((resolve) => {
-            timer = setTimeout(() => {
+            this._debounceTimers[cap] = setTimeout(() => {
               this._set(this.getSetting(entry.settingKey), value)
                 .then(resolve).catch(resolve);
             }, DEBOUNCE_MS);
@@ -70,6 +71,10 @@ class HumidifierDevice extends BaseTuyaDevice {
     }
 
     await this._connect();
+  }
+
+  async _onDeleted() {
+    for (const timer of Object.values(this._debounceTimers || {})) clearTimeout(timer);
   }
 
   // ── DPS handling ─────────────────────────────────────────────────────────────

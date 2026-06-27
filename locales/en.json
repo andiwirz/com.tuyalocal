@@ -13,7 +13,9 @@
       "garage_door":     "Garage Door",
       "heat_pump":       "Heat Pump",
       "curtain_motor":   "Curtain Motor",
-      "wall_switch":     "Wall Switch"
+      "wall_switch":     "Wall Switch",
+      "thermostat":      "Thermostat",
+      "kettle":          "Smart Kettle"
     }
   },
   "notifications": {

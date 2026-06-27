@@ -1,8 +1,8 @@
 # Tuya Local — Homey App
 
-**Version 1.0.65** · Local WiFi/LAN control of Tuya smart devices — no cloud, no Zigbee hub required.
+**Version 1.0.75** · Local WiFi/LAN control of Tuya smart devices — no cloud, no Zigbee hub required.
 
-All communication happens over your local network via the Tuya LAN protocol. Twelve built-in drivers cover the most common device types; a fully generic driver handles anything else.
+All communication happens over your local network via the Tuya LAN protocol. Sixteen built-in drivers cover the most common device types; a fully generic driver handles anything else.
 
 ---
 
@@ -21,6 +21,8 @@ All communication happens over your local network via the Tuya LAN protocol. Twe
 | [Garage Door](#garage-door-1) | Garage door openers (WOFEA, AOSD, ZC34T, BoboYun gatePro) | Garage Door |
 | [Heat Pump](#heat-pump-1) | Pool / air-water heat pumps (Phalén, Fairland, Brustec, BWT, Waterco, …) | Heat Pump |
 | [Curtain Motor](#curtain-motor-1) | Curtain / blind / roller motors (Zemismart v1 & v2 and compatible) | Blinds |
+| [Thermostat](#thermostat-1) | Floor heating, room thermostats, TRVs, zone valves | Thermostat |
+| [Smart Kettle](#smart-kettle-1) | Smart kettles with temperature control | Kettle |
 | [Wall Switch](#wall-switch-1) | 1/2/3/4-gang WiFi wall switches | Socket |
 | [Generic Tuya Device](#generic-tuya-device-1) | Any Tuya device not covered above | Other |
 
@@ -31,7 +33,8 @@ All communication happens over your local network via the Tuya LAN protocol. Twe
 - **Cloud-free** — all traffic stays on your local network
 - **Real-time push** — instant state updates without polling (polling is optional and configurable)
 - **Automatic reconnect** — exponential back-off with jitter; watchdog detects stale connections and reconnects
-- **Protocol auto-detect** — pairing and repair default to *Auto-detect*, which tries 3.3 → 3.4 → 3.1 → 3.5 in order and saves the working version automatically
+- **Cloud Lookup** — fetch Device ID and Local Key directly from the Tuya IoT Platform inside the app settings — no CLI tools needed. Click a device name to see all DPs with types, current values, and allowed ranges
+- **Protocol auto-detect** — pairing and repair default to *Auto-detect*, which tries 3.3 → 3.4 → 3.1 → 3.5 → 3.2 → 3.22 in order and saves the working version automatically
 - **Network scanner** — finds Tuya devices via UDP broadcast (ports 6666 / 6667) and a full TCP subnet scan (port 6668)
 - **Auto DP detection** — on pairing, the app connects to the device, collects live data points and maps them to capabilities automatically
 - **Inline DP editor** — every DP number can be adjusted in the pairing screen before adding the device
@@ -39,6 +42,7 @@ All communication happens over your local network via the Tuya LAN protocol. Twe
 - **Live credential updates** — change IP address, Local Key or Protocol Version directly in device settings at any time without re-pairing
 - **Computed energy metering** — kWh accumulated from live power readings using trapezoidal integration; persisted across restarts
 - **Push notifications** — Homey notifications for water tank events, fault alarms and other device alerts
+- **Efficient polling** — alternates between full GET and lightweight dp_refresh to reduce traffic
 - **Diagnostic tools** — in-app log buffer, live DP debug panel and raw payload viewer
 - **Bilingual** — full English and German UI
 
@@ -54,7 +58,21 @@ All communication happens over your local network via the Tuya LAN protocol. Twe
 
 ## How to get Device ID and Local Key
 
-### Method 1 — tuya-cli wizard (recommended)
+### Method 1 — Cloud Lookup in app settings (recommended)
+
+No CLI tools or terminal needed. Everything happens inside the Homey app.
+
+1. Create a free account at [iot.tuya.com](https://iot.tuya.com).
+2. **Cloud** → **Project Management** → **Create Cloud Project** — industry: Smart Home, region: same as your mobile app.
+3. Open your project → **Devices** → **Link Tuya App Account** → scan the QR code with Tuya Smart / Smart Life.
+4. Open your project → **Overview** → copy **Access ID / Client ID** and **Access Secret / Client Secret**.
+5. In Homey: **More** → **Apps** → **Tuya Local** → **Settings** → **☁️ Cloud Lookup** tab.
+6. Paste your Access ID and Secret, select your data center, click **Fetch Devices**.
+7. Use the **Copy** button next to each device to copy Name, Device ID and Local Key.
+
+> If you recently reset or re-paired a device the Local Key changes. Click **Fetch Devices** again to get the new key.
+
+### Method 2 — tuya-cli wizard
 
 Requires Node.js ≥ 16 on your computer.
 
@@ -64,15 +82,11 @@ npx @tuyapi/cli wizard
 
 The wizard logs you into the Tuya IoT Platform, links your Smart Life / Tuya mobile app, and lists every device with its **Device ID** and **Local Key**.
 
-> If you recently reset or re-paired a device the Local Key changes. Re-run the wizard to get the new key.
+### Method 3 — Tuya IoT Platform (manual)
 
-### Method 2 — Tuya IoT Platform
-
-1. Create a free account at [iot.tuya.com](https://iot.tuya.com).
-2. **Cloud → Development → Create Cloud Project** — industry: Smart Home, region: same as your mobile app.
-3. Enable API subscriptions: *IoT Core* and *Authorization*.
-4. **Devices → Link Tuya App Account** — scan the QR code with Smart Life or the Tuya app.
-5. In **All Devices**, click the pencil icon next to your device → copy **Device ID** and **Device Secret** (= Local Key).
+1. Open your project at [iot.tuya.com](https://iot.tuya.com).
+2. **Devices** → **All Devices** → click the pencil icon next to your device.
+3. Copy **Device ID** and **Device Secret** (= Local Key).
 
 ### Finding the IP address
 
@@ -470,6 +484,109 @@ Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polli
 > **Position convention:** The driver maps `percent_control` where `0` = fully closed and `100` = fully open to Homey's `windowcoverings_set` (0.0–1.0). Enable `invert_position` if your device uses the opposite convention.
 
 > **Zemismart v2 extra DPs:** DP 16 (`border` / limit calibration) and DP 19 (`position_best` / favourite position) are motor-setup commands — run the limit calibration from the Tuya/Smart Life app first, then use Homey for daily control.
+
+---
+
+### Thermostat
+
+Universal driver for floor heating thermostats, room thermostats, TRVs (radiator valves), and zone valves.
+
+#### Connection
+
+Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polling Interval, Offline Grace Period).
+
+#### Data Points
+
+| Setting | Capability | Type | Default DP | Optional |
+|---|---|---|---|---|
+| `dp_onoff` | `onoff` | boolean | 1 | — |
+| `dp_target_temp` | `target_temperature` | number | 2 | — |
+| `dp_current_temp` | `measure_temperature` | number | 3 | — |
+| `dp_mode` | `thermostat_mode` | enum | 4 | ✓ `0` = disabled |
+| `dp_child_lock` | `child_lock` | boolean | 0 | ✓ `0` = disabled |
+| `dp_battery` | `measure_battery` | number | 0 | ✓ `0` = disabled (TRVs only) |
+| `dp_fault` | `alarm_generic` | bitfield | 0 | ✓ `0` = disabled |
+
+#### Temperature Settings
+
+| Setting | Description | Default |
+|---|---|---|
+| `temp_divisor` | Divide raw DP value to get °C — use `10` if device sends e.g. `220` for 22.0 °C (common on BHT-002 / Moes) | 1 (auto-detected) |
+| `temp_min` | Minimum target temperature (°C) | 5 |
+| `temp_max` | Maximum target temperature (°C) | 35 |
+| `temp_step` | Step size for the temperature slider (°C) | 0.5 |
+
+#### Mode Values
+
+| Setting | Default |
+|---|---|
+| `mode_values` | `manual,auto,program` |
+
+Common alternatives: `heat,cool,off` (HVAC), `auto,manual,holiday` (TRV), `comfort,eco,away` (floor heating).
+
+---
+
+### Smart Kettle
+
+Supports Tuya smart kettles with temperature control, keep-warm, and mode selection (Anko, Aeno, Kogan and others).
+
+#### Connection
+
+Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polling Interval, Offline Grace Period).
+
+#### Data Points
+
+| Setting | Capability | Type | Default DP | Optional |
+|---|---|---|---|---|
+| `dp_onoff` | `onoff` | boolean | 1 | — |
+| `dp_current_temp` | `measure_temperature` | number | 2 | — |
+| `dp_target_temp` | `target_temperature` | number | 4 | ✓ `0` = disabled |
+| `dp_keep_warm` | `kettle_keep_warm` | boolean | 13 | ✓ `0` = disabled |
+| `dp_status` | `kettle_status` | enum | 15 | ✓ `0` = disabled |
+| `dp_mode` | `kettle_mode` | enum | 16 | ✓ `0` = disabled |
+| `dp_fault` | `alarm_generic` | bitfield | 0 | ✓ `0` = disabled |
+
+#### Temperature Settings
+
+| Setting | Description | Default |
+|---|---|---|
+| `temp_min` | Minimum target temperature (°C) | 40 |
+| `temp_max` | Maximum target temperature (°C) | 100 |
+| `temp_step` | Step size (°C) | 5 |
+
+#### Mode & Status Values
+
+| Setting | Default |
+|---|---|
+| `mode_values` | `boil,heat,keep_warm` |
+| `status_values` | `standby,heating,cooling,warm,done` |
+
+Some kettles use tea-specific modes (e.g. Aeno EK1S): `mzj_black,mzj_green,mzj_water,mzj_oolong,mzj_warm`.
+
+---
+
+### Wall Switch
+
+Dedicated driver for 1/2/3/4-gang WiFi wall switches. Each gang gets its own tile and flow cards.
+
+#### Connection
+
+Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polling Interval, Offline Grace Period).
+
+#### Data Points
+
+| Setting | Capability | Type | Default DP | Optional |
+|---|---|---|---|---|
+| `dp_switch_1` | `onoff` | boolean | 1 | — |
+| `dp_switch_2` | `onoff.2` | boolean | 0 | ✓ `0` = disabled |
+| `dp_switch_3` | `onoff.3` | boolean | 0 | ✓ `0` = disabled |
+| `dp_switch_4` | `onoff.4` | boolean | 0 | ✓ `0` = disabled |
+| `dp_countdown_1–4` | *(settings only)* | number | 0 | ✓ `0` = disabled |
+| `dp_relay_status` | *(settings only)* | enum | 0 | ✓ `0` = disabled |
+
+#### Switch Names
+
+Each switch tile can be renamed in **Settings → Switch Names**. Leave empty for the default name ("Power" / "Switch 2/3/4"). The app needs to be restarted for name changes to take effect.
 
 ---
 
@@ -1013,6 +1130,95 @@ All DPs are auto-detected at pairing time. For AOSD and BoboYun, `dp_door_action
 
 ---
 
+### Thermostat
+
+#### Triggers
+
+| Trigger | Flow tokens |
+|---|---|
+| Thermostat mode changed | `mode` (string), `prev_mode` (string) |
+| Thermostat connected | — |
+| Thermostat disconnected | — |
+| Thermostat data point changed | `dp` (string), `value` (string) |
+
+#### Conditions
+
+| Condition |
+|---|
+| Thermostat mode is / is not [mode] |
+| Thermostat is / is not connected |
+
+#### Actions
+
+| Action | Notes |
+|---|---|
+| Set thermostat mode | Uses values from `mode_values` setting |
+| Set target temperature | Configurable min/max/step |
+| Force thermostat reconnect | Drops and re-establishes the TCP connection |
+| Refresh thermostat values | Triggers an immediate GET request |
+
+---
+
+### Smart Kettle
+
+#### Triggers
+
+| Trigger | Flow tokens |
+|---|---|
+| Kettle finished boiling | — |
+| Kettle status changed | `status` (string), `prev_status` (string) |
+| Kettle connected | — |
+| Kettle disconnected | — |
+| Kettle data point changed | `dp` (string), `value` (string) |
+
+#### Conditions
+
+| Condition |
+|---|
+| Kettle is / is not heating |
+| Kettle is / is not connected |
+
+#### Actions
+
+| Action | Notes |
+|---|---|
+| Set target temperature | 40–100 °C |
+| Set kettle mode | Uses values from `mode_values` setting |
+| Set keep warm | on / off |
+| Force kettle reconnect | Drops and re-establishes the TCP connection |
+| Refresh kettle values | Triggers an immediate GET request |
+
+---
+
+### Wall Switch
+
+#### Triggers
+
+| Trigger | Flow tokens |
+|---|---|
+| A switch gang changed | `gang` (string: 1/2/3/4), `state` (boolean) |
+| Wall switch connected | — |
+| Wall switch disconnected | — |
+| Wall switch data point changed | `dp` (string), `value` (string) |
+
+#### Conditions
+
+| Condition |
+|---|
+| Switch gang is / is not on |
+| Wall switch is / is not connected |
+
+#### Actions
+
+| Action | Notes |
+|---|---|
+| Set switch gang on or off | Select gang (1–4) and state (on/off) |
+| Toggle switch gang | Inverts current state of selected gang |
+| Force wall switch reconnect | Drops and re-establishes the TCP connection |
+| Refresh wall switch values | Triggers an immediate GET request |
+
+---
+
 ## Push Notifications
 
 | Event | Driver | Condition |
@@ -1061,6 +1267,15 @@ Full unprocessed payload for the selected device:
 - DPs as a sorted JSON object
 - Device metadata: `devId`, `uid`, `cid`, timestamp
 - **Copy** button for clipboard export
+
+### Cloud Lookup
+
+Fetch device credentials and DP specifications from the Tuya IoT Platform:
+- Enter your **Access ID** and **Access Secret** from iot.tuya.com → Cloud → Project Management → your project → Overview
+- Select your **Data Center** and click **Fetch Devices**
+- View all linked devices with **Device ID** and **Local Key**
+- **Click a device name** to see the full DP specification: DP numbers, code names, types, current values, allowed ranges, and read/write status
+- **Copy** button per device (Name + ID + Key) and **Copy DP Table** for the specification
 - Useful for finding exact enum strings (`mode`, `fan_speed`, etc.)
 
 ---
@@ -1086,6 +1301,11 @@ Full unprocessed payload for the selected device:
 | Curtain position slider is inverted | Device uses 0 = open, 100 = closed | Enable `invert_position` in device settings |
 | Curtain tile shows "moving" but motor has stopped | `work_state` DP not resetting on this device | Set `dp_work_state = 0` to disable it |
 | Curtain motor limit positions are wrong | Motor limits not calibrated | Run limit calibration from the Tuya / Smart Life app (DP 16 `border`) before using Homey |
+| Thermostat temperature is 10× too high | Device sends ×10 values (e.g. BHT-002, Moes) | Set `temp_divisor = 10` in device settings |
+| Thermostat mode picker shows wrong options | `mode_values` mismatch | Check Raw Data panel for actual strings, update `mode_values` in settings |
+| Wall switch trigger doesn't fire for switch 2+ | Using Homey's built-in "Turned on/off" trigger | Use the Wall Switch-specific **"A switch gang changed"** trigger card instead |
+| Wall switch tile names don't update | Homey caches capability titles | Restart the Tuya Local app after changing switch names |
+| Kettle mode picker empty | `mode_values` doesn't match device strings | Check Raw Data for exact mode strings (some use `mzj_black`, `boiling_quick`, etc.) |
 
 ---
 

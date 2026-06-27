@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.65",
+  "version": "1.0.75",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -160,6 +160,16 @@
     }
   },
   "permissions": [],
+  "api": {
+    "cloudLookup": {
+      "method": "GET",
+      "path": "/cloud-lookup"
+    },
+    "cloudDeviceDetail": {
+      "method": "GET",
+      "path": "/cloud-device-detail"
+    }
+  },
   "author": {
     "name": "Andi Wirz",
     "email": "andi@wirzfamily.ch"
@@ -1328,6 +1338,68 @@
       "insights": false,
       "icon": "/assets/capabilities/feed_portions.svg"
     },
+    "thermostat_mode": {
+      "type": "enum",
+      "title": {
+        "en": "Mode",
+        "de": "Modus"
+      },
+      "values": [
+        { "id": "manual",  "title": { "en": "Manual",  "de": "Manuell" } },
+        { "id": "auto",    "title": { "en": "Auto",    "de": "Auto" } },
+        { "id": "program", "title": { "en": "Program", "de": "Programm" } }
+      ],
+      "getable": true,
+      "setable": true,
+      "uiComponent": "picker",
+      "icon": "/assets/capabilities/thermostat_mode.svg"
+    },
+    "kettle_status": {
+      "type": "enum",
+      "title": {
+        "en": "Status",
+        "de": "Status"
+      },
+      "values": [
+        { "id": "standby",  "title": { "en": "Standby",      "de": "Standby" } },
+        { "id": "heating",  "title": { "en": "Heating",       "de": "Heizt" } },
+        { "id": "cooling",  "title": { "en": "Cooling",       "de": "Kühlt ab" } },
+        { "id": "warm",     "title": { "en": "Keeping warm",  "de": "Warmhalten" } },
+        { "id": "done",     "title": { "en": "Done",          "de": "Fertig" } }
+      ],
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "insights": true,
+      "icon": "/assets/capabilities/kettle_status.svg"
+    },
+    "kettle_mode": {
+      "type": "enum",
+      "title": {
+        "en": "Mode",
+        "de": "Modus"
+      },
+      "values": [
+        { "id": "boil",      "title": { "en": "Boil",      "de": "Kochen" } },
+        { "id": "heat",      "title": { "en": "Heat",      "de": "Erhitzen" } },
+        { "id": "keep_warm", "title": { "en": "Keep warm", "de": "Warmhalten" } }
+      ],
+      "getable": true,
+      "setable": true,
+      "uiComponent": "picker",
+      "icon": "/assets/capabilities/kettle_mode.svg"
+    },
+    "kettle_keep_warm": {
+      "type": "boolean",
+      "title": {
+        "en": "Keep Warm",
+        "de": "Warmhalten"
+      },
+      "getable": true,
+      "setable": true,
+      "uiComponent": "toggle",
+      "icon": "/assets/capabilities/kettle_keep_warm.svg"
+    },
     "food_status": {
       "type": "enum",
       "title": {
@@ -1941,6 +2013,67 @@
             "filter": "driver_id=generic"
           }
         ]
+      },
+      {
+        "id": "thermostat_device_connected",
+        "title": { "en": "Device connected", "de": "Gerät verbunden" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=thermostat" }]
+      },
+      {
+        "id": "thermostat_device_disconnected",
+        "title": { "en": "Device disconnected", "de": "Gerät getrennt" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=thermostat" }]
+      },
+      {
+        "id": "thermostat_dp_changed",
+        "title": { "en": "A data point changed", "de": "Ein Datenpunkt hat sich geändert" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=thermostat" }],
+        "tokens": [
+          { "name": "dp", "type": "string", "title": { "en": "DP number", "de": "DP-Nummer" } },
+          { "name": "value", "type": "string", "title": { "en": "Value", "de": "Wert" } }
+        ]
+      },
+      {
+        "id": "thermostat_mode_changed",
+        "title": { "en": "Thermostat mode changed", "de": "Thermostat-Modus geändert" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=thermostat" }],
+        "tokens": [
+          { "name": "mode", "type": "string", "title": { "en": "Mode", "de": "Modus" } },
+          { "name": "prev_mode", "type": "string", "title": { "en": "Previous mode", "de": "Vorheriger Modus" } }
+        ]
+      },
+      {
+        "id": "kettle_device_connected",
+        "title": { "en": "Device connected", "de": "Gerät verbunden" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=kettle" }]
+      },
+      {
+        "id": "kettle_device_disconnected",
+        "title": { "en": "Device disconnected", "de": "Gerät getrennt" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=kettle" }]
+      },
+      {
+        "id": "kettle_dp_changed",
+        "title": { "en": "A data point changed", "de": "Ein Datenpunkt hat sich geändert" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=kettle" }],
+        "tokens": [
+          { "name": "dp", "type": "string", "title": { "en": "DP number", "de": "DP-Nummer" } },
+          { "name": "value", "type": "string", "title": { "en": "Value", "de": "Wert" } }
+        ]
+      },
+      {
+        "id": "kettle_status_changed",
+        "title": { "en": "Kettle status changed", "de": "Wasserkocher-Status geändert" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=kettle" }],
+        "tokens": [
+          { "name": "status", "type": "string", "title": { "en": "Status", "de": "Status" } },
+          { "name": "prev_status", "type": "string", "title": { "en": "Previous status", "de": "Vorheriger Status" } }
+        ]
+      },
+      {
+        "id": "kettle_boil_done",
+        "title": { "en": "Kettle finished boiling", "de": "Wasserkocher fertig" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=kettle" }]
       },
       {
         "id": "switch_device_connected",
@@ -3387,6 +3520,30 @@
         ]
       },
       {
+        "id": "thermostat_device_is_connected",
+        "title": { "en": "Device !{{is|is not}} connected", "de": "Gerät ist !{{verbunden|nicht verbunden}}" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=thermostat" }]
+      },
+      {
+        "id": "thermostat_mode_is",
+        "title": { "en": "Thermostat mode !{{is|is not}} ...", "de": "Thermostat-Modus !{{ist|ist nicht}} ..." },
+        "titleFormatted": { "en": "Mode !{{is|is not}} [[mode]]", "de": "Modus !{{ist|ist nicht}} [[mode]]" },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=thermostat" },
+          { "name": "mode", "type": "text", "title": { "en": "Mode", "de": "Modus" }, "placeholder": { "en": "e.g. auto", "de": "z.B. auto" } }
+        ]
+      },
+      {
+        "id": "kettle_device_is_connected",
+        "title": { "en": "Device !{{is|is not}} connected", "de": "Gerät ist !{{verbunden|nicht verbunden}}" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=kettle" }]
+      },
+      {
+        "id": "kettle_is_heating",
+        "title": { "en": "Kettle !{{is|is not}} heating", "de": "Wasserkocher !{{heizt|heizt nicht}}" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=kettle" }]
+      },
+      {
         "id": "switch_device_is_connected",
         "title": {
           "en": "Device !{{is|is not}} connected",
@@ -4429,6 +4586,78 @@
             "name": "device",
             "type": "device",
             "filter": "driver_id=generic"
+          }
+        ]
+      },
+      {
+        "id": "thermostat_force_reconnect",
+        "title": { "en": "Force reconnect", "de": "Verbindung neu aufbauen" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=thermostat" }]
+      },
+      {
+        "id": "thermostat_refresh_device",
+        "title": { "en": "Refresh device values", "de": "Gerätewerte aktualisieren" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=thermostat" }]
+      },
+      {
+        "id": "thermostat_set_mode",
+        "title": { "en": "Set thermostat mode", "de": "Thermostat-Modus setzen" },
+        "titleFormatted": { "en": "Set mode to [[mode]]", "de": "Modus auf [[mode]] setzen" },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=thermostat" },
+          { "name": "mode", "type": "text", "title": { "en": "Mode", "de": "Modus" }, "placeholder": { "en": "e.g. auto", "de": "z.B. auto" } }
+        ]
+      },
+      {
+        "id": "thermostat_set_target_temp",
+        "title": { "en": "Set target temperature", "de": "Zieltemperatur setzen" },
+        "titleFormatted": { "en": "Set temperature to [[temperature]] °C", "de": "Temperatur auf [[temperature]] °C setzen" },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=thermostat" },
+          { "name": "temperature", "type": "number", "title": { "en": "Temperature (°C)", "de": "Temperatur (°C)" }, "min": 5, "max": 35, "step": 0.5 }
+        ]
+      },
+      {
+        "id": "kettle_force_reconnect",
+        "title": { "en": "Force reconnect", "de": "Verbindung neu aufbauen" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=kettle" }]
+      },
+      {
+        "id": "kettle_refresh_device",
+        "title": { "en": "Refresh device values", "de": "Gerätewerte aktualisieren" },
+        "args": [{ "name": "device", "type": "device", "filter": "driver_id=kettle" }]
+      },
+      {
+        "id": "kettle_set_target_temp",
+        "title": { "en": "Set target temperature", "de": "Zieltemperatur setzen" },
+        "titleFormatted": { "en": "Set temperature to [[temperature]] °C", "de": "Temperatur auf [[temperature]] °C setzen" },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=kettle" },
+          { "name": "temperature", "type": "number", "title": { "en": "Temperature (°C)", "de": "Temperatur (°C)" }, "min": 40, "max": 100, "step": 5 }
+        ]
+      },
+      {
+        "id": "kettle_set_mode",
+        "title": { "en": "Set kettle mode", "de": "Wasserkocher-Modus setzen" },
+        "titleFormatted": { "en": "Set mode to [[mode]]", "de": "Modus auf [[mode]] setzen" },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=kettle" },
+          { "name": "mode", "type": "text", "title": { "en": "Mode", "de": "Modus" }, "placeholder": { "en": "e.g. boil", "de": "z.B. boil" } }
+        ]
+      },
+      {
+        "id": "kettle_set_keep_warm",
+        "title": { "en": "Set keep warm", "de": "Warmhalten setzen" },
+        "titleFormatted": { "en": "Set keep warm to [[state]]", "de": "Warmhalten auf [[state]] setzen" },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=kettle" },
+          {
+            "name": "state", "type": "dropdown",
+            "title": { "en": "State", "de": "Zustand" },
+            "values": [
+              { "id": "on",  "label": { "en": "On",  "de": "Ein" } },
+              { "id": "off", "label": { "en": "Off", "de": "Aus" } }
+            ]
           }
         ]
       },
@@ -5860,6 +6089,13 @@
                   }
                 },
                 {
+                  "id": "3.2",
+                  "label": {
+                    "en": "3.2",
+                    "de": "3.2"
+                  }
+                },
+                {
                   "id": "3.22",
                   "label": {
                     "en": "3.22 (newer chips)",
@@ -6167,6 +6403,190 @@
       }
     },
     {
+      "id": "thermostat",
+      "name": {
+        "en": "Thermostat",
+        "de": "Thermostat"
+      },
+      "class": "thermostat",
+      "capabilities": [
+        "onoff",
+        "target_temperature",
+        "measure_temperature"
+      ],
+      "settings": [
+        {
+          "type": "group",
+          "label": { "en": "Connection", "de": "Verbindung" },
+          "children": [
+            { "id": "ip", "type": "text", "label": { "en": "IP Address", "de": "IP-Adresse" }, "value": "" },
+            { "id": "device_id", "type": "text", "label": { "en": "Device ID", "de": "Geräte-ID" }, "value": "" },
+            { "id": "local_key", "type": "text", "label": { "en": "Local Key", "de": "Lokaler Schlüssel" }, "value": "" },
+            {
+              "id": "version", "type": "dropdown",
+              "label": { "en": "Protocol Version", "de": "Protokollversion" },
+              "value": "3.3",
+              "values": [
+                { "id": "3.3", "label": "3.3" },
+                { "id": "3.4", "label": "3.4" },
+                { "id": "3.5", "label": "3.5" },
+                { "id": "3.2", "label": "3.2" },
+                { "id": "3.1", "label": "3.1" }
+              ]
+            },
+            { "id": "polling_interval", "type": "number", "label": { "en": "Polling Interval (s)", "de": "Abfrageintervall (s)" }, "value": 30, "min": 0, "max": 3600, "step": 1 },
+            { "id": "offline_grace_seconds", "type": "number", "label": { "en": "Offline Grace Period (s)", "de": "Offline-Toleranz (s)" }, "value": 60, "min": 0, "max": 3600, "step": 1 }
+          ]
+        },
+        {
+          "type": "group",
+          "label": { "en": "Data Points", "de": "Datenpunkte" },
+          "children": [
+            { "id": "dp_onoff", "type": "number", "label": { "en": "DP On/Off", "de": "DP Ein/Aus" }, "value": 1, "min": 0, "max": 255, "step": 1 },
+            { "id": "dp_target_temp", "type": "number", "label": { "en": "DP Target Temperature", "de": "DP Zieltemperatur" }, "value": 2, "min": 0, "max": 255, "step": 1 },
+            { "id": "dp_current_temp", "type": "number", "label": { "en": "DP Current Temperature", "de": "DP Aktuelle Temperatur" }, "value": 3, "min": 0, "max": 255, "step": 1 },
+            { "id": "dp_mode", "type": "number", "label": { "en": "DP Mode (0 = disabled)", "de": "DP Modus (0 = deaktiviert)" }, "value": 4, "min": 0, "max": 255, "step": 1 },
+            { "id": "dp_child_lock", "type": "number", "label": { "en": "DP Child Lock (0 = disabled)", "de": "DP Kindersicherung (0 = deaktiviert)" }, "value": 0, "min": 0, "max": 255, "step": 1 },
+            { "id": "dp_battery", "type": "number", "label": { "en": "DP Battery % (0 = disabled, for TRVs)", "de": "DP Batterie % (0 = deaktiviert, für TRVs)" }, "value": 0, "min": 0, "max": 255, "step": 1 },
+            { "id": "dp_fault", "type": "number", "label": { "en": "DP Fault (0 = disabled)", "de": "DP Fehler (0 = deaktiviert)" }, "value": 0, "min": 0, "max": 255, "step": 1 }
+          ]
+        },
+        {
+          "type": "group",
+          "label": { "en": "Temperature", "de": "Temperatur" },
+          "children": [
+            { "id": "temp_divisor", "type": "dropdown", "label": { "en": "Temperature Divisor", "de": "Temperatur-Divisor" }, "hint": { "en": "Set to 10 if your device reports temperatures ×10 (e.g. 220 = 22.0°C).", "de": "Auf 10 setzen wenn das Gerät Temperaturen ×10 meldet (z.B. 220 = 22,0°C)." }, "value": "1", "values": [{ "id": "1", "label": "1 (raw °C)" }, { "id": "10", "label": "10 (value ÷ 10)" }] },
+            { "id": "temp_min", "type": "number", "label": { "en": "Min °C", "de": "Min °C" }, "value": 5, "min": 0, "max": 50, "step": 1 },
+            { "id": "temp_max", "type": "number", "label": { "en": "Max °C", "de": "Max °C" }, "value": 35, "min": 5, "max": 70, "step": 1 },
+            { "id": "temp_step", "type": "number", "label": { "en": "Step °C", "de": "Schritt °C" }, "value": 0.5, "min": 0.1, "max": 5, "step": 0.1 }
+          ]
+        },
+        {
+          "type": "group",
+          "label": { "en": "Mode Values", "de": "Moduswerte" },
+          "children": [
+            {
+              "id": "mode_values", "type": "text",
+              "label": { "en": "Mode values (comma-separated)", "de": "Moduswerte (kommagetrennt)" },
+              "hint": { "en": "Exact strings the device uses. Common: manual,auto,program or heat,cool,off", "de": "Exakte Strings des Geräts. Häufig: manual,auto,program oder heat,cool,off" },
+              "value": "manual,auto,program"
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": { "en": "Status", "de": "Status" },
+          "children": [
+            { "id": "connection_status", "type": "text", "label": { "en": "Connection", "de": "Verbindung" }, "value": "—" },
+            { "id": "last_seen", "type": "text", "label": { "en": "Last data received", "de": "Zuletzt Daten empfangen" }, "value": "—" }
+          ]
+        }
+      ],
+      "pair": [
+        { "id": "credentials", "navigation": { "next": "list_devices" } },
+        { "id": "list_devices" }
+      ],
+      "images": {
+        "small": "/drivers/thermostat/assets/images/small.png",
+        "large": "/drivers/thermostat/assets/images/large.png",
+        "xlarge": "/drivers/thermostat/assets/images/xlarge.png"
+      }
+    },
+    {
+      "id": "kettle",
+      "name": {
+        "en": "Smart Kettle",
+        "de": "Smarter Wasserkocher"
+      },
+      "class": "kettle",
+      "capabilities": [
+        "onoff",
+        "measure_temperature"
+      ],
+      "settings": [
+        {
+          "type": "group",
+          "label": { "en": "Connection", "de": "Verbindung" },
+          "children": [
+            { "id": "ip", "type": "text", "label": { "en": "IP Address", "de": "IP-Adresse" }, "value": "" },
+            { "id": "device_id", "type": "text", "label": { "en": "Device ID", "de": "Geräte-ID" }, "value": "" },
+            { "id": "local_key", "type": "text", "label": { "en": "Local Key", "de": "Lokaler Schlüssel" }, "value": "" },
+            {
+              "id": "version", "type": "dropdown",
+              "label": { "en": "Protocol Version", "de": "Protokollversion" },
+              "value": "3.3",
+              "values": [
+                { "id": "3.3", "label": "3.3" },
+                { "id": "3.4", "label": "3.4" },
+                { "id": "3.5", "label": "3.5" },
+                { "id": "3.2", "label": "3.2" },
+                { "id": "3.1", "label": "3.1" }
+              ]
+            },
+            { "id": "polling_interval", "type": "number", "label": { "en": "Polling Interval (s)", "de": "Abfrageintervall (s)" }, "value": 10, "min": 0, "max": 3600, "step": 1 },
+            { "id": "offline_grace_seconds", "type": "number", "label": { "en": "Offline Grace Period (s)", "de": "Offline-Toleranz (s)" }, "value": 60, "min": 0, "max": 3600, "step": 1 }
+          ]
+        },
+        {
+          "type": "group",
+          "label": { "en": "Data Points", "de": "Datenpunkte" },
+          "children": [
+            { "id": "dp_onoff", "type": "number", "label": { "en": "DP On/Off", "de": "DP Ein/Aus" }, "value": 1, "min": 0, "max": 255, "step": 1 },
+            { "id": "dp_current_temp", "type": "number", "label": { "en": "DP Current Temperature", "de": "DP Aktuelle Temperatur" }, "value": 2, "min": 0, "max": 255, "step": 1 },
+            { "id": "dp_target_temp", "type": "number", "label": { "en": "DP Target Temperature (0 = disabled)", "de": "DP Zieltemperatur (0 = deaktiviert)" }, "value": 4, "min": 0, "max": 255, "step": 1 },
+            { "id": "dp_keep_warm", "type": "number", "label": { "en": "DP Keep Warm (0 = disabled)", "de": "DP Warmhalten (0 = deaktiviert)" }, "value": 13, "min": 0, "max": 255, "step": 1 },
+            { "id": "dp_status", "type": "number", "label": { "en": "DP Status (0 = disabled)", "de": "DP Status (0 = deaktiviert)" }, "value": 15, "min": 0, "max": 255, "step": 1 },
+            { "id": "dp_mode", "type": "number", "label": { "en": "DP Mode (0 = disabled)", "de": "DP Modus (0 = deaktiviert)" }, "value": 16, "min": 0, "max": 255, "step": 1 },
+            { "id": "dp_fault", "type": "number", "label": { "en": "DP Fault (0 = disabled)", "de": "DP Fehler (0 = deaktiviert)" }, "value": 0, "min": 0, "max": 255, "step": 1 }
+          ]
+        },
+        {
+          "type": "group",
+          "label": { "en": "Temperature Range", "de": "Temperaturbereich" },
+          "children": [
+            { "id": "temp_min", "type": "number", "label": { "en": "Min °C", "de": "Min °C" }, "value": 40, "min": 0, "max": 100, "step": 1 },
+            { "id": "temp_max", "type": "number", "label": { "en": "Max °C", "de": "Max °C" }, "value": 100, "min": 0, "max": 100, "step": 1 },
+            { "id": "temp_step", "type": "number", "label": { "en": "Step °C", "de": "Schritt °C" }, "value": 5, "min": 1, "max": 10, "step": 1 }
+          ]
+        },
+        {
+          "type": "group",
+          "label": { "en": "Mode & Status Values", "de": "Modus- & Statuswerte" },
+          "children": [
+            {
+              "id": "mode_values", "type": "text",
+              "label": { "en": "Mode values (comma-separated)", "de": "Moduswerte (kommagetrennt)" },
+              "hint": { "en": "Exact strings the device uses. Common: boil,heat,keep_warm or boiling_quick,setting_quick,temp_boiling,temp_setting", "de": "Exakte Strings des Geräts. Häufig: boil,heat,keep_warm" },
+              "value": "boil,heat,keep_warm"
+            },
+            {
+              "id": "status_values", "type": "text",
+              "label": { "en": "Status values (comma-separated)", "de": "Statuswerte (kommagetrennt)" },
+              "hint": { "en": "Exact strings the device reports. Common: standby,heating,cooling,warm,done", "de": "Exakte Strings die das Gerät meldet." },
+              "value": "standby,heating,cooling,warm,done"
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": { "en": "Status", "de": "Status" },
+          "children": [
+            { "id": "connection_status", "type": "text", "label": { "en": "Connection", "de": "Verbindung" }, "value": "—" },
+            { "id": "last_seen", "type": "text", "label": { "en": "Last data received", "de": "Zuletzt Daten empfangen" }, "value": "—" }
+          ]
+        }
+      ],
+      "pair": [
+        { "id": "credentials", "navigation": { "next": "list_devices" } },
+        { "id": "list_devices" }
+      ],
+      "images": {
+        "small": "/drivers/kettle/assets/images/small.png",
+        "large": "/drivers/kettle/assets/images/large.png",
+        "xlarge": "/drivers/kettle/assets/images/xlarge.png"
+      }
+    },
+    {
       "id": "wall_switch",
       "name": {
         "en": "Wall Switch",
@@ -6211,6 +6631,7 @@
                 { "id": "3.3", "label": "3.3" },
                 { "id": "3.4", "label": "3.4" },
                 { "id": "3.5", "label": "3.5" },
+                { "id": "3.2", "label": "3.2" },
                 { "id": "3.1", "label": "3.1" }
               ]
             },
@@ -6501,6 +6922,13 @@
                   }
                 },
                 {
+                  "id": "3.2",
+                  "label": {
+                    "en": "3.2",
+                    "de": "3.2"
+                  }
+                },
+                {
                   "id": "3.22",
                   "label": {
                     "en": "3.22 (newer chips)",
@@ -6721,6 +7149,13 @@
                   "label": {
                     "en": "3.5",
                     "de": "3.5"
+                  }
+                },
+                {
+                  "id": "3.2",
+                  "label": {
+                    "en": "3.2",
+                    "de": "3.2"
                   }
                 },
                 {
@@ -7127,6 +7562,13 @@
                   "label": {
                     "en": "3.5",
                     "de": "3.5"
+                  }
+                },
+                {
+                  "id": "3.2",
+                  "label": {
+                    "en": "3.2",
+                    "de": "3.2"
                   }
                 },
                 {
@@ -7648,6 +8090,13 @@
                   }
                 },
                 {
+                  "id": "3.2",
+                  "label": {
+                    "en": "3.2",
+                    "de": "3.2"
+                  }
+                },
+                {
                   "id": "3.22",
                   "label": {
                     "en": "3.22 (newer chips)",
@@ -8029,6 +8478,13 @@
                   "label": {
                     "en": "3.5",
                     "de": "3.5"
+                  }
+                },
+                {
+                  "id": "3.2",
+                  "label": {
+                    "en": "3.2",
+                    "de": "3.2"
                   }
                 },
                 {
@@ -8415,6 +8871,13 @@
                   "label": {
                     "en": "3.5",
                     "de": "3.5"
+                  }
+                },
+                {
+                  "id": "3.2",
+                  "label": {
+                    "en": "3.2",
+                    "de": "3.2"
                   }
                 },
                 {
@@ -8837,6 +9300,13 @@
                   }
                 },
                 {
+                  "id": "3.2",
+                  "label": {
+                    "en": "3.2",
+                    "de": "3.2"
+                  }
+                },
+                {
                   "id": "3.22",
                   "label": {
                     "en": "3.22 (newer chips)",
@@ -9163,6 +9633,13 @@
                   "label": {
                     "en": "3.5",
                     "de": "3.5"
+                  }
+                },
+                {
+                  "id": "3.2",
+                  "label": {
+                    "en": "3.2",
+                    "de": "3.2"
                   }
                 },
                 {
@@ -9632,6 +10109,13 @@
                   }
                 },
                 {
+                  "id": "3.2",
+                  "label": {
+                    "en": "3.2",
+                    "de": "3.2"
+                  }
+                },
+                {
                   "id": "3.22",
                   "label": {
                     "en": "3.22 (newer chips)",
@@ -9992,6 +10476,13 @@
                   "label": {
                     "en": "3.5",
                     "de": "3.5"
+                  }
+                },
+                {
+                  "id": "3.2",
+                  "label": {
+                    "en": "3.2",
+                    "de": "3.2"
                   }
                 },
                 {
@@ -10412,6 +10903,13 @@
                   "label": {
                     "en": "3.5",
                     "de": "3.5"
+                  }
+                },
+                {
+                  "id": "3.2",
+                  "label": {
+                    "en": "3.2",
+                    "de": "3.2"
                   }
                 },
                 {

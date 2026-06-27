@@ -56,11 +56,11 @@ class FanDevice extends BaseTuyaDevice {
     }
 
     // ── dim (fan speed 0–1) ─────────────────────────────────────────────────
-    let dimDebounceTimer = null;
+    this._dimDebounceTimer = null;
     this.registerCapabilityListener('dim', (value) => {
-      clearTimeout(dimDebounceTimer);
+      clearTimeout(this._dimDebounceTimer);
       return new Promise((resolve) => {
-        dimDebounceTimer = setTimeout(async () => {
+        this._dimDebounceTimer = setTimeout(async () => {
           const dp = this.getSetting('dp_speed');
           if (dp > 0) {
             const min = this.getSetting('speed_min') ?? 1;
@@ -74,6 +74,10 @@ class FanDevice extends BaseTuyaDevice {
     });
 
     await this._connect();
+  }
+
+  async _onDeleted() {
+    clearTimeout(this._dimDebounceTimer);
   }
 
   // ── DPS handling ─────────────────────────────────────────────────────────────

@@ -237,15 +237,15 @@
       var s   = pendingDevice.settings || {};
       var dps = rawDpsResult;
 
-      document.getElementById('device-name').textContent = pendingDevice.name || 'Dehumidifier';
+      document.getElementById('device-name').textContent = pendingDevice.name || 'Heater';
       document.getElementById('device-sub').textContent  = s.ip || '';
       document.getElementById('device-card').style.display = 'flex';
 
       // Editable name field
-      document.getElementById('device-name-input').value = pendingDevice.name || 'Dehumidifier';
+      document.getElementById('device-name-input').value = pendingDevice.name || 'Heater';
       document.getElementById('name-input-wrap').style.display = 'block';
       document.getElementById('device-name-input').addEventListener('input', function() {
-        document.getElementById('device-name').textContent = this.value || 'Dehumidifier';
+        document.getElementById('device-name').textContent = this.value || 'Heater';
       });
 
       // rowDefs: [rowKey, settingKey, initialDp, label]

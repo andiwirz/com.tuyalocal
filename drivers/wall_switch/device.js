@@ -24,6 +24,15 @@ class WallSwitchDevice extends BaseTuyaDevice {
 
     await this._baseInit();
 
+    // Tracks the last gang state we fired a trigger for — survives reconnects
+    // (unlike _lastDps which is cleared) and isn't affected by triggerCapabilityListener
+    // (unlike getCapabilityValue which can be pre-set by Homey SDK).
+    this._lastGangState = {};
+    for (const gang of GANG_CAPS) {
+      const val = this.getCapabilityValue(gang.capability);
+      if (val !== null) this._lastGangState[gang.gang] = val;
+    }
+
     await this._syncGangCapabilities();
 
     // ── Flow trigger cards ───────────────────────────────────────────────────
@@ -84,6 +93,11 @@ class WallSwitchDevice extends BaseTuyaDevice {
     const settings = this.getSettings();
     let changed = false;
 
+    // Collect known non-switch DPs to avoid noisy "Unknown DP" logging
+    const countdownDps = new Set(
+      [1, 2, 3, 4].map((n) => settings[`dp_countdown_${n}`]).filter((d) => d > 0),
+    );
+
     for (const [dpStr, value] of Object.entries(dps)) {
       if (this._lastDps[dpStr] === value) continue;
       this._lastDps[dpStr] = value;
@@ -103,12 +117,16 @@ class WallSwitchDevice extends BaseTuyaDevice {
 
       if (gangEntry && this.hasCapability(gangEntry.capability)) {
         const bool = Boolean(value);
-        this.log(`Gang ${gangEntry.gang} (DP ${dp}) → ${bool}`);
         await this.setCapabilityValue(gangEntry.capability, bool).catch(() => {});
-        this._triggerSwitchChanged
-          .trigger(this, { gang: String(gangEntry.gang), state: bool }, { gang: String(gangEntry.gang) })
-          .then(() => this.log(`Trigger switch_gang_changed fired: gang=${gangEntry.gang} state=${bool}`))
-          .catch((err) => this.log(`Trigger switch_gang_changed FAILED: gang=${gangEntry.gang} err=${err.message}`));
+
+        // Only fire trigger if the gang state ACTUALLY changed — prevents spurious
+        // triggers on reconnect (when _lastDps is cleared and all DPs re-process).
+        if (this._lastGangState[gangEntry.gang] !== bool) {
+          this._lastGangState[gangEntry.gang] = bool;
+          this._triggerSwitchChanged
+            .trigger(this, { gang: String(gangEntry.gang), state: bool }, { gang: String(gangEntry.gang) })
+            .catch(() => {});
+        }
         continue;
       }
 
@@ -121,6 +139,9 @@ class WallSwitchDevice extends BaseTuyaDevice {
         }
         continue;
       }
+
+      // Countdown DPs are stored in settings only — no capability, just acknowledge
+      if (countdownDps.has(dp)) continue;
 
       this.log(`Unknown DP ${dp}:`, value);
     }

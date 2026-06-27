@@ -123,10 +123,10 @@
     .back-top:hover { color: #1a73e8; }
 
     /* ── Help tab ── */
-    .help-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 14px; }
+    .help-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 14px; table-layout: fixed; }
     .help-table th { text-align: left; background: #f8f9fa; color: #555; font-weight: 500; padding: 6px 10px; border: 1px solid #e8e8e8; }
-    .help-table td { padding: 5px 10px; border: 1px solid #e8e8e8; vertical-align: top; color: #333; line-height: 1.5; }
-    .help-table td:first-child { font-family: monospace; font-size: 11px; white-space: nowrap; color: #1a73e8; }
+    .help-table td { padding: 5px 10px; border: 1px solid #e8e8e8; vertical-align: top; color: #333; line-height: 1.5; word-wrap: break-word; overflow-wrap: break-word; }
+    .help-table td:first-child { font-family: monospace; font-size: 11px; color: #1a73e8; }
     .help-badge { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 3px; font-weight: 500; }
     .badge-rw   { background: #e8f0fe; color: #1a73e8; }
     .badge-ro   { background: #f1f3f4; color: #666; }
@@ -142,6 +142,7 @@
     <button class="tab-btn active" data-tab="help">❓ Help</button>
     <button class="tab-btn"        data-tab="logs">📋 Logs</button>
     <button class="tab-btn"        data-tab="dp">🔍 DP Debug</button>
+    <button class="tab-btn"        data-tab="cloud">☁️ Cloud Lookup</button>
   </div>
 
   <!-- ── Help ─────────────────────────────────────────────────────────── -->
@@ -164,8 +165,20 @@
         <option value="sec-garage">Garage Door</option>
         <option value="sec-heatpump">Heat Pump</option>
         <option value="sec-curtain">Curtain Motor</option>
+        <option value="sec-thermostat">Thermostat</option>
+        <option value="sec-kettle">Smart Kettle</option>
+        <option value="sec-wallswitch">Wall Switch</option>
         <option value="sec-trouble">Troubleshooting</option>
       </select>
+    </div>
+
+    <div class="section" style="text-align:center;padding:12px 16px;">
+      <button onclick="openUrl('https://paypal.me/AndiWirz')"
+         style="display:inline-flex;align-items:center;gap:8px;background:#009cde;color:#fff;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:500;border:none;cursor:pointer;">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.607-.541c-.013.076-.026.175-.041.254-.93 4.778-4.005 7.201-9.138 7.201h-2.19a.563.563 0 0 0-.556.479l-1.187 7.527h-.506l-.24 1.516a.56.56 0 0 0 .554.647h3.882c.46 0 .85-.334.922-.788.06-.26.76-4.852.816-5.09a.932.932 0 0 1 .923-.788h.58c3.76 0 6.705-1.528 7.565-5.946.36-1.847.174-3.388-.777-4.471z"/></svg>
+        Donate via PayPal
+      </button>
+      <p style="margin:6px 0 0;font-size:11px;color:#999;">If this app saves you time, a small donation is always appreciated. 🙏</p>
     </div>
 
     <div class="section" id="sec-start">
@@ -174,10 +187,26 @@
       <div class="note">
         The Local Key changes every time you reset or re-pair a device in the Tuya / Smart Life app. If a device stops connecting, get the new key.
       </div>
-      <h3>Get Device ID &amp; Local Key</h3>
-      <p>Run the tuya-cli wizard on any computer with Node.js ≥ 16:</p>
-      <pre style="max-height:none">npx @tuyapi/cli wizard</pre>
-      <p style="margin-top:8px">It logs into the Tuya IoT Platform, links your Smart Life account, and lists every device with its ID and Local Key.</p>
+
+      <h3>Method 1 — Cloud Lookup (recommended)</h3>
+      <p>Use the <strong>☁️ Cloud Lookup</strong> tab (above) to fetch Device ID and Local Key directly from the Tuya IoT Platform — no CLI tools needed.</p>
+      <ol style="font-size:12px;line-height:1.8;color:#333">
+        <li>Go to <strong>iot.tuya.com</strong> → <strong>Cloud</strong> → <strong>Project Management</strong> → open your project → <strong>Overview</strong></li>
+        <li>Copy your <strong>Access ID / Client ID</strong> and <strong>Access Secret / Client Secret</strong></li>
+        <li>Make sure your devices are linked: <strong>Devices</strong> → <strong>Link Tuya App Account</strong> → scan QR code with Tuya Smart / Smart Life app</li>
+        <li>Switch to the <strong>☁️ Cloud Lookup</strong> tab, paste your credentials, select your data center, and click <strong>Fetch Devices</strong></li>
+        <li>Use the <strong>Copy</strong> button to copy Device ID and Local Key</li>
+      </ol>
+
+      <h3>Reporting device issues</h3>
+      <p>If a device does not work as expected or a DP mapping is incorrect, please provide the <strong>DP specification</strong> from the Cloud Lookup:</p>
+      <ol style="font-size:12px;line-height:1.8;color:#333">
+        <li>Go to the <strong>☁️ Cloud Lookup</strong> tab and fetch your devices</li>
+        <li><strong>Click the device name</strong> to open the DP specification</li>
+        <li>Click <strong>Copy DP Table</strong> and paste the result into your bug report or community post</li>
+      </ol>
+      <p style="font-size:12px;color:#666">This helps the developer identify the correct DP numbers, types, and value ranges for your specific device model.</p>
+
       <h3>Find the IP address</h3>
       <p>Use <strong>Scan Network</strong> in the pairing wizard (UDP broadcast + TCP subnet scan, ~10 s), or check your router's DHCP table. Assign a static IP / DHCP reservation so it never changes.</p>
     </div>
@@ -404,6 +433,62 @@
       <div class="note"><strong>control_back / motor direction:</strong> DP 5 reverses the motor spin direction. This is a physical wiring compensation setting — change it in the Tuya / Smart Life app, not via Homey.</div>
     </div>
 
+    <div class="section" id="sec-thermostat">
+      <h2>Thermostat — DP reference</h2>
+      <p>Universal driver for floor heating thermostats, room thermostats, TRVs (radiator valves), and zone valves. Supports all major Tuya thermostat DP layouts with automatic detection at pairing time.</p>
+      <table class="help-table">
+        <thead><tr><th>Setting</th><th>Default DP</th><th>Capability / Use</th><th>Notes</th><th>R/W</th></tr></thead>
+        <tbody>
+          <tr><td>dp_onoff</td>        <td>1</td> <td>On / Off</td>              <td>boolean</td>                                                    <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_target_temp</td>  <td>2</td> <td>Target Temperature</td>    <td>integer °C (or ×10, see temp_divisor)</td>                       <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_current_temp</td> <td>3</td> <td>Current Temperature</td>   <td>integer °C (read-only)</td>                                      <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_mode</td>         <td>4</td> <td>thermostat_mode</td>       <td>Enum: <code>manual</code>, <code>auto</code>, <code>program</code>. 0 = disabled.</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_child_lock</td>   <td>0</td> <td>child_lock</td>            <td>boolean. 0 = disabled. Common DPs: 6, 7, 28.</td>                <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_battery</td>      <td>0</td> <td>Battery %</td>             <td>integer 0–100. For battery-powered TRVs only. 0 = disabled.</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_fault</td>        <td>0</td> <td>Fault Alarm</td>           <td>Bitfield. 0 = disabled.</td>                                     <td><span class="help-badge badge-ro">Read</span></td></tr>
+        </tbody>
+      </table>
+      <div class="note"><strong>temp_divisor:</strong> Set to <strong>10</strong> if your thermostat sends temperatures multiplied by 10 (e.g. 220 = 22.0 °C). This is common on BHT-002, Moes and Beok floor heating thermostats. The driver auto-detects this during pairing.</div>
+      <div class="note"><strong>mode_values:</strong> Default is <code>manual,auto,program</code>. For HVAC thermostats use <code>heat,cool,off</code>. For TRVs try <code>auto,manual,holiday</code>. Check the DP Debug panel for the exact strings your device sends.</div>
+    </div>
+
+    <div class="section" id="sec-kettle">
+      <h2>Smart Kettle — DP reference</h2>
+      <p>Supports Tuya smart kettles with temperature control, keep-warm, and mode selection (Anko, Aeno, Kogan and other brands).</p>
+      <table class="help-table">
+        <thead><tr><th>Setting</th><th>Default DP</th><th>Capability / Use</th><th>Notes</th><th>R/W</th></tr></thead>
+        <tbody>
+          <tr><td>dp_onoff</td>        <td>1</td>  <td>On / Off</td>            <td>boolean — start/stop heating</td>                                     <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_current_temp</td> <td>2</td>  <td>Current Temperature</td> <td>integer °C</td>                                                       <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_target_temp</td>  <td>4</td>  <td>Target Temperature</td>  <td>integer °C. 0 = disabled.</td>                                        <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_keep_warm</td>    <td>13</td> <td>kettle_keep_warm</td>     <td>boolean. 0 = disabled.</td>                                           <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_status</td>       <td>15</td> <td>kettle_status</td>        <td>Enum: <code>standby</code>, <code>heating</code>, <code>cooling</code>, <code>warm</code>, <code>done</code>. 0 = disabled.</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_mode</td>         <td>16</td> <td>kettle_mode</td>          <td>Enum: <code>boil</code>, <code>heat</code>, <code>keep_warm</code>. 0 = disabled.</td>   <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_fault</td>        <td>0</td>  <td>Fault Alarm</td>          <td>Bitfield. 0 = disabled.</td>                                         <td><span class="help-badge badge-ro">Read</span></td></tr>
+        </tbody>
+      </table>
+      <div class="note"><strong>mode_values:</strong> Default is <code>boil,heat,keep_warm</code>. Some kettles use different strings — Aeno EK7S: <code>boiling_quick,setting_quick,temp_boiling,temp_setting</code>. Aeno EK1S: <code>mzj_black,mzj_green,mzj_water,mzj_oolong,mzj_warm</code>. Check the DP Debug panel.</div>
+      <div class="note"><strong>Boil done trigger:</strong> The "Kettle finished boiling" flow trigger fires when the status changes from <code>heating</code> to a done state (<code>boiling</code>, <code>done</code>, <code>pause</code>, or <code>cooling</code>).</div>
+    </div>
+
+    <div class="section" id="sec-wallswitch">
+      <h2>Wall Switch — DP reference</h2>
+      <p>Dedicated driver for 1/2/3/4-gang WiFi wall switches. Each gang gets its own tile and dedicated flow cards. Standard Tuya layout: switches at DP 1–4, countdown timers at DP 7–10.</p>
+      <table class="help-table">
+        <thead><tr><th>Setting</th><th>Default DP</th><th>Capability / Use</th><th>Notes</th><th>R/W</th></tr></thead>
+        <tbody>
+          <tr><td>dp_switch_1</td>    <td>1</td> <td>onoff (Switch 1)</td>      <td>boolean — main switch, always present</td>  <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_switch_2</td>    <td>0</td> <td>onoff.2 (Switch 2)</td>    <td>boolean. 0 = disabled.</td>                  <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_switch_3</td>    <td>0</td> <td>onoff.3 (Switch 3)</td>    <td>boolean. 0 = disabled.</td>                  <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_switch_4</td>    <td>0</td> <td>onoff.4 (Switch 4)</td>    <td>boolean. 0 = disabled.</td>                  <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_countdown_1–4</td> <td>0</td> <td>Settings only</td>       <td>integer seconds. 0 = disabled.</td>          <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_relay_status</td>  <td>0</td> <td>Turn On Behavior</td>    <td>Enum: <code>off</code> / <code>on</code> / <code>last</code>. 0 = disabled.</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+        </tbody>
+      </table>
+      <div class="note"><strong>Switch names:</strong> Each switch tile can be renamed in Settings → Switch Names. Leave empty for the default name. Restart the app for name changes to take effect.</div>
+      <div class="note"><strong>Flow triggers:</strong> Use the <strong>"A switch gang changed"</strong> trigger card (not Homey's built-in "Turned on/off") for reliable triggers on all switches including gang 2/3/4.</div>
+    </div>
+
     <div class="section" id="sec-trouble">
       <h2>Troubleshooting</h2>
       <table class="help-table">
@@ -436,16 +521,6 @@
           <tr><td>Curtain tile shows "moving" but motor has stopped</td> <td>The <em>work_state</em> DP may not be resetting to idle on your device. Set <em>dp_work_state = 0</em> to disable it — the tile state will then follow the <em>control</em> DP echo instead.</td></tr>
         </tbody>
       </table>
-    </div>
-
-    <div class="section">
-      <h2>Support the project</h2>
-      <p>If this app saves you time or just works nicely, a small donation is always appreciated. 🙏</p>
-      <button onclick="openUrl('https://paypal.me/AndiWirz')"
-         style="display:inline-flex;align-items:center;gap:8px;background:#009cde;color:#fff;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:500;border:none;cursor:pointer;">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.607-.541c-.013.076-.026.175-.041.254-.93 4.778-4.005 7.201-9.138 7.201h-2.19a.563.563 0 0 0-.556.479l-1.187 7.527h-.506l-.24 1.516a.56.56 0 0 0 .554.647h3.882c.46 0 .85-.334.922-.788.06-.26.76-4.852.816-5.09a.932.932 0 0 1 .923-.788h.58c3.76 0 6.705-1.528 7.565-5.946.36-1.847.174-3.388-.777-4.471z"/></svg>
-        Donate via PayPal
-      </button>
     </div>
 
     <div style="margin-top:32px;padding-top:12px;border-top:1px solid #e0e0e0;color:#aaa;font-size:11px;">
@@ -498,6 +573,79 @@
         <button id="btnCopyRaw">&#128203; Copy</button>
       </div>
       <pre id="rawOutput">Select a device above to see raw data.</pre>
+    </div>
+  </div>
+
+  <!-- ── Cloud Lookup ──────────────────────────────────────────────── -->
+  <div class="tab-panel" id="tab-cloud">
+    <div class="section">
+      <h2>Cloud Lookup</h2>
+      <p>Fetch Device ID and Local Key directly from the Tuya IoT Platform — no CLI tools needed.</p>
+      <div class="note">
+        <strong>Setup:</strong> Go to <a href="#" onclick="openUrl('https://iot.tuya.com');return false" style="color:#1a73e8">iot.tuya.com</a> → <strong>Cloud</strong> → <strong>Project Management</strong> → open your project → <strong>Overview</strong>. Copy the <strong>Access ID / Client ID</strong> and <strong>Access Secret / Client Secret</strong>. Make sure your devices are linked under <strong>Devices</strong> → <strong>Link Tuya App Account</strong>.
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:8px;margin:12px 0">
+        <div style="display:flex;gap:8px;align-items:center">
+          <label style="width:100px;font-size:12px;color:#666">Access ID</label>
+          <input type="text" id="cloudAccessId" placeholder="e.g. 5sxxxxxxxxxx" style="flex:1;padding:7px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:13px;font-family:monospace">
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <label style="width:100px;font-size:12px;color:#666">Access Secret</label>
+          <input type="password" id="cloudAccessSecret" placeholder="32-character secret" style="flex:1;padding:7px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:13px;font-family:monospace">
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <label style="width:100px;font-size:12px;color:#666">Data Center</label>
+          <select id="cloudRegion" style="flex:1;padding:7px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:13px">
+            <option value="eu">Central Europe</option>
+            <option value="eu-w">Western Europe</option>
+            <option value="us">Western America</option>
+            <option value="us-e">Eastern America</option>
+            <option value="cn">China</option>
+            <option value="in">India</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="bar">
+        <button class="primary" id="btnCloudFetch">Fetch Devices</button>
+        <span id="cloudStatus" style="font-size:12px;color:#888"></span>
+      </div>
+
+      <div id="cloudResults" style="display:none;margin-top:12px">
+        <table class="dp-debug-table" id="cloudTable">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Device ID</th>
+              <th>Local Key</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="cloudTbody"></tbody>
+        </table>
+        <p id="cloudCount" style="margin-top:6px;font-size:11px;color:#888"></p>
+      </div>
+
+      <div id="cloudDetail" style="display:none;margin-top:14px">
+        <h3 id="cloudDetailTitle" style="margin:0 0 8px;font-size:14px"></h3>
+        <table class="dp-debug-table" id="cloudDetailTable">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>DP</th>
+              <th>Type</th>
+              <th>Current Value</th>
+              <th>Allowed Values / Range</th>
+              <th>R/W</th>
+            </tr>
+          </thead>
+          <tbody id="cloudDetailTbody"></tbody>
+        </table>
+        <div class="bar" style="margin-top:8px">
+          <button id="btnCopyDetail" style="font-size:12px">📋 Copy DP Table</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -797,6 +945,153 @@
       });
 
       loadSnapshot(renderDps);
+
+      // ── Cloud Lookup ─────────────────────────────────────────────────
+      function loadDeviceDetail(d) {
+        var detail = document.getElementById('cloudDetail');
+        var title  = document.getElementById('cloudDetailTitle');
+        var tbody  = document.getElementById('cloudDetailTbody');
+
+        title.textContent = d.name + ' — loading DPs…';
+        tbody.innerHTML = '';
+        detail.style.display = 'block';
+        detail.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        var accessId     = document.getElementById('cloudAccessId').value.trim();
+        var accessSecret = document.getElementById('cloudAccessSecret').value.trim();
+        var region       = document.getElementById('cloudRegion').value;
+
+        Homey.api('GET', '/cloud-device-detail?accessId=' + encodeURIComponent(accessId) +
+          '&accessSecret=' + encodeURIComponent(accessSecret) +
+          '&region=' + encodeURIComponent(region) +
+          '&deviceId=' + encodeURIComponent(d.id), function(err, result) {
+
+          if (err) {
+            title.textContent = d.name + ' — Error: ' + (err.message || String(err));
+            return;
+          }
+
+          title.textContent = d.name + ' — DP Specification';
+          var items = result.status || [];
+          if (items.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="color:#888">No DP data available from cloud.</td></tr>';
+            return;
+          }
+
+          items.sort(function(a, b) { return (a.dp_id || 999) - (b.dp_id || 999); });
+
+          items.forEach(function(dp) {
+            var valuesStr = '';
+            if (dp.values) {
+              try {
+                var v = typeof dp.values === 'string' ? JSON.parse(dp.values) : dp.values;
+                if (v.range) valuesStr = v.range.join(', ');
+                else if (v.min !== undefined) valuesStr = v.min + '–' + v.max + (v.step ? ' step ' + v.step : '') + (v.unit ? ' ' + v.unit : '');
+                else if (v.maxlen !== undefined) valuesStr = 'maxlen ' + v.maxlen;
+                else valuesStr = JSON.stringify(v);
+              } catch(_) { valuesStr = String(dp.values); }
+            }
+
+            var curVal = dp.current_value !== undefined ? String(dp.current_value) : '';
+            var rw = dp.settable ? '<span style="color:#1a73e8;font-weight:600">R/W</span>' : '<span style="color:#888">R</span>';
+
+            var tr = document.createElement('tr');
+            tr.innerHTML =
+              '<td style="font-family:monospace;font-size:11px;color:#1a73e8">' + escHtml(dp.code || '') + '</td>' +
+              '<td style="font-weight:600">' + (dp.dp_id || '—') + '</td>' +
+              '<td>' + escHtml(dp.type || '') + '</td>' +
+              '<td style="font-family:monospace;font-size:11px">' + escHtml(curVal) + '</td>' +
+              '<td style="font-size:11px">' + escHtml(valuesStr) + '</td>' +
+              '<td>' + rw + '</td>';
+            tbody.appendChild(tr);
+          });
+        });
+      }
+
+      document.getElementById('btnCopyDetail').addEventListener('click', function() {
+        var rows = document.querySelectorAll('#cloudDetailTbody tr');
+        var lines = [];
+        rows.forEach(function(tr) {
+          var cells = tr.querySelectorAll('td');
+          if (cells.length >= 5) {
+            lines.push('DP ' + (cells[1].textContent || '?') + '\t' + cells[0].textContent + '\t' + cells[2].textContent + '\t' + cells[3].textContent + '\t' + cells[4].textContent);
+          }
+        });
+        if (lines.length > 0) {
+          var title = document.getElementById('cloudDetailTitle').textContent.split(' — ')[0];
+          copyText(title + '\n' + lines.join('\n'), this);
+        }
+      });
+
+      document.getElementById('btnCloudFetch').addEventListener('click', function() {
+        var btn    = this;
+        var status = document.getElementById('cloudStatus');
+        var accessId     = document.getElementById('cloudAccessId').value.trim();
+        var accessSecret = document.getElementById('cloudAccessSecret').value.trim();
+        var region       = document.getElementById('cloudRegion').value;
+
+        if (!accessId || !accessSecret) {
+          status.textContent = 'Please enter Access ID and Access Secret.';
+          status.style.color = '#c5221f';
+          return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Fetching…';
+        status.textContent = '';
+        status.style.color = '#888';
+        document.getElementById('cloudDetail').style.display = 'none';
+
+        Homey.api('GET', '/cloud-lookup?accessId=' + encodeURIComponent(accessId) +
+          '&accessSecret=' + encodeURIComponent(accessSecret) +
+          '&region=' + encodeURIComponent(region), function(err, devices) {
+
+          btn.disabled = false;
+          btn.textContent = 'Fetch Devices';
+
+          if (err) {
+            status.textContent = 'Error: ' + (err.message || String(err));
+            status.style.color = '#c5221f';
+            document.getElementById('cloudResults').style.display = 'none';
+            return;
+          }
+
+          if (!devices || devices.length === 0) {
+            status.textContent = 'No devices found. Check that your Tuya app account is linked to the cloud project.';
+            status.style.color = '#b45309';
+            document.getElementById('cloudResults').style.display = 'none';
+            return;
+          }
+
+          var tbody = document.getElementById('cloudTbody');
+          tbody.innerHTML = '';
+          devices.forEach(function(d) {
+            var tr = document.createElement('tr');
+            var keyDisplay = d.local_key || '<span style="color:#ccc">—</span>';
+            tr.innerHTML =
+              '<td><a href="#" class="cloud-name-link" style="color:#1a73e8;text-decoration:none;font-weight:500">' + escHtml(d.name) + '</a></td>' +
+              '<td style="font-family:monospace;font-size:11px">' + escHtml(d.id) + '</td>' +
+              '<td style="font-family:monospace;font-size:11px">' + keyDisplay + '</td>' +
+              '<td><button class="cloud-copy-btn" style="padding:3px 8px;font-size:11px">Copy</button></td>';
+            tbody.appendChild(tr);
+
+            tr.querySelector('.cloud-copy-btn').addEventListener('click', function() {
+              var text = d.name + '\nID: ' + d.id + '\nKey: ' + (d.local_key || '');
+              copyText(text, this);
+            });
+
+            tr.querySelector('.cloud-name-link').addEventListener('click', function(e) {
+              e.preventDefault();
+              loadDeviceDetail(d);
+            });
+          });
+
+          document.getElementById('cloudResults').style.display = 'block';
+          document.getElementById('cloudCount').textContent = devices.length + ' device(s) found.';
+          status.textContent = '✓ Success';
+          status.style.color = '#1e6a34';
+        });
+      });
     }
   </script>
 </body>

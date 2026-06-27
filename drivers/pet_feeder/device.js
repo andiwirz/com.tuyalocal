@@ -93,9 +93,11 @@ class PetFeederDevice extends BaseTuyaDevice {
         // back to portions_min so the UI is ready for the next feed.
         // The reset is delayed 3 s to allow the device to process the command first.
         // The capability is an enum — values are strings; send as Number to the device.
+        this._portionsResetTimer = null;
         this.registerCapabilityListener('feed_portions', async (value) => {
           await this._set(this.getSetting('dp_portions'), Number(value));
-          setTimeout(() => {
+          clearTimeout(this._portionsResetTimer);
+          this._portionsResetTimer = setTimeout(() => {
             const resetTo = String(this.getSetting('portions_min') ?? 1);
             this.setCapabilityValue('feed_portions', resetTo).catch(() => {});
           }, 3000);
@@ -108,6 +110,10 @@ class PetFeederDevice extends BaseTuyaDevice {
     }
 
     await this._connect();
+  }
+
+  async _onDeleted() {
+    clearTimeout(this._portionsResetTimer);
   }
 
   // ── DPS handling ─────────────────────────────────────────────────────────────

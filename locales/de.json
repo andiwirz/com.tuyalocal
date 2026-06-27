@@ -13,7 +13,9 @@
       "garage_door":     "Garagentor",
       "heat_pump":       "Wärmepumpe",
       "curtain_motor":   "Rolladenmotor",
-      "wall_switch":     "Wandschalter"
+      "wall_switch":     "Wandschalter",
+      "thermostat":      "Thermostat",
+      "kettle":          "Smarter Wasserkocher"
     }
   },
   "notifications": {
