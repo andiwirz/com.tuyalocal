@@ -1072,7 +1072,8 @@
             var tr = document.createElement('tr');
             var keyDisplay = d.local_key || '<span style="color:#ccc">—</span>';
             tr.innerHTML =
-              '<td><a href="#" class="cloud-name-link" style="color:#1a73e8;text-decoration:none;font-weight:500">' + escHtml(d.name) + '</a></td>' +
+              '<td><a href="#" class="cloud-name-link" style="color:#1a73e8;text-decoration:none;font-weight:500">' + escHtml(d.name) + '</a>' +
+              ((d.product || d.category) ? '<br><span style="font-size:10px;color:#888">' + escHtml(d.product || d.category) + '</span>' : '') + '</td>' +
               '<td style="font-family:monospace;font-size:11px">' + escHtml(d.id) + '</td>' +
               '<td style="font-family:monospace;font-size:11px">' + keyDisplay + '</td>' +
               '<td><button class="cloud-copy-btn" style="padding:3px 8px;font-size:11px">Copy</button></td>';
