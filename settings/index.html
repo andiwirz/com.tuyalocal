@@ -519,6 +519,9 @@
           <tr><td>Curtain position slider is inverted (0% = open)</td>   <td>Enable <em>invert_position</em> in device settings to swap the direction.</td></tr>
           <tr><td>Curtain motor doesn't stop at the right position</td>  <td>The motor limit positions are set in the Tuya / Smart Life app (DP 16 border calibration), not in Homey. Run the limit calibration from the original app first.</td></tr>
           <tr><td>Curtain tile shows "moving" but motor has stopped</td> <td>The <em>work_state</em> DP may not be resetting to idle on your device. Set <em>dp_work_state = 0</em> to disable it — the tile state will then follow the <em>control</em> DP echo instead.</td></tr>
+          <tr><td>Device missing DPs or commands rejected</td>           <td>Your device may be using the <strong>Standard Instruction Set</strong> which hides some DPs. Switch to <strong>DP Instruction Set</strong> on iot.tuya.com → Devices → your device → <strong>Instruction Mode</strong>. This exposes all raw DPs with full read/write access.</td></tr>
+          <tr><td>Cloud Lookup shows fewer DPs than expected</td>        <td>Same cause — the Standard Instruction Set limits what the cloud API returns. Switch to DP Instruction mode on iot.tuya.com, then re-fetch in Cloud Lookup.</td></tr>
+          <tr><td>SET command causes disconnect</td>                     <td>1) Refresh Local Key via ☁️ Cloud Lookup. 2) Enable <em>Fire and Forget</em> in device settings. 3) Try Protocol 3.4. 4) Switch to DP Instruction mode on iot.tuya.com.</td></tr>
         </tbody>
       </table>
     </div>

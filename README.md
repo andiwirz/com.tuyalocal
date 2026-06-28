@@ -1,6 +1,6 @@
 # Tuya Local — Homey App
 
-**Version 1.0.75** · Local WiFi/LAN control of Tuya smart devices — no cloud, no Zigbee hub required.
+**Version 1.0.76** · Local WiFi/LAN control of Tuya smart devices — no cloud, no Zigbee hub required.
 
 All communication happens over your local network via the Tuya LAN protocol. Sixteen built-in drivers cover the most common device types; a fully generic driver handles anything else.
 
@@ -1306,6 +1306,9 @@ Fetch device credentials and DP specifications from the Tuya IoT Platform:
 | Wall switch trigger doesn't fire for switch 2+ | Using Homey's built-in "Turned on/off" trigger | Use the Wall Switch-specific **"A switch gang changed"** trigger card instead |
 | Wall switch tile names don't update | Homey caches capability titles | Restart the Tuya Local app after changing switch names |
 | Kettle mode picker empty | `mode_values` doesn't match device strings | Check Raw Data for exact mode strings (some use `mzj_black`, `boiling_quick`, etc.) |
+| Device missing DPs or SET commands rejected | Standard Instruction Set hides some DPs | Switch to **DP Instruction Set** on iot.tuya.com → Devices → your device → Instruction Mode |
+| Cloud Lookup shows fewer DPs than expected | Same cause — Standard mode limits visible DPs | Switch to DP Instruction mode, then re-fetch in Cloud Lookup |
+| SET command causes disconnect | Device rejects encrypted command | 1) Refresh Local Key via Cloud Lookup. 2) Enable **Fire and Forget** in device settings. 3) Switch instruction mode to DP on iot.tuya.com |
 
 ---
 

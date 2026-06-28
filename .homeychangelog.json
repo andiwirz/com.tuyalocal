@@ -1,4 +1,8 @@
 {
+  "1.0.76": {
+    "en": "Updated troubleshooting docs: added guidance for switching from Standard to DP Instruction Set on the Tuya IoT Platform to expose hidden DPs and fix rejected SET commands. Replaced tuya-cli method with device issue reporting instructions in app help.",
+    "de": "Troubleshooting-Doku aktualisiert: Anleitung zum Umschalten vom Standard- auf den DP-Instruction-Set auf der Tuya-IoT-Plattform ergänzt, um versteckte DPs freizuschalten und abgelehnte SET-Befehle zu beheben. tuya-cli-Methode in der App-Hilfe durch Anweisungen zur Gerätefehlermeldung ersetzt."
+  },
   "1.0.75": {
     "en": "Cloud Lookup: device detail view now shows DP numbers correctly by fetching from the shadow properties API. Three endpoints are queried in parallel for the most complete picture.",
     "de": "Cloud-Lookup: Gerätedetail-Ansicht zeigt DP-Nummern jetzt korrekt an durch Abfrage der Shadow-Properties-API. Drei Endpoints werden parallel abgefragt für das vollständigste Bild."
