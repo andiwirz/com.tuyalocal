@@ -1,4 +1,8 @@
 {
+  "1.0.78": {
+    "en": "Cloud Lookup: device list now shows device name, custom name, and product name as separate lines. Batch enrichment fetches all fields including custom_name. Fixed duplicate category key in device data.",
+    "de": "Cloud-Lookup: Geräteliste zeigt jetzt Gerätename, benutzerdefinierten Namen und Produktnamen als separate Zeilen. Batch-Enrichment holt alle Felder inklusive custom_name. Doppelten Category-Key in Gerätedaten behoben."
+  },
   "1.0.77": {
     "en": "Cloud Lookup: product name now shows correctly via batch enrichment API. Device list shows product name as subtitle under device name. Updated troubleshooting docs with DP Instruction Set guidance and device issue reporting workflow.",
     "de": "Cloud-Lookup: Produktname wird jetzt korrekt über die Batch-Enrichment-API angezeigt. Geräteliste zeigt Produktnamen als Untertitel unter dem Gerätenamen. Troubleshooting-Doku mit DP-Instruction-Set-Anleitung und Gerätefehlermeldungs-Workflow aktualisiert."

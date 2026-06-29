@@ -206,15 +206,14 @@ class TuyaLocalApp extends Homey.App {
       if (!d.id || seen.has(d.id)) return;
       seen.add(d.id);
       allDevices.push({
-        name:      d.name || '',
-        id:        d.id || '',
-        local_key: d.local_key || '',
-        category:  d.category || '',
-        product:   d.product_name || '',
-        category:  d.category || '',
-        ip:        d.ip || '',
-        online:    d.online ?? false,
-        uuid:      d.uuid || '',
+        name:         d.name || '',
+        custom_name:  d.custom_name || '',
+        product:      d.product_name || '',
+        id:           d.id || '',
+        local_key:    d.local_key || '',
+        category:     d.category || '',
+        online:       d.online ?? false,
+        uuid:         d.uuid || '',
       });
     };
 
@@ -298,27 +297,25 @@ class TuyaLocalApp extends Homey.App {
       }
     }
     if (allDevices.length > 0) {
-      // Enrich: fetch local_key and product name via batch endpoint
-      const needsEnrich = allDevices.filter((d) => !d.local_key || !d.product);
-      if (needsEnrich.length > 0) {
-        // Batch up to 20 device IDs per request
-        for (let i = 0; i < needsEnrich.length; i += 20) {
-          const batch = needsEnrich.slice(i, i + 20);
-          const ids = batch.map((d) => d.id).join(',');
-          try {
-            const res = await this._tuyaRequest(host,
-              `/v2.0/cloud/thing/batch?device_ids=${encodeURIComponent(ids)}`,
-              clientId, secret, token);
-            if (res.success && Array.isArray(res.result)) {
-              for (const r of res.result) {
-                const d = allDevices.find((x) => x.id === r.id);
-                if (!d) continue;
-                if (!d.local_key && r.local_key) d.local_key = r.local_key;
-                if (!d.product && r.product_name) d.product = r.product_name;
-              }
+      // Enrich all devices via batch endpoint (local_key, product_name, custom_name)
+      for (let i = 0; i < allDevices.length; i += 20) {
+        const batch = allDevices.slice(i, i + 20);
+        const ids = batch.map((d) => d.id).join(',');
+        try {
+          const res = await this._tuyaRequest(host,
+            `/v2.0/cloud/thing/batch?device_ids=${encodeURIComponent(ids)}`,
+            clientId, secret, token);
+          if (res.success && Array.isArray(res.result)) {
+            for (const r of res.result) {
+              const d = allDevices.find((x) => x.id === r.id);
+              if (!d) continue;
+              if (!d.local_key && r.local_key) d.local_key = r.local_key;
+              if (!d.product && r.product_name) d.product = r.product_name;
+              if (!d.name && r.name) d.name = r.name;
+              if (!d.custom_name && r.custom_name) d.custom_name = r.custom_name;
             }
-          } catch (_) {}
-        }
+          }
+        } catch (_) {}
       }
       // Fallback per device if batch didn't fill local_key
       for (const d of allDevices) {
