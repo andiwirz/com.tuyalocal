@@ -1,4 +1,20 @@
 {
+  "1.0.82": {
+    "en": "Removed power-off command guard — commands are now always sent regardless of device power state, matching tuya-local's approach. Combined with fire-and-forget default and the 5-second unavailability grace period, this prevents disconnects when sending commands to powered-off devices.",
+    "de": "Power-Off-Befehlssperre entfernt — Befehle werden jetzt immer gesendet, unabhängig vom Einschaltzustand des Geräts. Zusammen mit Fire-and-Forget als Standard und der 5-Sekunden-Unavailable-Toleranz verhindert dies Verbindungsabbrüche bei Befehlen an ausgeschaltete Geräte."
+  },
+  "1.0.81": {
+    "en": "Devices no longer flash 'unavailable' on brief TCP drops — a 5-second grace period absorbs transient disconnects before marking the device offline. Commands to powered-off devices are now blocked with a clear error message instead of causing a disconnect.",
+    "de": "Geräte zeigen bei kurzen TCP-Unterbrechungen kein 'Nicht verfügbar' mehr — eine 5-Sekunden-Toleranz absorbiert vorübergehende Verbindungsabbrüche. Befehle an ausgeschaltete Geräte werden jetzt mit einer klaren Fehlermeldung blockiert, statt einen Verbindungsabbruch zu verursachen."
+  },
+  "1.0.80": {
+    "en": "Fire and Forget is now enabled by default for all drivers — SET commands no longer wait for TCP acknowledgement, preventing timeouts and disconnects on slow-responding devices. Polling now forces a full GET instead of lightweight refresh after 30 seconds of silence, ensuring fresh device state after prolonged inactivity.",
+    "de": "Fire and Forget ist jetzt standardmässig für alle Treiber aktiviert — SET-Befehle warten nicht mehr auf TCP-Bestätigung, was Timeouts und Disconnects bei langsam reagierenden Geräten verhindert. Polling erzwingt jetzt nach 30 Sekunden Stille einen vollen GET statt leichtgewichtigen Refresh, um frischen Gerätestatus nach längerer Inaktivität sicherzustellen."
+  },
+  "1.0.79": {
+    "en": "Connection stability: replaced aggressive data-based watchdog with TuyaConnection's heartbeat watchdog — devices that don't push data no longer cause unnecessary reconnection loops. Added fake-state cache: after sending a command, the UI value is protected for 5 seconds so stale poll responses don't revert it.",
+    "de": "Verbindungsstabilität: Aggressiven datenbasierten Watchdog durch TuyaConnections Heartbeat-Watchdog ersetzt — Geräte die keine Daten pushen verursachen keine unnötigen Reconnect-Schleifen mehr. Fake-State-Cache hinzugefügt: Nach dem Senden eines Befehls wird der UI-Wert 5 Sekunden lang geschützt, damit veraltete Poll-Antworten ihn nicht zurücksetzen."
+  },
   "1.0.78": {
     "en": "Cloud Lookup: device list now shows device name, custom name, and product name as separate lines. Batch enrichment fetches all fields including custom_name. Fixed duplicate category key in device data.",
     "de": "Cloud-Lookup: Geräteliste zeigt jetzt Gerätename, benutzerdefinierten Namen und Produktnamen als separate Zeilen. Batch-Enrichment holt alle Felder inklusive custom_name. Doppelten Category-Key in Gerätedaten behoben."

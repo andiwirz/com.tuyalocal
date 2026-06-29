@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.78",
+  "version": "1.0.82",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -6344,10 +6344,10 @@
                 "en": "Fire and forget",
                 "de": "Fire and forget"
               },
-              "value": false,
+              "value": true,
               "hint": {
-                "en": "Enable for devices that drop the TCP connection immediately after receiving a SET command (e.g. some heaters or single-relay garage door openers). Commands are sent without waiting for an acknowledgement.",
-                "de": "Aktivieren für Geräte, die die TCP-Verbindung unmittelbar nach einem SET-Befehl trennen (z. B. manche Heizungen oder Garagentore mit einem Relais). Befehle werden ohne Warten auf eine Bestätigung gesendet."
+                "en": "Send commands without waiting for acknowledgement (default: on). Disable only if your device requires command confirmation over TCP.",
+                "de": "Befehle ohne Warten auf Bestätigung senden (Standard: ein). Nur deaktivieren, wenn das Gerät eine TCP-Befehlsbestätigung erfordert."
               }
             }
           ]
@@ -7001,10 +7001,10 @@
                 "en": "Fire and forget",
                 "de": "Fire and forget"
               },
-              "value": false,
+              "value": true,
               "hint": {
-                "en": "Enable for devices that drop the TCP connection immediately after receiving a SET command (e.g. some heaters or single-relay garage door openers). Commands are sent without waiting for an acknowledgement.",
-                "de": "Aktivieren für Geräte, die die TCP-Verbindung unmittelbar nach einem SET-Befehl trennen (z. B. manche Heizungen oder Garagentore mit einem Relais). Befehle werden ohne Warten auf eine Bestätigung gesendet."
+                "en": "Send commands without waiting for acknowledgement (default: on). Disable only if your device requires command confirmation over TCP.",
+                "de": "Befehle ohne Warten auf Bestätigung senden (Standard: ein). Nur deaktivieren, wenn das Gerät eine TCP-Befehlsbestätigung erfordert."
               }
             }
           ]
@@ -7396,10 +7396,10 @@
                 "en": "Fire and forget",
                 "de": "Fire and forget"
               },
-              "value": false,
+              "value": true,
               "hint": {
-                "en": "Enable for devices that drop the TCP connection immediately after receiving a SET command (e.g. some heaters or single-relay garage door openers). Commands are sent without waiting for an acknowledgement.",
-                "de": "Aktivieren für Geräte, die die TCP-Verbindung unmittelbar nach einem SET-Befehl trennen (z. B. manche Heizungen oder Garagentore mit einem Relais). Befehle werden ohne Warten auf eine Bestätigung gesendet."
+                "en": "Send commands without waiting for acknowledgement (default: on). Disable only if your device requires command confirmation over TCP.",
+                "de": "Befehle ohne Warten auf Bestätigung senden (Standard: ein). Nur deaktivieren, wenn das Gerät eine TCP-Befehlsbestätigung erfordert."
               }
             }
           ]
@@ -7934,10 +7934,10 @@
                 "en": "Fire and forget",
                 "de": "Fire and forget"
               },
-              "value": false,
+              "value": true,
               "hint": {
-                "en": "Enable for devices that drop the TCP connection immediately after receiving a SET command (e.g. some heaters or single-relay garage door openers). Commands are sent without waiting for an acknowledgement.",
-                "de": "Aktivieren für Geräte, die die TCP-Verbindung unmittelbar nach einem SET-Befehl trennen (z. B. manche Heizungen oder Garagentore mit einem Relais). Befehle werden ohne Warten auf eine Bestätigung gesendet."
+                "en": "Send commands without waiting for acknowledgement (default: on). Disable only if your device requires command confirmation over TCP.",
+                "de": "Befehle ohne Warten auf Bestätigung senden (Standard: ein). Nur deaktivieren, wenn das Gerät eine TCP-Befehlsbestätigung erfordert."
               }
             }
           ]
@@ -8313,10 +8313,10 @@
                 "en": "Fire and forget",
                 "de": "Fire and forget"
               },
-              "value": false,
+              "value": true,
               "hint": {
-                "en": "Enable for devices that drop the TCP connection immediately after receiving a SET command (e.g. some heaters or single-relay garage door openers). Commands are sent without waiting for an acknowledgement.",
-                "de": "Aktivieren für Geräte, die die TCP-Verbindung unmittelbar nach einem SET-Befehl trennen (z. B. manche Heizungen oder Garagentore mit einem Relais). Befehle werden ohne Warten auf eine Bestätigung gesendet."
+                "en": "Send commands without waiting for acknowledgement (default: on). Disable only if your device requires command confirmation over TCP.",
+                "de": "Befehle ohne Warten auf Bestätigung senden (Standard: ein). Nur deaktivieren, wenn das Gerät eine TCP-Befehlsbestätigung erfordert."
               }
             }
           ]
@@ -8701,10 +8701,10 @@
                 "en": "Fire and forget",
                 "de": "Fire and forget"
               },
-              "value": false,
+              "value": true,
               "hint": {
-                "en": "Enable for devices that drop the TCP connection immediately after receiving a SET command (e.g. some heaters or single-relay garage door openers). Commands are sent without waiting for an acknowledgement.",
-                "de": "Aktivieren für Geräte, die die TCP-Verbindung unmittelbar nach einem SET-Befehl trennen (z. B. manche Heizungen oder Garagentore mit einem Relais). Befehle werden ohne Warten auf eine Bestätigung gesendet."
+                "en": "Send commands without waiting for acknowledgement (default: on). Disable only if your device requires command confirmation over TCP.",
+                "de": "Befehle ohne Warten auf Bestätigung senden (Standard: ein). Nur deaktivieren, wenn das Gerät eine TCP-Befehlsbestätigung erfordert."
               }
             }
           ]
@@ -9154,10 +9154,10 @@
                 "en": "Fire and forget",
                 "de": "Fire and forget"
               },
-              "value": false,
+              "value": true,
               "hint": {
-                "en": "Enable for devices that drop the TCP connection immediately after receiving a SET command (e.g. some heaters or single-relay garage door openers). Commands are sent without waiting for an acknowledgement.",
-                "de": "Aktivieren für Geräte, die die TCP-Verbindung unmittelbar nach einem SET-Befehl trennen (z. B. manche Heizungen oder Garagentore mit einem Relais). Befehle werden ohne Warten auf eine Bestätigung gesendet."
+                "en": "Send commands without waiting for acknowledgement (default: on). Disable only if your device requires command confirmation over TCP.",
+                "de": "Befehle ohne Warten auf Bestätigung senden (Standard: ein). Nur deaktivieren, wenn das Gerät eine TCP-Befehlsbestätigung erfordert."
               }
             }
           ]
@@ -9489,10 +9489,10 @@
                 "en": "Fire and forget",
                 "de": "Fire and forget"
               },
-              "value": false,
+              "value": true,
               "hint": {
-                "en": "Enable for devices that drop the TCP connection immediately after receiving a SET command (e.g. some heaters or single-relay garage door openers). Commands are sent without waiting for an acknowledgement.",
-                "de": "Aktivieren für Geräte, die die TCP-Verbindung unmittelbar nach einem SET-Befehl trennen (z. B. manche Heizungen oder Garagentore mit einem Relais). Befehle werden ohne Warten auf eine Bestätigung gesendet."
+                "en": "Send commands without waiting for acknowledgement (default: on). Disable only if your device requires command confirmation over TCP.",
+                "de": "Befehle ohne Warten auf Bestätigung senden (Standard: ein). Nur deaktivieren, wenn das Gerät eine TCP-Befehlsbestätigung erfordert."
               }
             }
           ]
@@ -9948,10 +9948,10 @@
                 "en": "Fire and forget",
                 "de": "Fire and forget"
               },
-              "value": false,
+              "value": true,
               "hint": {
-                "en": "Enable for devices that drop the TCP connection immediately after receiving a SET command (e.g. some heaters or single-relay garage door openers). Commands are sent without waiting for an acknowledgement.",
-                "de": "Aktivieren für Geräte, die die TCP-Verbindung unmittelbar nach einem SET-Befehl trennen (z. B. manche Heizungen oder Garagentore mit einem Relais). Befehle werden ohne Warten auf eine Bestätigung gesendet."
+                "en": "Send commands without waiting for acknowledgement (default: on). Disable only if your device requires command confirmation over TCP.",
+                "de": "Befehle ohne Warten auf Bestätigung senden (Standard: ein). Nur deaktivieren, wenn das Gerät eine TCP-Befehlsbestätigung erfordert."
               }
             }
           ]
@@ -10283,10 +10283,10 @@
                 "en": "Fire and forget",
                 "de": "Fire and forget"
               },
-              "value": false,
+              "value": true,
               "hint": {
-                "en": "Enable for devices that drop the TCP connection immediately after receiving a SET command (e.g. some heaters or single-relay garage door openers). Commands are sent without waiting for an acknowledgement.",
-                "de": "Aktivieren für Geräte, die die TCP-Verbindung unmittelbar nach einem SET-Befehl trennen (z. B. manche Heizungen oder Garagentore mit einem Relais). Befehle werden ohne Warten auf eine Bestätigung gesendet."
+                "en": "Send commands without waiting for acknowledgement (default: on). Disable only if your device requires command confirmation over TCP.",
+                "de": "Befehle ohne Warten auf Bestätigung senden (Standard: ein). Nur deaktivieren, wenn das Gerät eine TCP-Befehlsbestätigung erfordert."
               }
             },
             {
@@ -10744,10 +10744,10 @@
                 "en": "Fire and forget",
                 "de": "Fire and forget"
               },
-              "value": false,
+              "value": true,
               "hint": {
-                "en": "Enable for devices that drop the TCP connection immediately after receiving a SET command (e.g. some heaters or single-relay garage door openers). Commands are sent without waiting for an acknowledgement.",
-                "de": "Aktivieren für Geräte, die die TCP-Verbindung unmittelbar nach einem SET-Befehl trennen (z. B. manche Heizungen oder Garagentore mit einem Relais). Befehle werden ohne Warten auf eine Bestätigung gesendet."
+                "en": "Send commands without waiting for acknowledgement (default: on). Disable only if your device requires command confirmation over TCP.",
+                "de": "Befehle ohne Warten auf Bestätigung senden (Standard: ein). Nur deaktivieren, wenn das Gerät eine TCP-Befehlsbestätigung erfordert."
               }
             }
           ]
@@ -11042,10 +11042,10 @@
                 "en": "Fire and forget",
                 "de": "Fire and forget"
               },
-              "value": false,
+              "value": true,
               "hint": {
-                "en": "Enable for devices that drop the TCP connection immediately after receiving a SET command (e.g. some heaters or single-relay garage door openers). Commands are sent without waiting for an acknowledgement.",
-                "de": "Aktivieren für Geräte, die die TCP-Verbindung unmittelbar nach einem SET-Befehl trennen (z. B. manche Heizungen oder Garagentore mit einem Relais). Befehle werden ohne Warten auf eine Bestätigung gesendet."
+                "en": "Send commands without waiting for acknowledgement (default: on). Disable only if your device requires command confirmation over TCP.",
+                "de": "Befehle ohne Warten auf Bestätigung senden (Standard: ein). Nur deaktivieren, wenn das Gerät eine TCP-Befehlsbestätigung erfordert."
               }
             },
             {
