@@ -198,6 +198,38 @@ class TuyaLocalApp extends Homey.App {
     return { token: res.result.access_token, uid: res.result.uid || '' };
   }
 
+  async _enrichDevices(host, clientId, secret, token, allDevices) {
+    for (let i = 0; i < allDevices.length; i += 20) {
+      const batch = allDevices.slice(i, i + 20);
+      const ids = batch.map((d) => d.id).join(',');
+      try {
+        const res = await this._tuyaRequest(host,
+          `/v2.0/cloud/thing/batch?device_ids=${encodeURIComponent(ids)}`,
+          clientId, secret, token);
+        if (res.success && Array.isArray(res.result)) {
+          for (const r of res.result) {
+            const d = allDevices.find((x) => x.id === r.id);
+            if (!d) continue;
+            if (!d.local_key && r.local_key) d.local_key = r.local_key;
+            if (!d.product && r.product_name) d.product = r.product_name;
+            if (!d.name && r.name) d.name = r.name;
+            if (r.custom_name) d.custom_name = r.custom_name;
+          }
+        }
+      } catch (_) {}
+    }
+    for (const d of allDevices) {
+      if (!d.local_key) {
+        try {
+          const res = await this._tuyaRequest(host,
+            `/v1.0/iot-03/devices/factory-infos?device_ids=${d.id}`,
+            clientId, secret, token);
+          if (res.success && res.result?.[0]?.local_key) d.local_key = res.result[0].local_key;
+        } catch (_) {}
+      }
+    }
+  }
+
   async _tuyaGetDevices(host, clientId, secret, token, projectUid) {
     const allDevices = [];
     const seen = new Set();
@@ -237,7 +269,10 @@ class TuyaLocalApp extends Homey.App {
         if (res.success) (res.result || []).forEach(addDevice);
       } catch (_) {}
     }
-    if (allDevices.length > 0) return allDevices;
+    if (allDevices.length > 0) {
+      await this._enrichDevices(host, clientId, secret, token, allDevices);
+      return allDevices;
+    }
 
     // Strategy 2: Use project UID from token
     if (projectUid) {
@@ -248,7 +283,10 @@ class TuyaLocalApp extends Homey.App {
         else errors.push('projectUid: ' + (res.msg || 'failed'));
       } catch (e) { errors.push('projectUid: ' + e.message); }
     }
-    if (allDevices.length > 0) return allDevices;
+    if (allDevices.length > 0) {
+      await this._enrichDevices(host, clientId, secret, token, allDevices);
+      return allDevices;
+    }
 
     // Strategy 3: v1.0 with source_type
     for (const uid of [projectUid, ...uids]) {
@@ -260,7 +298,10 @@ class TuyaLocalApp extends Homey.App {
         if (res.success) (res.result?.list || []).forEach(addDevice);
         else errors.push('source(' + uid.slice(0, 8) + '): ' + (res.msg || 'failed'));
       } catch (_) {}
-      if (allDevices.length > 0) return allDevices;
+      if (allDevices.length > 0) {
+        await this._enrichDevices(host, clientId, secret, token, allDevices);
+        return allDevices;
+      }
     }
 
     // Strategy 4: /v1.0/devices (older API without iot-03 prefix)
@@ -275,7 +316,10 @@ class TuyaLocalApp extends Homey.App {
         errors.push('schema: ' + (res.msg || 'failed'));
       }
     } catch (e) { errors.push('schema: ' + e.message); }
-    if (allDevices.length > 0) return allDevices;
+    if (allDevices.length > 0) {
+      await this._enrichDevices(host, clientId, secret, token, allDevices);
+      return allDevices;
+    }
 
     // Strategy 5: v2.0 cloud thing API (paginated, max 20 per page)
     for (let page = 1; page <= 50; page++) {
@@ -297,37 +341,7 @@ class TuyaLocalApp extends Homey.App {
       }
     }
     if (allDevices.length > 0) {
-      // Enrich all devices via batch endpoint (local_key, product_name, custom_name)
-      for (let i = 0; i < allDevices.length; i += 20) {
-        const batch = allDevices.slice(i, i + 20);
-        const ids = batch.map((d) => d.id).join(',');
-        try {
-          const res = await this._tuyaRequest(host,
-            `/v2.0/cloud/thing/batch?device_ids=${encodeURIComponent(ids)}`,
-            clientId, secret, token);
-          if (res.success && Array.isArray(res.result)) {
-            for (const r of res.result) {
-              const d = allDevices.find((x) => x.id === r.id);
-              if (!d) continue;
-              if (!d.local_key && r.local_key) d.local_key = r.local_key;
-              if (!d.product && r.product_name) d.product = r.product_name;
-              if (!d.name && r.name) d.name = r.name;
-              if (!d.custom_name && r.custom_name) d.custom_name = r.custom_name;
-            }
-          }
-        } catch (_) {}
-      }
-      // Fallback per device if batch didn't fill local_key
-      for (const d of allDevices) {
-        if (!d.local_key) {
-          try {
-            const res = await this._tuyaRequest(host,
-              `/v1.0/iot-03/devices/factory-infos?device_ids=${d.id}`,
-              clientId, secret, token);
-            if (res.success && res.result?.[0]?.local_key) d.local_key = res.result[0].local_key;
-          } catch (_) {}
-        }
-      }
+      await this._enrichDevices(host, clientId, secret, token, allDevices);
       return allDevices;
     }
 

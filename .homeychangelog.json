@@ -1,4 +1,8 @@
 {
+  "1.0.83": {
+    "en": "Cloud Lookup: custom name (user-defined in Tuya app) is now shown as the primary device name. Batch enrichment now runs after all discovery strategies — custom_name and local_key are reliably populated regardless of which API method finds the devices.",
+    "de": "Cloud-Lookup: Benutzerdefinierter Name (in der Tuya-App vergeben) wird jetzt als primärer Gerätename angezeigt. Batch-Enrichment läuft jetzt nach allen Erkennungsstrategien — custom_name und local_key werden zuverlässig befüllt, unabhängig davon welche API-Methode die Geräte findet."
+  },
   "1.0.82": {
     "en": "Removed power-off command guard — commands are now always sent regardless of device power state, matching tuya-local's approach. Combined with fire-and-forget default and the 5-second unavailability grace period, this prevents disconnects when sending commands to powered-off devices.",
     "de": "Power-Off-Befehlssperre entfernt — Befehle werden jetzt immer gesendet, unabhängig vom Einschaltzustand des Geräts. Zusammen mit Fire-and-Forget als Standard und der 5-Sekunden-Unavailable-Toleranz verhindert dies Verbindungsabbrüche bei Befehlen an ausgeschaltete Geräte."
