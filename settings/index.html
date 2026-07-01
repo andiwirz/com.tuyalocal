@@ -1083,8 +1083,15 @@
             tbody.appendChild(tr);
 
             tr.querySelector('.cloud-copy-btn').addEventListener('click', function() {
-              var text = d.name + '\nID: ' + d.id + '\nKey: ' + (d.local_key || '');
-              copyText(text, this);
+              var lines = [];
+              if (d.custom_name) lines.push('Custom Name: ' + d.custom_name);
+              lines.push('Name: ' + (d.name || ''));
+              lines.push('ID: ' + d.id);
+              lines.push('Local Key: ' + (d.local_key || ''));
+              if (d.product)  lines.push('Product: ' + d.product);
+              if (d.category) lines.push('Category: ' + d.category);
+              if (d.uuid)     lines.push('UUID: ' + d.uuid);
+              copyText(lines.join('\n'), this);
             });
 
             tr.querySelector('.cloud-name-link').addEventListener('click', function(e) {

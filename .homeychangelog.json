@@ -1,4 +1,8 @@
 {
+  "1.0.84": {
+    "en": "Cloud Lookup: Copy button now includes all available fields (custom name, name, ID, local key, product, category, UUID). Added per-device fallback enrichment via /v1.0/iot-03/devices/{id} for accounts where the v2.0 batch API is unavailable — product name and local key are now reliably fetched regardless of API permissions. Batch enrichment errors are now logged to the Logs tab for easier diagnosis.",
+    "de": "Cloud-Lookup: Copy-Button gibt jetzt alle verfügbaren Felder aus (benutzerdefinierter Name, Name, ID, Local-Key, Produkt, Kategorie, UUID). Per-Gerät-Fallback-Enrichment via /v1.0/iot-03/devices/{id} für Accounts hinzugefügt, bei denen das v2.0-Batch-API nicht verfügbar ist. Batch-Enrichment-Fehler werden im Logs-Tab protokolliert."
+  },
   "1.0.83": {
     "en": "Cloud Lookup: custom name (user-defined in Tuya app) is now shown as the primary device name. Batch enrichment now runs after all discovery strategies — custom_name and local_key are reliably populated regardless of which API method finds the devices.",
     "de": "Cloud-Lookup: Benutzerdefinierter Name (in der Tuya-App vergeben) wird jetzt als primärer Gerätename angezeigt. Batch-Enrichment läuft jetzt nach allen Erkennungsstrategien — custom_name und local_key werden zuverlässig befüllt, unabhängig davon welche API-Methode die Geräte findet."

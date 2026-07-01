@@ -199,6 +199,8 @@ class TuyaLocalApp extends Homey.App {
   }
 
   async _enrichDevices(host, clientId, secret, token, allDevices) {
+    // Step 1: v2.0 batch — best source for custom_name + product_name + local_key
+    let batchWorked = false;
     for (let i = 0; i < allDevices.length; i += 20) {
       const batch = allDevices.slice(i, i + 20);
       const ids = batch.map((d) => d.id).join(',');
@@ -207,6 +209,7 @@ class TuyaLocalApp extends Homey.App {
           `/v2.0/cloud/thing/batch?device_ids=${encodeURIComponent(ids)}`,
           clientId, secret, token);
         if (res.success && Array.isArray(res.result)) {
+          batchWorked = true;
           for (const r of res.result) {
             const d = allDevices.find((x) => x.id === r.id);
             if (!d) continue;
@@ -215,10 +218,29 @@ class TuyaLocalApp extends Homey.App {
             if (!d.name && r.name) d.name = r.name;
             if (r.custom_name) d.custom_name = r.custom_name;
           }
+        } else {
+          this.addLog('Cloud', `Batch enrich failed: ${res.msg || JSON.stringify(res).slice(0, 80)}`, 'warn');
+        }
+      } catch (e) {
+        this.addLog('Cloud', `Batch enrich error: ${e.message}`, 'warn');
+      }
+    }
+
+    // Step 2: per-device fallback via v1.0 iot-03 if batch didn't work or fields still missing
+    const needsFallback = allDevices.filter((d) => !batchWorked || !d.local_key || !d.product);
+    for (const d of needsFallback) {
+      try {
+        const res = await this._tuyaRequest(host,
+          `/v1.0/iot-03/devices/${d.id}`, clientId, secret, token);
+        if (res.success && res.result) {
+          const r = res.result;
+          if (!d.local_key && r.local_key) d.local_key = r.local_key;
+          if (!d.product && r.product_name) d.product = r.product_name;
+          if (!d.name && r.name) d.name = r.name;
+          if (!d.custom_name && r.custom_name) d.custom_name = r.custom_name;
         }
       } catch (_) {}
-    }
-    for (const d of allDevices) {
+      // factory-infos fallback for local_key only
       if (!d.local_key) {
         try {
           const res = await this._tuyaRequest(host,
