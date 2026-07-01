@@ -1,4 +1,12 @@
 {
+  "1.0.86": {
+    "en": "Improved App Store discoverability: added tags for all supported device types (smart plug, switch, thermostat, air conditioner, kettle, sensor) and key differentiators (no cloud, offline, privacy).",
+    "de": "App-Store-Auffindbarkeit verbessert: Tags für alle unterstützten Gerätetypen (Steckdose, Schalter, Thermostat, Klimaanlage, Wasserkocher, Sensor) und wichtige Alleinstellungsmerkmale (ohne Cloud, offline, Datenschutz) hinzugefügt."
+  },
+  "1.0.85": {
+    "en": "Cloud Lookup: custom name (e.g. 'Gordijn 3') is now reliably fetched via /v2.0/cloud/thing/{id} for each device missing it — this fixes accounts where the v1.0 user devices API does not return custom_name.",
+    "de": "Cloud-Lookup: Benutzerdefinierter Name (z.B. 'Gordijn 3') wird jetzt über /v2.0/cloud/thing/{id} per Gerät zuverlässig abgerufen — behebt Accounts bei denen das v1.0 User-Devices-API keinen custom_name zurückgibt."
+  },
   "1.0.84": {
     "en": "Cloud Lookup: Copy button now includes all available fields (custom name, name, ID, local key, product, category, UUID). Added per-device fallback enrichment via /v1.0/iot-03/devices/{id} for accounts where the v2.0 batch API is unavailable — product name and local key are now reliably fetched regardless of API permissions. Batch enrichment errors are now logged to the Logs tab for easier diagnosis.",
     "de": "Cloud-Lookup: Copy-Button gibt jetzt alle verfügbaren Felder aus (benutzerdefinierter Name, Name, ID, Local-Key, Produkt, Kategorie, UUID). Per-Gerät-Fallback-Enrichment via /v1.0/iot-03/devices/{id} für Accounts hinzugefügt, bei denen das v2.0-Batch-API nicht verfügbar ist. Batch-Enrichment-Fehler werden im Logs-Tab protokolliert."

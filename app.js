@@ -226,8 +226,23 @@ class TuyaLocalApp extends Homey.App {
       }
     }
 
-    // Step 2: per-device fallback via v1.0 iot-03 if batch didn't work or fields still missing
-    const needsFallback = allDevices.filter((d) => !batchWorked || !d.local_key || !d.product);
+    // Step 2: v2.0 per-device endpoint for missing custom_name — most reliable source
+    const missingCustomName = allDevices.filter((d) => !d.custom_name);
+    for (const d of missingCustomName) {
+      try {
+        const res = await this._tuyaRequest(host,
+          `/v2.0/cloud/thing/${d.id}`, clientId, secret, token);
+        if (res.success && res.result) {
+          const r = res.result;
+          if (r.custom_name) d.custom_name = r.custom_name;
+          if (!d.local_key && r.local_key) d.local_key = r.local_key;
+          if (!d.product && r.product_name) d.product = r.product_name;
+        }
+      } catch (_) {}
+    }
+
+    // Step 3: v1.0 iot-03 per-device for remaining missing fields (local_key, product)
+    const needsFallback = allDevices.filter((d) => !d.local_key || !d.product);
     for (const d of needsFallback) {
       try {
         const res = await this._tuyaRequest(host,
@@ -236,7 +251,6 @@ class TuyaLocalApp extends Homey.App {
           const r = res.result;
           if (!d.local_key && r.local_key) d.local_key = r.local_key;
           if (!d.product && r.product_name) d.product = r.product_name;
-          if (!d.name && r.name) d.name = r.name;
           if (!d.custom_name && r.custom_name) d.custom_name = r.custom_name;
         }
       } catch (_) {}
