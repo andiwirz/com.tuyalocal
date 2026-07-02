@@ -1,7 +1,8 @@
-'use strict';
+﻿'use strict';
 
 const Homey                     = require('homey');
 const TuyAPI                    = require('tuyapi');
+const { setupCloudLookup } = require('../../lib/pairCloudLookup');
 const net                       = require('net');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
@@ -81,6 +82,7 @@ class CurtainMotorDriver extends Homey.Driver {
   // ── Pairing ──────────────────────────────────────────────────────────────────
 
   async onPair(session) {
+    setupCloudLookup(session, this.homey);
     let pendingDevice = null;
     let pendingRawDps = {};
 

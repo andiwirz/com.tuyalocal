@@ -1,6 +1,6 @@
 # Tuya Local — Homey App
 
-**Version 1.0.82** · Local WiFi/LAN control of Tuya smart devices — no cloud, no Zigbee hub required.
+**Version 1.0.88** · Local WiFi/LAN control of Tuya smart devices — no cloud, no Zigbee hub required.
 
 All communication happens over your local network via the Tuya LAN protocol. Sixteen built-in drivers cover the most common device types; a fully generic driver handles anything else.
 
@@ -33,7 +33,7 @@ All communication happens over your local network via the Tuya LAN protocol. Six
 - **Cloud-free** — all traffic stays on your local network
 - **Real-time push** — instant state updates without polling (polling is optional and configurable)
 - **Automatic reconnect** — exponential back-off with jitter; watchdog detects stale connections and reconnects
-- **Cloud Lookup** — fetch Device ID and Local Key directly from the Tuya IoT Platform inside the app settings — no CLI tools needed. Click a device name to see all DPs with types, current values, and allowed ranges
+- **Cloud Lookup** — fetch Device ID and Local Key from the Tuya IoT Platform inside the app settings or directly during device pairing — no CLI tools needed. Device names show your custom name (as set in the Tuya app) as the primary label. Click a device name to see all DPs with types, current values, and allowed ranges. Access credentials are saved on Homey and auto-filled next time
 - **Protocol auto-detect** — pairing and repair default to *Auto-detect*, which tries 3.3 → 3.4 → 3.1 → 3.5 → 3.2 → 3.22 in order and saves the working version automatically
 - **Network scanner** — finds Tuya devices via UDP broadcast (ports 6666 / 6667) and a full TCP subnet scan (port 6668)
 - **Auto DP detection** — on pairing, the app connects to the device, collects live data points and maps them to capabilities automatically
@@ -58,17 +58,29 @@ All communication happens over your local network via the Tuya LAN protocol. Six
 
 ## How to get Device ID and Local Key
 
-### Method 1 — Cloud Lookup in app settings (recommended)
+### Method 1 — Cloud Lookup (recommended)
 
-No CLI tools or terminal needed. Everything happens inside the Homey app.
+No CLI tools or terminal needed. Everything happens inside the Homey app. Credentials are saved on Homey and auto-filled next time.
+
+**One-time setup:**
 
 1. Create a free account at [iot.tuya.com](https://iot.tuya.com).
 2. **Cloud** → **Project Management** → **Create Cloud Project** — industry: Smart Home, region: same as your mobile app.
 3. Open your project → **Devices** → **Link Tuya App Account** → scan the QR code with Tuya Smart / Smart Life.
 4. Open your project → **Overview** → copy **Access ID / Client ID** and **Access Secret / Client Secret**.
+
+**Option A — During pairing (easiest):**
+
+5. When adding a device, click **☁️ Fetch Device ID & Local Key from Cloud** in the credentials screen.
+6. Paste your Access ID and Secret, select your data center, click **Fetch Devices**.
+7. Click a device in the list — Device ID and Local Key are filled in automatically.
+8. Check **Save credentials on Homey** so they're pre-filled next time.
+
+**Option B — In app settings:**
+
 5. In Homey: **More** → **Apps** → **Tuya Local** → **Settings** → **☁️ Cloud Lookup** tab.
 6. Paste your Access ID and Secret, select your data center, click **Fetch Devices**.
-7. Use the **Copy** button next to each device to copy Name, Device ID and Local Key.
+7. Use the **Copy** button next to each device to copy all fields (custom name, name, Device ID, Local Key, product, category, UUID).
 
 > If you recently reset or re-paired a device the Local Key changes. Click **Fetch Devices** again to get the new key.
 
@@ -117,6 +129,8 @@ homey app install
 
 1. Homey app → **Devices** → **+** → **Tuya Local** → choose your driver.
 2. **Scan Network** to auto-discover devices, or enter IP / Device ID / Local Key manually.
+   - To fill in Device ID and Local Key automatically, click **☁️ Fetch Device ID & Local Key from Cloud** — enter your Tuya API credentials once (or re-use previously saved ones), pick your device from the list, and the fields are filled in automatically.
+   - Check **Save credentials on Homey** to have them pre-filled next time.
 3. Leave **Protocol Version** on **Auto-detect** (default) — the app tries 3.3 → 3.4 → 3.1 → 3.5 and saves the working version automatically. Select a specific version only if auto-detect fails.
 4. Click **Test & Connect** — the app connects, collects live data, then shows a summary screen.
 5. Review the detected DP mapping. Adjust DP numbers directly in the table if needed.  
@@ -1270,12 +1284,13 @@ Full unprocessed payload for the selected device:
 
 ### Cloud Lookup
 
-Fetch device credentials and DP specifications from the Tuya IoT Platform:
+Fetch device credentials and DP specifications from the Tuya IoT Platform (available in app settings and during pairing):
 - Enter your **Access ID** and **Access Secret** from iot.tuya.com → Cloud → Project Management → your project → Overview
 - Select your **Data Center** and click **Fetch Devices**
-- View all linked devices with **Device ID** and **Local Key**
+- Device list shows the **custom name** (as set in the Tuya app) as the primary name, with the product model name as a subtitle
 - **Click a device name** to see the full DP specification: DP numbers, code names, types, current values, allowed ranges, and read/write status
-- **Copy** button per device (Name + ID + Key) and **Copy DP Table** for the specification
+- **Copy** button per device copies all available fields: custom name, name, Device ID, Local Key, product, category, UUID
+- Check **Save credentials on Homey** to persist your Access ID, Secret, and region — they are auto-filled next time you open Cloud Lookup in settings or pairing
 - Useful for finding exact enum strings (`mode`, `fan_speed`, etc.)
 
 ---

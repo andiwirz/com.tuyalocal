@@ -1,7 +1,8 @@
-'use strict';
+﻿'use strict';
 
 const Homey                     = require('homey');
 const TuyAPI                    = require('tuyapi');
+const { setupCloudLookup } = require('../../lib/pairCloudLookup');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
 
@@ -53,6 +54,7 @@ class PetFeederDriver extends Homey.Driver {
   }
 
   async onPair(session) {
+    setupCloudLookup(session, this.homey);
     let pendingDevice = null;
     let pendingRawDps = {};
 

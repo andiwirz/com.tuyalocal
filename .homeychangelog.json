@@ -1,4 +1,12 @@
 {
+  "1.0.88": {
+    "en": "Cloud Lookup pairing: added setup guide (iot.tuya.com → Cloud → Project Management → Overview), 'Save credentials on Homey' checkbox with auto-fill on next open, and smarter behaviour — help is hidden when saved credentials are loaded, shown prominently when credentials are missing.",
+    "de": "Cloud-Lookup-Pairing: Setup-Anleitung (iot.tuya.com → Cloud → Project Management → Overview) hinzugefügt, 'Zugangsdaten auf Homey speichern'-Checkbox mit automatischem Vorausfüllen beim nächsten Öffnen, und intelligenteres Verhalten — Hilfe wird ausgeblendet wenn gespeicherte Zugangsdaten geladen werden, und prominent angezeigt wenn keine Zugangsdaten vorhanden sind."
+  },
+  "1.0.87": {
+    "en": "Cloud Lookup in pairing: all drivers now have a '☁️ Fetch Device ID & Local Key from Cloud' button during device setup — enter your Tuya API credentials once, pick your device from the list, and Device ID & Local Key are filled in automatically. Saved credentials from app settings are pre-filled.",
+    "de": "Cloud-Lookup beim Pairing: Alle Treiber haben jetzt eine '☁️ Device ID & Local Key aus der Cloud holen'-Schaltfläche beim Gerät hinzufügen — Tuya-API-Zugangsdaten einmal eingeben, Gerät aus der Liste auswählen, und Device ID & Local Key werden automatisch ausgefüllt. Gespeicherte Zugangsdaten aus den App-Einstellungen werden vorausgefüllt."
+  },
   "1.0.86": {
     "en": "Improved App Store discoverability: added tags for all supported device types (smart plug, switch, thermostat, air conditioner, kettle, sensor) and key differentiators (no cloud, offline, privacy).",
     "de": "App-Store-Auffindbarkeit verbessert: Tags für alle unterstützten Gerätetypen (Steckdose, Schalter, Thermostat, Klimaanlage, Wasserkocher, Sensor) und wichtige Alleinstellungsmerkmale (ohne Cloud, offline, Datenschutz) hinzugefügt."

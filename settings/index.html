@@ -608,6 +608,14 @@
             <option value="in">India</option>
           </select>
         </div>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:2px">
+          <label style="width:100px"></label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#555;cursor:pointer">
+            <input type="checkbox" id="cloudSaveCreds" style="width:14px;height:14px">
+            Save credentials on Homey (auto-fill next time)
+          </label>
+          <span id="cloudSavedBadge" style="display:none;font-size:11px;color:#1e6a34;background:#e6f4ea;padding:2px 7px;border-radius:4px">✓ Saved</span>
+        </div>
       </div>
 
       <div class="bar">
@@ -1026,6 +1034,21 @@
         }
       });
 
+      // ── Load saved credentials on init ───────────────────────────────
+      Homey.get('cloud_access_id', function(err, val) {
+        if (val) {
+          document.getElementById('cloudAccessId').value = val;
+          document.getElementById('cloudSaveCreds').checked = true;
+          document.getElementById('cloudSavedBadge').style.display = 'inline';
+        }
+      });
+      Homey.get('cloud_access_secret', function(err, val) {
+        if (val) document.getElementById('cloudAccessSecret').value = val;
+      });
+      Homey.get('cloud_region', function(err, val) {
+        if (val) document.getElementById('cloudRegion').value = val;
+      });
+
       document.getElementById('btnCloudFetch').addEventListener('click', function() {
         var btn    = this;
         var status = document.getElementById('cloudStatus');
@@ -1104,6 +1127,19 @@
           document.getElementById('cloudCount').textContent = devices.length + ' device(s) found.';
           status.textContent = '✓ Success';
           status.style.color = '#1e6a34';
+
+          // Save credentials if checkbox is checked
+          if (document.getElementById('cloudSaveCreds').checked) {
+            Homey.set('cloud_access_id',     accessId,     function() {});
+            Homey.set('cloud_access_secret', accessSecret, function() {});
+            Homey.set('cloud_region',        region,       function() {});
+            document.getElementById('cloudSavedBadge').style.display = 'inline';
+          } else {
+            Homey.set('cloud_access_id',     '',  function() {});
+            Homey.set('cloud_access_secret', '',  function() {});
+            Homey.set('cloud_region',        '',  function() {});
+            document.getElementById('cloudSavedBadge').style.display = 'none';
+          }
         });
       });
     }
