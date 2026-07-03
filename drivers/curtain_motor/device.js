@@ -50,6 +50,11 @@ class CurtainMotorDevice extends BaseTuyaDevice {
 
     await this._baseInit();
 
+    // Migrate: add capabilities added after initial release
+    if (!this.hasCapability('windowcoverings_closed')) {
+      await this.addCapability('windowcoverings_closed').catch(() => {});
+    }
+
     // Fault-alarm debounce state
     this._connectedAt         = null;
     this._faultAlarmTimer     = null;
@@ -81,6 +86,18 @@ class CurtainMotorDevice extends BaseTuyaDevice {
       const cmd = cmdMap[value];
       if (!cmd) throw new Error(`Unknown state: ${value}`);
       this.log(`Curtain ${cmd} (DP ${dp})${invert ? ' [inverted]' : ''}`);
+      await this._set(dp, cmd);
+    });
+
+    // windowcoverings_closed: Quick Action toggle — true = close, false = open
+    this.registerCapabilityListener('windowcoverings_closed', async (value) => {
+      const dp     = this.getSetting('dp_control');
+      const invert = this.getSetting('invert_control') || false;
+      if (!dp || dp === 0) throw new Error('Control DP not configured');
+      const cmd = value
+        ? (invert ? 'open' : 'close')
+        : (invert ? 'close' : 'open');
+      this.log(`Curtain ${cmd} via Quick Action (DP ${dp})${invert ? ' [inverted]' : ''}`);
       await this._set(dp, cmd);
     });
 
@@ -168,6 +185,11 @@ class CurtainMotorDevice extends BaseTuyaDevice {
           const homey   = Math.min(1, Math.max(0, invert ? (100 - percent) / 100 : percent / 100));
           const prev    = this.getCapabilityValue('windowcoverings_set');
           await this.setCapabilityValue('windowcoverings_set', homey).catch(() => {});
+
+          // Keep Quick Action boolean in sync with position
+          if (this.hasCapability('windowcoverings_closed')) {
+            await this.setCapabilityValue('windowcoverings_closed', homey <= 0).catch(() => {});
+          }
 
           // Fire opened/closed triggers when reaching limits
           if (homey >= 1 && (prev === null || prev < 1)) {

@@ -73,7 +73,7 @@ class GarageDoorDriver extends Homey.Driver {
   // ── Pairing ──────────────────────────────────────────────────────────────────
 
   async onPair(session) {
-    setupCloudLookup(session, this.homey);
+    setupCloudLookup(session, this.homey, this);
     let pendingDevice = null;
     let pendingRawDps = {};
 

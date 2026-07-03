@@ -21,7 +21,7 @@ class LightDriver extends Homey.Driver {
   }
 
   async onPair(session) {
-    setupCloudLookup(session, this.homey);
+    setupCloudLookup(session, this.homey, this);
     let pendingDevice = null;
     let pendingRawDps = {};
 
