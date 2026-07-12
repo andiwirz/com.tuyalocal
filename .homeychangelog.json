@@ -1,4 +1,12 @@
 {
+  "1.0.93": {
+    "en": "Heat Pump: added 'Measured Temperature Divisor (override)' setting — fixes devices like Weau where the target temperature is raw °C but the measured temperature is ×10. Set 'Measured Temperature Divisor' to 10 and leave the main divisor at 1.",
+    "de": "Wärmepumpe: Einstellung 'Ist-Temperatur-Divisor (Override)' hinzugefügt — behebt Geräte wie Weau, bei denen die Soll-Temperatur direktes °C ist, die Ist-Temperatur aber ×10. Ist-Divisor auf 10 setzen, Haupt-Divisor bei 1 lassen."
+  },
+  "1.0.92": {
+    "en": "New Doorbell driver: supports Marmitek Buzz LO and compatible Tuya video doorbells (category sp). Doorbell rang trigger, motion detection alarm with configurable auto-reset timer, flow cards for ring and motion events, enable/disable motion detection flow action.",
+    "de": "Neuer Türklingel-Treiber: Marmitek Buzz LO und kompatible Tuya-Video-Türklingeln (Kategorie sp). Klingel-Auslöser, Bewegungsalarm mit konfigurierbarem Auto-Reset, Flow-Karten für Klingel- und Bewegungsereignisse, Flow-Aktion zum Aktivieren/Deaktivieren der Bewegungserkennung."
+  },
   "1.0.91": {
     "en": "Curtain Motor: added windowcoverings_closed capability — Homey's Quick Action toggle (labelled 'Closed') is now available for curtain devices. The toggle sends open/close commands and tracks the actual position (closed = 0%, open = anything above). Existing devices are migrated automatically on next app start.",
     "de": "Rolladenmotor: Capability windowcoverings_closed hinzugefügt — Homeys Schnellaktion-Toggle (beschriftet 'Geschlossen') ist jetzt für Rolladengeräte verfügbar. Der Toggle sendet Öffnen/Schließen-Befehle und spiegelt die aktuelle Position (geschlossen = 0%, offen = alles darüber). Bestehende Geräte werden beim nächsten App-Start automatisch migriert."

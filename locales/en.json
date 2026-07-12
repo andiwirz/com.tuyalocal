@@ -15,7 +15,8 @@
       "curtain_motor":   "Curtain Motor",
       "wall_switch":     "Wall Switch",
       "thermostat":      "Thermostat",
-      "kettle":          "Smart Kettle"
+      "kettle":          "Smart Kettle",
+      "doorbell":        "Doorbell"
     }
   },
   "notifications": {

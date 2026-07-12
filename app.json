@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.91",
+  "version": "1.0.93",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -157,6 +157,14 @@
     "1.0.52": {
       "en": "Heater: added Work State DP support (e.g. DP 11 \"heating\"/\"no_heating\"). New Heating tile indicator and flow cards: \"Heater started heating\" and \"Heater stopped heating\" triggers, \"Heater is heating\" condition.",
       "de": "Heizgerät: Arbeitsstatus-DP hinzugefügt (z.B. DP 11 \"heating\"/\"no_heating\"). Neue Heizstatus-Kachel und Flow-Karten: Auslöser \"Heizt jetzt\" / \"Heizt nicht mehr\", Bedingung \"Heizt\"."
+    },
+    "1.0.93": {
+      "en": "Heat Pump: added 'Measured Temperature Divisor (override)' setting — fixes devices like Weau where target temperature is raw °C but measured temperature is ×10.",
+      "de": "Wärmepumpe: Einstellung 'Ist-Temperatur-Divisor (Override)' — behebt Geräte wie Weau, bei denen Soll-Temp direktes °C ist, Ist-Temp aber ×10."
+    },
+    "1.0.92": {
+      "en": "New Doorbell driver: supports Marmitek Buzz LO and compatible Tuya video doorbells (category sp). Doorbell rang trigger, motion detection alarm with configurable auto-reset timer, flow cards for ring and motion events, enable/disable motion detection action.",
+      "de": "Neuer Türklingel-Treiber: Marmitek Buzz LO und kompatible Tuya-Video-Türklingeln (Kategorie sp). Klingel-Auslöser, Bewegungsalarm mit konfigurierbarem Auto-Reset, Flow-Karten für Klingel- und Bewegungsereignisse, Bewegungserkennung aktivieren/deaktivieren."
     }
   },
   "permissions": [],
@@ -3416,6 +3424,96 @@
             "example": "open"
           }
         ]
+      },
+      {
+        "id": "doorbell_rang",
+        "title": {
+          "en": "Doorbell rang",
+          "de": "Türklingel betätigt"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=doorbell"
+          }
+        ]
+      },
+      {
+        "id": "doorbell_motion_detected",
+        "title": {
+          "en": "Doorbell motion detected",
+          "de": "Türklingel: Bewegung erkannt"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=doorbell"
+          }
+        ]
+      },
+      {
+        "id": "doorbell_device_connected",
+        "title": {
+          "en": "Doorbell connected",
+          "de": "Türklingel verbunden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=doorbell"
+          }
+        ]
+      },
+      {
+        "id": "doorbell_device_disconnected",
+        "title": {
+          "en": "Doorbell disconnected",
+          "de": "Türklingel getrennt"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=doorbell"
+          }
+        ]
+      },
+      {
+        "id": "doorbell_dp_changed",
+        "title": {
+          "en": "Doorbell data point changed",
+          "de": "Türklingel: Datenpunkt geändert"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=doorbell"
+          }
+        ],
+        "tokens": [
+          {
+            "name": "dp",
+            "type": "string",
+            "title": {
+              "en": "DP number",
+              "de": "DP-Nummer"
+            },
+            "example": "136"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "title": {
+              "en": "Value",
+              "de": "Wert"
+            },
+            "example": "1783492800"
+          }
+        ]
       }
     ],
     "conditions": [
@@ -4160,6 +4258,34 @@
             "name": "device",
             "type": "device",
             "filter": "driver_id=curtain_motor"
+          }
+        ]
+      },
+      {
+        "id": "doorbell_motion_is_active",
+        "title": {
+          "en": "Doorbell motion !{{is|is not}} active",
+          "de": "Türklingel: Bewegungsalarm !{{ist|ist nicht}} aktiv"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=doorbell"
+          }
+        ]
+      },
+      {
+        "id": "doorbell_device_is_connected",
+        "title": {
+          "en": "Doorbell !{{is|is not}} connected",
+          "de": "Türklingel !{{ist|ist nicht}} verbunden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=doorbell"
           }
         ]
       }
@@ -5973,6 +6099,144 @@
             "name": "device",
             "type": "device",
             "filter": "driver_id=curtain_motor"
+          }
+        ]
+      },
+      {
+        "id": "doorbell_enable_motion",
+        "title": {
+          "en": "Enable motion detection",
+          "de": "Bewegungserkennung aktivieren"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=doorbell"
+          }
+        ]
+      },
+      {
+        "id": "doorbell_disable_motion",
+        "title": {
+          "en": "Disable motion detection",
+          "de": "Bewegungserkennung deaktivieren"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=doorbell"
+          }
+        ]
+      },
+      {
+        "id": "doorbell_force_reconnect",
+        "title": {
+          "en": "Force doorbell reconnect",
+          "de": "Türklingel: Verbindung neu aufbauen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=doorbell"
+          }
+        ]
+      },
+      {
+        "id": "doorbell_refresh_device",
+        "title": {
+          "en": "Refresh doorbell values",
+          "de": "Türklingel: Daten aktualisieren"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=doorbell"
+          }
+        ]
+      },
+      {
+        "id": "doorbell_set_nightvision",
+        "title": {
+          "en": "Set night vision mode",
+          "de": "Türklingel: Nachtsicht-Modus setzen"
+        },
+        "titleFormatted": {
+          "en": "Set night vision to [[mode]]",
+          "de": "Nachtsicht setzen auf [[mode]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=doorbell"
+          },
+          {
+            "name": "mode",
+            "type": "dropdown",
+            "title": { "en": "Mode", "de": "Modus" },
+            "values": [
+              { "id": "0", "label": { "en": "Auto", "de": "Auto" } },
+              { "id": "1", "label": { "en": "Off", "de": "Aus" } },
+              { "id": "2", "label": { "en": "Color (always on)", "de": "Farbe (immer an)" } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "doorbell_set_chime_volume",
+        "title": {
+          "en": "Set chime volume",
+          "de": "Türklingel: Klingellautstärke setzen"
+        },
+        "titleFormatted": {
+          "en": "Set chime volume to [[volume]]",
+          "de": "Klingellautstärke setzen auf [[volume]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=doorbell"
+          },
+          {
+            "name": "volume",
+            "type": "number",
+            "title": { "en": "Volume (0–100)", "de": "Lautstärke (0–100)" },
+            "min": 0,
+            "max": 100,
+            "step": 10
+          }
+        ]
+      },
+      {
+        "id": "doorbell_set_motion_sensitivity",
+        "title": {
+          "en": "Set motion sensitivity",
+          "de": "Türklingel: Bewegungsempfindlichkeit setzen"
+        },
+        "titleFormatted": {
+          "en": "Set motion sensitivity to [[sensitivity]]",
+          "de": "Bewegungsempfindlichkeit setzen auf [[sensitivity]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=doorbell"
+          },
+          {
+            "name": "sensitivity",
+            "type": "dropdown",
+            "title": { "en": "Sensitivity", "de": "Empfindlichkeit" },
+            "values": [
+              { "id": "0", "label": { "en": "Low", "de": "Niedrig" } },
+              { "id": "1", "label": { "en": "Medium", "de": "Mittel" } },
+              { "id": "2", "label": { "en": "High", "de": "Hoch" } }
+            ]
           }
         ]
       }
@@ -10637,15 +10901,30 @@
               "id": "temp_divisor",
               "type": "number",
               "label": {
-                "en": "Temperature Divisor",
-                "de": "Temperaturdivisor"
+                "en": "Temperature Divisor (set + measured)",
+                "de": "Temperaturdivisor (Soll + Ist)"
               },
               "value": 1,
               "min": 1,
               "max": 100,
               "hint": {
-                "en": "Divide raw DP value to get °C. Set to 10 if device sends e.g. 350 for 35.0 °C (Arcelik/Axen).",
-                "de": "Rohwert durch diesen Wert dividieren um °C zu erhalten. 10 wenn Gerät z.B. 350 für 35,0 °C sendet."
+                "en": "Divide raw DP value to get °C — applies to both target and measured temperature. Set to 10 if device sends e.g. 350 for 35.0 °C (Arcelik/Axen).",
+                "de": "Rohwert durch diesen Wert dividieren um °C zu erhalten — gilt für Soll- und Ist-Temperatur. 10 wenn Gerät z.B. 350 für 35,0 °C sendet."
+              }
+            },
+            {
+              "id": "current_temp_divisor",
+              "type": "number",
+              "label": {
+                "en": "Measured Temperature Divisor (override)",
+                "de": "Ist-Temperatur-Divisor (Override)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 100,
+              "hint": {
+                "en": "Overrides the divisor for measured temperature only. Use when target temp is raw °C but measured temp needs dividing (e.g. Weau: target=30, measured=300 → set this to 10). 0 = use the main Temperature Divisor.",
+                "de": "Überschreibt den Divisor nur für die Ist-Temperatur. Verwenden wenn Soll-Temp korrekt ist, aber Ist-Temp dividiert werden muss (z.B. Weau: Soll=30, Ist=300 → hier 10 eintragen). 0 = Haupt-Divisor verwenden."
               }
             },
             {
@@ -11142,6 +11421,398 @@
         "large": "/drivers/curtain_motor/assets/images/large.png",
         "xlarge": "/drivers/curtain_motor/assets/images/xlarge.png"
       }
+    },
+    {
+      "id": "doorbell",
+      "name": {
+        "en": "Doorbell",
+        "de": "Türklingel"
+      },
+      "class": "doorbell",
+      "capabilities": [
+        "alarm_motion"
+      ],
+      "capabilitiesOptions": {
+        "alarm_motion": {
+          "title": {
+            "en": "Motion Detected",
+            "de": "Bewegung erkannt"
+          },
+          "insightsTitleTrue": {
+            "en": "Motion detected",
+            "de": "Bewegung erkannt"
+          },
+          "insightsTitleFalse": {
+            "en": "Motion cleared",
+            "de": "Keine Bewegung"
+          }
+        }
+      },
+      "settings": [
+        {
+          "type": "group",
+          "label": {
+            "en": "Connection",
+            "de": "Verbindung"
+          },
+          "children": [
+            {
+              "id": "ip",
+              "type": "text",
+              "label": {
+                "en": "IP Address",
+                "de": "IP-Adresse"
+              },
+              "value": "",
+              "hint": {
+                "en": "Local IP address of the doorbell.",
+                "de": "Lokale IP-Adresse der Türklingel."
+              }
+            },
+            {
+              "id": "device_id",
+              "type": "text",
+              "label": {
+                "en": "Device ID",
+                "de": "Geräte-ID"
+              },
+              "value": ""
+            },
+            {
+              "id": "local_key",
+              "type": "text",
+              "label": {
+                "en": "Local Key",
+                "de": "Lokaler Schlüssel"
+              },
+              "value": ""
+            },
+            {
+              "id": "version",
+              "type": "dropdown",
+              "label": {
+                "en": "Protocol Version",
+                "de": "Protokollversion"
+              },
+              "value": "3.3",
+              "values": [
+                {
+                  "id": "3.1",
+                  "label": {
+                    "en": "3.1 (legacy)",
+                    "de": "3.1 (veraltet)"
+                  }
+                },
+                {
+                  "id": "3.3",
+                  "label": {
+                    "en": "3.3",
+                    "de": "3.3"
+                  }
+                },
+                {
+                  "id": "3.4",
+                  "label": {
+                    "en": "3.4",
+                    "de": "3.4"
+                  }
+                },
+                {
+                  "id": "3.5",
+                  "label": {
+                    "en": "3.5",
+                    "de": "3.5"
+                  }
+                },
+                {
+                  "id": "3.2",
+                  "label": {
+                    "en": "3.2",
+                    "de": "3.2"
+                  }
+                },
+                {
+                  "id": "3.22",
+                  "label": {
+                    "en": "3.22 (newer chips)",
+                    "de": "3.22 (neuere Chips)"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "polling_interval",
+              "type": "number",
+              "label": {
+                "en": "Polling Interval (seconds)",
+                "de": "Abfrageintervall (Sekunden)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 3600,
+              "hint": {
+                "en": "Doorbells are event-driven — 0 = rely on push events only (recommended). Non-zero polls the device state periodically.",
+                "de": "Türklingeln sind ereignisgesteuert — 0 = nur Push-Events (empfohlen). Anderer Wert fragt das Gerät regelmäßig ab."
+              }
+            },
+            {
+              "id": "offline_grace_seconds",
+              "type": "number",
+              "label": {
+                "en": "Offline Grace Period (seconds)",
+                "de": "Offline-Karenzzeit (Sekunden)"
+              },
+              "value": 60,
+              "min": 0,
+              "max": 600,
+              "hint": {
+                "en": "How long the doorbell must be offline before the 'disconnected' flow trigger fires. Set to 0 to trigger immediately.",
+                "de": "Wie lange die Türklingel offline sein muss, bevor der 'Getrennt'-Auslöser feuert. 0 = sofort."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Event DPs",
+            "de": "Ereignis-DPs"
+          },
+          "children": [
+            {
+              "id": "dp_doorbell",
+              "type": "number",
+              "label": {
+                "en": "Doorbell Ring DP",
+                "de": "Klingel-Ereignis DP"
+              },
+              "value": 136,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "DP that changes when the doorbell button is pressed (string timestamp). Marmitek Buzz LO: DP 136.",
+                "de": "DP der sich beim Drücken des Klingelknopfs ändert (String-Zeitstempel). Marmitek Buzz LO: DP 136."
+              }
+            },
+            {
+              "id": "dp_motion_event",
+              "type": "number",
+              "label": {
+                "en": "Motion Event DP",
+                "de": "Bewegungsereignis DP"
+              },
+              "value": 115,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "DP that fires when motion is detected (raw image). Marmitek Buzz LO: DP 115. Set to 0 to disable.",
+                "de": "DP der bei Bewegungserkennung ausgelöst wird (Rohbild). Marmitek Buzz LO: DP 115. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_alarm_message",
+              "type": "number",
+              "label": {
+                "en": "Alarm Message DP",
+                "de": "Alarmmeldungs-DP"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "DP for alarm messages (base64 JSON, cmd: ipc_doorbell / ipc_motion). Marmitek Buzz LO: DP 185. Set to 0 to disable — uses dp_doorbell and dp_motion_event instead.",
+                "de": "DP für Alarmmeldungen (Base64-JSON, cmd: ipc_doorbell / ipc_motion). Marmitek Buzz LO: DP 185. 0 = deaktiviert (verwendet dp_doorbell und dp_motion_event)."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Control DPs",
+            "de": "Steuerungs-DPs"
+          },
+          "children": [
+            {
+              "id": "dp_motion_switch",
+              "type": "number",
+              "label": {
+                "en": "Motion Detection Switch DP",
+                "de": "Bewegungserkennung Ein/Aus DP"
+              },
+              "value": 134,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "DP to enable/disable motion detection (bool). Marmitek Buzz LO: DP 134. Set to 0 to disable.",
+                "de": "DP zum Aktivieren/Deaktivieren der Bewegungserkennung (bool). Marmitek Buzz LO: DP 134. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_motion_sensitivity",
+              "type": "number",
+              "label": {
+                "en": "Motion Sensitivity DP",
+                "de": "Bewegungsempfindlichkeit DP"
+              },
+              "value": 106,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "DP for motion sensitivity (enum 0=low, 1=medium, 2=high). Marmitek Buzz LO: DP 106. Set to 0 to disable.",
+                "de": "DP für Bewegungsempfindlichkeit (Enum 0=niedrig, 1=mittel, 2=hoch). Marmitek Buzz LO: DP 106. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_nightvision",
+              "type": "number",
+              "label": {
+                "en": "Night Vision DP",
+                "de": "Nachtsicht DP"
+              },
+              "value": 108,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "DP for night vision mode (enum 0=auto, 1=off, 2=color). Marmitek Buzz LO: DP 108. Set to 0 to disable.",
+                "de": "DP für Nachtsichtmodus (Enum 0=auto, 1=aus, 2=Farbe). Marmitek Buzz LO: DP 108. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_indicator",
+              "type": "number",
+              "label": {
+                "en": "Status LED DP",
+                "de": "Status-LED DP"
+              },
+              "value": 101,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "DP for the status indicator LED (bool). Marmitek Buzz LO: DP 101. Set to 0 to disable.",
+                "de": "DP für die Status-LED (bool). Marmitek Buzz LO: DP 101. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_recording",
+              "type": "number",
+              "label": {
+                "en": "SD Recording DP",
+                "de": "SD-Aufzeichnung DP"
+              },
+              "value": 150,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "DP for the SD card recording switch (bool). Marmitek Buzz LO: DP 150. Set to 0 to disable.",
+                "de": "DP für den SD-Karten-Aufzeichnungsschalter (bool). Marmitek Buzz LO: DP 150. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_chime_volume",
+              "type": "number",
+              "label": {
+                "en": "Chime Volume DP",
+                "de": "Klingelton-Lautstärke DP"
+              },
+              "value": 157,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "DP for chime ring volume (0–100). Marmitek Buzz LO: DP 157. Set to 0 to disable.",
+                "de": "DP für Klingelton-Lautstärke (0–100). Marmitek Buzz LO: DP 157. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_device_volume",
+              "type": "number",
+              "label": {
+                "en": "Device Volume DP",
+                "de": "Gerätelautstärke DP"
+              },
+              "value": 160,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "DP for the doorbell speaker volume (0–10). Marmitek Buzz LO: DP 160. Set to 0 to disable.",
+                "de": "DP für die Lautstärke des Türklingel-Lautsprechers (0–10). Marmitek Buzz LO: DP 160. 0 = deaktiviert."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Motion Settings",
+            "de": "Bewegungseinstellungen"
+          },
+          "children": [
+            {
+              "id": "motion_reset_seconds",
+              "type": "number",
+              "label": {
+                "en": "Motion Alarm Reset (seconds)",
+                "de": "Bewegungsalarm-Reset (Sekunden)"
+              },
+              "value": 30,
+              "min": 5,
+              "max": 300,
+              "hint": {
+                "en": "How long to keep the motion alarm active after detection before auto-clearing. Default: 30 s.",
+                "de": "Wie lange der Bewegungsalarm nach der Erkennung aktiv bleibt, bevor er automatisch zurückgesetzt wird. Standard: 30 s."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Diagnostics",
+            "de": "Diagnose"
+          },
+          "children": [
+            {
+              "id": "connection_status",
+              "type": "text",
+              "label": {
+                "en": "Connection status",
+                "de": "Verbindungsstatus"
+              },
+              "value": "—",
+              "hint": {
+                "en": "Updated automatically.",
+                "de": "Wird automatisch aktualisiert."
+              }
+            },
+            {
+              "id": "last_seen",
+              "type": "text",
+              "label": {
+                "en": "Last data received",
+                "de": "Zuletzt Daten empfangen"
+              },
+              "value": "—",
+              "hint": {
+                "en": "Updated automatically.",
+                "de": "Wird automatisch aktualisiert."
+              }
+            }
+          ]
+        }
+      ],
+      "pair": [
+        {
+          "id": "credentials"
+        },
+        {
+          "id": "list_devices"
+        }
+      ],
+      "images": {
+        "small": "/drivers/doorbell/assets/images/small.png",
+        "large": "/drivers/doorbell/assets/images/large.png",
+        "xlarge": "/drivers/doorbell/assets/images/xlarge.png"
+      }
     }
   ],
   "brandColor": "#ED5308",
@@ -11178,6 +11849,9 @@
       "garage door",
       "heat pump",
       "pool heater",
+      "doorbell",
+      "video doorbell",
+      "door bell",
       "sensor",
       "generic"
     ],
@@ -11211,6 +11885,9 @@
       "garagentor",
       "wärmepumpe",
       "poolheizung",
+      "türklingel",
+      "klingel",
+      "video türklingel",
       "sensor"
     ]
   },

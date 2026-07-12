@@ -186,6 +186,8 @@ class HeatPumpDevice extends BaseTuyaDevice {
       if (!this.hasCapability(entry.capability)) continue;
 
       const div = settings.temp_divisor || 1;
+      // current_temp_divisor overrides div for measured temp only (0 = use div)
+      const divCurrent = settings.current_temp_divisor || div;
 
       switch (entry.type) {
         // ── On / Off ─────────────────────────────────────────────────────────
@@ -202,7 +204,7 @@ class HeatPumpDevice extends BaseTuyaDevice {
 
         // ── Current temperature (read-only) ──────────────────────────────────
         case 'temp_ro': {
-          await this.setCapabilityValue('measure_temperature', Number(value) / div).catch(() => {});
+          await this.setCapabilityValue('measure_temperature', Number(value) / divCurrent).catch(() => {});
           break;
         }
 
