@@ -168,6 +168,7 @@
         <option value="sec-thermostat">Thermostat</option>
         <option value="sec-kettle">Smart Kettle</option>
         <option value="sec-wallswitch">Wall Switch</option>
+        <option value="sec-doorbell">Doorbell</option>
         <option value="sec-trouble">Troubleshooting</option>
       </select>
     </div>
@@ -404,14 +405,14 @@
         <tbody>
           <tr><td>dp_onoff</td>         <td>1</td>   <td>On / Off</td>                  <td>DP 101 on Waterco ECO-VS</td>                                                                              <td><span class="help-badge badge-rw">R/W</span></td></tr>
           <tr><td>dp_target_temp</td>   <td>2</td>   <td>Target Temperature</td>        <td>Phalén: DP 106 · Waterco: DP 104. Divided by <em>temp_divisor</em></td>                                   <td><span class="help-badge badge-rw">R/W</span></td></tr>
-          <tr><td>dp_current_temp</td>  <td>3</td>   <td>Current Temperature</td>       <td>Phalén: DP 102. 0 = disabled. Divided by <em>temp_divisor</em></td>                                       <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_current_temp</td>  <td>3</td>   <td>Current Temperature</td>       <td>Phalén: DP 102. 0 = disabled. Divided by <em>current_temp_divisor</em> (falls back to <em>temp_divisor</em>)</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
           <tr><td>dp_mode</td>          <td>0</td>   <td>Mode (picker)</td>             <td>0 = disabled. Set <em>mode_values</em> to match your device, e.g. <code>heat,cool,auto</code> or <code>warm,smart,cool</code> (Phalén)</td>  <td><span class="help-badge badge-rw">R/W</span></td></tr>
           <tr><td>dp_preset</td>        <td>0</td>   <td>Preset (picker)</td>           <td>0 = disabled. Bool DPs supported (e.g. Phalén DP 117: false=sleep, true=boost). Set <em>preset_values</em></td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
           <tr><td>dp_fault</td>         <td>0</td>   <td>Fault Alarm</td>               <td>0 = disabled. Bitfield or bool. DP 115/116 on Phalén, DP 107 on Waterco</td>                              <td><span class="help-badge badge-ro">Read</span></td></tr>
           <tr><td>dp_power_level</td>   <td>0</td>   <td>Power Level (%)</td>           <td>0 = disabled. Inverter power output %. DP 104 on Phalén, DP 109 on Waterco, DP 20 on Madimack</td>       <td><span class="help-badge badge-ro">Read</span></td></tr>
         </tbody>
       </table>
-      <div class="note"><strong>Temperature divisor:</strong> Devices that send temperatures ×10 (e.g. 350 for 35 °C) are auto-detected at pairing. If the displayed temperature is 10× too high, set <em>temp_divisor = 10</em> in device settings.</div>
+      <div class="note"><strong>Temperature divisor:</strong> Devices that send temperatures ×10 (e.g. 350 for 35 °C) are auto-detected at pairing. If the displayed temperature is 10× too high, set <em>temp_divisor = 10</em> in device settings. If only the <em>measured</em> temperature is wrong but the target temperature is correct (e.g. Weau), set <em>current_temp_divisor = 10</em> and leave <em>temp_divisor = 1</em>. Set <em>current_temp_divisor = 0</em> to fall back to <em>temp_divisor</em>.</div>
       <div class="note"><strong>Mode / preset values:</strong> Check the DP Debug tab while switching modes manually to find the exact strings your device sends, then update <em>mode_values</em> and/or <em>preset_values</em> in device settings. For bool preset DPs (e.g. Phalén DP 117) set <em>preset_values = sleep,boost</em> — the first value maps to <em>false</em>, the second to <em>true</em>.</div>
       <div class="note"><strong>Temperature range:</strong> Use <em>temp_min</em>, <em>temp_max</em> and <em>temp_step</em> to configure the target temperature slider (defaults: 12–45 °C, step 1).</div>
     </div>
@@ -489,6 +490,30 @@
       <div class="note"><strong>Flow triggers:</strong> Use the <strong>"A switch gang changed"</strong> trigger card (not Homey's built-in "Turned on/off") for reliable triggers on all switches including gang 2/3/4.</div>
     </div>
 
+    <div class="section" id="sec-doorbell">
+      <h2>Doorbell — DP reference</h2>
+      <p>Event-driven driver for Tuya video doorbells (Marmitek Buzz LO, Bcom Majic IPBox, Cleverio CD-200 and compatible). The device pushes events over LAN — no polling needed (<em>polling_interval = 0</em> by default).</p>
+      <table class="help-table">
+        <thead><tr><th>Setting</th><th>Default DP</th><th>Capability / Use</th><th>Notes</th><th>R/W</th></tr></thead>
+        <tbody>
+          <tr><td>dp_doorbell</td>           <td>136</td> <td>Ring trigger</td>            <td>boolean — <code>true</code> fires the "Doorbell rang" flow trigger</td>                                                    <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_motion_event</td>       <td>115</td> <td>alarm_motion</td>            <td>boolean — <code>true</code> starts the motion alarm; auto-clears after <em>motion_reset_seconds</em></td>                 <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_alarm_message</td>      <td>0</td>   <td>Ring / motion (base64)</td> <td>DP 185 on some devices. Decodes base64 JSON; fires ring or motion based on <code>cmd</code> field. 0 = disabled</td>     <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_motion_switch</td>      <td>134</td> <td>Motion detection on/off</td> <td>boolean. 0 = disabled. Used by "Enable / Disable motion" flow actions</td>                                               <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_nightvision</td>        <td>108</td> <td>Night vision mode</td>       <td>number: <code>0</code>=auto, <code>1</code>=off, <code>2</code>=color. 0 = disabled</td>                                 <td><span class="help-badge badge-rw">Write</span></td></tr>
+          <tr><td>dp_chime_volume</td>       <td>157</td> <td>Chime volume</td>            <td>integer 0–100. 0 = disabled</td>                                                                                           <td><span class="help-badge badge-rw">Write</span></td></tr>
+          <tr><td>dp_device_volume</td>      <td>160</td> <td>Speaker volume</td>          <td>integer 0–100. 0 = disabled</td>                                                                                           <td><span class="help-badge badge-rw">Write</span></td></tr>
+          <tr><td>dp_indicator</td>          <td>101</td> <td>Status LED</td>              <td>boolean. 0 = disabled</td>                                                                                                  <td><span class="help-badge badge-rw">Write</span></td></tr>
+          <tr><td>dp_recording</td>          <td>150</td> <td>Recording on/off</td>        <td>boolean. 0 = disabled</td>                                                                                                  <td><span class="help-badge badge-rw">Write</span></td></tr>
+          <tr><td>dp_motion_sensitivity</td> <td>106</td> <td>Motion sensitivity</td>      <td>number: <code>0</code>=low, <code>1</code>=medium, <code>2</code>=high. 0 = disabled</td>                                <td><span class="help-badge badge-rw">Write</span></td></tr>
+          <tr><td>motion_reset_seconds</td>  <td>—</td>   <td>Motion alarm auto-clear</td> <td>Seconds after which alarm_motion resets to false automatically (default 30)</td>                                          <td><span class="help-badge badge-rw">Setting</span></td></tr>
+        </tbody>
+      </table>
+      <div class="note"><strong>Seed protection:</strong> The ring and motion triggers are suppressed for the very first data packet after each (re)connect. This prevents false triggers when the device sends its initial state on connection.</div>
+      <div class="note"><strong>Base64 alarm message (DP 185):</strong> Some cameras encode ring and motion events as a base64 JSON string on DP 185 instead of separate boolean DPs. Set <em>dp_alarm_message = 185</em> and leave <em>dp_doorbell</em> and <em>dp_motion_event</em> at 0 if your device uses this format. Check the Raw Data tab to identify which format your device uses.</div>
+      <div class="note"><strong>Flow actions:</strong> "Enable/Disable motion", "Set night vision", "Set chime volume", and "Set motion sensitivity" all throw an error if the corresponding DP is set to 0. Set the DP number in device settings first.</div>
+    </div>
+
     <div class="section" id="sec-trouble">
       <h2>Troubleshooting</h2>
       <table class="help-table">
@@ -515,7 +540,11 @@
           <tr><td>AOSD light not controllable</td>                       <td>Set <em>dp_light = 105</em> in device settings (auto-detected at pairing, but verify in DP Debug tab).</td></tr>
           <tr><td>Heat pump mode picker does nothing after enabling dp_mode</td> <td>Restart the Tuya Local app — the capability listener is registered at startup. Future changes re-register automatically without a restart.</td></tr>
           <tr><td>Heat pump temperature is wrong or 10× off</td>        <td>Set <em>temp_divisor = 10</em> if the device sends temperatures ×10 (e.g. 350 for 35 °C). Auto-detected at pairing for most devices.</td></tr>
+          <tr><td>Heat pump target temp correct but measured temp is 10× too high</td> <td>Asymmetric DP scaling (e.g. Weau): set <em>current_temp_divisor = 10</em> in device settings and leave <em>temp_divisor = 1</em>. Set to 0 to fall back to temp_divisor.</td></tr>
           <tr><td>Heat pump spurious fault alarm on connect</td>         <td>Built-in 30 s grace period suppresses transient faults after reconnect. If alarms persist longer, check the Logs and DP Debug tabs.</td></tr>
+          <tr><td>Doorbell ring trigger doesn't fire</td>                <td>Check that <em>dp_doorbell</em> matches the DP your device uses (common: 136). Use the Raw Data tab while pressing the bell to identify the correct DP. Some devices use base64 on DP 185 — set <em>dp_alarm_message = 185</em> instead.</td></tr>
+          <tr><td>Doorbell motion trigger fires on connect</td>          <td>Seed protection suppresses the first packet after every (re)connect. If false triggers persist, check the Raw Data tab — the device may be sending motion=true as its idle state.</td></tr>
+          <tr><td>Doorbell flow action throws "DP is set to 0" error</td> <td>The action requires the corresponding DP to be configured. Set <em>dp_motion_switch</em>, <em>dp_nightvision</em>, <em>dp_chime_volume</em>, or <em>dp_motion_sensitivity</em> to the correct DP number in device settings.</td></tr>
           <tr><td>Curtain position slider is inverted (0% = open)</td>   <td>Enable <em>invert_position</em> in device settings to swap the direction.</td></tr>
           <tr><td>Curtain motor doesn't stop at the right position</td>  <td>The motor limit positions are set in the Tuya / Smart Life app (DP 16 border calibration), not in Homey. Run the limit calibration from the original app first.</td></tr>
           <tr><td>Curtain tile shows "moving" but motor has stopped</td> <td>The <em>work_state</em> DP may not be resetting to idle on your device. Set <em>dp_work_state = 0</em> to disable it — the tile state will then follow the <em>control</em> DP echo instead.</td></tr>
