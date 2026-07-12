@@ -1,6 +1,6 @@
 # Tuya Local — Homey App
 
-**Version 1.0.91** · Local WiFi/LAN control of Tuya smart devices — no cloud, no Zigbee hub required.
+**Version 1.0.93** · Local WiFi/LAN control of Tuya smart devices — no cloud, no Zigbee hub required.
 
 All communication happens over your local network via the Tuya LAN protocol. Sixteen built-in drivers cover the most common device types; a fully generic driver handles anything else.
 
@@ -24,6 +24,7 @@ All communication happens over your local network via the Tuya LAN protocol. Six
 | [Thermostat](#thermostat-1) | Floor heating, room thermostats, TRVs, zone valves | Thermostat |
 | [Smart Kettle](#smart-kettle-1) | Smart kettles with temperature control | Kettle |
 | [Wall Switch](#wall-switch-1) | 1/2/3/4-gang WiFi wall switches | Socket |
+| [Doorbell](#doorbell-1) | Tuya video doorbells (Marmitek Buzz LO, Bcom Majic IPBox, Cleverio CD-200 and compatible) | Doorbell |
 | [Generic Tuya Device](#generic-tuya-device-1) | Any Tuya device not covered above | Other |
 
 ---
@@ -450,7 +451,8 @@ Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polli
 
 | Setting | Description | Default |
 |---|---|---|
-| `temp_divisor` | Divide raw DP value to get °C — use `10` if device sends e.g. `350` for 35 °C | 1 (auto-detected) |
+| `temp_divisor` | Divide raw DP value to get °C for **both** target and measured temperature — use `10` if device sends e.g. `350` for 35 °C | 1 (auto-detected) |
+| `current_temp_divisor` | Override divisor for the **measured temperature only** — use `10` if the current temp DP is ×10 but the target temp DP is raw °C (e.g. Weau). Set to `0` to fall back to `temp_divisor`. | 0 (uses `temp_divisor`) |
 | `temp_min` | Minimum target temperature (°C) | 12 |
 | `temp_max` | Maximum target temperature (°C) | 45 |
 | `temp_step` | Step size for the temperature slider (°C) | 1 |
@@ -601,6 +603,55 @@ Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polli
 #### Switch Names
 
 Each switch tile can be renamed in **Settings → Switch Names**. Leave empty for the default name ("Power" / "Switch 2/3/4"). The app needs to be restarted for name changes to take effect.
+
+---
+
+### Doorbell
+
+Event-driven driver for Tuya video doorbells. The device pushes events over the LAN connection — no polling is used (default `polling_interval = 0`).
+
+Compatible devices include: **Marmitek Buzz LO**, **Bcom Majic IPBox**, **Cleverio CD-200**, and any Tuya doorbell that sends DP 136 (ring) or DP 115 (motion).
+
+#### Connection
+
+| Setting | Description | Default |
+|---|---|---|
+| `ip` | Device IP address | — |
+| `device_id` | Tuya Device ID | — |
+| `local_key` | Tuya Local Key (16 or 32 chars) | — |
+| `version` | Protocol version | Auto-detect |
+| `polling_interval` | Seconds between GET polls (`0` = push-only, recommended) | 0 |
+| `offline_grace_seconds` | Seconds without data before marking device offline | 60 |
+
+#### Event Data Points
+
+These DPs fire a trigger when the device pushes a new value.
+
+| Setting | Trigger | Type | Default DP | Notes |
+|---|---|---|---|---|
+| `dp_doorbell` | Doorbell rang | boolean | 136 | `true` = ring event |
+| `dp_motion_event` | Motion detected | boolean | 115 | `true` = motion event |
+| `dp_alarm_message` | Ring or motion via alarm message | string (base64) | 0 | DP 185 on some devices; decodes `ipc_doorbell` / `ipc_motion` JSON |
+
+> **Seed protection:** the ring and motion triggers are suppressed for the very first packet after each (re)connect to prevent false events. Subsequent packets fire normally.
+
+#### Control Data Points
+
+| Setting | Description | Type | Default DP | Optional |
+|---|---|---|---|---|
+| `dp_motion_switch` | Enable/disable motion detection | boolean | 134 | ✓ `0` = disabled |
+| `dp_nightvision` | Night vision mode | number (`0`=auto, `1`=off, `2`=color) | 108 | ✓ `0` = disabled |
+| `dp_chime_volume` | Chime volume (0–100) | number | 157 | ✓ `0` = disabled |
+| `dp_device_volume` | Device speaker volume (0–100) | number | 160 | ✓ `0` = disabled |
+| `dp_indicator` | Status LED on/off | boolean | 101 | ✓ `0` = disabled |
+| `dp_recording` | Cloud/SD recording on/off | boolean | 150 | ✓ `0` = disabled |
+
+#### Motion Settings
+
+| Setting | Description | Default |
+|---|---|---|
+| `dp_motion_sensitivity` | DP for motion sensitivity (`0`=low, `1`=medium, `2`=high) | 106 |
+| `motion_reset_seconds` | Seconds after which the motion alarm auto-clears | 30 |
 
 ---
 
@@ -1233,6 +1284,39 @@ All DPs are auto-detected at pairing time. For AOSD and BoboYun, `dp_door_action
 
 ---
 
+### Doorbell
+
+#### Triggers
+
+| Trigger | Flow tokens | Notes |
+|---|---|---|
+| Doorbell rang | — | Fires on every ring event (DP 136 or decoded `ipc_doorbell` in DP 185) |
+| Motion detected | — | Fires when motion starts; auto-clears after `motion_reset_seconds` |
+| Doorbell connected | — | Device established a LAN connection |
+| Doorbell disconnected | — | Connection lost after offline grace period |
+| Doorbell data point changed | `dp` (string), `value` (string) | Any raw DP change |
+
+#### Conditions
+
+| Condition |
+|---|
+| Motion is / is not active |
+| Doorbell is / is not connected |
+
+#### Actions
+
+| Action | Notes |
+|---|---|
+| Enable motion detection | Sets `dp_motion_switch` DP to `true`; throws error if DP is set to 0 |
+| Disable motion detection | Sets `dp_motion_switch` DP to `false`; throws error if DP is set to 0 |
+| Set night vision | Select mode: Auto / Off / Color (always on); requires `dp_nightvision` ≠ 0 |
+| Set chime volume | Enter volume 0–100 (step 10); requires `dp_chime_volume` ≠ 0 |
+| Set motion sensitivity | Select Low / Medium / High; requires `dp_motion_sensitivity` ≠ 0 |
+| Force doorbell reconnect | Drops and re-establishes the TCP connection |
+| Refresh doorbell values | Triggers an immediate GET request |
+
+---
+
 ## Push Notifications
 
 | Event | Driver | Condition |
@@ -1305,6 +1389,7 @@ Fetch device credentials and DP specifications from the Tuya IoT Platform (avail
 | Smart Plug power reading is 10× off | Wrong power scale | Change **Power Scale** setting to ×0.1 |
 | Energy (kWh) shows `—` or never updates | `dp_energy` set to 17 but device sends delta locally | Set `dp_energy = 0` — app will compute kWh from power readings |
 | AC / Heater temperature is 10× too high | Device sends ×10 scaled values | Set `temp_divisor = 10` in device settings |
+| Heat pump target temp correct but measured temp is 10× too high | Asymmetric DP scaling (e.g. Weau): target DP is raw °C but measured DP is ×10 | Set **Measured Temperature Divisor (override)** (`current_temp_divisor`) to `10`, leave the main `temp_divisor` at `1` |
 | Mode / fan picker shows wrong options | `mode_values` / `fan_speed_values` mismatch | Update values in device settings, then restart the Tuya Local app |
 | Picker still shows old options after saving | Homey caches capability options | Restart the Tuya Local app |
 | Light color mode not working | Wrong `color_mode_white_val` / `color_mode_color_val` | Check Raw Data panel for actual strings sent by device (e.g. `white`, `colour`, `color`) |
