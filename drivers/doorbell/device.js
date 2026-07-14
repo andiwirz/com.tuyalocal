@@ -25,7 +25,12 @@ class DoorbellDevice extends BaseTuyaDevice {
 
     await this._baseInit();
 
-    this._motionResetTimer = null;
+    this._motionResetTimer   = null;
+    this._doorbellResetTimer = null;
+
+    if (!this.hasCapability('alarm_generic')) {
+      await this.addCapability('alarm_generic');
+    }
 
     // ── Flow trigger cards ───────────────────────────────────────────────────
     this._triggerRang               = this.homey.flow.getDeviceTriggerCard('doorbell_rang');
@@ -39,6 +44,7 @@ class DoorbellDevice extends BaseTuyaDevice {
 
   async _onDeleted() {
     clearTimeout(this._motionResetTimer);
+    clearTimeout(this._doorbellResetTimer);
   }
 
   // ── DPS handling ─────────────────────────────────────────────────────────────
@@ -72,6 +78,7 @@ class DoorbellDevice extends BaseTuyaDevice {
       if (dp === dpDoorbell && value) {
         this.log('Doorbell rang (DP', dpDoorbell, ')');
         this._triggerRang.trigger(this).catch(() => {});
+        this._onDoorbellRang();
       }
 
       // Motion detection event (raw image DP)
@@ -100,6 +107,7 @@ class DoorbellDevice extends BaseTuyaDevice {
         // Only trigger from alarm_message if dp_doorbell is disabled (0) to avoid duplicates
         if (!dpDoorbell) {
           this._triggerRang.trigger(this).catch(() => {});
+          this._onDoorbellRang();
         }
       } else if (cmd === 'ipc_motion' || cmd === 'ipc_motion_detect') {
         if (!dpMotionEvent) {
@@ -109,6 +117,18 @@ class DoorbellDevice extends BaseTuyaDevice {
     } catch (_) {
       // Non-base64 or non-JSON payload — ignore
     }
+  }
+
+  _onDoorbellRang() {
+    if (this.hasCapability('alarm_generic')) {
+      this.setCapabilityValue('alarm_generic', true).catch(() => {});
+    }
+    clearTimeout(this._doorbellResetTimer);
+    this._doorbellResetTimer = setTimeout(() => {
+      if (this.hasCapability('alarm_generic')) {
+        this.setCapabilityValue('alarm_generic', false).catch(() => {});
+      }
+    }, 5000);
   }
 
   _onMotionDetected() {

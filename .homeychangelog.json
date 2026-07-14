@@ -1,4 +1,8 @@
 {
+  "1.0.94": {
+    "en": "Doorbell: added 'Doorbell Rang' capability — the device card now shows a visual indicator for 5 seconds when the doorbell button is pressed.",
+    "de": "Türklingel: Capability 'Türklingel geläutet' hinzugefügt — die Gerätekachel zeigt jetzt 5 Sekunden lang einen visuellen Indikator, wenn die Klingel gedrückt wird."
+  },
   "1.0.93": {
     "en": "Heat Pump: added 'Measured Temperature Divisor (override)' setting — fixes devices like Weau where the target temperature is raw °C but the measured temperature is ×10. Set 'Measured Temperature Divisor' to 10 and leave the main divisor at 1.",
     "de": "Wärmepumpe: Einstellung 'Ist-Temperatur-Divisor (Override)' hinzugefügt — behebt Geräte wie Weau, bei denen die Soll-Temperatur direktes °C ist, die Ist-Temperatur aber ×10. Ist-Divisor auf 10 setzen, Haupt-Divisor bei 1 lassen."

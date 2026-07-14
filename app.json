@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.93",
+  "version": "1.0.94",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -157,6 +157,10 @@
     "1.0.52": {
       "en": "Heater: added Work State DP support (e.g. DP 11 \"heating\"/\"no_heating\"). New Heating tile indicator and flow cards: \"Heater started heating\" and \"Heater stopped heating\" triggers, \"Heater is heating\" condition.",
       "de": "Heizgerät: Arbeitsstatus-DP hinzugefügt (z.B. DP 11 \"heating\"/\"no_heating\"). Neue Heizstatus-Kachel und Flow-Karten: Auslöser \"Heizt jetzt\" / \"Heizt nicht mehr\", Bedingung \"Heizt\"."
+    },
+    "1.0.94": {
+      "en": "Doorbell: added 'Doorbell Rang' capability — the device card now shows a visual indicator for 5 seconds when the doorbell button is pressed.",
+      "de": "Türklingel: Capability 'Türklingel geläutet' hinzugefügt — die Gerätekachel zeigt jetzt 5 Sekunden lang einen visuellen Indikator, wenn die Klingel gedrückt wird."
     },
     "1.0.93": {
       "en": "Heat Pump: added 'Measured Temperature Divisor (override)' setting — fixes devices like Weau where target temperature is raw °C but measured temperature is ×10.",
@@ -11430,9 +11434,24 @@
       },
       "class": "doorbell",
       "capabilities": [
+        "alarm_generic",
         "alarm_motion"
       ],
       "capabilitiesOptions": {
+        "alarm_generic": {
+          "title": {
+            "en": "Doorbell Rang",
+            "de": "Türklingel geläutet"
+          },
+          "insightsTitleTrue": {
+            "en": "Doorbell rang",
+            "de": "Türklingel geläutet"
+          },
+          "insightsTitleFalse": {
+            "en": "Doorbell idle",
+            "de": "Türklingel inaktiv"
+          }
+        },
         "alarm_motion": {
           "title": {
             "en": "Motion Detected",
