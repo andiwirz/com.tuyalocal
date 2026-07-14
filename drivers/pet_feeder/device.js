@@ -1,17 +1,17 @@
-'use strict';
+﻿'use strict';
 
 const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 
-// ── DP → capability mapping ──────────────────────────────────────────────────
-// DP 3  manual_feed     : integer 1–50 (portions to dispense; Petlibro up to 50, others up to 12)
+// â”€â”€ DP â†’ capability mapping â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// DP 3  manual_feed     : integer 1â€“50 (portions to dispense; Petlibro up to 50, others up to 12)
 // DP 4  feed_state      : enum standby|feeding|no_food|error_ir|feed_timeout|(done)
 // DP 14 fault           : bitfield  1=no_food  2=jammed  4=feed_timeout  8=battery_low
-// DP 15 feed_report     : integer 0–50 (actual servings dispensed — report only)
-// DP 16 surplus_grain   : integer 0–100 % (remaining food — report only)
+// DP 15 feed_report     : integer 0â€“50 (actual servings dispensed â€” report only)
+// DP 16 surplus_grain   : integer 0â€“100 % (remaining food â€” report only)
 // DP 102+/108+ food_level : non-standard enum full|low|empty (custom/legacy firmware, e.g. Petlibro DP 108)
 
 const DP_PROFILE = [
-  // feed_portions is an enum picker — device sends integers, we map to string IDs.
+  // feed_portions is an enum picker â€” device sends integers, we map to string IDs.
   // Guard against 0: some devices (e.g. Petlibro Granary) echo 0 for write-only DPs on connect.
   { settingKey: 'dp_portions',        capability: 'feed_portions',   transform: (v) => v > 0 ? String(v) : null, settable: true  },
   { settingKey: 'dp_motor_state',     capability: 'motor_state',     transform: (v) => String(v),       settable: false },
@@ -20,21 +20,21 @@ const DP_PROFILE = [
   { settingKey: 'dp_surplus_grain',   capability: 'surplus_grain',   transform: (v) => Number(v),       settable: false },
   { settingKey: 'dp_feed_report',     capability: 'feed_report',     transform: (v) => Number(v),       settable: false },
   { settingKey: 'dp_child_lock',      capability: 'child_lock',      transform: (v) => Boolean(v),      settable: true  },
-  // Battery percentage (0–100 %). Present on battery-powered feeders (e.g. Arlec 5L DP 11).
-  // Disabled by default — most feeders are AC-powered.
+  // Battery percentage (0â€“100 %). Present on battery-powered feeders (e.g. Arlec 5L DP 11).
+  // Disabled by default â€” most feeders are AC-powered.
   { settingKey: 'dp_battery',         capability: 'measure_battery', transform: (v) => Number(v),       settable: false },
-  // ── New optional DPs ────────────────────────────────────────────────────────
-  // DP 19  indicator_light : boolean — LED indicator on/off (settable)
-  // DP 103 voice_playback  : boolean — mealtime recording on/off (settable)
-  // DP 101 battery_status  : enum    — High/Medium/Low (report only)
-  // DP 18  voice_times     : number  — recording repetitions (settable via device setting)
-  // DP 106 manual_button_portions : number — portions per button press (settable via device setting)
+  // â”€â”€ New optional DPs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // DP 19  indicator_light : boolean â€” LED indicator on/off (settable)
+  // DP 103 voice_playback  : boolean â€” mealtime recording on/off (settable)
+  // DP 101 battery_status  : enum    â€” High/Medium/Low (report only)
+  // DP 18  voice_times     : number  â€” recording repetitions (settable via device setting)
+  // DP 106 manual_button_portions : number â€” portions per button press (settable via device setting)
   { settingKey: 'dp_indicator_light', capability: 'indicator_light', transform: (v) => Boolean(v),      settable: true  },
   { settingKey: 'dp_voice_playback',  capability: 'voice_playback',  transform: (v) => Boolean(v),      settable: true  },
   { settingKey: 'dp_battery_status',  capability: 'battery_status',  transform: (v) => String(v).toLowerCase(), settable: false },
 ];
 
-// DPs that map to device settings (not capabilities) — written to device on settings change,
+// DPs that map to device settings (not capabilities) â€” written to device on settings change,
 // and settings are updated when the device reports them.
 const SETTINGS_DPS = [
   { settingKey: 'dp_voice_times',          valueSetting: 'voice_times',           transform: (v) => Number(v) },
@@ -60,14 +60,14 @@ class PetFeederDevice extends BaseTuyaDevice {
 
     await this._baseInit();
 
-    // ── Migrate feed_portions: number/slider → enum/picker ───────────────────
+    // â”€â”€ Migrate feed_portions: number/slider â†’ enum/picker â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // If the old capability options contain a numeric 'min' key it was the legacy
-    // slider type — remove and re-add so Homey registers it as an enum.
+    // slider type â€” remove and re-add so Homey registers it as an enum.
     if (this.hasCapability('feed_portions')) {
       let opts = {};
       try { opts = this.getCapabilityOptions('feed_portions') ?? {}; } catch (_) {}
       if (opts.min !== undefined) {
-        this.log('Migrating feed_portions: slider → picker');
+        this.log('Migrating feed_portions: slider â†’ picker');
         await this.removeCapability('feed_portions').catch(() => {});
         await this.addCapability('feed_portions').catch(() => {});
       }
@@ -76,14 +76,14 @@ class PetFeederDevice extends BaseTuyaDevice {
     await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
     await this._syncPortionsRange();
 
-    // ── Flow trigger cards ───────────────────────────────────────────────────
+    // â”€â”€ Flow trigger cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     this._triggerFoodLevelChanged    = this.homey.flow.getDeviceTriggerCard('feeder_food_level_changed');
     this._triggerFeedingDone         = this.homey.flow.getDeviceTriggerCard('feeder_feeding_done');
     this._triggerDeviceConnected     = this.homey.flow.getDeviceTriggerCard('feeder_device_connected');
     this._triggerDeviceDisconnected  = this.homey.flow.getDeviceTriggerCard('feeder_device_disconnected');
     this._triggerDpChanged           = this.homey.flow.getDeviceTriggerCard('feeder_dp_changed');
 
-    // ── Capability listeners ─────────────────────────────────────────────────
+    // â”€â”€ Capability listeners â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     for (const entry of DP_PROFILE) {
       if (!entry.settable) continue;
       if (!this.hasCapability(entry.capability)) continue;
@@ -92,7 +92,7 @@ class PetFeederDevice extends BaseTuyaDevice {
         // Non-persistent: after a manual feed command is sent, reset the picker
         // back to portions_min so the UI is ready for the next feed.
         // The reset is delayed 3 s to allow the device to process the command first.
-        // The capability is an enum — values are strings; send as Number to the device.
+        // The capability is an enum â€” values are strings; send as Number to the device.
         this._portionsResetTimer = null;
         this.registerCapabilityListener('feed_portions', async (value) => {
           await this._set(this.getSetting('dp_portions'), Number(value));
@@ -116,7 +116,7 @@ class PetFeederDevice extends BaseTuyaDevice {
     clearTimeout(this._portionsResetTimer);
   }
 
-  // ── DPS handling ─────────────────────────────────────────────────────────────
+  // â”€â”€ DPS handling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async _handleDps(dps) {
     const settings = this.getSettings();
@@ -133,8 +133,8 @@ class PetFeederDevice extends BaseTuyaDevice {
         .trigger(this, { dp: dpStr, value: String(value) })
         .catch(() => {});
 
-      // ── Settings-backed DPs (voice_times, manual_button_portions) ──────────
-      // These DPs map to device settings, not capabilities — handle before DP_PROFILE lookup.
+      // â”€â”€ Settings-backed DPs (voice_times, manual_button_portions) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // These DPs map to device settings, not capabilities â€” handle before DP_PROFILE lookup.
       const settingsDp = SETTINGS_DPS.find((s) => {
         const dpNum = settings[s.settingKey];
         return dpNum > 0 && dp === dpNum;
@@ -156,21 +156,21 @@ class PetFeederDevice extends BaseTuyaDevice {
 
       const converted = entry.transform(value);
 
-      // ── Fault (DP 14: bitfield 1=no_food 2=jammed 4=feed_timeout 8=battery_low) ──
+      // â”€â”€ Fault (DP 14: bitfield 1=no_food 2=jammed 4=feed_timeout 8=battery_low) â”€â”€
       if (entry.capability === 'alarm_generic') {
         await this.setCapabilityValue('alarm_generic', converted).catch(() => {});
         continue;
       }
 
-      // ── Motor / feed state (DP 4) ────────────────────────────────────────
+      // â”€â”€ Motor / feed state (DP 4) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       if (entry.capability === 'motor_state') {
         const prev = this.getCapabilityValue('motor_state');
         await this.setCapabilityValue('motor_state', converted).catch(() => {});
 
         // Feeding done:
-        //   • "done"    — Tuya spec terminal state (some firmwares)
-        //   • standby ← feeding — iPettie / Petlibro W5 (no "done" state on this device)
-        //   Ignore standby ← no_food / error_ir / feed_timeout (error paths, not successful feed)
+        //   â€¢ "done"    â€” Tuya spec terminal state (some firmwares)
+        //   â€¢ standby â† feeding â€” iPettie / Petlibro W5 (no "done" state on this device)
+        //   Ignore standby â† no_food / error_ir / feed_timeout (error paths, not successful feed)
         const feedingComplete =
           converted === 'done' ||
           (converted === 'standby' && prev === 'feeding');
@@ -179,7 +179,7 @@ class PetFeederDevice extends BaseTuyaDevice {
         }
 
         // "no_food" means the motor tried to run but the hopper was empty.
-        // Treat it the same as a food-empty condition and notify the user —
+        // Treat it the same as a food-empty condition and notify the user â€”
         // even if no separate food_status DP is configured.
         if (converted === 'no_food') {
           this.homey.notifications.createNotification({
@@ -193,7 +193,7 @@ class PetFeederDevice extends BaseTuyaDevice {
         continue;
       }
 
-      // ── Custom food-level DP (non-standard, e.g. DP 101/102) ────────────
+      // â”€â”€ Custom food-level DP (non-standard, e.g. DP 101/102) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       if (entry.capability === 'food_status') {
         const prev = this.getCapabilityValue('food_status');
         await this.setCapabilityValue('food_status', converted).catch(() => {});
@@ -224,9 +224,9 @@ class PetFeederDevice extends BaseTuyaDevice {
     }
   }
 
-  // ── Homey lifecycle ──────────────────────────────────────────────────────────
+  // â”€â”€ Homey lifecycle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  // ── Portions picker range ────────────────────────────────────────────────────
+  // â”€â”€ Portions picker range â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // Builds enum values from portions_min..portions_max so the picker only shows
   // the entries that the device actually supports.
 
@@ -240,7 +240,7 @@ class PetFeederDevice extends BaseTuyaDevice {
     }
     try {
       await this.setCapabilityOptions('feed_portions', { values });
-      this.log(`feed_portions picker → ${min}–${max} (${values.length} options)`);
+      this.log(`feed_portions picker â†’ ${min}â€“${max} (${values.length} options)`);
     } catch (err) {
       this.log('setCapabilityOptions(feed_portions) failed:', err.message);
     }
@@ -255,6 +255,7 @@ class PetFeederDevice extends BaseTuyaDevice {
     if (changedKeys.includes('polling_interval')) {
       this._startPolling();
     }
+    if (changedKeys.includes('reconnect_interval')) this._startAutoReconnect();
     if (changedKeys.some((k) => OPTIONAL_CAPABILITIES.map((o) => o.setting).includes(k))) {
       await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
     }
@@ -262,7 +263,7 @@ class PetFeederDevice extends BaseTuyaDevice {
       await this._syncPortionsRange();
     }
 
-    // ── Write settings-backed DPs to device when value changes ───────────────
+    // â”€â”€ Write settings-backed DPs to device when value changes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     for (const entry of SETTINGS_DPS) {
       if (!changedKeys.includes(entry.valueSetting)) continue;
       const dp = newSettings[entry.settingKey] ?? this.getSetting(entry.settingKey);

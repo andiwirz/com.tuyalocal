@@ -1,4 +1,8 @@
 {
+  "1.0.95": {
+    "en": "All drivers: added 'Auto-Reconnect Interval' setting — reconnects the device every N minutes automatically. Replaces the need for a manual Force Reconnect flow. Set to 0 to disable (default).",
+    "de": "Alle Treiber: Einstellung 'Auto-Reconnect-Intervall' hinzugefügt — verbindet das Gerät alle N Minuten automatisch neu. Ersetzt den manuellen Force-Reconnect-Flow. 0 = deaktiviert (Standard)."
+  },
   "1.0.94": {
     "en": "Doorbell: added 'Doorbell Rang' capability — the device card now shows a visual indicator for 5 seconds when the doorbell button is pressed.",
     "de": "Türklingel: Capability 'Türklingel geläutet' hinzugefügt — die Gerätekachel zeigt jetzt 5 Sekunden lang einen visuellen Indikator, wenn die Klingel gedrückt wird."

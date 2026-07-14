@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.94",
+  "version": "1.0.95",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -157,6 +157,10 @@
     "1.0.52": {
       "en": "Heater: added Work State DP support (e.g. DP 11 \"heating\"/\"no_heating\"). New Heating tile indicator and flow cards: \"Heater started heating\" and \"Heater stopped heating\" triggers, \"Heater is heating\" condition.",
       "de": "Heizgerät: Arbeitsstatus-DP hinzugefügt (z.B. DP 11 \"heating\"/\"no_heating\"). Neue Heizstatus-Kachel und Flow-Karten: Auslöser \"Heizt jetzt\" / \"Heizt nicht mehr\", Bedingung \"Heizt\"."
+    },
+    "1.0.95": {
+      "en": "All drivers: added 'Auto-Reconnect Interval' setting — reconnects the device every N minutes automatically. Replaces the need for a manual Force Reconnect flow. Set to 0 to disable (default).",
+      "de": "Alle Treiber: Einstellung 'Auto-Reconnect-Intervall' hinzugefügt — verbindet das Gerät alle N Minuten automatisch neu. Ersetzt den manuellen Force-Reconnect-Flow. 0 = deaktiviert (Standard)."
     },
     "1.0.94": {
       "en": "Doorbell: added 'Doorbell Rang' capability — the device card now shows a visual indicator for 5 seconds when the doorbell button is pressed.",
@@ -6388,6 +6392,20 @@
               "max": 3600
             },
             {
+              "id": "reconnect_interval",
+              "type": "number",
+              "label": { "en": "Auto-Reconnect Interval (minutes)", "de": "Auto-Reconnect-Intervall (Minuten)" },
+              "value": 0,
+              "min": 0,
+              "max": 1440,
+              "step": 1,
+              "hint": {
+                "en": "Reconnect to the device every N minutes. Useful for devices that stop pushing updates after a while. 0 = disabled.",
+                "de": "Verbindung alle N Minuten neu aufbauen. N�tzlich f�r Ger�te, die nach einer Weile keine Updates mehr senden. 0 = deaktiviert."
+              }
+            },
+            
+            {
               "id": "offline_grace_seconds",
               "type": "number",
               "label": {
@@ -6703,6 +6721,7 @@
               ]
             },
             { "id": "polling_interval", "type": "number", "label": { "en": "Polling Interval (s)", "de": "Abfrageintervall (s)" }, "value": 30, "min": 0, "max": 3600, "step": 1 },
+            { "id": "reconnect_interval", "type": "number", "label": { "en": "Auto-Reconnect Interval (minutes)", "de": "Auto-Reconnect-Intervall (Minuten)" }, "value": 0, "min": 0, "max": 1440, "step": 1, "hint": { "en": "Reconnect every N minutes. 0 = disabled.", "de": "Alle N Minuten neu verbinden. 0 = deaktiviert." } },
             { "id": "offline_grace_seconds", "type": "number", "label": { "en": "Offline Grace Period (s)", "de": "Offline-Toleranz (s)" }, "value": 60, "min": 0, "max": 3600, "step": 1 }
           ]
         },
@@ -6792,6 +6811,7 @@
               ]
             },
             { "id": "polling_interval", "type": "number", "label": { "en": "Polling Interval (s)", "de": "Abfrageintervall (s)" }, "value": 10, "min": 0, "max": 3600, "step": 1 },
+            { "id": "reconnect_interval", "type": "number", "label": { "en": "Auto-Reconnect Interval (minutes)", "de": "Auto-Reconnect-Intervall (Minuten)" }, "value": 0, "min": 0, "max": 1440, "step": 1, "hint": { "en": "Reconnect every N minutes. 0 = disabled.", "de": "Alle N Minuten neu verbinden. 0 = deaktiviert." } },
             { "id": "offline_grace_seconds", "type": "number", "label": { "en": "Offline Grace Period (s)", "de": "Offline-Toleranz (s)" }, "value": 60, "min": 0, "max": 3600, "step": 1 }
           ]
         },
@@ -6913,6 +6933,20 @@
               "max": 3600,
               "step": 1
             },
+            {
+              "id": "reconnect_interval",
+              "type": "number",
+              "label": { "en": "Auto-Reconnect Interval (minutes)", "de": "Auto-Reconnect-Intervall (Minuten)" },
+              "value": 0,
+              "min": 0,
+              "max": 1440,
+              "step": 1,
+              "hint": {
+                "en": "Reconnect to the device every N minutes. Useful for devices that stop pushing updates after a while. 0 = disabled.",
+                "de": "Verbindung alle N Minuten neu aufbauen. N�tzlich f�r Ger�te, die nach einer Weile keine Updates mehr senden. 0 = deaktiviert."
+              }
+            },
+            
             {
               "id": "offline_grace_seconds",
               "type": "number",
@@ -7216,6 +7250,20 @@
               "min": 0,
               "max": 3600
             },
+            {
+              "id": "reconnect_interval",
+              "type": "number",
+              "label": { "en": "Auto-Reconnect Interval (minutes)", "de": "Auto-Reconnect-Intervall (Minuten)" },
+              "value": 0,
+              "min": 0,
+              "max": 1440,
+              "step": 1,
+              "hint": {
+                "en": "Reconnect to the device every N minutes. Useful for devices that stop pushing updates after a while. 0 = disabled.",
+                "de": "Verbindung alle N Minuten neu aufbauen. N�tzlich f�r Ger�te, die nach einer Weile keine Updates mehr senden. 0 = deaktiviert."
+              }
+            },
+            
             {
               "id": "offline_grace_seconds",
               "type": "number",
@@ -7863,6 +7911,20 @@
               "min": 0,
               "max": 3600
             },
+            {
+              "id": "reconnect_interval",
+              "type": "number",
+              "label": { "en": "Auto-Reconnect Interval (minutes)", "de": "Auto-Reconnect-Intervall (Minuten)" },
+              "value": 0,
+              "min": 0,
+              "max": 1440,
+              "step": 1,
+              "hint": {
+                "en": "Reconnect to the device every N minutes. Useful for devices that stop pushing updates after a while. 0 = disabled.",
+                "de": "Verbindung alle N Minuten neu aufbauen. N�tzlich f�r Ger�te, die nach einer Weile keine Updates mehr senden. 0 = deaktiviert."
+              }
+            },
+            
             {
               "id": "offline_grace_seconds",
               "type": "number",
@@ -9173,6 +9235,20 @@
               }
             },
             {
+              "id": "reconnect_interval",
+              "type": "number",
+              "label": { "en": "Auto-Reconnect Interval (minutes)", "de": "Auto-Reconnect-Intervall (Minuten)" },
+              "value": 0,
+              "min": 0,
+              "max": 1440,
+              "step": 1,
+              "hint": {
+                "en": "Reconnect to the device every N minutes. Useful for devices that stop pushing updates after a while. 0 = disabled.",
+                "de": "Verbindung alle N Minuten neu aufbauen. N�tzlich f�r Ger�te, die nach einer Weile keine Updates mehr senden. 0 = deaktiviert."
+              }
+            },
+            
+            {
               "id": "offline_grace_seconds",
               "type": "number",
               "label": {
@@ -9935,6 +10011,20 @@
               }
             },
             {
+              "id": "reconnect_interval",
+              "type": "number",
+              "label": { "en": "Auto-Reconnect Interval (minutes)", "de": "Auto-Reconnect-Intervall (Minuten)" },
+              "value": 0,
+              "min": 0,
+              "max": 1440,
+              "step": 1,
+              "hint": {
+                "en": "Reconnect to the device every N minutes. Useful for devices that stop pushing updates after a while. 0 = disabled.",
+                "de": "Verbindung alle N Minuten neu aufbauen. N�tzlich f�r Ger�te, die nach einer Weile keine Updates mehr senden. 0 = deaktiviert."
+              }
+            },
+            
+            {
               "id": "offline_grace_seconds",
               "type": "number",
               "label": {
@@ -10408,6 +10498,20 @@
               }
             },
             {
+              "id": "reconnect_interval",
+              "type": "number",
+              "label": { "en": "Auto-Reconnect Interval (minutes)", "de": "Auto-Reconnect-Intervall (Minuten)" },
+              "value": 0,
+              "min": 0,
+              "max": 1440,
+              "step": 1,
+              "hint": {
+                "en": "Reconnect to the device every N minutes. Useful for devices that stop pushing updates after a while. 0 = disabled.",
+                "de": "Verbindung alle N Minuten neu aufbauen. N�tzlich f�r Ger�te, die nach einer Weile keine Updates mehr senden. 0 = deaktiviert."
+              }
+            },
+            
+            {
               "id": "offline_grace_seconds",
               "type": "number",
               "label": {
@@ -10777,6 +10881,20 @@
                 "de": "0 = kein Polling."
               }
             },
+            {
+              "id": "reconnect_interval",
+              "type": "number",
+              "label": { "en": "Auto-Reconnect Interval (minutes)", "de": "Auto-Reconnect-Intervall (Minuten)" },
+              "value": 0,
+              "min": 0,
+              "max": 1440,
+              "step": 1,
+              "hint": {
+                "en": "Reconnect to the device every N minutes. Useful for devices that stop pushing updates after a while. 0 = disabled.",
+                "de": "Verbindung alle N Minuten neu aufbauen. N�tzlich f�r Ger�te, die nach einer Weile keine Updates mehr senden. 0 = deaktiviert."
+              }
+            },
+            
             {
               "id": "offline_grace_seconds",
               "type": "number",
@@ -11222,6 +11340,20 @@
               }
             },
             {
+              "id": "reconnect_interval",
+              "type": "number",
+              "label": { "en": "Auto-Reconnect Interval (minutes)", "de": "Auto-Reconnect-Intervall (Minuten)" },
+              "value": 0,
+              "min": 0,
+              "max": 1440,
+              "step": 1,
+              "hint": {
+                "en": "Reconnect to the device every N minutes. Useful for devices that stop pushing updates after a while. 0 = disabled.",
+                "de": "Verbindung alle N Minuten neu aufbauen. N�tzlich f�r Ger�te, die nach einer Weile keine Updates mehr senden. 0 = deaktiviert."
+              }
+            },
+            
+            {
               "id": "offline_grace_seconds",
               "type": "number",
               "label": {
@@ -11574,6 +11706,20 @@
                 "de": "Türklingeln sind ereignisgesteuert — 0 = nur Push-Events (empfohlen). Anderer Wert fragt das Gerät regelmäßig ab."
               }
             },
+            {
+              "id": "reconnect_interval",
+              "type": "number",
+              "label": { "en": "Auto-Reconnect Interval (minutes)", "de": "Auto-Reconnect-Intervall (Minuten)" },
+              "value": 0,
+              "min": 0,
+              "max": 1440,
+              "step": 1,
+              "hint": {
+                "en": "Reconnect to the device every N minutes. Useful for devices that stop pushing updates after a while. 0 = disabled.",
+                "de": "Verbindung alle N Minuten neu aufbauen. N�tzlich f�r Ger�te, die nach einer Weile keine Updates mehr senden. 0 = deaktiviert."
+              }
+            },
+            
             {
               "id": "offline_grace_seconds",
               "type": "number",

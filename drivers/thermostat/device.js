@@ -1,20 +1,20 @@
-'use strict';
+﻿'use strict';
 
 const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 const { capitalize }  = require('../../lib/utils');
 
-// ── Tuya thermostat DP patterns ──────────────────────────────────────────────
+// â”€â”€ Tuya thermostat DP patterns â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //
-// Pattern A — BHT-002 / Moes / Beok floor heating (temps ×10):
+// Pattern A â€” BHT-002 / Moes / Beok floor heating (temps Ã—10):
 //   DP 1   bool   on/off
 //   DP 2   str    mode (manual / auto / program / holiday)
-//   DP 16  int    target_temperature (×10)
-//   DP 24  int    current_temperature (×10)
-//   DP 27  int    temp_correction (-9…9)
+//   DP 16  int    target_temperature (Ã—10)
+//   DP 24  int    current_temperature (Ã—10)
+//   DP 27  int    temp_correction (-9â€¦9)
 //   DP 28  bool   child_lock
 //   DP 45  bitmask fault
 //
-// Pattern B — Simple thermostat / zone valve:
+// Pattern B â€” Simple thermostat / zone valve:
 //   DP 1   bool   on/off
 //   DP 2   int    target_temperature
 //   DP 3   int    current_temperature
@@ -22,7 +22,7 @@ const { capitalize }  = require('../../lib/utils');
 //   DP 5   int    eco_temperature
 //   DP 6   bool   child_lock
 //
-// Pattern C — TRV / radiator valve:
+// Pattern C â€” TRV / radiator valve:
 //   DP 1   bool   on/off
 //   DP 2   int    target_temperature
 //   DP 3   int    current_temperature
@@ -58,13 +58,13 @@ class ThermostatDevice extends BaseTuyaDevice {
     await this._syncTempRange();
     await this._syncModeOptions();
 
-    // ── Flow trigger cards ───────────────────────────────────────────────────
+    // â”€â”€ Flow trigger cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     this._triggerDeviceConnected    = this.homey.flow.getDeviceTriggerCard('thermostat_device_connected');
     this._triggerDeviceDisconnected = this.homey.flow.getDeviceTriggerCard('thermostat_device_disconnected');
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('thermostat_dp_changed');
     this._triggerModeChanged        = this.homey.flow.getDeviceTriggerCard('thermostat_mode_changed');
 
-    // ── Capability listeners ─────────────────────────────────────────────────
+    // â”€â”€ Capability listeners â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     this.registerCapabilityListener('onoff', async (value) => {
       const dp = this.getSetting('dp_onoff');
       if (dp > 0) await this._set(dp, value);
@@ -93,7 +93,7 @@ class ThermostatDevice extends BaseTuyaDevice {
     await this._connect();
   }
 
-  // ── DPS handling ─────────────────────────────────────────────────────────────
+  // â”€â”€ DPS handling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async _handleDps(dps) {
     const settings = this.getSettings();
@@ -171,7 +171,7 @@ class ThermostatDevice extends BaseTuyaDevice {
     }
   }
 
-  // ── Settings ─────────────────────────────────────────────────────────────────
+  // â”€â”€ Settings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async onSettings({ changedKeys }) {
     const connectionKeys = ['ip', 'device_id', 'local_key', 'version'];
@@ -182,6 +182,7 @@ class ThermostatDevice extends BaseTuyaDevice {
     if (changedKeys.includes('polling_interval')) {
       this._startPolling();
     }
+    if (changedKeys.includes('reconnect_interval')) this._startAutoReconnect();
     if (changedKeys.some((k) => OPTIONAL_CAPABILITIES.map((o) => o.setting).includes(k))) {
       await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
     }
@@ -193,7 +194,7 @@ class ThermostatDevice extends BaseTuyaDevice {
     }
   }
 
-  // ── Sync helpers ─────────────────────────────────────────────────────────────
+  // â”€â”€ Sync helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async _syncTempRange() {
     const min  = this.getSetting('temp_min')  ?? 5;

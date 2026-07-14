@@ -1,12 +1,12 @@
-'use strict';
+﻿'use strict';
 
 const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 
 const DEBOUNCE_MS = 200;
 
-// ── HSV hex helpers ──────────────────────────────────────────────────────────
+// â”€â”€ HSV hex helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Tuya color format: 12-char hex string HHHHSSSSBBBB
-//   H: 0–360 (2 bytes), S: 0–1000 (2 bytes), V/B: 0–1000 (2 bytes)
+//   H: 0â€“360 (2 bytes), S: 0â€“1000 (2 bytes), V/B: 0â€“1000 (2 bytes)
 
 function parseColorHex(hex) {
   if (typeof hex !== 'string' || hex.length < 12) return null;
@@ -24,7 +24,7 @@ function buildColorHex(h, s, v) {
          clamp(v, 0, 1000).toString(16).padStart(4, '0');
 }
 
-// Scale a raw Tuya brightness value (0–max) → Homey dim (0–1)
+// Scale a raw Tuya brightness value (0â€“max) â†’ Homey dim (0â€“1)
 function rawToDim(raw, max) {
   return Math.max(0, Math.min(1, raw / max));
 }
@@ -38,7 +38,7 @@ class LightDevice extends BaseTuyaDevice {
 
     await this._baseInit();
 
-    // Pending color components — accumulate partial updates then flush.
+    // Pending color components â€” accumulate partial updates then flush.
     this._pendingH = null;
     this._pendingS = null;
     this._pendingV = null;
@@ -46,12 +46,12 @@ class LightDevice extends BaseTuyaDevice {
     await this._migrateCapabilities([]);
     await this._syncLightCapabilities();
 
-    // ── Flow trigger cards ───────────────────────────────────────────────────
+    // â”€â”€ Flow trigger cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     this._triggerDeviceConnected    = this.homey.flow.getDeviceTriggerCard('light_device_connected');
     this._triggerDeviceDisconnected = this.homey.flow.getDeviceTriggerCard('light_device_disconnected');
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('light_dp_changed');
 
-    // ── Capability listeners ─────────────────────────────────────────────────
+    // â”€â”€ Capability listeners â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     this.registerCapabilityListener('onoff', async (value) => {
       const dp = this.getSetting('dp_onoff');
       if (dp > 0) await this._set(dp, value);
@@ -129,7 +129,7 @@ class LightDevice extends BaseTuyaDevice {
     await this._connect();
   }
 
-  // ── Send color command ───────────────────────────────────────────────────────
+  // â”€â”€ Send color command â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // Merges current capability values with any overrides and sends the HSV hex.
 
   async _sendColor({ h: hNew, s: sNew, v: vNew } = {}) {
@@ -147,7 +147,7 @@ class LightDevice extends BaseTuyaDevice {
     await this._set(dp, buildColorHex(h, s, v));
   }
 
-  // ── DPS handling ─────────────────────────────────────────────────────────────
+  // â”€â”€ DPS handling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async _handleDps(dps) {
     const settings = this.getSettings();
@@ -164,13 +164,13 @@ class LightDevice extends BaseTuyaDevice {
         .trigger(this, { dp: dpStr, value: String(value) })
         .catch(() => {});
 
-      // ── On/Off ────────────────────────────────────────────────────────────
+      // â”€â”€ On/Off â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       if (settings.dp_onoff > 0 && dp === settings.dp_onoff) {
         await this.setCapabilityValue('onoff', Boolean(value)).catch(() => {});
         continue;
       }
 
-      // ── Color mode ─────────────────────────────────────────────────────────
+      // â”€â”€ Color mode â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       if (settings.dp_color_mode > 0 && dp === settings.dp_color_mode) {
         if (this.hasCapability('light_mode')) {
           const whiteVal = settings.color_mode_white_val || 'white';
@@ -180,14 +180,14 @@ class LightDevice extends BaseTuyaDevice {
         continue;
       }
 
-      // ── Brightness ─────────────────────────────────────────────────────────
+      // â”€â”€ Brightness â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       if (settings.dp_brightness > 0 && dp === settings.dp_brightness) {
         const max = settings.brightness_max ?? 1000;
         await this.setCapabilityValue('dim', rawToDim(Number(value), max)).catch(() => {});
         continue;
       }
 
-      // ── Color temperature ──────────────────────────────────────────────────
+      // â”€â”€ Color temperature â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       if (settings.dp_color_temp > 0 && dp === settings.dp_color_temp) {
         if (this.hasCapability('light_temperature')) {
           const max = settings.color_temp_max ?? 1000;
@@ -199,7 +199,7 @@ class LightDevice extends BaseTuyaDevice {
         continue;
       }
 
-      // ── HSV color hex ──────────────────────────────────────────────────────
+      // â”€â”€ HSV color hex â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       if (settings.dp_color > 0 && dp === settings.dp_color) {
         const parsed = parseColorHex(String(value));
         if (parsed) {
@@ -226,7 +226,7 @@ class LightDevice extends BaseTuyaDevice {
     }
   }
 
-  // ── Sync optional light capabilities based on DP settings ───────────────────
+  // â”€â”€ Sync optional light capabilities based on DP settings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async _syncLightCapabilities() {
     const OPTIONAL_CAPS = [
@@ -253,7 +253,7 @@ class LightDevice extends BaseTuyaDevice {
     clearTimeout(this._satTimer);
   }
 
-  // ── Homey lifecycle ──────────────────────────────────────────────────────────
+  // â”€â”€ Homey lifecycle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async onSettings({ changedKeys }) {
     const connectionKeys = ['ip', 'device_id', 'local_key', 'version'];
@@ -264,6 +264,7 @@ class LightDevice extends BaseTuyaDevice {
     if (changedKeys.includes('polling_interval')) {
       this._startPolling();
     }
+    if (changedKeys.includes('reconnect_interval')) this._startAutoReconnect();
     const lightSettings = ['dp_color_temp', 'dp_color_mode', 'dp_color'];
     if (changedKeys.some((k) => lightSettings.includes(k))) {
       await this._syncLightCapabilities();

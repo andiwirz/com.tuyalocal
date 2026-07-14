@@ -1,12 +1,12 @@
-'use strict';
+﻿'use strict';
 
 const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 
 const DEBOUNCE_MS = 300;
 
-// Maps settings keys → Homey capabilities.
+// Maps settings keys â†’ Homey capabilities.
 // dp_speed (numeric speed integer) is handled separately because it needs
-// min/max scaling to the Homey dim range (0–1).
+// min/max scaling to the Homey dim range (0â€“1).
 const DP_PROFILE = [
   { settingKey: 'dp_onoff',           capability: 'onoff',         transform: (v) => Boolean(v),  settable: true  },
   { settingKey: 'dp_fan_speed',       capability: 'fan_speed',     transform: (v) => String(v),   settable: true  },
@@ -39,14 +39,14 @@ class FanDevice extends BaseTuyaDevice {
     await this._syncEnumOptions('fan_speed', this.getSetting('fan_speed_values'));
     await this._syncEnumOptions('fan_mode',  this.getSetting('fan_mode_values'));
 
-    // ── Flow trigger cards ───────────────────────────────────────────────────
+    // â”€â”€ Flow trigger cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     this._triggerDeviceConnected    = this.homey.flow.getDeviceTriggerCard('fan_device_connected');
     this._triggerDeviceDisconnected = this.homey.flow.getDeviceTriggerCard('fan_device_disconnected');
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('fan_dp_changed');
     this._triggerModeChanged        = this.homey.flow.getDeviceTriggerCard('fan_mode_changed');
     this._triggerDirectionChanged   = this.homey.flow.getDeviceTriggerCard('fan_direction_changed');
 
-    // ── Capability listeners — DP_PROFILE ───────────────────────────────────
+    // â”€â”€ Capability listeners â€” DP_PROFILE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     for (const entry of DP_PROFILE) {
       if (!entry.settable) continue;
       if (!this.hasCapability(entry.capability)) continue;
@@ -55,7 +55,7 @@ class FanDevice extends BaseTuyaDevice {
       });
     }
 
-    // ── dim (fan speed 0–1) ─────────────────────────────────────────────────
+    // â”€â”€ dim (fan speed 0â€“1) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     this._dimDebounceTimer = null;
     this.registerCapabilityListener('dim', (value) => {
       clearTimeout(this._dimDebounceTimer);
@@ -80,7 +80,7 @@ class FanDevice extends BaseTuyaDevice {
     clearTimeout(this._dimDebounceTimer);
   }
 
-  // ── DPS handling ─────────────────────────────────────────────────────────────
+  // â”€â”€ DPS handling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async _handleDps(dps) {
     const settings = this.getSettings();
@@ -99,7 +99,7 @@ class FanDevice extends BaseTuyaDevice {
         .trigger(this, { dp: dpStr, value: String(value) })
         .catch(() => {});
 
-      // ── Numeric speed → dim ────────────────────────────────────────────────
+      // â”€â”€ Numeric speed â†’ dim â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       if (settings.dp_speed > 0 && dp === settings.dp_speed) {
         const raw = Number(value);
         const dim = speedMax > speedMin
@@ -109,7 +109,7 @@ class FanDevice extends BaseTuyaDevice {
         continue;
       }
 
-      // ── All other DPs — matched via DP_PROFILE ─────────────────────────────
+      // â”€â”€ All other DPs â€” matched via DP_PROFILE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       const entry = DP_PROFILE.find((e) => {
         const dpNum = settings[e.settingKey];
         return dpNum > 0 && dp === dpNum;
@@ -153,7 +153,7 @@ class FanDevice extends BaseTuyaDevice {
     }
   }
 
-  // ── Homey lifecycle ──────────────────────────────────────────────────────────
+  // â”€â”€ Homey lifecycle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async onSettings({ changedKeys }) {
     const connectionKeys = ['ip', 'device_id', 'local_key', 'version'];
@@ -164,6 +164,7 @@ class FanDevice extends BaseTuyaDevice {
     if (changedKeys.includes('polling_interval')) {
       this._startPolling();
     }
+    if (changedKeys.includes('reconnect_interval')) this._startAutoReconnect();
     if (changedKeys.some((k) => OPTIONAL_CAPABILITIES.map((o) => o.setting).includes(k))) {
       await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
     }

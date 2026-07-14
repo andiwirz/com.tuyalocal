@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 
 const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 
@@ -38,7 +38,7 @@ class HumidifierDevice extends BaseTuyaDevice {
     await this._syncEnumOptions('mode',      this.getSetting('mode_values'));
     await this._syncEnumOptions('fan_speed', this.getSetting('fan_speed_values'));
 
-    // ── Flow trigger cards ───────────────────────────────────────────────────
+    // â”€â”€ Flow trigger cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     this._triggerHumidityAbove      = this.homey.flow.getDeviceTriggerCard('humidifier_humidity_above');
     this._triggerHumidityBelow      = this.homey.flow.getDeviceTriggerCard('humidifier_humidity_below');
     this._triggerWaterEmpty         = this.homey.flow.getDeviceTriggerCard('humidifier_water_empty');
@@ -47,7 +47,7 @@ class HumidifierDevice extends BaseTuyaDevice {
     this._triggerDeviceDisconnected = this.homey.flow.getDeviceTriggerCard('humidifier_device_disconnected');
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('humidifier_dp_changed');
 
-    // ── Capability listeners ─────────────────────────────────────────────────
+    // â”€â”€ Capability listeners â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     this._debounceTimers = {};
     for (const entry of DP_PROFILE) {
       if (!entry.settable) continue;
@@ -77,7 +77,7 @@ class HumidifierDevice extends BaseTuyaDevice {
     for (const timer of Object.values(this._debounceTimers || {})) clearTimeout(timer);
   }
 
-  // ── DPS handling ─────────────────────────────────────────────────────────────
+  // â”€â”€ DPS handling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async _handleDps(dps) {
     const settings = this.getSettings();
@@ -146,7 +146,7 @@ class HumidifierDevice extends BaseTuyaDevice {
     }
   }
 
-  // ── Homey lifecycle ──────────────────────────────────────────────────────────
+  // â”€â”€ Homey lifecycle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async onSettings({ changedKeys }) {
     const connectionKeys = ['ip', 'device_id', 'local_key', 'version'];
@@ -157,6 +157,7 @@ class HumidifierDevice extends BaseTuyaDevice {
     if (changedKeys.includes('polling_interval')) {
       this._startPolling();
     }
+    if (changedKeys.includes('reconnect_interval')) this._startAutoReconnect();
     if (changedKeys.some((k) => OPTIONAL_CAPABILITIES.map((o) => o.setting).includes(k))) {
       await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
     }

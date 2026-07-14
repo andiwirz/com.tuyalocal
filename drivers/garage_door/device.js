@@ -1,41 +1,41 @@
-'use strict';
+﻿'use strict';
 
 const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 
-// ── DP → capability mapping ──────────────────────────────────────────────────
+// â”€â”€ DP â†’ capability mapping â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //
 // WOFEA WF-CS01 / Tuya ckmkzq (standard garage door controller):
-// DP 1   switch_1          : bool              — relay toggle (pulse → motor)
-// DP 3   doorcontact_state : bool              — magnetic contact (true=closed)
-// DP 6   door_control_1    : enum open|close   — combined open/close command
+// DP 1   switch_1          : bool              â€” relay toggle (pulse â†’ motor)
+// DP 3   doorcontact_state : bool              â€” magnetic contact (true=closed)
+// DP 6   door_control_1    : enum open|close   â€” combined open/close command
 // DP 12  door_state_1      : enum none|unclosed_time|close_time_alarm
 //
 // ZC34T-03-3A swing arm opener:
-// DP 1   state             : string "open"|"closed"       — dp_door_contact = 1
-// DP 101 control           : string "open"|"close"|"stop" — dp_door_control = 101
+// DP 1   state             : string "open"|"closed"       â€” dp_door_contact = 1
+// DP 101 control           : string "open"|"close"|"stop" â€” dp_door_control = 101
 //
 // AOSD garage door with light:
-// DP 101 control           : string "open"|"close"|"stop" — dp_door_control = 101
-// DP 107 action            : string "opened"|"closed"|"opening"|"closing" — dp_door_action = 107
-// DP 105 light             : bool                         — dp_light = 105
+// DP 101 control           : string "open"|"close"|"stop" â€” dp_door_control = 101
+// DP 107 action            : string "opened"|"closed"|"opening"|"closing" â€” dp_door_action = 107
+// DP 105 light             : bool                         â€” dp_light = 105
 //
 // BoboYun gatePro opener:
-// DP 10  action            : string "opened"|"closed"|"opening"|"closing" — dp_door_action = 10
-// DP 106 control_open      : bool (send true → open)     — dp_door_open = 106
-// DP 107 control_close     : bool (send true → close)    — dp_door_close = 107
-// DP 103 control (stop)    : bool (send true → stop)     — dp_switch = 103
-// DP 141 alarm             : string event codes          — dp_door_state = 141
-// DP 102 light             : bool                        — dp_light = 102
+// DP 10  action            : string "opened"|"closed"|"opening"|"closing" â€” dp_door_action = 10
+// DP 106 control_open      : bool (send true â†’ open)     â€” dp_door_open = 106
+// DP 107 control_close     : bool (send true â†’ close)    â€” dp_door_close = 107
+// DP 103 control (stop)    : bool (send true â†’ stop)     â€” dp_switch = 103
+// DP 141 alarm             : string event codes          â€” dp_door_state = 141
+// DP 102 light             : bool                        â€” dp_light = 102
 //
 // eWeLink-style simple relay:
-// DP 1   dpAction          : bool   — relay trigger  → dp_switch = 1
-// DP 2   dpStatus          : bool   — door state     → dp_door_contact = 2
+// DP 1   dpAction          : bool   â€” relay trigger  â†’ dp_switch = 1
+// DP 2   dpStatus          : bool   â€” door state     â†’ dp_door_contact = 2
 
 // DP_PROFILE entries have a `type` field used in _handleDps to select the right handler:
-//   'contact' — bool or string "open"/"closed" → garagedoor_closed
-//   'action'  — string "opened"/"closed"/"opening"/"closing" → garagedoor_closed (final-state triggers only)
-//   'alarm'   — string alarm state → alarm_generic
-//   'switch'  — bool → onoff.light
+//   'contact' â€” bool or string "open"/"closed" â†’ garagedoor_closed
+//   'action'  â€” string "opened"/"closed"/"opening"/"closing" â†’ garagedoor_closed (final-state triggers only)
+//   'alarm'   â€” string alarm state â†’ alarm_generic
+//   'switch'  â€” bool â†’ onoff.light
 const DP_PROFILE = [
   { settingKey: 'dp_door_contact', capability: 'garagedoor_closed', type: 'contact', settable: false },
   { settingKey: 'dp_door_action',  capability: 'garagedoor_closed', type: 'action',  settable: false },
@@ -55,7 +55,7 @@ class GarageDoorDevice extends BaseTuyaDevice {
     await this._baseInit();
     await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
 
-    // ── Flow trigger cards ───────────────────────────────────────────────────
+    // â”€â”€ Flow trigger cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     this._triggerDoorOpened         = this.homey.flow.getDeviceTriggerCard('garage_door_opened');
     this._triggerDoorClosed         = this.homey.flow.getDeviceTriggerCard('garage_door_closed');
     this._triggerAlarm              = this.homey.flow.getDeviceTriggerCard('garage_door_alarm_triggered');
@@ -63,14 +63,14 @@ class GarageDoorDevice extends BaseTuyaDevice {
     this._triggerDeviceDisconnected = this.homey.flow.getDeviceTriggerCard('garage_door_device_disconnected');
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('garage_door_dp_changed');
 
-    // ── Capability listeners ─────────────────────────────────────────────────
+    // â”€â”€ Capability listeners â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    // garagedoor_closed — sends command via whichever control scheme is configured.
+    // garagedoor_closed â€” sends command via whichever control scheme is configured.
     // Control priority:
-    //  1. use_relay_toggle = true  → relay pulse on dp_switch (1-button cycle, e.g. WOFEA)
-    //  2. dp_door_open / dp_door_close  → separate bool DPs (BoboYun)
-    //  3. dp_door_control  → combined string "open"/"close" (AOSD / ZC34T)
-    //  4. dp_switch fallback  → relay pulse when no control DP is set
+    //  1. use_relay_toggle = true  â†’ relay pulse on dp_switch (1-button cycle, e.g. WOFEA)
+    //  2. dp_door_open / dp_door_close  â†’ separate bool DPs (BoboYun)
+    //  3. dp_door_control  â†’ combined string "open"/"close" (AOSD / ZC34T)
+    //  4. dp_switch fallback  â†’ relay pulse when no control DP is set
     this.registerCapabilityListener('garagedoor_closed', async (value) => {
       const dpOpen    = this.getSetting('dp_door_open');
       const dpClose   = this.getSetting('dp_door_close');
@@ -80,18 +80,18 @@ class GarageDoorDevice extends BaseTuyaDevice {
 
       if (useToggle && dpSwitch > 0) {
         // 1-button cycle door: pulse the relay regardless of target state.
-        // Physical cycle: open → stop → close → stop → open …
+        // Physical cycle: open â†’ stop â†’ close â†’ stop â†’ open â€¦
         // fireAndForget: WOFEA (and similar single-relay openers) drop the TCP connection
         // immediately after processing the relay pulse.  Awaiting an echo would either
-        // block for 5 s (timeout) or throw ECONNRESET — both give the user a spurious
+        // block for 5 s (timeout) or throw ECONNRESET â€” both give the user a spurious
         // error even though the relay DID fire.  With fireAndForget the Promise resolves
         // as soon as the command is dispatched; the reconnect happens transparently.
         //
-        // Reset pulse: some devices are edge-triggered — they only fire the relay on a
-        // false→true transition.  If DP stays at true after the pulse (no auto-reset),
+        // Reset pulse: some devices are edge-triggered â€” they only fire the relay on a
+        // falseâ†’true transition.  If DP stays at true after the pulse (no auto-reset),
         // a second set(true) is ignored as "no change".  We send a false reset 300 ms
         // after the pulse so the device DP returns to false, making the next press a
-        // valid false→true edge.
+        // valid falseâ†’true edge.
         this.log(`Relay pulse (toggle mode): set(${dpSwitch}, true)`);
         await this._set(dpSwitch, true, { fireAndForget: true });
         this.homey.setTimeout(
@@ -109,7 +109,7 @@ class GarageDoorDevice extends BaseTuyaDevice {
         this.log(`Sending door command: ${cmd} (DP ${dpControl})`);
         await this._set(dpControl, cmd);
       } else if (dpSwitch > 0) {
-        // Fallback: no control DP configured — pulse relay (same edge-reset logic as above).
+        // Fallback: no control DP configured â€” pulse relay (same edge-reset logic as above).
         this.log(`Relay pulse (fallback): set(${dpSwitch}, true)`);
         await this._set(dpSwitch, true, { fireAndForget: true });
         this.homey.setTimeout(
@@ -121,14 +121,14 @@ class GarageDoorDevice extends BaseTuyaDevice {
       }
     });
 
-    // onoff.light — added dynamically when dp_light > 0
+    // onoff.light â€” added dynamically when dp_light > 0
     this._lightListenerRegistered = false;
     this._registerLightListener();
 
     await this._connect();
   }
 
-  // ── DPS handling ─────────────────────────────────────────────────────────────
+  // â”€â”€ DPS handling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async _handleDps(dps) {
     const settings = this.getSettings();
@@ -141,7 +141,7 @@ class GarageDoorDevice extends BaseTuyaDevice {
 
       const dp = parseInt(dpStr, 10);
 
-      // Generic DP-changed trigger — fires for every changed DP
+      // Generic DP-changed trigger â€” fires for every changed DP
       this._triggerDpChanged
         .trigger(this, { dp: dpStr, value: String(value) })
         .catch(() => {});
@@ -158,7 +158,7 @@ class GarageDoorDevice extends BaseTuyaDevice {
 
       if (!this.hasCapability(entry.capability)) continue;
 
-      // ── Contact sensor → garagedoor_closed (bool or string "open"/"closed") ─
+      // â”€â”€ Contact sensor â†’ garagedoor_closed (bool or string "open"/"closed") â”€
       if (entry.type === 'contact') {
         const invert    = settings.door_contact_invert || false;
         const converted = this._contactToBool(value, invert);
@@ -176,7 +176,7 @@ class GarageDoorDevice extends BaseTuyaDevice {
         continue;
       }
 
-      // ── Action state → garagedoor_closed ("opened"/"closed"/"opening"/"closing") ─
+      // â”€â”€ Action state â†’ garagedoor_closed ("opened"/"closed"/"opening"/"closing") â”€
       // Used by AOSD (DP 107) and BoboYun (DP 10).
       // Triggers opened/closed flow cards only on final states (not while moving).
       if (entry.type === 'action') {
@@ -190,7 +190,7 @@ class GarageDoorDevice extends BaseTuyaDevice {
         const final  = invert ? !converted : converted;
         const prev   = this.getCapabilityValue('garagedoor_closed');
         await this.setCapabilityValue('garagedoor_closed', final).catch(() => {});
-        // Fire trigger only on terminal states — not on "opening" / "closing"
+        // Fire trigger only on terminal states â€” not on "opening" / "closing"
         const isTerminal = actionStr === 'opened' || actionStr === 'closed';
         if (prev !== final && isTerminal) {
           if (final) {
@@ -204,7 +204,7 @@ class GarageDoorDevice extends BaseTuyaDevice {
         continue;
       }
 
-      // ── Alarm state (WOFEA DP 12 / BoboYun DP 141) ───────────────────────
+      // â”€â”€ Alarm state (WOFEA DP 12 / BoboYun DP 141) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       // WOFEA values:  none | unclosed_time | close_time_alarm
       // BoboYun values: "No" = clear; any other string = alarm event
       if (entry.type === 'alarm') {
@@ -213,7 +213,7 @@ class GarageDoorDevice extends BaseTuyaDevice {
         await this.setCapabilityValue('alarm_generic', isAlarm).catch(() => {});
         if (isAlarm) {
           this._triggerAlarm.trigger(this, { alarm_state: valueStr }).catch(() => {});
-          // Push notification — use a specific "left open" message for known timeout codes,
+          // Push notification â€” use a specific "left open" message for known timeout codes,
           // and a generic fault message for any other alarm state (e.g. BoboYun closeLongTime).
           const notifKey = (valueStr === 'unclosed_time' || valueStr === 'openLongTime')
             ? 'notifications.garageDoorOpen'
@@ -225,7 +225,7 @@ class GarageDoorDevice extends BaseTuyaDevice {
         continue;
       }
 
-      // ── Integrated light (AOSD DP 105 / BoboYun DP 102) ─────────────────
+      // â”€â”€ Integrated light (AOSD DP 105 / BoboYun DP 102) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       if (entry.type === 'switch') {
         await this.setCapabilityValue('onoff.light', Boolean(value)).catch(() => {});
         continue;
@@ -238,7 +238,7 @@ class GarageDoorDevice extends BaseTuyaDevice {
     }
   }
 
-  // ── Homey lifecycle ──────────────────────────────────────────────────────────
+  // â”€â”€ Homey lifecycle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async onSettings({ changedKeys, newSettings }) {
     const connectionKeys = ['ip', 'device_id', 'local_key', 'version'];
@@ -249,6 +249,7 @@ class GarageDoorDevice extends BaseTuyaDevice {
     if (changedKeys.includes('polling_interval')) {
       this._startPolling();
     }
+    if (changedKeys.includes('reconnect_interval')) this._startAutoReconnect();
     if (changedKeys.some((k) => OPTIONAL_CAPABILITIES.map((o) => o.setting).includes(k))) {
       await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
       // If dp_light was just enabled, register its listener for the first time.
@@ -274,7 +275,7 @@ class GarageDoorDevice extends BaseTuyaDevice {
     }
   }
 
-  // ── Helpers ──────────────────────────────────────────────────────────────────
+  // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   /**
    * Register the onoff.light capability listener once.
@@ -293,8 +294,8 @@ class GarageDoorDevice extends BaseTuyaDevice {
 
   /**
    * Convert a contact DP value to garagedoor_closed bool (true = door closed).
-   *  - WOFEA bool DP 3:   true/false  →  direct
-   *  - ZC34T string DP 1: "closed"/"open"  →  string compare
+   *  - WOFEA bool DP 3:   true/false  â†’  direct
+   *  - ZC34T string DP 1: "closed"/"open"  â†’  string compare
    */
   _contactToBool(value, invert = false) {
     const isClosed = typeof value === 'boolean'
@@ -305,9 +306,9 @@ class GarageDoorDevice extends BaseTuyaDevice {
 
   /**
    * Convert an action-state string to garagedoor_closed bool.
-   *  "opened" / "opening" / "partial_opening"  →  false (door open)
-   *  "closed" / "closing"                       →  true  (door closed)
-   *  anything else                              →  null  (unknown, skip)
+   *  "opened" / "opening" / "partial_opening"  â†’  false (door open)
+   *  "closed" / "closing"                       â†’  true  (door closed)
+   *  anything else                              â†’  null  (unknown, skip)
    */
   _actionToBool(actionStr) {
     switch (actionStr) {

@@ -1,15 +1,15 @@
-'use strict';
+﻿'use strict';
 
 const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 
-// ── DP → capability mapping ──────────────────────────────────────────────────
-// DP 1  switch_1      : boolean — gang 1
-// DP 2  switch_2      : boolean — gang 2 (optional)
-// DP 3  switch_3      : boolean — gang 3 (optional)
-// DP 4  switch_4      : boolean — gang 4 (optional)
-// DP 7  countdown_1   : integer seconds — countdown timer for gang 1
-// DP 8  countdown_2   : integer seconds — countdown timer for gang 2
-// DP 14 relay_status  : enum off|on|last — power-on behavior
+// â”€â”€ DP â†’ capability mapping â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// DP 1  switch_1      : boolean â€” gang 1
+// DP 2  switch_2      : boolean â€” gang 2 (optional)
+// DP 3  switch_3      : boolean â€” gang 3 (optional)
+// DP 4  switch_4      : boolean â€” gang 4 (optional)
+// DP 7  countdown_1   : integer seconds â€” countdown timer for gang 1
+// DP 8  countdown_2   : integer seconds â€” countdown timer for gang 2
+// DP 14 relay_status  : enum off|on|last â€” power-on behavior
 
 const GANG_CAPS = [
   { gang: 1, settingKey: 'dp_switch_1', nameSetting: 'name_switch_1', capability: 'onoff'    },
@@ -24,7 +24,7 @@ class WallSwitchDevice extends BaseTuyaDevice {
 
     await this._baseInit();
 
-    // Tracks the last gang state we fired a trigger for — survives reconnects
+    // Tracks the last gang state we fired a trigger for â€” survives reconnects
     // (unlike _lastDps which is cleared) and isn't affected by triggerCapabilityListener
     // (unlike getCapabilityValue which can be pre-set by Homey SDK).
     this._lastGangState = {};
@@ -35,19 +35,19 @@ class WallSwitchDevice extends BaseTuyaDevice {
 
     await this._syncGangCapabilities();
 
-    // ── Flow trigger cards ───────────────────────────────────────────────────
+    // â”€â”€ Flow trigger cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     this._triggerDeviceConnected    = this.homey.flow.getDeviceTriggerCard('switch_device_connected');
     this._triggerDeviceDisconnected = this.homey.flow.getDeviceTriggerCard('switch_device_disconnected');
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('switch_dp_changed');
     this._triggerSwitchChanged      = this.homey.flow.getDeviceTriggerCard('switch_gang_changed');
 
-    // ── Capability listeners ─────────────────────────────────────────────────
+    // â”€â”€ Capability listeners â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     this._registerGangListeners();
 
     await this._connect();
   }
 
-  // ── Gang capability sync ──────────────────────────────────────────────────────
+  // â”€â”€ Gang capability sync â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async _syncGangCapabilities() {
     for (const gang of GANG_CAPS) {
@@ -87,7 +87,7 @@ class WallSwitchDevice extends BaseTuyaDevice {
     }
   }
 
-  // ── DPS handling ─────────────────────────────────────────────────────────────
+  // â”€â”€ DPS handling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async _handleDps(dps) {
     const settings = this.getSettings();
@@ -119,7 +119,7 @@ class WallSwitchDevice extends BaseTuyaDevice {
         const bool = Boolean(value);
         await this.setCapabilityValue(gangEntry.capability, bool).catch(() => {});
 
-        // Only fire trigger if the gang state ACTUALLY changed — prevents spurious
+        // Only fire trigger if the gang state ACTUALLY changed â€” prevents spurious
         // triggers on reconnect (when _lastDps is cleared and all DPs re-process).
         if (this._lastGangState[gangEntry.gang] !== bool) {
           this._lastGangState[gangEntry.gang] = bool;
@@ -130,7 +130,7 @@ class WallSwitchDevice extends BaseTuyaDevice {
         continue;
       }
 
-      // Relay status → device setting
+      // Relay status â†’ device setting
       if (settings.dp_relay_status > 0 && dp === settings.dp_relay_status) {
         const KNOWN = ['on', 'off', 'last', 'memory'];
         const strVal = String(value);
@@ -140,7 +140,7 @@ class WallSwitchDevice extends BaseTuyaDevice {
         continue;
       }
 
-      // Countdown DPs are stored in settings only — no capability, just acknowledge
+      // Countdown DPs are stored in settings only â€” no capability, just acknowledge
       if (countdownDps.has(dp)) continue;
 
       this.log(`Unknown DP ${dp}:`, value);
@@ -152,7 +152,7 @@ class WallSwitchDevice extends BaseTuyaDevice {
     }
   }
 
-  // ── Homey lifecycle ──────────────────────────────────────────────────────────
+  // â”€â”€ Homey lifecycle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async onSettings({ changedKeys }) {
     const connectionKeys = ['ip', 'device_id', 'local_key', 'version'];
@@ -165,8 +165,9 @@ class WallSwitchDevice extends BaseTuyaDevice {
       this.log('Polling interval changed, restarting polling');
       this._startPolling();
     }
+    if (changedKeys.includes('reconnect_interval')) this._startAutoReconnect();
 
-    // Gang DPs or names changed → sync capabilities and titles
+    // Gang DPs or names changed â†’ sync capabilities and titles
     const gangKeys = GANG_CAPS.map((g) => g.settingKey);
     const nameKeys = GANG_CAPS.map((g) => g.nameSetting);
     if (changedKeys.some((k) => gangKeys.includes(k) || nameKeys.includes(k))) {
