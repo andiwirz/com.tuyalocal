@@ -1,4 +1,12 @@
 {
+  "1.0.97": {
+    "en": "Connection: automatic protocol version rotation after 5 failed reconnects (handles devices that changed protocol after firmware OTA). Outbound heartbeat every 15s to keep strict firmware sockets alive. Thermostat: new 'DP HVAC Action' setting shows a live heating indicator when the boiler is actively firing.",
+    "de": "Verbindung: Automatische Protokollversionsrotation nach 5 fehlgeschlagenen Reconnects. Ausgehender Heartbeat alle 15s. Thermostat: Neue Einstellung 'DP Heizstatus' zeigt an wenn der Heizkessel aktiv heizt."
+  },
+  "1.0.96": {
+    "en": "Fixed: Error 900 (IR/RF blasters) no longer triggers reconnect. Doorbell: repeated rings and motions now always fire even with same DP value (persist:false). Smart Plug: energy DPs (voltage/current/power) are now force-refreshed immediately after connecting.",
+    "de": "Behoben: Fehler 900 (IR/RF-Blaster) löst keinen Reconnect mehr aus. Türklingel: Wiederholte Klingel-/Bewegungsereignisse werden auch bei gleichem DP-Wert immer ausgelöst (persist:false). Smart Plug: Energie-DPs (Spannung/Strom/Leistung) werden direkt nach dem Verbinden aktualisiert."
+  },
   "1.0.95": {
     "en": "All drivers: added 'Auto-Reconnect Interval' setting — reconnects the device every N minutes automatically. Replaces the need for a manual Force Reconnect flow. Set to 0 to disable (default).",
     "de": "Alle Treiber: Einstellung 'Auto-Reconnect-Intervall' hinzugefügt — verbindet das Gerät alle N Minuten automatisch neu. Ersetzt den manuellen Force-Reconnect-Flow. 0 = deaktiviert (Standard)."

@@ -27,6 +27,9 @@ class DoorbellDevice extends BaseTuyaDevice {
 
     this._motionResetTimer   = null;
     this._doorbellResetTimer = null;
+    // Tracks event DPs that were intentionally cleared from _lastDps after firing,
+    // so the seed-protection check does not block the very next occurrence.
+    this._eventDpsCleared = new Set();
 
     if (!this.hasCapability('alarm_generic')) {
       await this.addCapability('alarm_generic');
@@ -40,6 +43,11 @@ class DoorbellDevice extends BaseTuyaDevice {
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('doorbell_dp_changed');
 
     await this._connect();
+  }
+
+  /** Reset cleared-event set on every (re)connect so seed protection works correctly. */
+  _onConnected() {
+    this._eventDpsCleared.clear();
   }
 
   async _onDeleted() {
@@ -70,25 +78,35 @@ class DoorbellDevice extends BaseTuyaDevice {
         .trigger(this, { dp: dpStr, value: String(value) })
         .catch(() => {});
 
-      // Skip triggering events on the initial seed (first data packet after first add).
-      // prevValue === undefined means this is the very first time we've seen this DP.
-      if (prevValue === undefined) continue;
+      // Skip triggering events on the initial seed (first data packet after connect).
+      // Bypass seed protection for event DPs that were intentionally cleared after
+      // firing — those have been seen before and must be allowed to re-trigger.
+      if (prevValue === undefined && !this._eventDpsCleared.has(dpStr)) continue;
 
       // Doorbell ring event
       if (dp === dpDoorbell && value) {
         this.log('Doorbell rang (DP', dpDoorbell, ')');
         this._triggerRang.trigger(this).catch(() => {});
         this._onDoorbellRang();
+        // persist:false — clear so the same timestamp re-triggers on the next ring
+        this._eventDpsCleared.add(dpStr);
+        delete this._lastDps[dpStr];
       }
 
       // Motion detection event (raw image DP)
       if (dp === dpMotionEvent && value) {
         this._onMotionDetected();
+        // persist:false — clear so identical image blobs re-trigger motion
+        this._eventDpsCleared.add(dpStr);
+        delete this._lastDps[dpStr];
       }
 
       // Alarm message (base64 JSON â€” decodes cmd: ipc_doorbell / ipc_motion)
       if (dpAlarmMsg > 0 && dp === dpAlarmMsg && value) {
         this._handleAlarmMessage(value, dpDoorbell, dpMotionEvent);
+        // persist:false — clear so identical alarm payloads re-trigger
+        this._eventDpsCleared.add(dpStr);
+        delete this._lastDps[dpStr];
       }
     }
 

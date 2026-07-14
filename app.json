@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.95",
+  "version": "1.0.97",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -157,6 +157,14 @@
     "1.0.52": {
       "en": "Heater: added Work State DP support (e.g. DP 11 \"heating\"/\"no_heating\"). New Heating tile indicator and flow cards: \"Heater started heating\" and \"Heater stopped heating\" triggers, \"Heater is heating\" condition.",
       "de": "Heizgerät: Arbeitsstatus-DP hinzugefügt (z.B. DP 11 \"heating\"/\"no_heating\"). Neue Heizstatus-Kachel und Flow-Karten: Auslöser \"Heizt jetzt\" / \"Heizt nicht mehr\", Bedingung \"Heizt\"."
+    },
+    "1.0.97": {
+      "en": "Connection: automatic protocol version rotation after 5 failed reconnects (handles devices that changed protocol after firmware OTA). Connection: outbound heartbeat every 15s to keep strict firmware sockets alive. Thermostat: new 'DP HVAC Action' setting — shows a live heating indicator in the device card when the boiler is actively firing.",
+      "de": "Verbindung: Automatische Protokollversionsrotation nach 5 fehlgeschlagenen Reconnects (für Geräte die nach Firmware-OTA die Protokollversion gewechselt haben). Verbindung: Ausgehender Heartbeat alle 15s um bei strenger Firmware die Socket-Verbindung aufrechtzuerhalten. Thermostat: Neue Einstellung 'DP Heizstatus' — zeigt in der Gerätekachel an wenn der Heizkessel aktiv heizt."
+    },
+    "1.0.96": {
+      "en": "Fixed: Error 900 (IR/RF blasters) no longer triggers reconnect. Doorbell: repeated rings and motions now always fire even with same DP value (persist:false). Smart Plug: energy DPs (voltage/current/power) are now force-refreshed immediately after connecting.",
+      "de": "Behoben: Fehler 900 (IR/RF-Blaster) löst keinen Reconnect mehr aus. Türklingel: Wiederholte Klingel-/Bewegungsereignisse werden auch bei gleichem DP-Wert immer ausgelöst (persist:false). Smart Plug: Energie-DPs (Spannung/Strom/Leistung) werden direkt nach dem Verbinden aktualisiert."
     },
     "1.0.95": {
       "en": "All drivers: added 'Auto-Reconnect Interval' setting — reconnects the device every N minutes automatically. Replaces the need for a manual Force Reconnect flow. Set to 0 to disable (default).",
@@ -6735,7 +6743,8 @@
             { "id": "dp_mode", "type": "number", "label": { "en": "DP Mode (0 = disabled)", "de": "DP Modus (0 = deaktiviert)" }, "value": 4, "min": 0, "max": 255, "step": 1 },
             { "id": "dp_child_lock", "type": "number", "label": { "en": "DP Child Lock (0 = disabled)", "de": "DP Kindersicherung (0 = deaktiviert)" }, "value": 0, "min": 0, "max": 255, "step": 1 },
             { "id": "dp_battery", "type": "number", "label": { "en": "DP Battery % (0 = disabled, for TRVs)", "de": "DP Batterie % (0 = deaktiviert, für TRVs)" }, "value": 0, "min": 0, "max": 255, "step": 1 },
-            { "id": "dp_fault", "type": "number", "label": { "en": "DP Fault (0 = disabled)", "de": "DP Fehler (0 = deaktiviert)" }, "value": 0, "min": 0, "max": 255, "step": 1 }
+            { "id": "dp_fault", "type": "number", "label": { "en": "DP Fault (0 = disabled)", "de": "DP Fehler (0 = deaktiviert)" }, "value": 0, "min": 0, "max": 255, "step": 1 },
+            { "id": "dp_hvac_action", "type": "number", "label": { "en": "DP HVAC Action (0 = disabled)", "de": "DP Heizstatus (0 = deaktiviert)" }, "hint": { "en": "DP that indicates the boiler is actively heating. Common values: 1 or 'heating' = heating, 0 or 'idle' = idle. Enables the 'Heating' indicator in the device card.", "de": "DP der anzeigt ob der Heizkessel aktiv heizt. Häufige Werte: 1 oder 'heating' = heizt, 0 oder 'idle' = inaktiv. Aktiviert den 'Heizt'-Indikator in der Gerätekachel." }, "value": 0, "min": 0, "max": 255, "step": 1 }
           ]
         },
         {

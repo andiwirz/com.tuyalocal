@@ -32,20 +32,22 @@ const { capitalize }  = require('../../lib/utils');
 //   DP 15  bool   window_detect
 
 const DP_PROFILE = [
-  { settingKey: 'dp_onoff',        capability: 'onoff',               type: 'switch',  settable: true  },
-  { settingKey: 'dp_target_temp',  capability: 'target_temperature',  type: 'temp',    settable: true  },
-  { settingKey: 'dp_current_temp', capability: 'measure_temperature', type: 'temp_ro', settable: false },
-  { settingKey: 'dp_mode',         capability: 'thermostat_mode',     type: 'mode',    settable: true  },
-  { settingKey: 'dp_child_lock',   capability: 'child_lock',          type: 'bool',    settable: true  },
-  { settingKey: 'dp_battery',      capability: 'measure_battery',     type: 'number',  settable: false },
-  { settingKey: 'dp_fault',        capability: 'alarm_generic',       type: 'alarm',   settable: false },
+  { settingKey: 'dp_onoff',        capability: 'onoff',               type: 'switch',     settable: true  },
+  { settingKey: 'dp_target_temp',  capability: 'target_temperature',  type: 'temp',       settable: true  },
+  { settingKey: 'dp_current_temp', capability: 'measure_temperature', type: 'temp_ro',    settable: false },
+  { settingKey: 'dp_mode',         capability: 'thermostat_mode',     type: 'mode',       settable: true  },
+  { settingKey: 'dp_child_lock',   capability: 'child_lock',          type: 'bool',       settable: true  },
+  { settingKey: 'dp_battery',      capability: 'measure_battery',     type: 'number',     settable: false },
+  { settingKey: 'dp_fault',        capability: 'alarm_generic',       type: 'alarm',      settable: false },
+  { settingKey: 'dp_hvac_action',  capability: 'alarm_heat',          type: 'hvac_action', settable: false },
 ];
 
 const OPTIONAL_CAPABILITIES = [
-  { setting: 'dp_mode',       capability: 'thermostat_mode' },
-  { setting: 'dp_child_lock', capability: 'child_lock'      },
-  { setting: 'dp_battery',    capability: 'measure_battery'  },
-  { setting: 'dp_fault',      capability: 'alarm_generic'    },
+  { setting: 'dp_mode',        capability: 'thermostat_mode' },
+  { setting: 'dp_child_lock',  capability: 'child_lock'      },
+  { setting: 'dp_battery',     capability: 'measure_battery'  },
+  { setting: 'dp_fault',       capability: 'alarm_generic'    },
+  { setting: 'dp_hvac_action', capability: 'alarm_heat'       },
 ];
 
 class ThermostatDevice extends BaseTuyaDevice {
@@ -157,6 +159,14 @@ class ThermostatDevice extends BaseTuyaDevice {
         case 'alarm': {
           const isAlarm = typeof value === 'number' ? value !== 0 : Boolean(value);
           await this.setCapabilityValue('alarm_generic', isAlarm).catch(() => {});
+          break;
+        }
+
+        case 'hvac_action': {
+          // "1" / true / "heating" → actively heating; anything else → idle
+          const v = typeof value === 'string' ? value.toLowerCase() : value;
+          const heating = v === 1 || v === true || v === 'heating' || v === 'heat';
+          await this.setCapabilityValue('alarm_heat', heating).catch(() => {});
           break;
         }
 

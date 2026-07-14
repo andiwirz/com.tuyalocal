@@ -85,6 +85,12 @@ class SmartPlugDevice extends BaseTuyaDevice {
     // so the correcting false has time to arrive before we fire a notification.
     this._justReconnected = true;
     setTimeout(() => { this._justReconnected = false; }, 30000);
+
+    // Force-refresh energy DPs shortly after the initial GET (500 ms after connect).
+    // Some plugs only report voltage/current/power in response to a refresh() command
+    // and not in the standard GET — without this, energy data could be silent for the
+    // entire first poll interval after connecting.
+    setTimeout(() => { this._conn?.refresh().catch(() => {}); }, 2500);
   }
 
   /**
