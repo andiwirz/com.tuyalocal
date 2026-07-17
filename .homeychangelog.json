@@ -1,4 +1,8 @@
 {
+  "1.0.98": {
+    "en": "Fixed: push-only devices (e.g. BCM700D-TY01 curtain motors) no longer enter a connect/disconnect loop. The connection stays up and commands work. Set Polling Interval to 0 for these devices.",
+    "de": "Behoben: Push-only Geräte (z.B. BCM700D-TY01) geraten nicht mehr in eine Connect/Disconnect-Schleife. Verbindung bleibt stabil. Abfrageintervall auf 0 setzen."
+  },
   "1.0.97": {
     "en": "Connection: automatic protocol version rotation after 5 failed reconnects (handles devices that changed protocol after firmware OTA). Outbound heartbeat every 15s to keep strict firmware sockets alive. Thermostat: new 'DP HVAC Action' setting shows a live heating indicator when the boiler is actively firing.",
     "de": "Verbindung: Automatische Protokollversionsrotation nach 5 fehlgeschlagenen Reconnects. Ausgehender Heartbeat alle 15s. Thermostat: Neue Einstellung 'DP Heizstatus' zeigt an wenn der Heizkessel aktiv heizt."

@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.97",
+  "version": "1.0.98",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -157,6 +157,10 @@
     "1.0.52": {
       "en": "Heater: added Work State DP support (e.g. DP 11 \"heating\"/\"no_heating\"). New Heating tile indicator and flow cards: \"Heater started heating\" and \"Heater stopped heating\" triggers, \"Heater is heating\" condition.",
       "de": "Heizgerät: Arbeitsstatus-DP hinzugefügt (z.B. DP 11 \"heating\"/\"no_heating\"). Neue Heizstatus-Kachel und Flow-Karten: Auslöser \"Heizt jetzt\" / \"Heizt nicht mehr\", Bedingung \"Heizt\"."
+    },
+    "1.0.98": {
+      "en": "Fixed: push-only devices (e.g. BCM700D-TY01 curtain motors) no longer enter a connect/disconnect loop when the device does not respond to GET requests. The connection now stays up and SET commands work. Set Polling Interval to 0 for these devices.",
+      "de": "Behoben: Push-only Geräte (z.B. BCM700D-TY01 Rolladenmotor) geraten nicht mehr in eine Connect/Disconnect-Schleife wenn das Gerät nicht auf GET-Anfragen antwortet. Die Verbindung bleibt stabil und SET-Befehle funktionieren. Abfrageintervall auf 0 setzen für solche Geräte."
     },
     "1.0.97": {
       "en": "Connection: automatic protocol version rotation after 5 failed reconnects (handles devices that changed protocol after firmware OTA). Connection: outbound heartbeat every 15s to keep strict firmware sockets alive. Thermostat: new 'DP HVAC Action' setting — shows a live heating indicator in the device card when the boiler is actively firing.",
