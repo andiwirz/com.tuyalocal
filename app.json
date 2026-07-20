@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.99",
+  "version": "1.0.100",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -18,6 +18,10 @@
     "appliances"
   ],
   "changelog": {
+    "1.0.100": {
+      "en": "Fixed crash: invalid local key length (not 16 characters) now shows a clear error in the device log instead of crashing with RangeError.",
+      "de": "Absturz behoben: Ein ungültiger Local Key (nicht 16 Zeichen) zeigt jetzt eine verständliche Fehlermeldung im Geräte-Log statt eines RangeError-Absturzes."
+    },
     "1.0.99": {
       "en": "Fixed app settings REST API (cloud lookup and device detail endpoints now correctly exposed as Homey SDK3 API routes). Pairing check_device_exists handler was already registered correctly in all drivers.",
       "de": "App-Einstellungen REST-API korrigiert (Cloud-Lookup und Gerätedetail-Endpunkte jetzt korrekt als Homey SDK3 API-Routen registriert). Pairing check_device_exists-Handler war in allen Treibern bereits korrekt registriert."
