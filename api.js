@@ -1,12 +1,20 @@
 'use strict';
 
-module.exports = {
-  async cloudLookup({ homey, query }) {
-    const { accessId, accessSecret, region } = query;
-    return homey.app.cloudLookup({ accessId, accessSecret, region });
+module.exports = [
+  {
+    method: 'GET',
+    path:   '/cloud-lookup',
+    fn:     async ({ homey, query }) => {
+      const { accessId, accessSecret, region } = query;
+      return homey.app.cloudLookup({ accessId, accessSecret, region });
+    },
   },
-  async cloudDeviceDetail({ homey, query }) {
-    const { accessId, accessSecret, region, deviceId } = query;
-    return homey.app.cloudDeviceDetail({ accessId, accessSecret, region, deviceId });
+  {
+    method: 'GET',
+    path:   '/cloud-device-detail',
+    fn:     async ({ homey, query }) => {
+      const { accessId, accessSecret, region, deviceId } = query;
+      return homey.app.cloudDeviceDetail({ accessId, accessSecret, region, deviceId });
+    },
   },
-};
+];

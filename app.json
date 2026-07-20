@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.98",
+  "version": "1.0.99",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -18,6 +18,10 @@
     "appliances"
   ],
   "changelog": {
+    "1.0.99": {
+      "en": "Fixed app settings REST API (cloud lookup and device detail endpoints now correctly exposed as Homey SDK3 API routes). Pairing check_device_exists handler was already registered correctly in all drivers.",
+      "de": "App-Einstellungen REST-API korrigiert (Cloud-Lookup und Gerätedetail-Endpunkte jetzt korrekt als Homey SDK3 API-Routen registriert). Pairing check_device_exists-Handler war in allen Treibern bereits korrekt registriert."
+    },
     "1.0.49": {
       "en": "Curtain Motor: added 'Invert open/close direction' setting — enable when the Open action physically closes the curtain (motor wired in reverse). Added 'Favourite Position DP' setting and 'Move to favourite position' flow action for Zemismart v2 (DP 19 position_best).",
       "de": "Rolladenmotor: 'Öffnen/Schließen-Richtung umkehren'-Einstellung hinzugefügt — aktivieren wenn Öffnen-Aktion den Vorhang schließt (Motor verkehrt verdrahtet). 'Lieblingsposition-DP'-Einstellung und 'Zur Lieblingsposition fahren'-Flow-Aktion für Zemismart v2 (DP 19 position_best) hinzugefügt."

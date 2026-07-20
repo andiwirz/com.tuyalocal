@@ -1,4 +1,8 @@
 {
+  "1.0.99": {
+    "en": "Fixed app settings REST API (cloud lookup and device detail endpoints now correctly exposed as Homey SDK3 API routes).",
+    "de": "App-Einstellungen REST-API korrigiert (Cloud-Lookup und Gerätedetail-Endpunkte jetzt korrekt als Homey SDK3 API-Routen registriert)."
+  },
   "1.0.98": {
     "en": "Fixed: push-only devices (e.g. BCM700D-TY01 curtain motors) no longer enter a connect/disconnect loop. The connection stays up and commands work. Set Polling Interval to 0 for these devices.",
     "de": "Behoben: Push-only Geräte (z.B. BCM700D-TY01) geraten nicht mehr in eine Connect/Disconnect-Schleife. Verbindung bleibt stabil. Abfrageintervall auf 0 setzen."
