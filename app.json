@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.100",
+  "version": "1.0.102",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -18,6 +18,14 @@
     "appliances"
   ],
   "changelog": {
+    "1.0.102": {
+      "en": "Fixed Cloud Lookup in app settings: api.js function names and app.json api section now use lowercase keys matching Homey's internal endpoint normalization.",
+      "de": "Cloud-Lookup in App-Einstellungen vollständig behoben: Funktionsnamen in api.js und api-Sektion in app.json verwenden jetzt Kleinbuchstaben entsprechend Homeys interner Endpunkt-Normalisierung."
+    },
+    "1.0.101": {
+      "en": "Fixed Cloud Lookup in app settings: Homey resolves Homey.api() calls by normalizing the URL path to lowercase — function names in api.js now match that convention.",
+      "de": "Cloud-Lookup in App-Einstellungen behoben: Homey normalisiert Homey.api()-Aufrufe zu Kleinbuchstaben — Funktionsnamen in api.js entsprechen nun dieser Konvention."
+    },
     "1.0.100": {
       "en": "Fixed crash: invalid local key length (not 16 characters) now shows a clear error in the device log instead of crashing with RangeError.",
       "de": "Absturz behoben: Ein ungültiger Local Key (nicht 16 Zeichen) zeigt jetzt eine verständliche Fehlermeldung im Geräte-Log statt eines RangeError-Absturzes."
@@ -197,11 +205,11 @@
   },
   "permissions": [],
   "api": {
-    "cloudLookup": {
+    "cloudlookup": {
       "method": "GET",
       "path": "/cloud-lookup"
     },
-    "cloudDeviceDetail": {
+    "clouddevicedetail": {
       "method": "GET",
       "path": "/cloud-device-detail"
     }

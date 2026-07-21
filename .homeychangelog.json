@@ -1,4 +1,12 @@
 {
+  "1.0.102": {
+    "en": "Fixed Cloud Lookup in app settings: api.js function names and app.json api section now use lowercase keys matching Homey's internal endpoint normalization.",
+    "de": "Cloud-Lookup in App-Einstellungen vollständig behoben: Funktionsnamen in api.js und api-Sektion in app.json jetzt in Kleinbuchstaben."
+  },
+  "1.0.101": {
+    "en": "Fixed Cloud Lookup in app settings: api.js function names now match Homey's normalized endpoint lookup (lowercase, no hyphens).",
+    "de": "Cloud-Lookup in App-Einstellungen behoben: Funktionsnamen in api.js entsprechen jetzt Homeys normalisiertem Endpunkt-Lookup (Kleinbuchstaben, keine Bindestriche)."
+  },
   "1.0.100": {
     "en": "Fixed crash: invalid local key length (not 16 characters) now shows a clear error in the device log instead of crashing with RangeError.",
     "de": "Absturz behoben: Ein ungültiger Local Key (nicht 16 Zeichen) zeigt jetzt eine verständliche Fehlermeldung im Geräte-Log statt eines RangeError-Absturzes."
