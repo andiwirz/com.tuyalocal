@@ -1,6 +1,6 @@
 # Tuya Local — Homey App
 
-**Version 1.0.93** · Local WiFi/LAN control of Tuya smart devices — no cloud, no Zigbee hub required.
+**Version 1.0.102** · Local WiFi/LAN control of Tuya smart devices — no cloud, no Zigbee hub required.
 
 All communication happens over your local network via the Tuya LAN protocol. Sixteen built-in drivers cover the most common device types; a fully generic driver handles anything else.
 
@@ -34,6 +34,9 @@ All communication happens over your local network via the Tuya LAN protocol. Six
 - **Cloud-free** — all traffic stays on your local network
 - **Real-time push** — instant state updates without polling (polling is optional and configurable)
 - **Automatic reconnect** — exponential back-off with jitter; watchdog detects stale connections and reconnects
+- **Protocol auto-rotation** — after 5 consecutive reconnect failures the connection manager automatically cycles through fallback protocol versions (3.3 → 3.4 → 3.1 → 3.5); once a version connects successfully it is kept and logged so you can update the setting to avoid the retry delay next time
+- **Outbound heartbeat** — sends a keep-alive ping every 15 s; keeps connections alive on strict firmware that requires host-initiated keep-alives
+- **Push-only device support** — devices that don't respond to GET requests (e.g. BCM700D-TY01 curtain motors) stay connected and accept SET commands without entering a reconnect loop; set Polling Interval to 0 for these devices
 - **Cloud Lookup** — fetch Device ID and Local Key from the Tuya IoT Platform inside the app settings or directly during device pairing — no CLI tools needed. Device names show your custom name (as set in the Tuya app) as the primary label. Click a device name to see all DPs with types, current values, and allowed ranges. Access credentials are saved on Homey and auto-filled next time
 - **Protocol auto-detect** — pairing and repair default to *Auto-detect*, which tries 3.3 → 3.4 → 3.1 → 3.5 → 3.2 → 3.22 in order and saves the working version automatically
 - **Network scanner** — finds Tuya devices via UDP broadcast (ports 6666 / 6667) and a full TCP subnet scan (port 6668)
@@ -522,6 +525,7 @@ Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polli
 | `dp_child_lock` | `child_lock` | boolean | 0 | ✓ `0` = disabled |
 | `dp_battery` | `measure_battery` | number | 0 | ✓ `0` = disabled (TRVs only) |
 | `dp_fault` | `alarm_generic` | bitfield | 0 | ✓ `0` = disabled |
+| `dp_hvac_action` | `alarm_heat` | enum / bool / int | 0 | ✓ `0` = disabled — shows heating indicator when boiler is actively firing |
 
 #### Temperature Settings
 
@@ -1403,12 +1407,16 @@ Fetch device credentials and DP specifications from the Tuya IoT Platform (avail
 | Curtain motor limit positions are wrong | Motor limits not calibrated | Run limit calibration from the Tuya / Smart Life app (DP 16 `border`) before using Homey |
 | Thermostat temperature is 10× too high | Device sends ×10 values (e.g. BHT-002, Moes) | Set `temp_divisor = 10` in device settings |
 | Thermostat mode picker shows wrong options | `mode_values` mismatch | Check Raw Data panel for actual strings, update `mode_values` in settings |
+| Thermostat heating indicator (`alarm_heat`) never activates | `dp_hvac_action` not set | Set **DP HVAC Action** in device settings to the DP that reports `heating`/`1`/`true` when the boiler fires |
 | Wall switch trigger doesn't fire for switch 2+ | Using Homey's built-in "Turned on/off" trigger | Use the Wall Switch-specific **"A switch gang changed"** trigger card instead |
 | Wall switch tile names don't update | Homey caches capability titles | Restart the Tuya Local app after changing switch names |
 | Kettle mode picker empty | `mode_values` doesn't match device strings | Check Raw Data for exact mode strings (some use `mzj_black`, `boiling_quick`, etc.) |
 | Device missing DPs or SET commands rejected | Standard Instruction Set hides some DPs | Switch to **DP Instruction Set** on iot.tuya.com → Devices → your device → Instruction Mode |
 | Cloud Lookup shows fewer DPs than expected | Same cause — Standard mode limits visible DPs | Switch to DP Instruction mode, then re-fetch in Cloud Lookup |
 | SET command causes disconnect | Device rejects encrypted command | 1) Refresh Local Key via Cloud Lookup. 2) Enable **Fire and Forget** in device settings. 3) Switch instruction mode to DP on iot.tuya.com |
+| Device unavailable immediately — log shows `Invalid local key length` | Local Key is not exactly 16 characters — likely a copy/paste truncation | Open device **Settings** → re-enter the Local Key (must be exactly 16 characters) |
+| Curtain motor / push-only device enters connect → timeout → disconnect loop | Firmware does not respond to GET requests (e.g. BCM700D-TY01) | Set **Polling Interval** to `0` in device settings — the device will stay connected and push DPs and accept commands normally |
+| Protocol version mismatch after firmware OTA update | OTA changed the required protocol; configured version no longer works | The app auto-rotates through 3.3 / 3.4 / 3.1 / 3.5 after 5 failed reconnects and logs which version connected — update **Protocol Version** in device settings to that version to skip the retry delay |
 
 ---
 
