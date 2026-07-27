@@ -1,4 +1,12 @@
 {
+  "1.0.104": {
+    "en": "Heat Pump: mode now syncs back when changed via SmartLife — temperature push triggers a refresh that also fetches the updated mode.",
+    "de": "Wärmepumpe: Modus wird jetzt auch synchronisiert wenn er über SmartLife geändert wird."
+  },
+  "1.0.103": {
+    "en": "Heat Pump / Thermostat: target temperature now re-syncs after a mode change — each mode stores its own temperature and a short-delay refresh picks it up automatically.",
+    "de": "Wärmepumpe / Thermostat: Zieltemperatur wird nach einem Moduswechsel automatisch neu synchronisiert."
+  },
   "1.0.102": {
     "en": "Fixed Cloud Lookup in app settings: api.js function names and app.json api section now use lowercase keys matching Homey's internal endpoint normalization.",
     "de": "Cloud-Lookup in App-Einstellungen vollständig behoben: Funktionsnamen in api.js und api-Sektion in app.json jetzt in Kleinbuchstaben."

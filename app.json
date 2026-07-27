@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.102",
+  "version": "1.0.104",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -18,6 +18,14 @@
     "appliances"
   ],
   "changelog": {
+    "1.0.104": {
+      "en": "Heat Pump: mode now syncs back when changed via SmartLife. When the device pushes a temperature update (caused by a cloud mode change), a refresh is triggered to also fetch the updated mode.",
+      "de": "Wärmepumpe: Modus wird jetzt auch synchronisiert wenn er über SmartLife geändert wird. Bei einer Temperatur-Push-Meldung (ausgelöst durch eine Cloud-Modusänderung) wird ein Refresh ausgelöst um den neuen Modus abzurufen."
+    },
+    "1.0.103": {
+      "en": "Heat Pump / Thermostat: target temperature now re-syncs after a mode change. Each mode stores its own temperature — a short-delay refresh fetches the updated value automatically.",
+      "de": "Wärmepumpe / Thermostat: Zieltemperatur wird nach einem Moduswechsel automatisch neu synchronisiert. Jeder Modus speichert eine eigene Temperatur — ein verzögerter Refresh holt den aktualisierten Wert ab."
+    },
     "1.0.102": {
       "en": "Fixed Cloud Lookup in app settings: api.js function names and app.json api section now use lowercase keys matching Homey's internal endpoint normalization.",
       "de": "Cloud-Lookup in App-Einstellungen vollständig behoben: Funktionsnamen in api.js und api-Sektion in app.json verwenden jetzt Kleinbuchstaben entsprechend Homeys interner Endpunkt-Normalisierung."
