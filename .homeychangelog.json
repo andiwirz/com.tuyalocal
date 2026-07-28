@@ -1,4 +1,8 @@
 {
+  "1.0.105": {
+    "en": "Pairing help text translated to English in all 16 drivers (Athom review feedback).",
+    "de": "Pairing-Hilfetext in allen 16 Treibern auf Englisch übersetzt (Athom Review-Feedback)."
+  },
   "1.0.104": {
     "en": "Heat Pump: mode now syncs back when changed via SmartLife — temperature push triggers a refresh that also fetches the updated mode.",
     "de": "Wärmepumpe: Modus wird jetzt auch synchronisiert wenn er über SmartLife geändert wird."

@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.104",
+  "version": "1.0.105",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -18,6 +18,10 @@
     "appliances"
   ],
   "changelog": {
+    "1.0.105": {
+      "en": "Pairing help text translated to English in all drivers (Athom review feedback).",
+      "de": "Pairing-Hilfetext in allen Treibern auf Englisch übersetzt (Athom Review-Feedback)."
+    },
     "1.0.104": {
       "en": "Heat Pump: mode now syncs back when changed via SmartLife. When the device pushes a temperature update (caused by a cloud mode change), a refresh is triggered to also fetch the updated mode.",
       "de": "Wärmepumpe: Modus wird jetzt auch synchronisiert wenn er über SmartLife geändert wird. Bei einer Temperatur-Push-Meldung (ausgelöst durch eine Cloud-Modusänderung) wird ein Refresh ausgelöst um den neuen Modus abzurufen."
