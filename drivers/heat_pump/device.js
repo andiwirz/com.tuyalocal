@@ -162,24 +162,27 @@ class HeatPumpDevice extends BaseTuyaDevice {
     const settings = this.getSettings();
     let changed = false;
 
-    for (const [dpStr, value] of Object.entries(dps)) {
+    for (const [dpStr, rawValue] of Object.entries(dps)) {
+      const dp    = parseInt(dpStr, 10);
+      const entry = DP_PROFILE.find((e) => settings[e.settingKey] > 0 && dp === settings[e.settingKey]);
+
+      // Normalize mode/preset strings to lowercase before the dedup filter so that
+      // "Cool" and "cool" are treated as the same value — prevents the device sending
+      // mixed-case strings from getting stuck in _lastDps and never re-applied.
+      const value = (entry?.type === 'mode' || entry?.type === 'preset') && typeof rawValue === 'string'
+        ? rawValue.toLowerCase()
+        : rawValue;
+
       if (this._lastDps[dpStr] === value) continue;
       this._lastDps[dpStr] = value;
       changed = true;
 
-      const dp = parseInt(dpStr, 10);
-
       this._triggerDpChanged
-        .trigger(this, { dp: dpStr, value: String(value) })
-        .catch(() => {});
-
-      const entry = DP_PROFILE.find((e) => {
-        const dpNum = settings[e.settingKey];
-        return dpNum > 0 && dp === dpNum;
-      });
+        .trigger(this, { dp: dpStr, value: String(rawValue) })
+        .catch(() => {})
 
       if (!entry) {
-        this.log(`Unknown DP ${dp}:`, value);
+        this.log(`Unknown DP ${dp}:`, rawValue);
         continue;
       }
 
@@ -214,7 +217,7 @@ class HeatPumpDevice extends BaseTuyaDevice {
         // â”€â”€ Operating mode â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         case 'mode': {
           const prev = this.getCapabilityValue('heat_pump_mode');
-          const mode = String(value).toLowerCase();
+          const mode = value; // already lowercased at loop entry
           await this.setCapabilityValue('heat_pump_mode', mode).catch(() => {});
           if (prev !== mode) {
             this._triggerModeChanged

@@ -102,24 +102,26 @@ class ThermostatDevice extends BaseTuyaDevice {
     const div = settings.temp_divisor || 1;
     let changed = false;
 
-    for (const [dpStr, value] of Object.entries(dps)) {
+    for (const [dpStr, rawValue] of Object.entries(dps)) {
+      const dp    = parseInt(dpStr, 10);
+      const entry = DP_PROFILE.find((e) => settings[e.settingKey] > 0 && dp === settings[e.settingKey]);
+
+      // Normalize mode strings to lowercase before the dedup filter so that mixed-case
+      // pushes ("Cool" vs "cool") don't get stuck in _lastDps and never re-applied.
+      const value = (entry?.type === 'mode') && typeof rawValue === 'string'
+        ? rawValue.toLowerCase()
+        : rawValue;
+
       if (this._lastDps[dpStr] === value) continue;
       this._lastDps[dpStr] = value;
       changed = true;
 
-      const dp = parseInt(dpStr, 10);
-
       this._triggerDpChanged
-        .trigger(this, { dp: dpStr, value: String(value) })
+        .trigger(this, { dp: dpStr, value: String(rawValue) })
         .catch(() => {});
 
-      const entry = DP_PROFILE.find((e) => {
-        const dpNum = settings[e.settingKey];
-        return dpNum > 0 && dp === dpNum;
-      });
-
       if (!entry || !this.hasCapability(entry.capability)) {
-        if (!entry) this.log(`Unknown DP ${dp}:`, value);
+        if (!entry) this.log(`Unknown DP ${dp}:`, rawValue);
         continue;
       }
 
@@ -138,7 +140,7 @@ class ThermostatDevice extends BaseTuyaDevice {
 
         case 'mode': {
           const prev = this.getCapabilityValue('thermostat_mode');
-          const mode = String(value).toLowerCase();
+          const mode = value; // already lowercased at loop entry
           await this.setCapabilityValue('thermostat_mode', mode).catch(() => {});
           if (prev !== mode) {
             this._triggerModeChanged

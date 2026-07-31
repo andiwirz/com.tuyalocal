@@ -1,4 +1,12 @@
 {
+  "1.0.107": {
+    "en": "New driver: Presence Sensor (ZY-M100-WIFI mmWave). Detects presence, distance (cm) and illuminance (lux) via Tuya LAN.",
+    "de": "Neuer Treiber: Präsenzsensor (ZY-M100-WIFI mmWave). Erkennt Anwesenheit, Entfernung (cm) und Beleuchtungsstärke (Lux) über Tuya LAN."
+  },
+  "1.0.106": {
+    "en": "Heat Pump / Thermostat: fixed mode not syncing when device sends mixed-case strings (e.g. \"Cool\" instead of \"cool\") — mode values are now normalised before the dedup cache comparison.",
+    "de": "Wärmepumpe / Thermostat: Modus-Synchronisation bei gemischter Groß-/Kleinschreibung behoben."
+  },
   "1.0.105": {
     "en": "Pairing help text translated to English in all 16 drivers (Athom review feedback).",
     "de": "Pairing-Hilfetext in allen 16 Treibern auf Englisch übersetzt (Athom Review-Feedback)."

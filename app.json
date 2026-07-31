@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.105",
+  "version": "1.0.107",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -18,6 +18,14 @@
     "appliances"
   ],
   "changelog": {
+    "1.0.107": {
+      "en": "New driver: Presence Sensor (ZY-M100-WIFI mmWave). Detects presence, distance (cm) and illuminance (lux) via Tuya LAN. Includes flow triggers for presence detected/cleared and DP-level debug trigger.",
+      "de": "Neuer Treiber: Präsenzsensor (ZY-M100-WIFI mmWave). Erkennt Anwesenheit, Entfernung (cm) und Beleuchtungsstärke (Lux) über Tuya LAN. Flow-Auslöser für Anwesenheit erkannt/beendet und DP-Debug-Auslöser enthalten."
+    },
+    "1.0.106": {
+      "en": "Heat Pump / Thermostat: fixed mode not syncing when device sends mixed-case values (e.g. \"Cool\" instead of \"cool\"). Mode strings are now normalised to lowercase before dedup comparison, preventing them from getting stuck in the cache.",
+      "de": "Wärmepumpe / Thermostat: Modus wird jetzt korrekt synchronisiert wenn das Gerät gemischte Groß-/Kleinschreibung sendet (z.B. \"Cool\" statt \"cool\"). Modus-Strings werden vor dem Cache-Vergleich normalisiert."
+    },
     "1.0.105": {
       "en": "Pairing help text translated to English in all drivers (Athom review feedback).",
       "de": "Pairing-Hilfetext in allen Treibern auf Englisch übersetzt (Athom Review-Feedback)."
@@ -1798,6 +1806,27 @@
         "de": "Heizvorgang gestoppt"
       },
       "icon": "/assets/capabilities/heater_active.svg"
+    },
+    "measure_distance": {
+      "type": "number",
+      "title": {
+        "en": "Distance",
+        "de": "Entfernung"
+      },
+      "units": {
+        "en": "cm",
+        "de": "cm"
+      },
+      "min": 0,
+      "max": 1000,
+      "step": 1,
+      "decimals": 0,
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "uiQuickAction": false,
+      "insights": true,
+      "icon": "/assets/capabilities/measure_distance.svg"
     }
   },
   "flow": {
@@ -3562,6 +3591,96 @@
             "example": "1783492800"
           }
         ]
+      },
+      {
+        "id": "presence_sensor_presence_detected",
+        "title": {
+          "en": "Presence detected",
+          "de": "Anwesenheit erkannt"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=presence_sensor"
+          }
+        ]
+      },
+      {
+        "id": "presence_sensor_presence_cleared",
+        "title": {
+          "en": "Presence cleared",
+          "de": "Keine Anwesenheit mehr"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=presence_sensor"
+          }
+        ]
+      },
+      {
+        "id": "presence_sensor_device_connected",
+        "title": {
+          "en": "Presence sensor connected",
+          "de": "Präsenzsensor verbunden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=presence_sensor"
+          }
+        ]
+      },
+      {
+        "id": "presence_sensor_device_disconnected",
+        "title": {
+          "en": "Presence sensor disconnected",
+          "de": "Präsenzsensor getrennt"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=presence_sensor"
+          }
+        ]
+      },
+      {
+        "id": "presence_sensor_dp_changed",
+        "title": {
+          "en": "Presence sensor data point changed",
+          "de": "Präsenzsensor: Datenpunkt geändert"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=presence_sensor"
+          }
+        ],
+        "tokens": [
+          {
+            "name": "dp",
+            "type": "string",
+            "title": {
+              "en": "DP number",
+              "de": "DP-Nummer"
+            },
+            "example": "1"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "title": {
+              "en": "Value",
+              "de": "Wert"
+            },
+            "example": "true"
+          }
+        ]
       }
     ],
     "conditions": [
@@ -4334,6 +4453,34 @@
             "name": "device",
             "type": "device",
             "filter": "driver_id=doorbell"
+          }
+        ]
+      },
+      {
+        "id": "presence_sensor_presence_is_active",
+        "title": {
+          "en": "Presence !{{is|is not}} detected",
+          "de": "Anwesenheit !{{wird|wird nicht}} erkannt"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=presence_sensor"
+          }
+        ]
+      },
+      {
+        "id": "presence_sensor_device_is_connected",
+        "title": {
+          "en": "Presence sensor !{{is|is not}} connected",
+          "de": "Präsenzsensor !{{ist|ist nicht}} verbunden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=presence_sensor"
           }
         ]
       }
@@ -6285,6 +6432,34 @@
               { "id": "1", "label": { "en": "Medium", "de": "Mittel" } },
               { "id": "2", "label": { "en": "High", "de": "Hoch" } }
             ]
+          }
+        ]
+      },
+      {
+        "id": "presence_sensor_force_reconnect",
+        "title": {
+          "en": "Reconnect presence sensor",
+          "de": "Präsenzsensor: Verbindung neu aufbauen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=presence_sensor"
+          }
+        ]
+      },
+      {
+        "id": "presence_sensor_refresh_device",
+        "title": {
+          "en": "Refresh presence sensor values",
+          "de": "Präsenzsensor: Daten aktualisieren"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=presence_sensor"
           }
         ]
       }
@@ -12019,6 +12194,395 @@
         "large": "/drivers/doorbell/assets/images/large.png",
         "xlarge": "/drivers/doorbell/assets/images/xlarge.png"
       }
+    },
+    {
+      "id": "presence_sensor",
+      "name": {
+        "en": "Presence Sensor",
+        "de": "Präsenzsensor"
+      },
+      "class": "sensor",
+      "capabilities": [
+        "alarm_motion",
+        "alarm_generic",
+        "measure_distance",
+        "measure_luminance"
+      ],
+      "capabilitiesOptions": {
+        "alarm_motion": {
+          "title": {
+            "en": "Presence Detected",
+            "de": "Anwesenheit erkannt"
+          },
+          "insightsTitleTrue": {
+            "en": "Presence detected",
+            "de": "Anwesenheit erkannt"
+          },
+          "insightsTitleFalse": {
+            "en": "No presence",
+            "de": "Keine Anwesenheit"
+          }
+        },
+        "alarm_generic": {
+          "title": {
+            "en": "Alarm",
+            "de": "Alarm"
+          }
+        },
+        "measure_distance": {
+          "title": {
+            "en": "Detected Distance",
+            "de": "Erkannte Entfernung"
+          }
+        },
+        "measure_luminance": {
+          "title": {
+            "en": "Illuminance",
+            "de": "Beleuchtungsstärke"
+          }
+        }
+      },
+      "settings": [
+        {
+          "type": "group",
+          "label": {
+            "en": "Connection",
+            "de": "Verbindung"
+          },
+          "children": [
+            {
+              "id": "ip",
+              "type": "text",
+              "label": {
+                "en": "IP Address",
+                "de": "IP-Adresse"
+              },
+              "value": "",
+              "hint": {
+                "en": "Local IP address of the sensor.",
+                "de": "Lokale IP-Adresse des Sensors."
+              }
+            },
+            {
+              "id": "device_id",
+              "type": "text",
+              "label": {
+                "en": "Device ID",
+                "de": "Geräte-ID"
+              },
+              "value": ""
+            },
+            {
+              "id": "local_key",
+              "type": "text",
+              "label": {
+                "en": "Local Key",
+                "de": "Lokaler Schlüssel"
+              },
+              "value": ""
+            },
+            {
+              "id": "version",
+              "type": "dropdown",
+              "label": {
+                "en": "Protocol Version",
+                "de": "Protokollversion"
+              },
+              "value": "3.3",
+              "values": [
+                {
+                  "id": "3.1",
+                  "label": {
+                    "en": "3.1 (legacy)",
+                    "de": "3.1 (veraltet)"
+                  }
+                },
+                {
+                  "id": "3.3",
+                  "label": {
+                    "en": "3.3",
+                    "de": "3.3"
+                  }
+                },
+                {
+                  "id": "3.4",
+                  "label": {
+                    "en": "3.4",
+                    "de": "3.4"
+                  }
+                },
+                {
+                  "id": "3.5",
+                  "label": {
+                    "en": "3.5",
+                    "de": "3.5"
+                  }
+                },
+                {
+                  "id": "3.2",
+                  "label": {
+                    "en": "3.2",
+                    "de": "3.2"
+                  }
+                },
+                {
+                  "id": "3.22",
+                  "label": {
+                    "en": "3.22 (newer chips)",
+                    "de": "3.22 (neuere Chips)"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "polling_interval",
+              "type": "number",
+              "label": {
+                "en": "Polling Interval (seconds)",
+                "de": "Abfrageintervall (Sekunden)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 3600,
+              "hint": {
+                "en": "Presence sensors are event-driven — 0 = rely on push events only (recommended).",
+                "de": "Präsenzsensoren sind ereignisgesteuert — 0 = nur Push-Events (empfohlen)."
+              }
+            },
+            {
+              "id": "reconnect_interval",
+              "type": "number",
+              "label": {
+                "en": "Auto-Reconnect Interval (minutes)",
+                "de": "Auto-Reconnect-Intervall (Minuten)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 1440,
+              "step": 1,
+              "hint": {
+                "en": "Reconnect to the device every N minutes. 0 = disabled.",
+                "de": "Verbindung alle N Minuten neu aufbauen. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "offline_grace_seconds",
+              "type": "number",
+              "label": {
+                "en": "Offline Grace Period (seconds)",
+                "de": "Offline-Karenzzeit (Sekunden)"
+              },
+              "value": 60,
+              "min": 0,
+              "max": 600,
+              "hint": {
+                "en": "How long the sensor must be offline before the 'disconnected' flow trigger fires.",
+                "de": "Wie lange der Sensor offline sein muss, bevor der 'Getrennt'-Auslöser feuert."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Sensor DPs",
+            "de": "Sensor-DPs"
+          },
+          "children": [
+            {
+              "id": "dp_presence",
+              "type": "number",
+              "label": {
+                "en": "Presence DP",
+                "de": "Anwesenheits-DP"
+              },
+              "value": 1,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "DP for presence detection (bool). ZY-M100-WIFI: DP 1.",
+                "de": "DP für Anwesenheitserkennung (bool). ZY-M100-WIFI: DP 1."
+              }
+            },
+            {
+              "id": "dp_alarm",
+              "type": "number",
+              "label": {
+                "en": "Alarm DP",
+                "de": "Alarm-DP"
+              },
+              "value": 6,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "Auxiliary alarm DP (bool). ZY-M100-WIFI: DP 6. Set to 0 to disable.",
+                "de": "Zusätzlicher Alarm-DP (bool). ZY-M100-WIFI: DP 6. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_distance",
+              "type": "number",
+              "label": {
+                "en": "Distance DP",
+                "de": "Entfernungs-DP"
+              },
+              "value": 9,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "DP reporting detected distance in cm. ZY-M100-WIFI: DP 9. Set to 0 to disable.",
+                "de": "DP für erkannte Entfernung in cm. ZY-M100-WIFI: DP 9. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_luminance",
+              "type": "number",
+              "label": {
+                "en": "Luminance DP",
+                "de": "Helligkeits-DP"
+              },
+              "value": 104,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "DP reporting illuminance in lux. ZY-M100-WIFI: DP 104. Set to 0 to disable.",
+                "de": "DP für Beleuchtungsstärke in Lux. ZY-M100-WIFI: DP 104. 0 = deaktiviert."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Detection Settings DPs",
+            "de": "Erkennungseinstellungs-DPs"
+          },
+          "children": [
+            {
+              "id": "dp_sensitivity",
+              "type": "number",
+              "label": {
+                "en": "Sensitivity DP",
+                "de": "Empfindlichkeits-DP"
+              },
+              "value": 2,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "DP for detection sensitivity (integer 0–9). ZY-M100-WIFI: DP 2. Adjust in the SmartLife app.",
+                "de": "DP für Erkennungsempfindlichkeit (Integer 0–9). ZY-M100-WIFI: DP 2. In der SmartLife-App anpassen."
+              }
+            },
+            {
+              "id": "dp_near_detection",
+              "type": "number",
+              "label": {
+                "en": "Near Detection DP",
+                "de": "Naherkennungs-DP"
+              },
+              "value": 3,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "DP for near detection boundary (cm). ZY-M100-WIFI: DP 3.",
+                "de": "DP für Naherkennungsgrenze (cm). ZY-M100-WIFI: DP 3."
+              }
+            },
+            {
+              "id": "dp_far_detection",
+              "type": "number",
+              "label": {
+                "en": "Far Detection DP",
+                "de": "Fernerkennungs-DP"
+              },
+              "value": 4,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "DP for far detection boundary (cm). ZY-M100-WIFI: DP 4.",
+                "de": "DP für Fernerkennungsgrenze (cm). ZY-M100-WIFI: DP 4."
+              }
+            },
+            {
+              "id": "dp_detection_delay",
+              "type": "number",
+              "label": {
+                "en": "Detection Delay DP",
+                "de": "Erkennungsverzögerungs-DP"
+              },
+              "value": 101,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "DP for detection delay (seconds). ZY-M100-WIFI: DP 101.",
+                "de": "DP für Erkennungsverzögerung (Sekunden). ZY-M100-WIFI: DP 101."
+              }
+            },
+            {
+              "id": "dp_fading_time",
+              "type": "number",
+              "label": {
+                "en": "Fading Time DP",
+                "de": "Ausblendzeit-DP"
+              },
+              "value": 102,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "DP for fading time after last detection (seconds). ZY-M100-WIFI: DP 102.",
+                "de": "DP für Ausblendzeit nach letzter Erkennung (Sekunden). ZY-M100-WIFI: DP 102."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Diagnostics",
+            "de": "Diagnose"
+          },
+          "children": [
+            {
+              "id": "connection_status",
+              "type": "text",
+              "label": {
+                "en": "Connection status",
+                "de": "Verbindungsstatus"
+              },
+              "value": "—",
+              "hint": {
+                "en": "Updated automatically.",
+                "de": "Wird automatisch aktualisiert."
+              }
+            },
+            {
+              "id": "last_seen",
+              "type": "text",
+              "label": {
+                "en": "Last data received",
+                "de": "Zuletzt Daten empfangen"
+              },
+              "value": "—",
+              "hint": {
+                "en": "Updated automatically.",
+                "de": "Wird automatisch aktualisiert."
+              }
+            }
+          ]
+        }
+      ],
+      "pair": [
+        {
+          "id": "credentials"
+        },
+        {
+          "id": "list_devices"
+        }
+      ],
+      "images": {
+        "small": "/drivers/presence_sensor/assets/images/small.png",
+        "large": "/drivers/presence_sensor/assets/images/large.png"
+      }
     }
   ],
   "brandColor": "#ED5308",
@@ -12059,6 +12623,10 @@
       "video doorbell",
       "door bell",
       "sensor",
+      "presence sensor",
+      "mmwave",
+      "radar",
+      "motion detector",
       "generic"
     ],
     "de": [
@@ -12094,7 +12662,11 @@
       "türklingel",
       "klingel",
       "video türklingel",
-      "sensor"
+      "sensor",
+      "präsenzsensor",
+      "mmwave",
+      "radar",
+      "bewegungsmelder"
     ]
   },
   "images": {
