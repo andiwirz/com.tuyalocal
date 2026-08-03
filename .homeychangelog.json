@@ -1,4 +1,12 @@
 {
+  "1.0.109": {
+    "en": "Cloud Lookup: fixed 'sign invalid' (device_ids commas were percent-encoded, rejected by Tuya). Replaced slow per-device enrichment with factory-infos batch for local keys.",
+    "de": "Cloud-Lookup: 'sign invalid' behoben (Kommas in device_ids als %2C kodiert). Langsame Einzel-Anreicherung durch factory-infos-Batch ersetzt."
+  },
+  "1.0.108": {
+    "en": "Cloud Lookup: fixed truncated device list (Strategy 1 now paginates per-UID endpoint) and timeout in app settings for large accounts.",
+    "de": "Cloud-Lookup: Abgeschnittene Geräteliste und Timeout bei großen Konten behoben."
+  },
   "1.0.107": {
     "en": "New driver: Presence Sensor (ZY-M100-WIFI mmWave). Detects presence, distance (cm) and illuminance (lux) via Tuya LAN.",
     "de": "Neuer Treiber: Präsenzsensor (ZY-M100-WIFI mmWave). Erkennt Anwesenheit, Entfernung (cm) und Beleuchtungsstärke (Lux) über Tuya LAN."

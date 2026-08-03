@@ -199,17 +199,17 @@ class TuyaLocalApp extends Homey.App {
   }
 
   async _enrichDevices(host, clientId, secret, token, allDevices) {
-    // Step 1: v2.0 batch — best source for custom_name + product_name + local_key
-    let batchWorked = false;
+    // Step 1: v2.0 batch — best source for custom_name + product_name + local_key.
+    // Use literal commas (not %2C) — Tuya normalises the URL before signature
+    // verification, so percent-encoding commas causes "sign invalid".
     for (let i = 0; i < allDevices.length; i += 20) {
       const batch = allDevices.slice(i, i + 20);
       const ids = batch.map((d) => d.id).join(',');
       try {
         const res = await this._tuyaRequest(host,
-          `/v2.0/cloud/thing/batch?device_ids=${encodeURIComponent(ids)}`,
+          `/v2.0/cloud/thing/batch?device_ids=${ids}`,
           clientId, secret, token);
         if (res.success && Array.isArray(res.result)) {
-          batchWorked = true;
           for (const r of res.result) {
             const d = allDevices.find((x) => x.id === r.id);
             if (!d) continue;
@@ -226,24 +226,29 @@ class TuyaLocalApp extends Homey.App {
       }
     }
 
-    // Step 2: v2.0 per-device endpoint for missing custom_name — most reliable source
-    const missingCustomName = allDevices.filter((d) => !d.custom_name);
-    for (const d of missingCustomName) {
+    // Step 2: v1.0 factory-infos batch — local_key for any devices still missing it.
+    // One call per 20 devices (not per device), so it's fast and won't time out.
+    const missingKey = allDevices.filter((d) => !d.local_key);
+    for (let i = 0; i < missingKey.length; i += 20) {
+      const batch = missingKey.slice(i, i + 20);
+      const ids = batch.map((d) => d.id).join(',');
       try {
         const res = await this._tuyaRequest(host,
-          `/v2.0/cloud/thing/${d.id}`, clientId, secret, token);
-        if (res.success && res.result) {
-          const r = res.result;
-          if (r.custom_name) d.custom_name = r.custom_name;
-          if (!d.local_key && r.local_key) d.local_key = r.local_key;
-          if (!d.product && r.product_name) d.product = r.product_name;
+          `/v1.0/iot-03/devices/factory-infos?device_ids=${ids}`,
+          clientId, secret, token);
+        if (res.success && Array.isArray(res.result)) {
+          for (const r of res.result) {
+            const d = allDevices.find((x) => x.id === r.id || x.uuid === r.uuid);
+            if (d && !d.local_key && r.local_key) d.local_key = r.local_key;
+          }
         }
       } catch (_) {}
     }
 
-    // Step 3: v1.0 iot-03 per-device for remaining missing fields (local_key, product)
-    const needsFallback = allDevices.filter((d) => !d.local_key || !d.product);
-    for (const d of needsFallback) {
+    // Step 3: v1.0 per-device for product name still missing after both batch passes.
+    // Capped at 20 to stay within Homey.api() timeout budget.
+    const needsProduct = allDevices.filter((d) => !d.product).slice(0, 20);
+    for (const d of needsProduct) {
       try {
         const res = await this._tuyaRequest(host,
           `/v1.0/iot-03/devices/${d.id}`, clientId, secret, token);
@@ -254,15 +259,6 @@ class TuyaLocalApp extends Homey.App {
           if (!d.custom_name && r.custom_name) d.custom_name = r.custom_name;
         }
       } catch (_) {}
-      // factory-infos fallback for local_key only
-      if (!d.local_key) {
-        try {
-          const res = await this._tuyaRequest(host,
-            `/v1.0/iot-03/devices/factory-infos?device_ids=${d.id}`,
-            clientId, secret, token);
-          if (res.success && res.result?.[0]?.local_key) d.local_key = res.result[0].local_key;
-        } catch (_) {}
-      }
     }
   }
 
@@ -285,7 +281,7 @@ class TuyaLocalApp extends Homey.App {
       });
     };
 
-    // Strategy 1: Get linked UIDs → devices per UID
+    // Strategy 1: Get linked UIDs → devices per UID (paginated)
     const uids = [];
     try {
       const uidRes = await this._tuyaRequest(host,
@@ -299,11 +295,19 @@ class TuyaLocalApp extends Homey.App {
     } catch (e) { errors.push('users: ' + e.message); }
 
     for (const uid of uids) {
-      try {
-        const res = await this._tuyaRequest(host,
-          `/v1.0/users/${uid}/devices`, clientId, secret, token);
-        if (res.success) (res.result || []).forEach(addDevice);
-      } catch (_) {}
+      // Paginate: Tuya default limit is 20, so loop through all pages
+      for (let page = 1; page <= 50; page++) {
+        try {
+          const res = await this._tuyaRequest(host,
+            `/v1.0/users/${uid}/devices?page_no=${page}&page_size=100`,
+            clientId, secret, token);
+          if (!res.success) break;
+          const list = res.result || [];
+          if (!Array.isArray(list) || list.length === 0) break;
+          list.forEach(addDevice);
+          if (list.length < 100) break;
+        } catch (_) { break; }
+      }
     }
     if (allDevices.length > 0) {
       await this._enrichDevices(host, clientId, secret, token, allDevices);

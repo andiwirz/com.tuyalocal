@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.107",
+  "version": "1.0.109",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -18,6 +18,14 @@
     "appliances"
   ],
   "changelog": {
+    "1.0.109": {
+      "en": "Cloud Lookup: fixed 'sign invalid' on batch enrichment — device_ids commas were percent-encoded (%2C) which Tuya rejects after URL normalisation. Replaced slow per-device enrichment with a fast v1.0 factory-infos batch call for local keys.",
+      "de": "Cloud-Lookup: 'sign invalid' beim Batch-Enrich behoben — Kommas in device_ids wurden als %2C kodiert, was Tuya nach URL-Normalisierung ablehnt. Langsame Einzel-Geräte-Anreicherung durch schnellen factory-infos-Batch-Aufruf ersetzt."
+    },
+    "1.0.108": {
+      "en": "Cloud Lookup: fixed truncated device list (only 20 of 91 returned) — Strategy 1 now paginates the per-UID device endpoint. Fixed timeout in app settings for large accounts by capping per-device enrichment calls.",
+      "de": "Cloud-Lookup: Abgeschnittene Geräteliste behoben (nur 20 von 91 zurückgegeben) — Strategy 1 paginiert jetzt den UID-Geräte-Endpunkt. Timeout in App-Einstellungen bei großen Konten durch Begrenzung der Einzel-Geräte-Anreicherung behoben."
+    },
     "1.0.107": {
       "en": "New driver: Presence Sensor (ZY-M100-WIFI mmWave). Detects presence, distance (cm) and illuminance (lux) via Tuya LAN. Includes flow triggers for presence detected/cleared and DP-level debug trigger.",
       "de": "Neuer Treiber: Präsenzsensor (ZY-M100-WIFI mmWave). Erkennt Anwesenheit, Entfernung (cm) und Beleuchtungsstärke (Lux) über Tuya LAN. Flow-Auslöser für Anwesenheit erkannt/beendet und DP-Debug-Auslöser enthalten."
