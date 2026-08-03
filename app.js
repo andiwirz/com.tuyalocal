@@ -199,10 +199,14 @@ class TuyaLocalApp extends Homey.App {
   }
 
   async _enrichDevices(host, clientId, secret, token, allDevices) {
+    // 120 ms between batch calls keeps us well below Tuya's 10 req/s limit.
+    const pause = () => new Promise((r) => setTimeout(r, 120));
+
     // Step 1: v2.0 batch — best source for custom_name + product_name + local_key.
     // Use literal commas (not %2C) — Tuya normalises the URL before signature
     // verification, so percent-encoding commas causes "sign invalid".
     for (let i = 0; i < allDevices.length; i += 20) {
+      if (i > 0) await pause();
       const batch = allDevices.slice(i, i + 20);
       const ids = batch.map((d) => d.id).join(',');
       try {
@@ -227,9 +231,9 @@ class TuyaLocalApp extends Homey.App {
     }
 
     // Step 2: v1.0 factory-infos batch — local_key for any devices still missing it.
-    // One call per 20 devices (not per device), so it's fast and won't time out.
     const missingKey = allDevices.filter((d) => !d.local_key);
     for (let i = 0; i < missingKey.length; i += 20) {
+      await pause();
       const batch = missingKey.slice(i, i + 20);
       const ids = batch.map((d) => d.id).join(',');
       try {
@@ -249,6 +253,7 @@ class TuyaLocalApp extends Homey.App {
     // Capped at 20 to stay within Homey.api() timeout budget.
     const needsProduct = allDevices.filter((d) => !d.product).slice(0, 20);
     for (const d of needsProduct) {
+      await pause();
       try {
         const res = await this._tuyaRequest(host,
           `/v1.0/iot-03/devices/${d.id}`, clientId, secret, token);
@@ -295,14 +300,13 @@ class TuyaLocalApp extends Homey.App {
     } catch (e) { errors.push('users: ' + e.message); }
 
     for (const uid of uids) {
-      // Paginate: Tuya default limit is 20, so loop through all pages
       for (let page = 1; page <= 50; page++) {
         try {
           const res = await this._tuyaRequest(host,
-            `/v1.0/users/${uid}/devices?page_no=${page}&page_size=100`,
+            `/v1.0/iot-03/devices?source_type=tuyaUser&source_id=${uid}&page_no=${page}&page_size=100`,
             clientId, secret, token);
           if (!res.success) break;
-          const list = res.result || [];
+          const list = res.result?.list || [];
           if (!Array.isArray(list) || list.length === 0) break;
           list.forEach(addDevice);
           if (list.length < 100) break;
@@ -314,29 +318,50 @@ class TuyaLocalApp extends Homey.App {
       return allDevices;
     }
 
-    // Strategy 2: Use project UID from token
+    // Strategy 2: Use project UID from token (paginated)
     if (projectUid) {
-      try {
-        const res = await this._tuyaRequest(host,
-          `/v1.0/users/${projectUid}/devices`, clientId, secret, token);
-        if (res.success) (res.result || []).forEach(addDevice);
-        else errors.push('projectUid: ' + (res.msg || 'failed'));
-      } catch (e) { errors.push('projectUid: ' + e.message); }
+      for (let page = 1; page <= 50; page++) {
+        try {
+          const res = await this._tuyaRequest(host,
+            `/v1.0/iot-03/devices?source_type=tuyaUser&source_id=${projectUid}&page_no=${page}&page_size=100`,
+            clientId, secret, token);
+          if (!res.success) { errors.push('projectUid: ' + (res.msg || 'failed')); break; }
+          const list = res.result?.list || [];
+          if (!Array.isArray(list) || list.length === 0) break;
+          list.forEach(addDevice);
+          if (list.length < 100) break;
+        } catch (e) { errors.push('projectUid: ' + e.message); break; }
+      }
     }
     if (allDevices.length > 0) {
       await this._enrichDevices(host, clientId, secret, token, allDevices);
       return allDevices;
     }
 
-    // Strategy 3: v1.0 with source_type
+    // Strategy 3: v1.0 with source_type (also tries legacy /users/{uid}/devices as fallback)
     for (const uid of [projectUid, ...uids]) {
       if (!uid) continue;
+      for (let page = 1; page <= 50; page++) {
+        try {
+          const res = await this._tuyaRequest(host,
+            `/v1.0/iot-03/devices?source_type=tuyaUser&source_id=${uid}&page_no=${page}&page_size=100`,
+            clientId, secret, token);
+          if (!res.success) { if (page === 1) errors.push('source(' + uid.slice(0, 8) + '): ' + (res.msg || 'failed')); break; }
+          const list = res.result?.list || [];
+          if (!Array.isArray(list) || list.length === 0) break;
+          list.forEach(addDevice);
+          if (list.length < 100) break;
+        } catch (_) { break; }
+      }
+      if (allDevices.length > 0) {
+        await this._enrichDevices(host, clientId, secret, token, allDevices);
+        return allDevices;
+      }
+      // Legacy fallback for this UID
       try {
         const res = await this._tuyaRequest(host,
-          `/v1.0/iot-03/devices?source_type=tuyaUser&source_id=${uid}&page_size=100`,
-          clientId, secret, token);
-        if (res.success) (res.result?.list || []).forEach(addDevice);
-        else errors.push('source(' + uid.slice(0, 8) + '): ' + (res.msg || 'failed'));
+          `/v1.0/users/${uid}/devices`, clientId, secret, token);
+        if (res.success) (Array.isArray(res.result) ? res.result : (res.result?.list || [])).forEach(addDevice);
       } catch (_) {}
       if (allDevices.length > 0) {
         await this._enrichDevices(host, clientId, secret, token, allDevices);
@@ -388,7 +413,7 @@ class TuyaLocalApp extends Homey.App {
     throw new Error('No devices found (' + errors.join('; ') + ')');
   }
 
-  _tuyaRequest(host, requestPath, clientId, secret, token) {
+  _tuyaRequestOnce(host, requestPath, clientId, secret, token) {
     return new Promise((resolve, reject) => {
       // Tuya requires query params sorted alphabetically in the signature
       let signPath = requestPath;
@@ -427,6 +452,19 @@ class TuyaLocalApp extends Homey.App {
       req.on('error', reject);
       req.on('timeout', () => { req.destroy(); reject(new Error('Request timed out')); });
     });
+  }
+
+  async _tuyaRequest(host, requestPath, clientId, secret, token) {
+    // Retry up to 3 times on Tuya rate-limit (code 429 or code 1010).
+    // Tuya enforces 10 req/s per client_id — rapid batch calls can exceed this.
+    const RETRY_DELAYS = [1000, 2000, 3000];
+    for (let attempt = 0; attempt <= RETRY_DELAYS.length; attempt++) {
+      const res = await this._tuyaRequestOnce(host, requestPath, clientId, secret, token);
+      const code = res.code ?? res.error_code;
+      if (res.success || (code !== 429 && code !== 1010)) return res;
+      if (attempt === RETRY_DELAYS.length) return res;
+      await new Promise((r) => setTimeout(r, RETRY_DELAYS[attempt]));
+    }
   }
 
   async onUninit() {

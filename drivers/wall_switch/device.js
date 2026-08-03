@@ -73,7 +73,7 @@ class WallSwitchDevice extends BaseTuyaDevice {
     const title = customName
       ? { en: customName, de: customName }
       : { en: defaultEn, de: defaultDe };
-    await this.setCapabilityOptions(gang.capability, { title }).catch(() => {});
+    await this._setCapabilityOptionsIfChanged(gang.capability, { title }).catch(() => {});
   }
 
   _registerGangListeners() {

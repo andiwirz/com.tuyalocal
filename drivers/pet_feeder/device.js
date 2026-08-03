@@ -239,7 +239,7 @@ class PetFeederDevice extends BaseTuyaDevice {
       values.push({ id: s, title: { en: s, de: s } });
     }
     try {
-      await this.setCapabilityOptions('feed_portions', { values });
+      const changed = await this._setCapabilityOptionsIfChanged('feed_portions', { values });
       this.log(`feed_portions picker â†’ ${min}â€“${max} (${values.length} options)`);
     } catch (err) {
       this.log('setCapabilityOptions(feed_portions) failed:', err.message);

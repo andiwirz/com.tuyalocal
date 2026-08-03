@@ -215,7 +215,7 @@ class ThermostatDevice extends BaseTuyaDevice {
     const min  = this.getSetting('temp_min')  ?? 5;
     const max  = this.getSetting('temp_max')  ?? 35;
     const step = this.getSetting('temp_step') ?? 0.5;
-    await this.setCapabilityOptions('target_temperature', { min, max, step }).catch(() => {});
+    await this._setCapabilityOptionsIfChanged('target_temperature', { min, max, step }).catch(() => {});
   }
 
   async _syncModeOptions() {
@@ -223,7 +223,7 @@ class ThermostatDevice extends BaseTuyaDevice {
     const values = (this.getSetting('mode_values') || 'manual,auto,program')
       .split(',').map((s) => s.trim()).filter(Boolean)
       .map((v) => ({ id: v, title: { en: capitalize(v), de: capitalize(v) } }));
-    await this.setCapabilityOptions('thermostat_mode', { values }).catch(() => {});
+    await this._setCapabilityOptionsIfChanged('thermostat_mode', { values }).catch(() => {});
   }
 }
 

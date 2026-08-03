@@ -1,4 +1,16 @@
 {
+  "1.0.112": {
+    "en": "Cloud Lookup: auto-retry on rate-limit (429) with 1–3 s backoff; 120 ms pause between batch enrichment calls to stay below 10 req/s.",
+    "de": "Cloud-Lookup: Auto-Retry bei Rate-Limit (429) mit 1–3 s Backoff; 120 ms Pause zwischen Batch-Aufrufen."
+  },
+  "1.0.111": {
+    "en": "Cloud Lookup: fixed truncated device list for accounts with >20 devices — strategies 1–3 now use the paginated iot-03 endpoint that properly respects page_size.",
+    "de": "Cloud-Lookup: Abgeschnittene Geräteliste bei mehr als 20 Geräten behoben — Strategien 1–3 nutzen jetzt den paginierten iot-03-Endpunkt."
+  },
+  "1.0.110": {
+    "en": "Fixed unnecessary setCapabilityOptions calls on every restart — now cached and only applied when values changed.",
+    "de": "Unnötige setCapabilityOptions-Aufrufe bei jedem Neustart behoben — jetzt gecacht und nur bei Änderungen ausgeführt."
+  },
   "1.0.109": {
     "en": "Cloud Lookup: fixed 'sign invalid' (device_ids commas were percent-encoded, rejected by Tuya). Replaced slow per-device enrichment with factory-infos batch for local keys.",
     "de": "Cloud-Lookup: 'sign invalid' behoben (Kommas in device_ids als %2C kodiert). Langsame Einzel-Anreicherung durch factory-infos-Batch ersetzt."

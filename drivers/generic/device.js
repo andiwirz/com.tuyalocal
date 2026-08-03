@@ -162,7 +162,7 @@ class GenericDevice extends BaseTuyaDevice {
     if (Object.keys(opts).length === 0) return;
 
     try {
-      await this.setCapabilityOptions(mapping.cap, opts);
+      await this._setCapabilityOptionsIfChanged(mapping.cap, opts);
     } catch (err) {
       this.log(`setCapabilityOptions(${mapping.cap}) failed: ${err.message}`);
     }

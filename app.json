@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.109",
+  "version": "1.0.112",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -18,6 +18,18 @@
     "appliances"
   ],
   "changelog": {
+    "1.0.112": {
+      "en": "Cloud Lookup: added automatic retry with backoff on Tuya rate-limit (429) responses, and 120 ms inter-batch delay in enrichment to stay below the 10 req/s API limit.",
+      "de": "Cloud-Lookup: automatischer Retry mit Backoff bei Tuya-Rate-Limit (429) und 120 ms Pause zwischen Batch-Aufrufen um das API-Limit von 10 req/s nicht zu überschreiten."
+    },
+    "1.0.111": {
+      "en": "Cloud Lookup: fixed truncated device list for accounts with more than 20 devices. Strategies 1–3 now all use the paginated /iot-03/devices endpoint (which properly respects page_size) instead of the legacy /users/{uid}/devices endpoint that silently caps at 20.",
+      "de": "Cloud-Lookup: Abgeschnittene Geräteliste bei mehr als 20 Geräten behoben. Strategien 1–3 verwenden jetzt durchgehend den paginierten /iot-03/devices-Endpunkt (der page_size korrekt respektiert) statt des alten /users/{uid}/devices-Endpunkts der still bei 20 kürzt."
+    },
+    "1.0.110": {
+      "en": "Fixed unnecessary capability option updates on every restart. setCapabilityOptions is now guarded by a cache and only fires when values actually changed — prevents spurious device-update events in Homey.",
+      "de": "Unnötige Capability-Options-Updates bei jedem Neustart behoben. setCapabilityOptions wird jetzt durch einen Cache geschützt und nur ausgeführt wenn sich die Werte tatsächlich geändert haben."
+    },
     "1.0.109": {
       "en": "Cloud Lookup: fixed 'sign invalid' on batch enrichment — device_ids commas were percent-encoded (%2C) which Tuya rejects after URL normalisation. Replaced slow per-device enrichment with a fast v1.0 factory-infos batch call for local keys.",
       "de": "Cloud-Lookup: 'sign invalid' beim Batch-Enrich behoben — Kommas in device_ids wurden als %2C kodiert, was Tuya nach URL-Normalisierung ablehnt. Langsame Einzel-Geräte-Anreicherung durch schnellen factory-infos-Batch-Aufruf ersetzt."

@@ -201,7 +201,7 @@ class KettleDevice extends BaseTuyaDevice {
     const min  = this.getSetting('temp_min')  ?? 40;
     const max  = this.getSetting('temp_max')  ?? 100;
     const step = this.getSetting('temp_step') ?? 5;
-    await this.setCapabilityOptions('target_temperature', { min, max, step }).catch(() => {});
+    await this._setCapabilityOptionsIfChanged('target_temperature', { min, max, step }).catch(() => {});
   }
 
   async _syncModeOptions() {
@@ -209,7 +209,7 @@ class KettleDevice extends BaseTuyaDevice {
     const values = (this.getSetting('mode_values') || 'boil,heat,keep_warm')
       .split(',').map((s) => s.trim()).filter(Boolean)
       .map((v) => ({ id: v, title: { en: capitalize(v), de: capitalize(v) } }));
-    await this.setCapabilityOptions('kettle_mode', { values }).catch(() => {});
+    await this._setCapabilityOptionsIfChanged('kettle_mode', { values }).catch(() => {});
   }
 
   async _syncStatusOptions() {
@@ -217,7 +217,7 @@ class KettleDevice extends BaseTuyaDevice {
     const values = (this.getSetting('status_values') || 'standby,heating,cooling,warm,done')
       .split(',').map((s) => s.trim()).filter(Boolean)
       .map((v) => ({ id: v, title: { en: capitalize(v), de: capitalize(v) } }));
-    await this.setCapabilityOptions('kettle_status', { values }).catch(() => {});
+    await this._setCapabilityOptionsIfChanged('kettle_status', { values }).catch(() => {});
   }
 }
 

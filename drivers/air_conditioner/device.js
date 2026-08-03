@@ -299,7 +299,7 @@ class AirConditionerDevice extends BaseTuyaDevice {
     const step = this.getSetting('temp_step') ?? 1;
     const min  = this.getSetting('temp_min')  ?? 16;
     const max  = this.getSetting('temp_max')  ?? 30;
-    await this.setCapabilityOptions('target_temperature', { step, min, max }).catch(() => {});
+    await this._setCapabilityOptionsIfChanged('target_temperature', { step, min, max }).catch(() => {});
   }
 }
 

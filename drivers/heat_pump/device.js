@@ -346,8 +346,8 @@ class HeatPumpDevice extends BaseTuyaDevice {
     const max  = this.getSetting('temp_max')  ?? 45;
     const step = this.getSetting('temp_step') ?? 1;
     try {
-      await this.setCapabilityOptions('target_temperature', { min, max, step });
-      this.log(`target_temperature range â†’ ${min}â€“${max} step ${step}`);
+      const changed = await this._setCapabilityOptionsIfChanged('target_temperature', { min, max, step });
+      if (changed) this.log(`target_temperature range â†’ ${min}â€“${max} step ${step}`);
     } catch (err) {
       this.log('setCapabilityOptions(target_temperature) failed:', err.message);
     }
@@ -363,8 +363,8 @@ class HeatPumpDevice extends BaseTuyaDevice {
       .split(',').map((s) => s.trim()).filter(Boolean)
       .map((v) => ({ id: v, title: { en: capitalize(v), de: capitalize(v) } }));
     try {
-      await this.setCapabilityOptions('heat_pump_mode', { values });
-      this.log(`heat_pump_mode picker â†’ ${values.map((v) => v.id).join(', ')}`);
+      const changedMode = await this._setCapabilityOptionsIfChanged('heat_pump_mode', { values });
+      if (changedMode) this.log(`heat_pump_mode picker â†’ ${values.map((v) => v.id).join(', ')}`);
     } catch (err) {
       this.log('setCapabilityOptions(heat_pump_mode) failed:', err.message);
     }
@@ -380,8 +380,8 @@ class HeatPumpDevice extends BaseTuyaDevice {
       .split(',').map((s) => s.trim()).filter(Boolean)
       .map((v) => ({ id: v, title: { en: capitalize(v), de: capitalize(v) } }));
     try {
-      await this.setCapabilityOptions('heat_pump_preset', { values });
-      this.log(`heat_pump_preset picker â†’ ${values.map((v) => v.id).join(', ')}`);
+      const changedPreset = await this._setCapabilityOptionsIfChanged('heat_pump_preset', { values });
+      if (changedPreset) this.log(`heat_pump_preset picker â†’ ${values.map((v) => v.id).join(', ')}`);
     } catch (err) {
       this.log('setCapabilityOptions(heat_pump_preset) failed:', err.message);
     }

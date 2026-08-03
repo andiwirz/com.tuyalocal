@@ -220,7 +220,7 @@ class HeaterDevice extends BaseTuyaDevice {
     const step = this.getSetting('temp_step') ?? 1;
     const min  = this.getSetting('temp_min')  ?? 5;
     const max  = this.getSetting('temp_max')  ?? 35;
-    await this.setCapabilityOptions('target_temperature', { step, min, max }).catch(() => {});
+    await this._setCapabilityOptionsIfChanged('target_temperature', { step, min, max }).catch(() => {});
   }
 }
 
