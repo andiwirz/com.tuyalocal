@@ -636,7 +636,7 @@
       "uiComponent": "toggle",
       "uiQuickAction": false,
       "insights": false,
-      "icon": "/assets/capabilities/alarm_water.svg"
+      "icon": "/assets/capabilities/pump.svg"
     },
     "fan_speed": {
       "type": "enum",
