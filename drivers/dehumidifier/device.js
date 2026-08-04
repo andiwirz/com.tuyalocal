@@ -1,10 +1,10 @@
-﻿'use strict';
+'use strict';
 
 const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 
 const DEBOUNCE_MS = 300; // debounce delay for slider capabilities
 
-// Maps settings keys â†’ Homey capabilities.
+// Maps settings keys → Homey capabilities.
 // settable: false = read-only, no capability listener registered.
 // debounce: true  = delay physical command to avoid rapid-fire sends (e.g. sliders).
 const DP_PROFILE = [
@@ -19,6 +19,10 @@ const DP_PROFILE = [
   { settingKey: 'dp_water_full',       capability: 'alarm_water',         transform: (v) => Boolean(v),     settable: false              },
   { settingKey: 'dp_temperature',      capability: 'measure_temperature', transform: (v) => Number(v),      settable: false              },
   { settingKey: 'dp_anion',            capability: 'anion',               transform: (v) => Boolean(v),     settable: true               },
+  // Optional extra boolean DPs (enabled when DP > 0)
+  { settingKey: 'dp_oscillate',        capability: 'oscillate',           transform: (v) => Boolean(v),     settable: true               },
+  { settingKey: 'dp_self_clean',       capability: 'self_clean',          transform: (v) => Boolean(v),     settable: true               },
+  { settingKey: 'dp_pump',             capability: 'pump',                transform: (v) => Boolean(v),     settable: true               },
 ];
 
 const OPTIONAL_CAPABILITIES = [
@@ -28,6 +32,9 @@ const OPTIONAL_CAPABILITIES = [
   { setting: 'dp_countdown_timer', capability: 'countdown_timer'     },
   { setting: 'dp_countdown_left',  capability: 'countdown_left'      },
   { setting: 'dp_water_full',      capability: 'alarm_water'         },
+  { setting: 'dp_oscillate',       capability: 'oscillate'           },
+  { setting: 'dp_self_clean',      capability: 'self_clean'          },
+  { setting: 'dp_pump',            capability: 'pump'                },
 ];
 
 class DehumidifierDevice extends BaseTuyaDevice {
@@ -39,7 +46,7 @@ class DehumidifierDevice extends BaseTuyaDevice {
     // Driver-specific state
     this._waterAlarmTimer     = null;  // debounce: prevents spurious reconnect triggers
     this._waterAlarmConfirmed = false; // true only after alarm stayed true for debounce period
-    this._connectedAt         = null;  // timestamp of last successful connect â€” used for grace period
+    this._connectedAt         = null;  // timestamp of last successful connect — used for grace period
 
     // Restore _alarmFalseSince from the device store so the oscillation guard survives
     // Homey restarts.  Without persistence, a restart resets the timestamp to "now",
@@ -54,7 +61,7 @@ class DehumidifierDevice extends BaseTuyaDevice {
     await this._syncEnumOptions('mode',      this.getSetting('mode_values'));
     await this._syncEnumOptions('fan_speed', this.getSetting('fan_speed_values'));
 
-    // â”€â”€ Flow trigger cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Flow trigger cards ──────────────────────────────────────────────────
     // RunListeners for humidity_above/below are registered once in driver.js onInit.
     this._triggerHumidityAbove      = this.homey.flow.getDeviceTriggerCard('dehumidifier_humidity_above');
     this._triggerHumidityBelow      = this.homey.flow.getDeviceTriggerCard('dehumidifier_humidity_below');
@@ -64,7 +71,7 @@ class DehumidifierDevice extends BaseTuyaDevice {
     this._triggerDeviceDisconnected = this.homey.flow.getDeviceTriggerCard('dehumidifier_device_disconnected');
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('dehumidifier_dp_changed');
 
-    // â”€â”€ Capability listeners (auto-registered from DP_PROFILE) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Capability listeners (auto-registered from DP_PROFILE) ──────────────
     for (const entry of DP_PROFILE) {
       if (!entry.settable) continue;
       if (!this.hasCapability(entry.capability)) continue;
@@ -91,7 +98,7 @@ class DehumidifierDevice extends BaseTuyaDevice {
     await this._connect();
   }
 
-  // â”€â”€ Hook overrides â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Hook overrides ─────────────────────────────────────────────────────────
 
   /** Reset alarm state on (re)connect. */
   _onConnected() {
@@ -101,7 +108,7 @@ class DehumidifierDevice extends BaseTuyaDevice {
     this._waterAlarmTimer     = null;
     this._waterAlarmConfirmed = false;
     // Seed _alarmFalseSince only if we have no stored value.  The persisted
-    // timestamp is far more accurate (could be hours old) â€” overwriting it with
+    // timestamp is far more accurate (could be hours old) — overwriting it with
     // "now" on every reconnect was resetting the oscillation guard and allowing
     // the next hourly firmware pulse to pass through.
     if (!this.getCapabilityValue('alarm_water') && this._alarmFalseSince === null) {
@@ -119,7 +126,7 @@ class DehumidifierDevice extends BaseTuyaDevice {
     this.setStoreValue('alarmFalseSince', time).catch(() => {});
   }
 
-  // â”€â”€ DPS handling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── DPS handling ───────────────────────────────────────────────────────────
 
   async _handleDps(dps) {
     const settings = this.getSettings();
@@ -164,26 +171,26 @@ class DehumidifierDevice extends BaseTuyaDevice {
         await this.setCapabilityValue('alarm_water', converted).catch(() => {});
 
         if (!prevWater && converted) {
-          // â”€â”€ Oscillation guard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // ── Oscillation guard ────────────────────────────────────────────
           // Some devices emit a spurious alarm_water=true pulse periodically (e.g.
           // every hour on reconnect or firmware heartbeat).  Require the alarm to
           // have been continuously false for MIN_FALSE_MS before we even start the
           // confirmation debounce.  The window is long enough to outlast the device's
-          // pulse interval â€” if the pulse repeats every ~60 min the false period is
+          // pulse interval — if the pulse repeats every ~60 min the false period is
           // ~57 min, so a 2-hour guard will always suppress it.
           const guardHours   = this.getSetting('alarm_guard_hours') ?? 2;
           const MIN_FALSE_MS = guardHours * 60 * 60 * 1000;
           const now          = Date.now();
           if (this._alarmFalseSince !== null && now - this._alarmFalseSince < MIN_FALSE_MS) {
             this._appLog(
-              `alarm_water: suppressed â€” was false for only ` +
+              `alarm_water: suppressed — was false for only ` +
               `${Math.round((now - this._alarmFalseSince) / 60000)} min (< ${MIN_FALSE_MS / 60000} min)`,
               'info',
             );
             continue;
           }
 
-          // â”€â”€ Confirmation debounce â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // ── Confirmation debounce ────────────────────────────────────────
           // Alarm must stay true continuously for MIN_CONFIRM_MS before we fire.
           // 10 minutes absorbs short firmware pulses that pass the oscillation guard
           // (e.g. because the device was genuinely false for > 2 h before the pulse).
@@ -194,7 +201,7 @@ class DehumidifierDevice extends BaseTuyaDevice {
           const debounceMs     = Math.max(MIN_CONFIRM_MS, remaining + 5_000);
 
           this._appLog(
-            `alarm_water: true â€” waiting ${Math.round(debounceMs / 1000)} s for confirmation`,
+            `alarm_water: true — waiting ${Math.round(debounceMs / 1000)} s for confirmation`,
             'info',
           );
 
@@ -213,7 +220,7 @@ class DehumidifierDevice extends BaseTuyaDevice {
 
         if (prevWater && !converted) {
           clearTimeout(this._waterAlarmTimer);
-          this._setAlarmFalseSince(Date.now()); // persist â€” survives Homey restarts
+          this._setAlarmFalseSince(Date.now()); // persist — survives Homey restarts
           // Only fire "water emptied" if "water full" was genuinely confirmed,
           // so the false that follows a spurious true is silently swallowed.
           if (this._waterAlarmConfirmed) {
@@ -230,17 +237,18 @@ class DehumidifierDevice extends BaseTuyaDevice {
         continue;
       }
 
+      if (!this.hasCapability(entry.capability)) continue;
       await this.setCapabilityValue(entry.capability, converted).catch(() => {});
     }
 
-    // Debounced persistence â€” avoids hammering storage on every DPS packet.
+    // Debounced persistence — avoids hammering storage on every DPS packet.
     if (changed) {
       this._scheduleStoreSave();
       this._writeDpSnapshot();
     }
   }
 
-  // â”€â”€ Homey lifecycle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Homey lifecycle ────────────────────────────────────────────────────────
 
   async onSettings({ changedKeys }) {
     const connectionKeys = ['ip', 'device_id', 'local_key', 'version'];

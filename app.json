@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.125",
+  "version": "1.0.126",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -6936,6 +6936,45 @@
               "hint": {
                 "en": "DP number for ioniser (anion). Set to 0 to disable.",
                 "de": "DP-Nummer für den Ionisator (Anion). 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_oscillate",
+              "type": "number",
+              "label": {
+                "en": "Oscillate DP",
+                "de": "Schwenken DP"
+              },
+              "value": 0,
+              "hint": {
+                "en": "DP for oscillation / swing (boolean). Set to 0 to disable.",
+                "de": "DP für Schwenken (Boolean). 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_self_clean",
+              "type": "number",
+              "label": {
+                "en": "Self-Clean DP",
+                "de": "Innentrocknung DP"
+              },
+              "value": 0,
+              "hint": {
+                "en": "DP for internal drying / self-clean mode (boolean). Set to 0 to disable.",
+                "de": "DP für innere Trocknung / Selbstreinigung (Boolean). 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_pump",
+              "type": "number",
+              "label": {
+                "en": "Water Pump DP",
+                "de": "Wasserpumpe DP"
+              },
+              "value": 0,
+              "hint": {
+                "en": "DP for water pump (boolean). Set to 0 to disable.",
+                "de": "DP für Wasserpumpe (Boolean). 0 = deaktiviert."
               }
             }
           ]

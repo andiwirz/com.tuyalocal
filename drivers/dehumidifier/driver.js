@@ -298,6 +298,7 @@ class DehumidifierDriver extends Homey.Driver {
       dp_onoff, dp_mode, dp_child_lock, dp_countdown_left,
       dp_countdown_timer, dp_current_humidity, dp_target_humidity,
       dp_fan_speed, dp_water_full, dp_temperature,
+      dp_oscillate: 0, dp_self_clean: 0, dp_pump: 0,
       mode_values:      'manual,laundry,auto,continuous,smart,sleep,drying',
       fan_speed_values: 'low,medium,middle,high,auto,turbo',
     };

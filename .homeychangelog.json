@@ -1,4 +1,8 @@
 {
+  "1.0.126": {
+    "en": "Dehumidifier driver: three new optional DPs — Oscillate (swing), Self-Clean (internal drying), Water Pump. Enable by entering the DP number in device settings (0 = disabled).",
+    "de": "Entfeuchter-Treiber: drei neue optionale DPs — Schwenken, Innentrocknung, Wasserpumpe. In den Geräteeinstellungen die DP-Nummer eintragen (0 = deaktiviert)."
+  },
   "1.0.125": {
     "en": "Fan driver: optional light capabilities — add DP numbers for light on/off, brightness and color temperature in device settings to enable them (e.g. Lucande ceiling fan with integrated light).",
     "de": "Fan-Treiber: optionale Licht-Capabilities — DP-Nummern für Licht Ein/Aus, Helligkeit und Farbtemperatur in den Geräteeinstellungen eintragen um sie zu aktivieren (z.B. Lucande Deckenventilator mit Licht)."
