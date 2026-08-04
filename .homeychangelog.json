@@ -1,4 +1,16 @@
 {
+  "1.0.121": {
+    "en": "Cloud Lookup: added 2 new fallback strategies (S6, S7) for accounts with restricted API permissions. Fixes missing devices for certain account types.",
+    "de": "Cloud-Lookup: 2 neue Fallback-Strategien (S6, S7) für Konten mit eingeschränkten API-Berechtigungen. Behebt fehlende Geräte bei bestimmten Account-Typen."
+  },
+  "1.0.120": {
+    "en": "Cloud Lookup S5: uses both page_no and cursor, stops immediately when no new devices found.",
+    "de": "Cloud-Lookup S5: Nutzt page_no und Cursor, stoppt sofort wenn keine neuen Geräte."
+  },
+  "1.0.119": {
+    "en": "Cloud Lookup: fixed Strategy 5 (v2.0 API) returning only 20 devices — switched from page_no to cursor-based pagination (last_row_key). Stops immediately if no new devices to avoid 50× unnecessary API calls.",
+    "de": "Cloud-Lookup: Strategie 5 (v2.0 API) lieferte nur 20 Geräte — auf cursor-basierte Paginierung (last_row_key) umgestellt. Stoppt sofort wenn keine neuen Geräte, um 50 unnötige API-Aufrufe zu vermeiden."
+  },
   "1.0.118": {
     "en": "Cloud Lookup: fixed local key missing — now uses v2.0/cloud/thing/batch first (like pairing), with factory-infos fallback. Matches the strategy that already works in the pairing flow.",
     "de": "Cloud-Lookup: fehlender Local Key behoben — nutzt jetzt zuerst v2.0/cloud/thing/batch (wie beim Hinzufügen), mit factory-infos Fallback."

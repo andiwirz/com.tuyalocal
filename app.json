@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.118",
+  "version": "1.0.121",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -18,6 +18,18 @@
     "appliances"
   ],
   "changelog": {
+    "1.0.121": {
+      "en": "Cloud Lookup: added Strategy 6 (/v1.0/iot-03/devices without source_type) and Strategy 7 (/v1.0/projects/{id}/devices) for accounts where S1-S5 return fewer devices than expected. All strategies now use has_more field for correct pagination termination.",
+      "de": "Cloud-Lookup: Strategie 6 (/v1.0/iot-03/devices ohne source_type) und Strategie 7 (/v1.0/projects/{id}/devices) hinzugefügt für Konten wo S1-S5 weniger Geräte liefern als erwartet. Alle Strategien nutzen has_more für korrekte Paginierung."
+    },
+    "1.0.120": {
+      "en": "Cloud Lookup S5: pagination now uses both page_no and last_row_key cursor (whichever the API returns), and stops as soon as no new unique devices are found — prevents runaway 50-page loops.",
+      "de": "Cloud-Lookup S5: Paginierung nutzt jetzt page_no und last_row_key Cursor (je nachdem was die API liefert) und stoppt sobald keine neuen Geräte mehr gefunden werden — verhindert endlose 50-Seiten-Schleifen."
+    },
+    "1.0.119": {
+      "en": "Cloud Lookup: Strategy 5 now uses cursor-based pagination (last_row_key) instead of page_no — the v2.0/cloud/thing/device endpoint ignores page_no and always returned the same first 20 devices. Also stops immediately if no new unique devices are found (safety net).",
+      "de": "Cloud-Lookup: Strategie 5 verwendet jetzt cursor-basierte Paginierung (last_row_key) statt page_no — der v2.0/cloud/thing/device Endpoint ignorierte page_no und lieferte immer dieselben ersten 20 Geräte. Stoppt auch sofort wenn keine neuen Geräte gefunden werden."
+    },
     "1.0.118": {
       "en": "Cloud Lookup: local key enrichment now mirrors cloudEnrich strategy — tries v2.0/cloud/thing/batch first (primary source), then falls back to v1.0/iot-03/devices/factory-infos. Fixes accounts where factory-infos alone doesn't return local_key.",
       "de": "Cloud-Lookup: Local Key Anreicherung spiegelt jetzt die cloudEnrich-Strategie — zuerst v2.0/cloud/thing/batch (primäre Quelle), dann Fallback auf v1.0/iot-03/devices/factory-infos. Behebt Konten wo factory-infos allein keinen local_key liefert."

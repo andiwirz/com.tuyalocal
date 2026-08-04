@@ -556,28 +556,100 @@ class TuyaLocalApp extends Homey.App {
     if (allDevices.length > 0) { this.addLog('Cloud', `S4 success: ${allDevices.length} device(s)`, 'info'); return allDevices; }
     this.addLog('Cloud', 'S4: no devices, trying S5', 'info');
 
-    // Strategy 5: v2.0 cloud thing API (paginated, max 20 per page)
-    for (let page = 1; page <= 50; page++) {
-      try {
-        const res = await this._tuyaRequest(host,
-          `/v2.0/cloud/thing/device?page_size=20&page_no=${page}`,
-          clientId, secret, token);
-        if (!res.success) {
-          const msg = `code=${res.code} msg=${res.msg}`;
-          if (page === 1) { errors.push('v2: ' + (res.msg || 'failed')); this.addLog('Cloud', `S5: p${page} failed — ${msg}`, 'warn'); }
+    // Strategy 5: v2.0 cloud/thing/device — supports both page_no and last_row_key cursor.
+    // Primary termination: added===0 (dedup caught all — same page returned again).
+    // Secondary: list.length < 20 (last page). Both are needed because the API may use
+    // either pagination style depending on account type.
+    {
+      let lastRowKey = '';
+      for (let page = 1; page <= 50; page++) {
+        try {
+          let path = `/v2.0/cloud/thing/device?page_size=20&page_no=${page}`;
+          if (lastRowKey) path += `&last_row_key=${encodeURIComponent(lastRowKey)}`;
+          const res = await this._tuyaRequest(host, path, clientId, secret, token);
+          if (!res.success) {
+            const msg = `code=${res.code} msg=${res.msg}`;
+            if (page === 1) { errors.push('v2: ' + (res.msg || 'failed')); this.addLog('Cloud', `S5: p${page} failed — ${msg}`, 'warn'); }
+            break;
+          }
+          const list = res.result?.list || (Array.isArray(res.result) ? res.result : []);
+          if (!Array.isArray(list) || list.length === 0) { this.addLog('Cloud', `S5: p${page} empty`, 'info'); break; }
+          const before = allDevices.length;
+          list.forEach(addDevice);
+          const added = allDevices.length - before;
+          // Log cursor presence to help diagnose pagination style
+          const cursor = res.result?.last_row_key || '';
+          this.addLog('Cloud', `S5: p${page} → ${list.length} fetched, ${added} new (total ${allDevices.length})${cursor ? ' cursor✓' : ''}`, 'info');
+          // Stop if no new unique devices — same page repeated, pagination not advancing
+          if (added === 0) { this.addLog('Cloud', 'S5: no new devices — stopping', 'info'); break; }
+          lastRowKey = cursor;
+          const hasMore5 = res.result?.has_more === true;
+          if (!hasMore5 && list.length < 20) break; // Last page
+        } catch (e) {
+          if (page === 1) { errors.push('v2: ' + e.message); this.addLog('Cloud', `S5: error — ${e.message}`, 'warn'); }
           break;
         }
-        const list = res.result?.list || res.result || [];
-        if (!Array.isArray(list) || list.length === 0) { this.addLog('Cloud', `S5: p${page} empty`, 'info'); break; }
-        this.addLog('Cloud', `S5: p${page} → ${list.length} device(s)`, 'info');
-        list.forEach(addDevice);
-        if (list.length < 20) break;
-      } catch (e) {
-        if (page === 1) { errors.push('v2: ' + e.message); this.addLog('Cloud', `S5: error — ${e.message}`, 'warn'); }
-        break;
       }
     }
     if (allDevices.length > 0) { this.addLog('Cloud', `S5 success: ${allDevices.length} device(s)`, 'info'); return allDevices; }
+    this.addLog('Cloud', 'S5: no devices, trying S6', 'info');
+
+    // Strategy 6: /v1.0/iot-03/devices without source_type — plain project device list.
+    // Supports page_size up to 200; use has_more to detect further pages.
+    for (let page = 1; page <= 50; page++) {
+      try {
+        const res = await this._tuyaRequest(host,
+          `/v1.0/iot-03/devices?page_no=${page}&page_size=200`,
+          clientId, secret, token);
+        if (!res.success) {
+          const msg = `code=${res.code} msg=${res.msg}`;
+          if (page === 1) { errors.push('s6: ' + (res.msg || 'failed')); this.addLog('Cloud', `S6: p${page} failed — ${msg}`, 'warn'); }
+          break;
+        }
+        const list = res.result?.list || res.result?.devices || (Array.isArray(res.result) ? res.result : []);
+        if (!Array.isArray(list) || list.length === 0) { this.addLog('Cloud', `S6: p${page} empty`, 'info'); break; }
+        const before = allDevices.length;
+        list.forEach(addDevice);
+        const added = allDevices.length - before;
+        this.addLog('Cloud', `S6: p${page} → ${list.length} fetched, ${added} new (total ${allDevices.length})`, 'info');
+        if (added === 0) { this.addLog('Cloud', 'S6: no new devices — stopping', 'info'); break; }
+        const hasMore = res.result?.has_more === true;
+        if (!hasMore || list.length < 200) break;
+      } catch (e) {
+        if (page === 1) { errors.push('s6: ' + e.message); this.addLog('Cloud', `S6: error — ${e.message}`, 'warn'); }
+        break;
+      }
+    }
+    if (allDevices.length > 0) { this.addLog('Cloud', `S6 success: ${allDevices.length} device(s)`, 'info'); return allDevices; }
+    this.addLog('Cloud', 'S6: no devices, trying S7', 'info');
+
+    // Strategy 7: /v1.0/projects/{clientId}/devices — project-scoped list, page_size up to 1000.
+    // clientId (Access ID) is the Tuya IoT project ID.
+    for (let page = 1; page <= 20; page++) {
+      try {
+        const res = await this._tuyaRequest(host,
+          `/v1.0/projects/${clientId}/devices?page_no=${page}&page_size=1000`,
+          clientId, secret, token);
+        if (!res.success) {
+          const msg = `code=${res.code} msg=${res.msg}`;
+          if (page === 1) { errors.push('s7: ' + (res.msg || 'failed')); this.addLog('Cloud', `S7: p${page} failed — ${msg}`, 'warn'); }
+          break;
+        }
+        const list = res.result?.list || res.result?.devices || (Array.isArray(res.result) ? res.result : []);
+        if (!Array.isArray(list) || list.length === 0) { this.addLog('Cloud', `S7: p${page} empty`, 'info'); break; }
+        const before = allDevices.length;
+        list.forEach(addDevice);
+        const added = allDevices.length - before;
+        this.addLog('Cloud', `S7: p${page} → ${list.length} fetched, ${added} new (total ${allDevices.length})`, 'info');
+        if (added === 0) { this.addLog('Cloud', 'S7: no new devices — stopping', 'info'); break; }
+        const hasMore = res.result?.has_more === true;
+        if (!hasMore || list.length < 1000) break;
+      } catch (e) {
+        if (page === 1) { errors.push('s7: ' + e.message); this.addLog('Cloud', `S7: error — ${e.message}`, 'warn'); }
+        break;
+      }
+    }
+    if (allDevices.length > 0) { this.addLog('Cloud', `S7 success: ${allDevices.length} device(s)`, 'info'); return allDevices; }
 
     this.addLog('Cloud', `All strategies failed — ${errors.join('; ')}`, 'error');
     throw new Error('No devices found (' + errors.join('; ') + ')');
