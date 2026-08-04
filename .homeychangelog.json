@@ -1,4 +1,8 @@
 {
+  "1.0.122": {
+    "en": "Cloud Lookup: S5/S6/S7 now always run in sequence and merge results — fixes accounts where S5 hits a 20-device project cap but more devices exist in S6/S7.",
+    "de": "Cloud-Lookup: S5/S6/S7 laufen immer in Folge und fusionieren Ergebnisse — behebt Konten wo S5 ein 20-Geräte-Limit hat aber S6/S7 mehr liefern."
+  },
   "1.0.121": {
     "en": "Cloud Lookup: added 2 new fallback strategies (S6, S7) for accounts with restricted API permissions. Fixes missing devices for certain account types.",
     "de": "Cloud-Lookup: 2 neue Fallback-Strategien (S6, S7) für Konten mit eingeschränkten API-Berechtigungen. Behebt fehlende Geräte bei bestimmten Account-Typen."

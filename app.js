@@ -591,8 +591,9 @@ class TuyaLocalApp extends Homey.App {
         }
       }
     }
-    if (allDevices.length > 0) { this.addLog('Cloud', `S5 success: ${allDevices.length} device(s)`, 'info'); return allDevices; }
-    this.addLog('Cloud', 'S5: no devices, trying S6', 'info');
+    // S5 may return a capped subset — always continue to S6/S7 to collect additional devices.
+    // Duplicates are caught by the seen Set inside addDevice.
+    this.addLog('Cloud', `S5: ${allDevices.length} device(s) so far — continuing to S6/S7`, 'info');
 
     // Strategy 6: /v1.0/iot-03/devices without source_type — plain project device list.
     // Supports page_size up to 200; use has_more to detect further pages.
@@ -620,8 +621,7 @@ class TuyaLocalApp extends Homey.App {
         break;
       }
     }
-    if (allDevices.length > 0) { this.addLog('Cloud', `S6 success: ${allDevices.length} device(s)`, 'info'); return allDevices; }
-    this.addLog('Cloud', 'S6: no devices, trying S7', 'info');
+    this.addLog('Cloud', `S6: ${allDevices.length} device(s) so far — continuing to S7`, 'info');
 
     // Strategy 7: /v1.0/projects/{clientId}/devices — project-scoped list, page_size up to 1000.
     // clientId (Access ID) is the Tuya IoT project ID.

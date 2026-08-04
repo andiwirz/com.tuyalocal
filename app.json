@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.121",
+  "version": "1.0.122",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -18,6 +18,10 @@
     "appliances"
   ],
   "changelog": {
+    "1.0.122": {
+      "en": "Cloud Lookup: S5 no longer returns early — S6 and S7 always run as supplementary strategies to collect additional devices that S5 misses due to project-level caps. All results are merged and deduplicated.",
+      "de": "Cloud-Lookup: S5 bricht nicht mehr vorzeitig ab — S6 und S7 laufen immer ergänzend um Geräte zu finden die S5 wegen Projekt-Limits verpasst. Alle Ergebnisse werden zusammengeführt und dedupliziert."
+    },
     "1.0.121": {
       "en": "Cloud Lookup: added Strategy 6 (/v1.0/iot-03/devices without source_type) and Strategy 7 (/v1.0/projects/{id}/devices) for accounts where S1-S5 return fewer devices than expected. All strategies now use has_more field for correct pagination termination.",
       "de": "Cloud-Lookup: Strategie 6 (/v1.0/iot-03/devices ohne source_type) und Strategie 7 (/v1.0/projects/{id}/devices) hinzugefügt für Konten wo S1-S5 weniger Geräte liefern als erwartet. Alle Strategien nutzen has_more für korrekte Paginierung."
