@@ -623,7 +623,7 @@
       "uiComponent": "toggle",
       "uiQuickAction": false,
       "insights": false,
-      "icon": "/assets/capabilities/oscillate.svg"
+      "icon": "/assets/capabilities/self_clean.svg"
     },
     "pump": {
       "type": "boolean",
