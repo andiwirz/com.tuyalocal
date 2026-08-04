@@ -104,6 +104,30 @@ class DehumidifierDriver extends Homey.Driver {
         return args.device.triggerCapabilityListener('anion', enabled);
       });
 
+    this.homey.flow.getActionCard('dehumidifier_set_oscillate')
+      .registerRunListener(async (args) => {
+        if (!args.device.hasCapability('oscillate')) return;
+        const enabled = args.enabled === 'true';
+        await args.device.setCapabilityValue('oscillate', enabled);
+        return args.device.triggerCapabilityListener('oscillate', enabled);
+      });
+
+    this.homey.flow.getActionCard('dehumidifier_set_self_clean')
+      .registerRunListener(async (args) => {
+        if (!args.device.hasCapability('self_clean')) return;
+        const enabled = args.enabled === 'true';
+        await args.device.setCapabilityValue('self_clean', enabled);
+        return args.device.triggerCapabilityListener('self_clean', enabled);
+      });
+
+    this.homey.flow.getActionCard('dehumidifier_set_pump')
+      .registerRunListener(async (args) => {
+        if (!args.device.hasCapability('pump')) return;
+        const enabled = args.enabled === 'true';
+        await args.device.setCapabilityValue('pump', enabled);
+        return args.device.triggerCapabilityListener('pump', enabled);
+      });
+
     this.homey.flow.getActionCard('dehumidifier_force_reconnect')
       .registerRunListener(async (args) => {
         return args.device.forceReconnect();

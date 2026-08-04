@@ -1,4 +1,8 @@
 {
+  "1.0.127": {
+    "en": "Dehumidifier driver: flow action cards for Oscillate, Self-Clean and Water Pump. New capabilities self_clean and pump added.",
+    "de": "Entfeuchter-Treiber: Flow-Aktionskarten für Schwenken, Innentrocknung und Wasserpumpe. Neue Capabilities self_clean und pump hinzugefügt."
+  },
   "1.0.126": {
     "en": "Dehumidifier driver: three new optional DPs — Oscillate (swing), Self-Clean (internal drying), Water Pump. Enable by entering the DP number in device settings (0 = disabled).",
     "de": "Entfeuchter-Treiber: drei neue optionale DPs — Schwenken, Innentrocknung, Wasserpumpe. In den Geräteeinstellungen die DP-Nummer eintragen (0 = deaktiviert)."

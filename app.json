@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.126",
+  "version": "1.0.127",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -611,6 +611,32 @@
       "uiQuickAction": false,
       "insights": false,
       "icon": "/assets/capabilities/anion.svg"
+    },
+    "self_clean": {
+      "type": "boolean",
+      "title": {
+        "en": "Self-Clean",
+        "de": "Innentrocknung"
+      },
+      "getable": true,
+      "setable": true,
+      "uiComponent": "toggle",
+      "uiQuickAction": false,
+      "insights": false,
+      "icon": "/assets/capabilities/oscillate.svg"
+    },
+    "pump": {
+      "type": "boolean",
+      "title": {
+        "en": "Water Pump",
+        "de": "Wasserpumpe"
+      },
+      "getable": true,
+      "setable": true,
+      "uiComponent": "toggle",
+      "uiQuickAction": false,
+      "insights": false,
+      "icon": "/assets/capabilities/alarm_water.svg"
     },
     "fan_speed": {
       "type": "enum",
@@ -4922,6 +4948,96 @@
                   "de": "Aus"
                 }
               }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "dehumidifier_set_oscillate",
+        "title": {
+          "en": "Set oscillation",
+          "de": "Schwenken setzen"
+        },
+        "titleFormatted": {
+          "en": "Set oscillation [[enabled]]",
+          "de": "Schwenken [[enabled]] setzen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=dehumidifier"
+          },
+          {
+            "name": "enabled",
+            "type": "dropdown",
+            "title": {
+              "en": "Oscillate",
+              "de": "Schwenken"
+            },
+            "values": [
+              { "id": "true",  "label": { "en": "On",  "de": "Ein" } },
+              { "id": "false", "label": { "en": "Off", "de": "Aus" } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "dehumidifier_set_self_clean",
+        "title": {
+          "en": "Set self-clean",
+          "de": "Innentrocknung setzen"
+        },
+        "titleFormatted": {
+          "en": "Set self-clean [[enabled]]",
+          "de": "Innentrocknung [[enabled]] setzen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=dehumidifier"
+          },
+          {
+            "name": "enabled",
+            "type": "dropdown",
+            "title": {
+              "en": "Self-Clean",
+              "de": "Innentrocknung"
+            },
+            "values": [
+              { "id": "true",  "label": { "en": "On",  "de": "Ein" } },
+              { "id": "false", "label": { "en": "Off", "de": "Aus" } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "dehumidifier_set_pump",
+        "title": {
+          "en": "Set water pump",
+          "de": "Wasserpumpe setzen"
+        },
+        "titleFormatted": {
+          "en": "Set water pump [[enabled]]",
+          "de": "Wasserpumpe [[enabled]] setzen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=dehumidifier"
+          },
+          {
+            "name": "enabled",
+            "type": "dropdown",
+            "title": {
+              "en": "Water Pump",
+              "de": "Wasserpumpe"
+            },
+            "values": [
+              { "id": "true",  "label": { "en": "On",  "de": "Ein" } },
+              { "id": "false", "label": { "en": "Off", "de": "Aus" } }
             ]
           }
         ]
