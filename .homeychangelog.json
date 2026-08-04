@@ -1,4 +1,28 @@
 {
+  "1.0.118": {
+    "en": "Cloud Lookup: fixed local key missing — now uses v2.0/cloud/thing/batch first (like pairing), with factory-infos fallback. Matches the strategy that already works in the pairing flow.",
+    "de": "Cloud-Lookup: fehlender Local Key behoben — nutzt jetzt zuerst v2.0/cloud/thing/batch (wie beim Hinzufügen), mit factory-infos Fallback."
+  },
+  "1.0.117": {
+    "en": "Cloud Lookup: single-phase redesign — local keys fetched inline via factory-infos batches in the same call. No more two-phase loading or workaround routing.",
+    "de": "Cloud-Lookup: Einphasig — Local Keys direkt per factory-infos Batches im selben Aufruf. Zweiphasen-Ansatz und Routing-Workaround entfernt."
+  },
+  "1.0.116": {
+    "en": "Cloud Lookup: key enrichment now routes through the existing cloudlookup endpoint — new API endpoints require app reinstall to register with Homey's router.",
+    "de": "Cloud-Lookup: Schlüssel-Anreicherung läuft jetzt über den bestehenden cloudlookup-Endpunkt — neue API-Endpunkte benötigen eine Neu-Installation."
+  },
+  "1.0.115": {
+    "en": "Fixed 'Missing implementation for api endpoint cloudenrich' — Homey's API router requires an exact lowercase method name.",
+    "de": "'Missing implementation for api endpoint cloudenrich' behoben — Homeys API-Router erwartet exakten Lowercase-Methodennamen."
+  },
+  "1.0.114": {
+    "en": "Cloud Lookup: fixed local key disappearing after two-phase split — keys from list endpoint shown immediately, enrichment errors visible in UI.",
+    "de": "Cloud-Lookup: Local Key nach Zweiphasen-Split verschwunden — behoben. Keys sofort sichtbar, Fehler im UI angezeigt."
+  },
+  "1.0.113": {
+    "en": "Cloud Lookup: two-phase loading — device list appears immediately, local keys fill in progressively in batches. Eliminates timeout on accounts with many devices.",
+    "de": "Cloud-Lookup: zweiphasiges Laden — Geräteliste erscheint sofort, Local Keys füllen sich progressiv. Timeout bei vielen Geräten beseitigt."
+  },
   "1.0.112": {
     "en": "Cloud Lookup: auto-retry on rate-limit (429) with 1–3 s backoff; 120 ms pause between batch enrichment calls to stay below 10 req/s.",
     "de": "Cloud-Lookup: Auto-Retry bei Rate-Limit (429) mit 1–3 s Backoff; 120 ms Pause zwischen Batch-Aufrufen."

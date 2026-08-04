@@ -1120,17 +1120,20 @@
 
           var tbody = document.getElementById('cloudTbody');
           tbody.innerHTML = '';
+
           devices.forEach(function(d) {
             var tr = document.createElement('tr');
-            var keyDisplay = d.local_key || '<span style="color:#ccc">—</span>';
+            tr.setAttribute('data-id', d.id);
             var primaryName = d.custom_name || d.name || '—';
             var subName     = (d.custom_name && d.name && d.custom_name !== d.name) ? d.name : '';
+            var keyText  = d.local_key ? escHtml(d.local_key) : '—';
+            var keyStyle = d.local_key ? '' : 'color:#aaa';
             tr.innerHTML =
               '<td><a href="#" class="cloud-name-link" style="color:#1a73e8;text-decoration:none;font-weight:500">' + escHtml(primaryName) + '</a>' +
               (subName ? '<br><span style="font-size:10px;color:#555">' + escHtml(subName) + '</span>' : '') +
               ((d.product || d.category) ? '<br><span style="font-size:10px;color:#aaa">' + escHtml(d.product || d.category) + '</span>' : '') + '</td>' +
               '<td style="font-family:monospace;font-size:11px">' + escHtml(d.id) + '</td>' +
-              '<td style="font-family:monospace;font-size:11px">' + keyDisplay + '</td>' +
+              '<td class="key-cell" style="font-family:monospace;font-size:11px;' + keyStyle + '">' + keyText + '</td>' +
               '<td><button class="cloud-copy-btn" style="padding:3px 8px;font-size:11px">Copy</button></td>';
             tbody.appendChild(tr);
 
@@ -1153,7 +1156,10 @@
           });
 
           document.getElementById('cloudResults').style.display = 'block';
-          document.getElementById('cloudCount').textContent = devices.length + ' device(s) found.';
+          var withKey = devices.filter(function(d) { return !!d.local_key; }).length;
+          document.getElementById('cloudCount').textContent =
+            devices.length + ' device(s) found' +
+            (withKey < devices.length ? ' (' + withKey + '/' + devices.length + ' with local key)' : '') + '.';
           status.textContent = '✓ Success';
           status.style.color = '#1e6a34';
 

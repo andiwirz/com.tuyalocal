@@ -121,10 +121,166 @@ class TuyaLocalApp extends Homey.App {
     const host = TUYA_REGIONS[region];
     if (!host) throw new Error(`Unknown region: ${region}`);
 
-    const { token, uid } = await this._tuyaGetToken(host, accessId, accessSecret);
-    const devices = await this._tuyaGetDevices(host, accessId, accessSecret, token, uid);
+    this.addLog('Cloud', `Lookup started — region: ${region}, host: ${host}`, 'info');
+    const t0 = Date.now();
+
+    let token, uid;
+    try {
+      ({ token, uid } = await this._tuyaGetToken(host, accessId, accessSecret));
+      this.addLog('Cloud', `Token OK — uid: ${uid || '(none)'}`, 'info');
+    } catch (e) {
+      this.addLog('Cloud', `Token failed: ${e.message}`, 'error');
+      throw e;
+    }
+
+    let devices;
+    try {
+      devices = await this._tuyaGetDevices(host, accessId, accessSecret, token, uid);
+    } catch (e) {
+      this.addLog('Cloud', `Device list failed: ${e.message}`, 'error');
+      throw e;
+    }
+    this.addLog('Cloud', `Device list: ${devices.length} device(s) in ${Date.now() - t0} ms — enriching local keys…`, 'info');
+
+    // Enrich local keys — two passes, matching cloudEnrich strategy:
+    //   Pass 1: v2.0/cloud/thing/batch  — best source (returns local_key + product_name)
+    //   Pass 2: v1.0/iot-03/devices/factory-infos — fallback for any still-missing keys
+    // 120 ms pause between calls keeps us below Tuya's 10 req/s limit.
+    // Worst case for 150 devices: 16 calls × ~500 ms = ~8 s — within Homey.api() ~10 s timeout.
+    const pause = () => new Promise((r) => setTimeout(r, 120));
+
+    // Pass 1: v2.0 batch
+    for (let i = 0; i < devices.length; i += 20) {
+      if (i > 0) await pause();
+      const batch = devices.slice(i, i + 20);
+      const ids   = batch.map((d) => d.id).join(',');
+      try {
+        const res = await this._tuyaRequest(host,
+          `/v2.0/cloud/thing/batch?device_ids=${ids}`,
+          accessId, accessSecret, token);
+        if (res.success && Array.isArray(res.result)) {
+          const found = res.result.filter((r) => r.local_key).length;
+          this.addLog('Cloud', `v2.0 batch ${Math.floor(i / 20) + 1}: ${res.result.length} returned, ${found} with local_key`, 'info');
+          for (const r of res.result) {
+            const d = batch.find((x) => x.id === r.id);
+            if (!d) continue;
+            if (r.local_key)    d.local_key = r.local_key;
+            if (r.product_name) d.product   = r.product_name;
+          }
+        } else {
+          this.addLog('Cloud', `v2.0 batch ${Math.floor(i / 20) + 1} failed: code=${res.code} msg=${res.msg}`, 'warn');
+        }
+      } catch (e) {
+        this.addLog('Cloud', `v2.0 batch ${Math.floor(i / 20) + 1} error: ${e.message}`, 'warn');
+      }
+    }
+
+    // Pass 2: factory-infos fallback for any devices still missing local_key
+    const missingKey = devices.filter((d) => !d.local_key);
+    if (missingKey.length > 0) {
+      this.addLog('Cloud', `factory-infos fallback for ${missingKey.length} device(s) without local_key`, 'info');
+      for (let i = 0; i < missingKey.length; i += 20) {
+        await pause();
+        const batch = missingKey.slice(i, i + 20);
+        const ids   = batch.map((d) => d.id).join(',');
+        try {
+          const res = await this._tuyaRequest(host,
+            `/v1.0/iot-03/devices/factory-infos?device_ids=${ids}`,
+            accessId, accessSecret, token);
+          if (res.success && Array.isArray(res.result)) {
+            const found = res.result.filter((r) => r.local_key).length;
+            this.addLog('Cloud', `factory-infos ${Math.floor(i / 20) + 1}: ${res.result.length} returned, ${found} with local_key`, 'info');
+            for (const r of res.result) {
+              const d = batch.find((x) => x.id === r.id || x.uuid === r.uuid);
+              if (d && r.local_key) d.local_key = r.local_key;
+            }
+          } else {
+            this.addLog('Cloud', `factory-infos ${Math.floor(i / 20) + 1} failed: code=${res.code} msg=${res.msg}`, 'warn');
+          }
+        } catch (e) {
+          this.addLog('Cloud', `factory-infos ${Math.floor(i / 20) + 1} error: ${e.message}`, 'warn');
+        }
+      }
+    }
+
+    const withKey = devices.filter((d) => d.local_key).length;
+    this.addLog('Cloud', `Lookup complete — ${devices.length} device(s), ${withKey} with local_key, ${Date.now() - t0} ms total`, 'info');
     return devices;
   }
+
+  /**
+   * Enrich up to 20 devices with local_key and product name.
+   * Called from the settings page in small batches after the device list is shown,
+   * so the Homey.api() timeout is never hit on accounts with many devices.
+   */
+  async cloudEnrich({ accessId, accessSecret, region, deviceIds }) {
+    if (!accessId || !accessSecret || !region || !deviceIds) throw new Error('Missing parameters');
+    const host = TUYA_REGIONS[region];
+    if (!host) throw new Error(`Unknown region: ${region}`);
+
+    const ids = String(deviceIds).split(',').map((s) => s.trim()).filter(Boolean).slice(0, 20);
+    if (ids.length === 0) return [];
+
+    this.addLog('Cloud', `Enrich batch: ${ids.length} device(s)`, 'info');
+    const { token } = await this._tuyaGetToken(host, accessId, accessSecret);
+
+    const result = ids.map((id) => ({ id, local_key: '', product: '' }));
+
+    // v2.0 batch — best source for local_key + product_name
+    try {
+      const res = await this._tuyaRequest(host,
+        `/v2.0/cloud/thing/batch?device_ids=${ids.join(',')}`,
+        accessId, accessSecret, token);
+      if (res.success && Array.isArray(res.result)) {
+        const found = res.result.filter((r) => r.local_key).length;
+        this.addLog('Cloud', `v2.0 batch: ${res.result.length} returned, ${found} with local_key`, 'info');
+        for (const r of res.result) {
+          const d = result.find((x) => x.id === r.id);
+          if (!d) continue;
+          if (r.local_key) d.local_key = r.local_key;
+          if (r.product_name) d.product = r.product_name;
+        }
+      } else {
+        this.addLog('Cloud', `v2.0 batch failed: code=${res.code} msg=${res.msg}`, 'warn');
+      }
+    } catch (e) {
+      this.addLog('Cloud', `v2.0 batch error: ${e.message}`, 'warn');
+    }
+
+    // factory-infos fallback for any still missing local_key
+    const missing = result.filter((d) => !d.local_key);
+    if (missing.length > 0) {
+      this.addLog('Cloud', `factory-infos fallback for ${missing.length} device(s) without local_key`, 'info');
+      try {
+        const res = await this._tuyaRequest(host,
+          `/v1.0/iot-03/devices/factory-infos?device_ids=${missing.map((d) => d.id).join(',')}`,
+          accessId, accessSecret, token);
+        if (res.success && Array.isArray(res.result)) {
+          const found = res.result.filter((r) => r.local_key).length;
+          this.addLog('Cloud', `factory-infos: ${res.result.length} returned, ${found} with local_key`, 'info');
+          for (const r of res.result) {
+            const d = result.find((x) => x.id === r.id || x.uuid === r.uuid);
+            if (d && r.local_key) d.local_key = r.local_key;
+          }
+        } else {
+          this.addLog('Cloud', `factory-infos failed: code=${res.code} msg=${res.msg}`, 'warn');
+        }
+      } catch (e) {
+        this.addLog('Cloud', `factory-infos error: ${e.message}`, 'warn');
+      }
+    }
+
+    const withKey = result.filter((d) => d.local_key).length;
+    if (missing.length > 0 && withKey < ids.length) {
+      this.addLog('Cloud', `Enrich complete: ${withKey}/${ids.length} have local_key`, withKey === 0 ? 'warn' : 'info');
+    }
+
+    return result;
+  }
+
+  // Lowercase alias so Homey's case-sensitive API-key lookup finds this method
+  // when the app.json key "cloudenrich" is resolved.
+  async cloudenrich(args) { return this.cloudEnrich(args); }
 
   async cloudDeviceDetail({ accessId, accessSecret, region, deviceId }) {
     if (!accessId || !accessSecret || !region || !deviceId) throw new Error('Missing parameters');
@@ -294,10 +450,13 @@ class TuyaLocalApp extends Homey.App {
         clientId, secret, token);
       if (uidRes.success) {
         for (const u of (uidRes.result?.list || [])) { if (u.uid) uids.push(u.uid); }
+        this.addLog('Cloud', `S1: /devices/users → ${uids.length} UID(s): [${uids.join(', ')}]`, 'info');
       } else {
+        const msg = `code=${uidRes.code} msg=${uidRes.msg}`;
         errors.push('users: ' + (uidRes.msg || 'failed'));
+        this.addLog('Cloud', `S1: /devices/users failed — ${msg}`, 'warn');
       }
-    } catch (e) { errors.push('users: ' + e.message); }
+    } catch (e) { errors.push('users: ' + e.message); this.addLog('Cloud', `S1: /devices/users error — ${e.message}`, 'warn'); }
 
     for (const uid of uids) {
       for (let page = 1; page <= 50; page++) {
@@ -305,18 +464,20 @@ class TuyaLocalApp extends Homey.App {
           const res = await this._tuyaRequest(host,
             `/v1.0/iot-03/devices?source_type=tuyaUser&source_id=${uid}&page_no=${page}&page_size=100`,
             clientId, secret, token);
-          if (!res.success) break;
+          if (!res.success) {
+            this.addLog('Cloud', `S1: uid=${uid.slice(0,8)} p${page} failed — code=${res.code} msg=${res.msg}`, 'warn');
+            break;
+          }
           const list = res.result?.list || [];
-          if (!Array.isArray(list) || list.length === 0) break;
+          if (!Array.isArray(list) || list.length === 0) { this.addLog('Cloud', `S1: uid=${uid.slice(0,8)} p${page} empty`, 'info'); break; }
+          this.addLog('Cloud', `S1: uid=${uid.slice(0,8)} p${page} → ${list.length} device(s)`, 'info');
           list.forEach(addDevice);
           if (list.length < 100) break;
-        } catch (_) { break; }
+        } catch (e) { this.addLog('Cloud', `S1: uid=${uid.slice(0,8)} p${page} error — ${e.message}`, 'warn'); break; }
       }
     }
-    if (allDevices.length > 0) {
-      await this._enrichDevices(host, clientId, secret, token, allDevices);
-      return allDevices;
-    }
+    if (allDevices.length > 0) { this.addLog('Cloud', `S1 success: ${allDevices.length} device(s)`, 'info'); return allDevices; }
+    this.addLog('Cloud', 'S1: no devices, trying S2', 'info');
 
     // Strategy 2: Use project UID from token (paginated)
     if (projectUid) {
@@ -325,18 +486,22 @@ class TuyaLocalApp extends Homey.App {
           const res = await this._tuyaRequest(host,
             `/v1.0/iot-03/devices?source_type=tuyaUser&source_id=${projectUid}&page_no=${page}&page_size=100`,
             clientId, secret, token);
-          if (!res.success) { errors.push('projectUid: ' + (res.msg || 'failed')); break; }
+          if (!res.success) {
+            const msg = `code=${res.code} msg=${res.msg}`;
+            errors.push('projectUid: ' + (res.msg || 'failed'));
+            this.addLog('Cloud', `S2: projectUid p${page} failed — ${msg}`, 'warn');
+            break;
+          }
           const list = res.result?.list || [];
-          if (!Array.isArray(list) || list.length === 0) break;
+          if (!Array.isArray(list) || list.length === 0) { this.addLog('Cloud', `S2: projectUid p${page} empty`, 'info'); break; }
+          this.addLog('Cloud', `S2: projectUid p${page} → ${list.length} device(s)`, 'info');
           list.forEach(addDevice);
           if (list.length < 100) break;
-        } catch (e) { errors.push('projectUid: ' + e.message); break; }
+        } catch (e) { errors.push('projectUid: ' + e.message); this.addLog('Cloud', `S2: projectUid error — ${e.message}`, 'warn'); break; }
       }
     }
-    if (allDevices.length > 0) {
-      await this._enrichDevices(host, clientId, secret, token, allDevices);
-      return allDevices;
-    }
+    if (allDevices.length > 0) { this.addLog('Cloud', `S2 success: ${allDevices.length} device(s)`, 'info'); return allDevices; }
+    this.addLog('Cloud', 'S2: no devices, trying S3', 'info');
 
     // Strategy 3: v1.0 with source_type (also tries legacy /users/{uid}/devices as fallback)
     for (const uid of [projectUid, ...uids]) {
@@ -346,28 +511,34 @@ class TuyaLocalApp extends Homey.App {
           const res = await this._tuyaRequest(host,
             `/v1.0/iot-03/devices?source_type=tuyaUser&source_id=${uid}&page_no=${page}&page_size=100`,
             clientId, secret, token);
-          if (!res.success) { if (page === 1) errors.push('source(' + uid.slice(0, 8) + '): ' + (res.msg || 'failed')); break; }
+          if (!res.success) {
+            const msg = `code=${res.code} msg=${res.msg}`;
+            if (page === 1) { errors.push('source(' + uid.slice(0, 8) + '): ' + (res.msg || 'failed')); this.addLog('Cloud', `S3: uid=${uid.slice(0,8)} failed — ${msg}`, 'warn'); }
+            break;
+          }
           const list = res.result?.list || [];
           if (!Array.isArray(list) || list.length === 0) break;
+          this.addLog('Cloud', `S3: uid=${uid.slice(0,8)} p${page} → ${list.length} device(s)`, 'info');
           list.forEach(addDevice);
           if (list.length < 100) break;
         } catch (_) { break; }
       }
-      if (allDevices.length > 0) {
-        await this._enrichDevices(host, clientId, secret, token, allDevices);
-        return allDevices;
-      }
+      if (allDevices.length > 0) { this.addLog('Cloud', `S3 success: ${allDevices.length} device(s)`, 'info'); return allDevices; }
       // Legacy fallback for this UID
       try {
         const res = await this._tuyaRequest(host,
           `/v1.0/users/${uid}/devices`, clientId, secret, token);
-        if (res.success) (Array.isArray(res.result) ? res.result : (res.result?.list || [])).forEach(addDevice);
+        if (res.success) {
+          const list = Array.isArray(res.result) ? res.result : (res.result?.list || []);
+          this.addLog('Cloud', `S3 legacy: /users/${uid.slice(0,8)}/devices → ${list.length} device(s)`, 'info');
+          list.forEach(addDevice);
+        } else {
+          this.addLog('Cloud', `S3 legacy: /users/${uid.slice(0,8)}/devices failed — code=${res.code} msg=${res.msg}`, 'warn');
+        }
       } catch (_) {}
-      if (allDevices.length > 0) {
-        await this._enrichDevices(host, clientId, secret, token, allDevices);
-        return allDevices;
-      }
+      if (allDevices.length > 0) { this.addLog('Cloud', `S3 legacy success: ${allDevices.length} device(s)`, 'info'); return allDevices; }
     }
+    this.addLog('Cloud', 'S3: no devices, trying S4', 'info');
 
     // Strategy 4: /v1.0/devices (older API without iot-03 prefix)
     try {
@@ -376,15 +547,14 @@ class TuyaLocalApp extends Homey.App {
         clientId, secret, token);
       if (res.success) {
         const list = res.result?.list || res.result?.devices || res.result || [];
-        if (Array.isArray(list)) list.forEach(addDevice);
+        if (Array.isArray(list)) { this.addLog('Cloud', `S4: /v1.0/devices → ${list.length} device(s)`, 'info'); list.forEach(addDevice); }
       } else {
         errors.push('schema: ' + (res.msg || 'failed'));
+        this.addLog('Cloud', `S4: /v1.0/devices failed — code=${res.code} msg=${res.msg}`, 'warn');
       }
-    } catch (e) { errors.push('schema: ' + e.message); }
-    if (allDevices.length > 0) {
-      await this._enrichDevices(host, clientId, secret, token, allDevices);
-      return allDevices;
-    }
+    } catch (e) { errors.push('schema: ' + e.message); this.addLog('Cloud', `S4: /v1.0/devices error — ${e.message}`, 'warn'); }
+    if (allDevices.length > 0) { this.addLog('Cloud', `S4 success: ${allDevices.length} device(s)`, 'info'); return allDevices; }
+    this.addLog('Cloud', 'S4: no devices, trying S5', 'info');
 
     // Strategy 5: v2.0 cloud thing API (paginated, max 20 per page)
     for (let page = 1; page <= 50; page++) {
@@ -393,23 +563,23 @@ class TuyaLocalApp extends Homey.App {
           `/v2.0/cloud/thing/device?page_size=20&page_no=${page}`,
           clientId, secret, token);
         if (!res.success) {
-          if (page === 1) errors.push('v2: ' + (res.msg || 'failed'));
+          const msg = `code=${res.code} msg=${res.msg}`;
+          if (page === 1) { errors.push('v2: ' + (res.msg || 'failed')); this.addLog('Cloud', `S5: p${page} failed — ${msg}`, 'warn'); }
           break;
         }
         const list = res.result?.list || res.result || [];
-        if (!Array.isArray(list) || list.length === 0) break;
+        if (!Array.isArray(list) || list.length === 0) { this.addLog('Cloud', `S5: p${page} empty`, 'info'); break; }
+        this.addLog('Cloud', `S5: p${page} → ${list.length} device(s)`, 'info');
         list.forEach(addDevice);
         if (list.length < 20) break;
       } catch (e) {
-        if (page === 1) errors.push('v2: ' + e.message);
+        if (page === 1) { errors.push('v2: ' + e.message); this.addLog('Cloud', `S5: error — ${e.message}`, 'warn'); }
         break;
       }
     }
-    if (allDevices.length > 0) {
-      await this._enrichDevices(host, clientId, secret, token, allDevices);
-      return allDevices;
-    }
+    if (allDevices.length > 0) { this.addLog('Cloud', `S5 success: ${allDevices.length} device(s)`, 'info'); return allDevices; }
 
+    this.addLog('Cloud', `All strategies failed — ${errors.join('; ')}`, 'error');
     throw new Error('No devices found (' + errors.join('; ') + ')');
   }
 
