@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.123",
+  "version": "1.0.125",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -18,6 +18,10 @@
     "appliances"
   ],
   "changelog": {
+    "1.0.124": {
+      "en": "Generic driver: new 'Send DP command' THEN flow card — set any data point by number and value directly from a flow. Value is auto-parsed: 'true'/'false' → boolean, numbers → integer/float, anything else → string.",
+      "de": "Generic-Treiber: neuer 'DP-Befehl senden' DANN-Flow-Karte — beliebigen Datenpunkt per Nummer und Wert direkt aus einem Flow setzen. Wert wird automatisch geparst: 'true'/'false' → Boolean, Zahlen → Integer/Float, sonst → String."
+    },
     "1.0.123": {
       "en": "Cloud Lookup: completely rewrote S1-S3 based on how tinytuya and tuya-homebridge actually work. S1 uses /v1.0/iot-01/associated-users/devices; S2 uses /v1.3/iot-03/devices?source_type=tuyaUser (v1.3 required — v1.0 returns error 1109); S3 uses source_type=homeApp for smartlife/tuyaSmart schemas. All use cursor-based pagination (last_row_key).",
       "de": "Cloud-Lookup: S1-S3 komplett neu nach dem Vorbild von tinytuya/tuya-homebridge. S1: /v1.0/iot-01/associated-users/devices; S2: /v1.3/iot-03/devices?source_type=tuyaUser (v1.3 erforderlich — v1.0 liefert Fehler 1109); S3: source_type=homeApp für smartlife/tuyaSmart. Alle cursor-basiert (last_row_key)."
@@ -4979,6 +4983,43 @@
         ]
       },
       {
+        "id": "generic_send_dp",
+        "title": {
+          "en": "Send DP command",
+          "de": "DP-Befehl senden"
+        },
+        "titleFormatted": {
+          "en": "Set DP [[dp]] to [[value]]",
+          "de": "DP [[dp]] auf [[value]] setzen"
+        },
+        "hint": {
+          "en": "Send a raw data point (DP) command. Value is parsed automatically: 'true'/'false' → boolean, numbers → integer/float, everything else → string.",
+          "de": "Sendet einen rohen Datenpunkt-Befehl. Wert wird automatisch geparst: 'true'/'false' → Boolean, Zahlen → Integer/Float, sonst → String."
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=generic"
+          },
+          {
+            "name": "dp",
+            "type": "number",
+            "title": { "en": "DP number", "de": "DP-Nummer" },
+            "placeholder": { "en": "e.g. 12", "de": "z.B. 12" },
+            "min": 1,
+            "max": 255,
+            "step": 1
+          },
+          {
+            "name": "value",
+            "type": "text",
+            "title": { "en": "Value", "de": "Wert" },
+            "placeholder": { "en": "e.g. true / 6 / on / 1h", "de": "z.B. true / 6 / on / 1h" }
+          }
+        ]
+      },
+      {
         "id": "thermostat_force_reconnect",
         "title": { "en": "Force reconnect", "de": "Verbindung neu aufbauen" },
         "args": [{ "name": "device", "type": "device", "filter": "driver_id=thermostat" }]
@@ -8909,6 +8950,76 @@
               "hint": {
                 "en": "Read-only. Set to 0 to disable.",
                 "de": "Nur lesen. 0 = deaktiviert."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Light (optional)",
+            "de": "Licht (optional)"
+          },
+          "children": [
+            {
+              "id": "dp_light_onoff",
+              "type": "number",
+              "label": {
+                "en": "Light On/Off DP",
+                "de": "Licht Ein/Aus DP"
+              },
+              "value": 0,
+              "hint": {
+                "en": "DP for light on/off (boolean). Set to 0 to disable.",
+                "de": "DP für Licht Ein/Aus (Boolean). 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_light_dim",
+              "type": "number",
+              "label": {
+                "en": "Light Brightness DP",
+                "de": "Licht Helligkeit DP"
+              },
+              "value": 0,
+              "hint": {
+                "en": "DP for light brightness (integer). Set to 0 to disable.",
+                "de": "DP für Licht Helligkeit (Integer). 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_light_dim_min",
+              "type": "number",
+              "label": {
+                "en": "Light Brightness Min",
+                "de": "Licht Helligkeit Min"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 1000
+            },
+            {
+              "id": "dp_light_dim_max",
+              "type": "number",
+              "label": {
+                "en": "Light Brightness Max",
+                "de": "Licht Helligkeit Max"
+              },
+              "value": 100,
+              "min": 1,
+              "max": 1000
+            },
+            {
+              "id": "dp_light_color_temp",
+              "type": "number",
+              "label": {
+                "en": "Light Color Temp DP",
+                "de": "Licht Farbtemperatur DP"
+              },
+              "value": 0,
+              "hint": {
+                "en": "DP for light color temperature (device range 0–100, warm→cold). Set to 0 to disable.",
+                "de": "DP für Licht Farbtemperatur (Gerätewert 0–100, warm→kalt). 0 = deaktiviert."
               }
             }
           ]

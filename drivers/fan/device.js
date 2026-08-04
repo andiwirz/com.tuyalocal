@@ -1,31 +1,37 @@
-﻿'use strict';
+'use strict';
 
 const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 
 const DEBOUNCE_MS = 300;
 
-// Maps settings keys â†’ Homey capabilities.
+// Maps settings keys → Homey capabilities.
 // dp_speed (numeric speed integer) is handled separately because it needs
-// min/max scaling to the Homey dim range (0â€“1).
+// min/max scaling to the Homey dim range (0–1).
+// dp_light_dim and dp_light_color_temp are also handled separately (scaling).
 const DP_PROFILE = [
-  { settingKey: 'dp_onoff',           capability: 'onoff',         transform: (v) => Boolean(v),  settable: true  },
-  { settingKey: 'dp_fan_speed',       capability: 'fan_speed',     transform: (v) => String(v),   settable: true  },
-  { settingKey: 'dp_oscillate',       capability: 'oscillate',     transform: (v) => Boolean(v),  settable: true  },
-  { settingKey: 'dp_direction',       capability: 'fan_direction', transform: (v) => String(v),   settable: true  },
-  { settingKey: 'dp_mode',            capability: 'fan_mode',      transform: (v) => String(v),   settable: true  },
-  { settingKey: 'dp_child_lock',      capability: 'child_lock',    transform: (v) => Boolean(v),  settable: true  },
-  { settingKey: 'dp_countdown_timer', capability: 'countdown_timer', transform: (v) => String(v), settable: true  },
-  { settingKey: 'dp_countdown_left',  capability: 'countdown_left',  transform: (v) => Number(v), settable: false },
+  { settingKey: 'dp_onoff',           capability: 'onoff',           transform: (v) => Boolean(v),  settable: true  },
+  { settingKey: 'dp_fan_speed',       capability: 'fan_speed',       transform: (v) => String(v),   settable: true  },
+  { settingKey: 'dp_oscillate',       capability: 'oscillate',       transform: (v) => Boolean(v),  settable: true  },
+  { settingKey: 'dp_direction',       capability: 'fan_direction',   transform: (v) => String(v),   settable: true  },
+  { settingKey: 'dp_mode',            capability: 'fan_mode',        transform: (v) => String(v),   settable: true  },
+  { settingKey: 'dp_child_lock',      capability: 'child_lock',      transform: (v) => Boolean(v),  settable: true  },
+  { settingKey: 'dp_countdown_timer', capability: 'countdown_timer', transform: (v) => String(v),   settable: true  },
+  { settingKey: 'dp_countdown_left',  capability: 'countdown_left',  transform: (v) => Number(v),   settable: false },
+  { settingKey: 'dp_light_onoff',     capability: 'onoff.light',     transform: (v) => Boolean(v),  settable: true  },
 ];
 
 const OPTIONAL_CAPABILITIES = [
-  { setting: 'dp_fan_speed',       capability: 'fan_speed'       },
-  { setting: 'dp_oscillate',       capability: 'oscillate'       },
-  { setting: 'dp_direction',       capability: 'fan_direction'   },
-  { setting: 'dp_mode',            capability: 'fan_mode'        },
-  { setting: 'dp_child_lock',      capability: 'child_lock'      },
-  { setting: 'dp_countdown_timer', capability: 'countdown_timer' },
-  { setting: 'dp_countdown_left',  capability: 'countdown_left'  },
+  { setting: 'dp_fan_speed',        capability: 'fan_speed'         },
+  { setting: 'dp_oscillate',        capability: 'oscillate'         },
+  { setting: 'dp_direction',        capability: 'fan_direction'     },
+  { setting: 'dp_mode',             capability: 'fan_mode'          },
+  { setting: 'dp_child_lock',       capability: 'child_lock'        },
+  { setting: 'dp_countdown_timer',  capability: 'countdown_timer'   },
+  { setting: 'dp_countdown_left',   capability: 'countdown_left'    },
+  // Light sub-capabilities (enabled when DP > 0)
+  { setting: 'dp_light_onoff',      capability: 'onoff.light'       },
+  { setting: 'dp_light_dim',        capability: 'dim.light'         },
+  { setting: 'dp_light_color_temp', capability: 'light_temperature' },
 ];
 
 class FanDevice extends BaseTuyaDevice {
@@ -39,14 +45,14 @@ class FanDevice extends BaseTuyaDevice {
     await this._syncEnumOptions('fan_speed', this.getSetting('fan_speed_values'));
     await this._syncEnumOptions('fan_mode',  this.getSetting('fan_mode_values'));
 
-    // â”€â”€ Flow trigger cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Flow trigger cards ──────────────────────────────────────────────────
     this._triggerDeviceConnected    = this.homey.flow.getDeviceTriggerCard('fan_device_connected');
     this._triggerDeviceDisconnected = this.homey.flow.getDeviceTriggerCard('fan_device_disconnected');
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('fan_dp_changed');
     this._triggerModeChanged        = this.homey.flow.getDeviceTriggerCard('fan_mode_changed');
     this._triggerDirectionChanged   = this.homey.flow.getDeviceTriggerCard('fan_direction_changed');
 
-    // â”€â”€ Capability listeners â€” DP_PROFILE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Capability listeners – DP_PROFILE ──────────────────────────────────
     for (const entry of DP_PROFILE) {
       if (!entry.settable) continue;
       if (!this.hasCapability(entry.capability)) continue;
@@ -55,7 +61,7 @@ class FanDevice extends BaseTuyaDevice {
       });
     }
 
-    // â”€â”€ dim (fan speed 0â€“1) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── dim (fan speed 0–1) ─────────────────────────────────────────────────
     this._dimDebounceTimer = null;
     this.registerCapabilityListener('dim', (value) => {
       clearTimeout(this._dimDebounceTimer);
@@ -73,14 +79,46 @@ class FanDevice extends BaseTuyaDevice {
       });
     });
 
+    // ── dim.light (light brightness 0–1) ────────────────────────────────────
+    this._lightDimDebounceTimer = null;
+    if (this.hasCapability('dim.light')) {
+      this.registerCapabilityListener('dim.light', (value) => {
+        clearTimeout(this._lightDimDebounceTimer);
+        return new Promise((resolve) => {
+          this._lightDimDebounceTimer = setTimeout(async () => {
+            const dp = this.getSetting('dp_light_dim');
+            if (dp > 0) {
+              const min = this.getSetting('dp_light_dim_min') ?? 0;
+              const max = this.getSetting('dp_light_dim_max') ?? 100;
+              const raw = Math.round(min + (max - min) * Math.max(0, Math.min(1, value)));
+              await this._set(dp, raw).catch(() => {});
+            }
+            resolve();
+          }, DEBOUNCE_MS);
+        });
+      });
+    }
+
+    // ── light_temperature (0=warm, 1=cold → device 0–100) ───────────────────
+    if (this.hasCapability('light_temperature')) {
+      this.registerCapabilityListener('light_temperature', async (value) => {
+        const dp = this.getSetting('dp_light_color_temp');
+        if (dp > 0) {
+          const raw = Math.round(Math.max(0, Math.min(1, value)) * 100);
+          await this._set(dp, raw).catch(() => {});
+        }
+      });
+    }
+
     await this._connect();
   }
 
   async _onDeleted() {
     clearTimeout(this._dimDebounceTimer);
+    clearTimeout(this._lightDimDebounceTimer);
   }
 
-  // â”€â”€ DPS handling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── DPS handling ───────────────────────────────────────────────────────────
 
   async _handleDps(dps) {
     const settings = this.getSettings();
@@ -99,7 +137,7 @@ class FanDevice extends BaseTuyaDevice {
         .trigger(this, { dp: dpStr, value: String(value) })
         .catch(() => {});
 
-      // â”€â”€ Numeric speed â†’ dim â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── Numeric speed → dim ─────────────────────────────────────────────
       if (settings.dp_speed > 0 && dp === settings.dp_speed) {
         const raw = Number(value);
         const dim = speedMax > speedMin
@@ -109,7 +147,29 @@ class FanDevice extends BaseTuyaDevice {
         continue;
       }
 
-      // â”€â”€ All other DPs â€” matched via DP_PROFILE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── Light brightness → dim.light ────────────────────────────────────
+      if (settings.dp_light_dim > 0 && dp === settings.dp_light_dim) {
+        if (this.hasCapability('dim.light')) {
+          const min    = settings.dp_light_dim_min ?? 0;
+          const max    = settings.dp_light_dim_max ?? 100;
+          const dimVal = max > min
+            ? Math.max(0, Math.min(1, (Number(value) - min) / (max - min)))
+            : 0;
+          await this.setCapabilityValue('dim.light', dimVal).catch(() => {});
+        }
+        continue;
+      }
+
+      // ── Light color temp (0–100) → light_temperature (0–1) ──────────────
+      if (settings.dp_light_color_temp > 0 && dp === settings.dp_light_color_temp) {
+        if (this.hasCapability('light_temperature')) {
+          const temp = Math.max(0, Math.min(1, Number(value) / 100));
+          await this.setCapabilityValue('light_temperature', temp).catch(() => {});
+        }
+        continue;
+      }
+
+      // ── All other DPs – matched via DP_PROFILE ──────────────────────────
       const entry = DP_PROFILE.find((e) => {
         const dpNum = settings[e.settingKey];
         return dpNum > 0 && dp === dpNum;
@@ -144,6 +204,7 @@ class FanDevice extends BaseTuyaDevice {
         continue;
       }
 
+      if (!this.hasCapability(entry.capability)) continue;
       await this.setCapabilityValue(entry.capability, converted).catch(() => {});
     }
 
@@ -153,7 +214,7 @@ class FanDevice extends BaseTuyaDevice {
     }
   }
 
-  // â”€â”€ Homey lifecycle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Homey lifecycle ────────────────────────────────────────────────────────
 
   async onSettings({ changedKeys }) {
     const connectionKeys = ['ip', 'device_id', 'local_key', 'version'];

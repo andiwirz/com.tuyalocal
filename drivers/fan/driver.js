@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 const Homey                     = require('homey');
 const TuyAPI                    = require('tuyapi');
@@ -178,7 +178,7 @@ class FanDriver extends Homey.Driver {
     const dp_onoff = (boolDps.find((d) => d.dp === 1) || boolDps[0])?.dp ?? 1;
 
     // Numeric speed: look for a small integer (1–100) on DPs 2–10
-    const speedEntry = intDps.find((d) => d.dp !== dp_onoff && d.val >= 1 && d.val <= 100);
+    const speedEntry = intDps.find((d) => d.dp !== dp_onoff && d.val >= 1 && d.val <= 100 && d.dp <= 10);
     const dp_speed = speedEntry?.dp ?? 3;
 
     const KNOWN_FAN   = ['low', 'medium', 'middle', 'high', 'auto', 'turbo'];
@@ -190,21 +190,38 @@ class FanDriver extends Homey.Driver {
     const dp_mode      = modeEntry?.dp ?? 0;
 
     // Direction: enum DP whose value is 'forward' or 'reverse'
-    const KNOWN_DIR     = ['forward', 'reverse'];
-    const dirEntry      = enumDps.find((d) => KNOWN_DIR.includes(String(d.val).toLowerCase()));
-    const dp_direction  = dirEntry?.dp ?? 0;
+    const KNOWN_DIR    = ['forward', 'reverse'];
+    const dirEntry     = enumDps.find((d) => KNOWN_DIR.includes(String(d.val).toLowerCase()));
+    const dp_direction = dirEntry?.dp ?? 0;
 
-    const timerEntry    = enumDps.find((d) => String(d.val) === 'cancel' || /^\d+h$/.test(String(d.val)));
+    const timerEntry        = enumDps.find((d) => String(d.val) === 'cancel' || /^\d+h$/.test(String(d.val)));
     const dp_countdown_timer = timerEntry?.dp ?? 0;
 
-    // Oscillation: a boolean DP that is not on/off
-    const oscillateEntry = boolDps.find((d) => d.dp !== dp_onoff && d.dp > 1);
+    // Oscillation: a boolean DP that is not on/off, not light on/off
+    // We detect light on/off first so we can exclude it
+    // Light on/off heuristic: boolean DP with dp >= 10 (common Tuya light DPs: 15, 20, etc.)
+    const lightOnoffEntry = boolDps.find((d) => d.dp !== dp_onoff && d.dp >= 10);
+    const dp_light_onoff  = lightOnoffEntry?.dp ?? 0;
+
+    const oscillateEntry = boolDps.find((d) => d.dp !== dp_onoff && d.dp !== dp_light_onoff && d.dp > 1);
     const dp_oscillate   = oscillateEntry?.dp ?? 0;
+
+    // Light brightness: int DP in range 0–100, not speed, dp >= 10
+    const lightDimEntry = intDps.find((d) => d.dp !== dp_speed && d.dp >= 10 && d.val >= 0 && d.val <= 100);
+    const dp_light_dim  = lightDimEntry?.dp ?? 0;
+
+    // Light color temp: int DP in range 0–100, not speed, not light dim, dp >= 10
+    const lightTempEntry     = intDps.find((d) => d.dp !== dp_speed && d.dp !== dp_light_dim && d.dp >= 10 && d.val >= 0 && d.val <= 100);
+    const dp_light_color_temp = lightTempEntry?.dp ?? 0;
 
     // Detect speed range
     const rawSpeed = speedEntry?.val ?? 1;
     const speed_min = 1;
     const speed_max = rawSpeed <= 6 ? 6 : rawSpeed <= 12 ? 12 : 100;
+
+    // Light dim range defaults
+    const dp_light_dim_min = 0;
+    const dp_light_dim_max = dp_light_dim > 0 ? 100 : 100;
 
     return {
       dp_onoff, dp_speed, dp_fan_speed, dp_oscillate, dp_direction, dp_mode,
@@ -212,6 +229,7 @@ class FanDriver extends Homey.Driver {
       speed_min, speed_max,
       fan_speed_values: 'low,medium,high,auto,turbo',
       fan_mode_values:  'normal,sleep,nature,breeze,smart',
+      dp_light_onoff, dp_light_dim, dp_light_dim_min, dp_light_dim_max, dp_light_color_temp,
     };
   }
 

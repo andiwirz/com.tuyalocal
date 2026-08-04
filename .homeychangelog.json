@@ -1,4 +1,12 @@
 {
+  "1.0.125": {
+    "en": "Fan driver: optional light capabilities — add DP numbers for light on/off, brightness and color temperature in device settings to enable them (e.g. Lucande ceiling fan with integrated light).",
+    "de": "Fan-Treiber: optionale Licht-Capabilities — DP-Nummern für Licht Ein/Aus, Helligkeit und Farbtemperatur in den Geräteeinstellungen eintragen um sie zu aktivieren (z.B. Lucande Deckenventilator mit Licht)."
+  },
+  "1.0.124": {
+    "en": "Generic driver: new 'Send DP command' flow action card — set any DP by number and value (auto-parsed to boolean/number/string).",
+    "de": "Generic-Treiber: neue 'DP-Befehl senden' Flow-Aktionskarte — beliebigen DP per Nummer und Wert setzen (automatisch zu Boolean/Zahl/String geparst)."
+  },
   "1.0.123": {
     "en": "Cloud Lookup: major overhaul of device discovery — S1 now uses iot-01/associated-users, S2 uses v1.3 API (fixes error 1109), S3 uses homeApp/smartlife schema. Should fix accounts with >20 devices.",
     "de": "Cloud-Lookup: Grundlegende Überarbeitung der Geräteerkennung — S1 via iot-01, S2 via v1.3 API (behebt Fehler 1109), S3 via homeApp/smartlife. Behebt Konten mit >20 Geräten."
