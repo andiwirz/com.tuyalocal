@@ -442,92 +442,89 @@ class TuyaLocalApp extends Homey.App {
       });
     };
 
-    // Strategy 1: Get linked UIDs → devices per UID (paginated)
-    const uids = [];
-    try {
-      const uidRes = await this._tuyaRequest(host,
-        '/v1.0/iot-03/devices/users?page_no=1&page_size=100',
-        clientId, secret, token);
-      if (uidRes.success) {
-        for (const u of (uidRes.result?.list || [])) { if (u.uid) uids.push(u.uid); }
-        this.addLog('Cloud', `S1: /devices/users → ${uids.length} UID(s): [${uids.join(', ')}]`, 'info');
-      } else {
-        const msg = `code=${uidRes.code} msg=${uidRes.msg}`;
-        errors.push('users: ' + (uidRes.msg || 'failed'));
-        this.addLog('Cloud', `S1: /devices/users failed — ${msg}`, 'warn');
-      }
-    } catch (e) { errors.push('users: ' + e.message); this.addLog('Cloud', `S1: /devices/users error — ${e.message}`, 'warn'); }
-
-    for (const uid of uids) {
+    // Helper: cursor-paginated fetch from /v1.3/iot-03/devices
+    // source_type=tuyaUser + source_id works with both bay... and ay... UIDs on v1.3 (not v1.0).
+    // Pagination uses last_row_key cursor — page_no is NOT supported on this endpoint.
+    const fetchV13 = async (sourceType, sourceId, label) => {
+      let lastRowKey = '';
+      const before = allDevices.length;
       for (let page = 1; page <= 50; page++) {
         try {
-          const res = await this._tuyaRequest(host,
-            `/v1.0/iot-03/devices?source_type=tuyaUser&source_id=${uid}&page_no=${page}&page_size=100`,
-            clientId, secret, token);
+          let path = `/v1.3/iot-03/devices?source_type=${sourceType}&source_id=${encodeURIComponent(sourceId)}&page_size=100`;
+          if (lastRowKey) path += `&last_row_key=${encodeURIComponent(lastRowKey)}`;
+          const res = await this._tuyaRequest(host, path, clientId, secret, token);
           if (!res.success) {
-            this.addLog('Cloud', `S1: uid=${uid.slice(0,8)} p${page} failed — code=${res.code} msg=${res.msg}`, 'warn');
+            if (page === 1) { errors.push(`${label}: ${res.msg || 'failed'}`); this.addLog('Cloud', `${label}: failed — code=${res.code} msg=${res.msg}`, 'warn'); }
             break;
           }
           const list = res.result?.list || [];
-          if (!Array.isArray(list) || list.length === 0) { this.addLog('Cloud', `S1: uid=${uid.slice(0,8)} p${page} empty`, 'info'); break; }
-          this.addLog('Cloud', `S1: uid=${uid.slice(0,8)} p${page} → ${list.length} device(s)`, 'info');
+          if (!Array.isArray(list) || list.length === 0) { this.addLog('Cloud', `${label}: p${page} empty`, 'info'); break; }
+          const cnt = allDevices.length;
           list.forEach(addDevice);
-          if (list.length < 100) break;
-        } catch (e) { this.addLog('Cloud', `S1: uid=${uid.slice(0,8)} p${page} error — ${e.message}`, 'warn'); break; }
+          const added = allDevices.length - cnt;
+          this.addLog('Cloud', `${label}: p${page} → ${list.length} fetched, ${added} new (total ${allDevices.length})`, 'info');
+          if (added === 0) break; // cursor not advancing
+          lastRowKey = res.result?.last_row_key || '';
+          if (!res.result?.has_more) break;
+        } catch (e) {
+          if (page === 1) { errors.push(`${label}: ${e.message}`); this.addLog('Cloud', `${label}: error — ${e.message}`, 'warn'); }
+          break;
+        }
       }
-    }
+      return allDevices.length > before; // true if this call added anything
+    };
+
+    // Strategy 1: /v1.0/iot-01/associated-users/devices (tinytuya / tuya-homebridge approach).
+    // Lists Smart Home linked users and their devices in one cursor-paginated endpoint.
+    const linkedUids = [];
+    try {
+      let lastRowKey = '';
+      for (let page = 1; page <= 20; page++) {
+        let path = '/v1.0/iot-01/associated-users/devices?size=100';
+        if (lastRowKey) path += `&last_row_key=${encodeURIComponent(lastRowKey)}`;
+        const res = await this._tuyaRequest(host, path, clientId, secret, token);
+        if (!res.success) {
+          if (page === 1) { errors.push('assoc: ' + (res.msg || 'failed')); this.addLog('Cloud', `S1: iot-01/associated-users failed — code=${res.code} msg=${res.msg}`, 'warn'); }
+          break;
+        }
+        const devs = res.result?.devices || res.result?.list || (Array.isArray(res.result) ? res.result : []);
+        if (!Array.isArray(devs) || devs.length === 0) break;
+        const cnt = allDevices.length;
+        devs.forEach(addDevice);
+        // Collect UIDs for later v1.3 queries
+        devs.forEach((d) => { if (d.uid && !linkedUids.includes(d.uid)) linkedUids.push(d.uid); });
+        const added = allDevices.length - cnt;
+        this.addLog('Cloud', `S1: p${page} → ${devs.length} fetched, ${added} new (total ${allDevices.length})`, 'info');
+        lastRowKey = res.result?.last_row_key || '';
+        if (!res.result?.has_more) break;
+      }
+    } catch (e) { errors.push('assoc: ' + e.message); this.addLog('Cloud', `S1: error — ${e.message}`, 'warn'); }
     if (allDevices.length > 0) { this.addLog('Cloud', `S1 success: ${allDevices.length} device(s)`, 'info'); return allDevices; }
     this.addLog('Cloud', 'S1: no devices, trying S2', 'info');
 
-    // Strategy 2: Use project UID from token (paginated)
-    if (projectUid) {
-      for (let page = 1; page <= 50; page++) {
-        try {
-          const res = await this._tuyaRequest(host,
-            `/v1.0/iot-03/devices?source_type=tuyaUser&source_id=${projectUid}&page_no=${page}&page_size=100`,
-            clientId, secret, token);
-          if (!res.success) {
-            const msg = `code=${res.code} msg=${res.msg}`;
-            errors.push('projectUid: ' + (res.msg || 'failed'));
-            this.addLog('Cloud', `S2: projectUid p${page} failed — ${msg}`, 'warn');
-            break;
-          }
-          const list = res.result?.list || [];
-          if (!Array.isArray(list) || list.length === 0) { this.addLog('Cloud', `S2: projectUid p${page} empty`, 'info'); break; }
-          this.addLog('Cloud', `S2: projectUid p${page} → ${list.length} device(s)`, 'info');
-          list.forEach(addDevice);
-          if (list.length < 100) break;
-        } catch (e) { errors.push('projectUid: ' + e.message); this.addLog('Cloud', `S2: projectUid error — ${e.message}`, 'warn'); break; }
-      }
+    // Strategy 2: /v1.3/iot-03/devices with source_type=tuyaUser for all known UIDs.
+    // v1.3 (not v1.0!) is required for source_type to work — v1.0 returns error 1109.
+    // Try: projectUid (bay... or ay...) + any UIDs collected from S1.
+    const uidsToTry = [...new Set([projectUid, ...linkedUids].filter(Boolean))];
+    for (const uid of uidsToTry) {
+      await fetchV13('tuyaUser', uid, `S2/uid=${uid.slice(0, 8)}`);
     }
     if (allDevices.length > 0) { this.addLog('Cloud', `S2 success: ${allDevices.length} device(s)`, 'info'); return allDevices; }
     this.addLog('Cloud', 'S2: no devices, trying S3', 'info');
 
-    // Strategy 3: v1.0 with source_type (also tries legacy /users/{uid}/devices as fallback)
-    for (const uid of [projectUid, ...uids]) {
-      if (!uid) continue;
-      for (let page = 1; page <= 50; page++) {
-        try {
-          const res = await this._tuyaRequest(host,
-            `/v1.0/iot-03/devices?source_type=tuyaUser&source_id=${uid}&page_no=${page}&page_size=100`,
-            clientId, secret, token);
-          if (!res.success) {
-            const msg = `code=${res.code} msg=${res.msg}`;
-            if (page === 1) { errors.push('source(' + uid.slice(0, 8) + '): ' + (res.msg || 'failed')); this.addLog('Cloud', `S3: uid=${uid.slice(0,8)} failed — ${msg}`, 'warn'); }
-            break;
-          }
-          const list = res.result?.list || [];
-          if (!Array.isArray(list) || list.length === 0) break;
-          this.addLog('Cloud', `S3: uid=${uid.slice(0,8)} p${page} → ${list.length} device(s)`, 'info');
-          list.forEach(addDevice);
-          if (list.length < 100) break;
-        } catch (_) { break; }
-      }
-      if (allDevices.length > 0) { this.addLog('Cloud', `S3 success: ${allDevices.length} device(s)`, 'info'); return allDevices; }
-      // Legacy fallback for this UID
+    // Strategy 3: /v1.3/iot-03/devices with source_type=homeApp.
+    // Lists ALL devices linked to the app schema across all users — no UID required.
+    // Works when user logged into Smart Life ("smartlife") or Tuya Smart ("tuyaSmart").
+    for (const schema of ['smartlife', 'tuyaSmart']) {
+      await fetchV13('homeApp', schema, `S3/${schema}`);
+    }
+    if (allDevices.length > 0) { this.addLog('Cloud', `S3 success: ${allDevices.length} device(s)`, 'info'); return allDevices; }
+    this.addLog('Cloud', 'S3: no devices, trying S4', 'info');
+
+    // Legacy fallback: try /v1.0/users/{uid}/devices for each known UID
+    for (const uid of uidsToTry) {
       try {
-        const res = await this._tuyaRequest(host,
-          `/v1.0/users/${uid}/devices`, clientId, secret, token);
+        const res = await this._tuyaRequest(host, `/v1.0/users/${uid}/devices`, clientId, secret, token);
         if (res.success) {
           const list = Array.isArray(res.result) ? res.result : (res.result?.list || []);
           this.addLog('Cloud', `S3 legacy: /users/${uid.slice(0,8)}/devices → ${list.length} device(s)`, 'info');
@@ -536,9 +533,9 @@ class TuyaLocalApp extends Homey.App {
           this.addLog('Cloud', `S3 legacy: /users/${uid.slice(0,8)}/devices failed — code=${res.code} msg=${res.msg}`, 'warn');
         }
       } catch (_) {}
-      if (allDevices.length > 0) { this.addLog('Cloud', `S3 legacy success: ${allDevices.length} device(s)`, 'info'); return allDevices; }
     }
-    this.addLog('Cloud', 'S3: no devices, trying S4', 'info');
+    if (allDevices.length > 0) { this.addLog('Cloud', `S3 legacy success: ${allDevices.length} device(s)`, 'info'); return allDevices; }
+    this.addLog('Cloud', 'S3 legacy: no devices, trying S4', 'info');
 
     // Strategy 4: /v1.0/devices (older API without iot-03 prefix)
     try {

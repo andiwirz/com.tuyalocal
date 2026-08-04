@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.122",
+  "version": "1.0.123",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -18,6 +18,10 @@
     "appliances"
   ],
   "changelog": {
+    "1.0.123": {
+      "en": "Cloud Lookup: completely rewrote S1-S3 based on how tinytuya and tuya-homebridge actually work. S1 uses /v1.0/iot-01/associated-users/devices; S2 uses /v1.3/iot-03/devices?source_type=tuyaUser (v1.3 required — v1.0 returns error 1109); S3 uses source_type=homeApp for smartlife/tuyaSmart schemas. All use cursor-based pagination (last_row_key).",
+      "de": "Cloud-Lookup: S1-S3 komplett neu nach dem Vorbild von tinytuya/tuya-homebridge. S1: /v1.0/iot-01/associated-users/devices; S2: /v1.3/iot-03/devices?source_type=tuyaUser (v1.3 erforderlich — v1.0 liefert Fehler 1109); S3: source_type=homeApp für smartlife/tuyaSmart. Alle cursor-basiert (last_row_key)."
+    },
     "1.0.122": {
       "en": "Cloud Lookup: S5 no longer returns early — S6 and S7 always run as supplementary strategies to collect additional devices that S5 misses due to project-level caps. All results are merged and deduplicated.",
       "de": "Cloud-Lookup: S5 bricht nicht mehr vorzeitig ab — S6 und S7 laufen immer ergänzend um Geräte zu finden die S5 wegen Projekt-Limits verpasst. Alle Ergebnisse werden zusammengeführt und dedupliziert."
