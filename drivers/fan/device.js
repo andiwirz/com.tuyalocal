@@ -52,18 +52,41 @@ class FanDevice extends BaseTuyaDevice {
     this._triggerModeChanged        = this.homey.flow.getDeviceTriggerCard('fan_mode_changed');
     this._triggerDirectionChanged   = this.homey.flow.getDeviceTriggerCard('fan_direction_changed');
 
-    // ── Capability listeners – DP_PROFILE ──────────────────────────────────
+    // ── Capability listeners ─────────────────────────────────────────────────
+    // Registered via _registerListeners() so that capabilities enabled later
+    // through device settings (e.g. dp_light_onoff) become controllable
+    // immediately — without requiring an app restart.
+    this._registeredCaps        = new Set();
+    this._dimDebounceTimer      = null;
+    this._lightDimDebounceTimer = null;
+    this._registerListeners();
+
+    await this._connect();
+  }
+
+  /**
+   * Register capability listeners for all currently present capabilities.
+   * Safe to call repeatedly (e.g. from onSettings after _syncOptionalCapabilities):
+   * each capability is only registered once per device lifetime.
+   */
+  _registerListeners() {
+    const register = (capability, listener) => {
+      if (!this.hasCapability(capability)) return;
+      if (this._registeredCaps.has(capability)) return;
+      this._registeredCaps.add(capability);
+      this.registerCapabilityListener(capability, listener);
+    };
+
+    // ── DP_PROFILE ────────────────────────────────────────────────────────────
     for (const entry of DP_PROFILE) {
       if (!entry.settable) continue;
-      if (!this.hasCapability(entry.capability)) continue;
-      this.registerCapabilityListener(entry.capability, async (value) => {
+      register(entry.capability, async (value) => {
         await this._set(this.getSetting(entry.settingKey), value);
       });
     }
 
     // ── dim (fan speed 0–1) ─────────────────────────────────────────────────
-    this._dimDebounceTimer = null;
-    this.registerCapabilityListener('dim', (value) => {
+    register('dim', (value) => {
       clearTimeout(this._dimDebounceTimer);
       return new Promise((resolve) => {
         this._dimDebounceTimer = setTimeout(async () => {
@@ -80,37 +103,30 @@ class FanDevice extends BaseTuyaDevice {
     });
 
     // ── dim.light (light brightness 0–1) ────────────────────────────────────
-    this._lightDimDebounceTimer = null;
-    if (this.hasCapability('dim.light')) {
-      this.registerCapabilityListener('dim.light', (value) => {
-        clearTimeout(this._lightDimDebounceTimer);
-        return new Promise((resolve) => {
-          this._lightDimDebounceTimer = setTimeout(async () => {
-            const dp = this.getSetting('dp_light_dim');
-            if (dp > 0) {
-              const min = this.getSetting('dp_light_dim_min') ?? 0;
-              const max = this.getSetting('dp_light_dim_max') ?? 100;
-              const raw = Math.round(min + (max - min) * Math.max(0, Math.min(1, value)));
-              await this._set(dp, raw).catch(() => {});
-            }
-            resolve();
-          }, DEBOUNCE_MS);
-        });
+    register('dim.light', (value) => {
+      clearTimeout(this._lightDimDebounceTimer);
+      return new Promise((resolve) => {
+        this._lightDimDebounceTimer = setTimeout(async () => {
+          const dp = this.getSetting('dp_light_dim');
+          if (dp > 0) {
+            const min = this.getSetting('dp_light_dim_min') ?? 0;
+            const max = this.getSetting('dp_light_dim_max') ?? 100;
+            const raw = Math.round(min + (max - min) * Math.max(0, Math.min(1, value)));
+            await this._set(dp, raw).catch(() => {});
+          }
+          resolve();
+        }, DEBOUNCE_MS);
       });
-    }
+    });
 
     // ── light_temperature (0=warm, 1=cold → device 0–100) ───────────────────
-    if (this.hasCapability('light_temperature')) {
-      this.registerCapabilityListener('light_temperature', async (value) => {
-        const dp = this.getSetting('dp_light_color_temp');
-        if (dp > 0) {
-          const raw = Math.round(Math.max(0, Math.min(1, value)) * 100);
-          await this._set(dp, raw).catch(() => {});
-        }
-      });
-    }
-
-    await this._connect();
+    register('light_temperature', async (value) => {
+      const dp = this.getSetting('dp_light_color_temp');
+      if (dp > 0) {
+        const raw = Math.round(Math.max(0, Math.min(1, value)) * 100);
+        await this._set(dp, raw).catch(() => {});
+      }
+    });
   }
 
   async _onDeleted() {
@@ -228,6 +244,7 @@ class FanDevice extends BaseTuyaDevice {
     if (changedKeys.includes('reconnect_interval')) this._startAutoReconnect();
     if (changedKeys.some((k) => OPTIONAL_CAPABILITIES.map((o) => o.setting).includes(k))) {
       await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
+      this._registerListeners(); // newly added capabilities need listeners immediately
     }
     if (changedKeys.some((k) => ['fan_speed_values', 'fan_mode_values'].includes(k))) {
       await this._syncEnumOptions('fan_speed', this.getSetting('fan_speed_values'));

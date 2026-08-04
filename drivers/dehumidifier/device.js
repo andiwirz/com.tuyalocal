@@ -72,9 +72,26 @@ class DehumidifierDevice extends BaseTuyaDevice {
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('dehumidifier_dp_changed');
 
     // ── Capability listeners (auto-registered from DP_PROFILE) ──────────────
+    // Registered via _registerListeners() so that capabilities enabled later
+    // through device settings (e.g. dp_oscillate, dp_pump) become controllable
+    // immediately — without requiring an app restart.
+    this._registeredCaps = new Set();
+    this._registerListeners();
+
+    await this._connect();
+  }
+
+  /**
+   * Register capability listeners for all currently present capabilities.
+   * Safe to call repeatedly (e.g. from onSettings after _syncOptionalCapabilities):
+   * each capability is only registered once per device lifetime.
+   */
+  _registerListeners() {
     for (const entry of DP_PROFILE) {
       if (!entry.settable) continue;
       if (!this.hasCapability(entry.capability)) continue;
+      if (this._registeredCaps.has(entry.capability)) continue;
+      this._registeredCaps.add(entry.capability);
 
       if (entry.debounce) {
         let timer = null;
@@ -94,8 +111,6 @@ class DehumidifierDevice extends BaseTuyaDevice {
         });
       }
     }
-
-    await this._connect();
   }
 
   // ── Hook overrides ─────────────────────────────────────────────────────────
@@ -264,6 +279,7 @@ class DehumidifierDevice extends BaseTuyaDevice {
     if (changedKeys.includes('reconnect_interval')) this._startAutoReconnect();
     if (changedKeys.some((k) => OPTIONAL_CAPABILITIES.map((o) => o.setting).includes(k))) {
       await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
+      this._registerListeners(); // newly added capabilities need listeners immediately
     }
     if (changedKeys.some((k) => ['mode_values', 'fan_speed_values'].includes(k))) {
       await this._syncEnumOptions('mode',      this.getSetting('mode_values'));

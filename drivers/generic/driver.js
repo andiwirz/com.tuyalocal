@@ -21,6 +21,20 @@ class GenericDriver extends Homey.Driver {
         return args.device.pollNow();
       });
 
+    this.homey.flow.getActionCard('generic_send_dp')
+      .registerRunListener(async ({ device, dp, value }) => {
+        // Parse value string → correct JS type
+        let parsed;
+        const v = String(value).trim();
+        if (v === 'true')       parsed = true;
+        else if (v === 'false') parsed = false;
+        else if (v !== '' && !isNaN(v) && !isNaN(parseFloat(v))) parsed = parseFloat(v);
+        else parsed = v;
+
+        device.log(`Flow: send_dp ${dp} = ${JSON.stringify(parsed)}`);
+        return device._set(Number(dp), parsed);
+      });
+
     // ── Conditions ───────────────────────────────────────────────────────────
     this.homey.flow.getConditionCard('generic_device_is_connected')
       .registerRunListener(async (args) =>

@@ -1,4 +1,8 @@
 {
+  "1.0.129": {
+    "en": "Fix: capabilities enabled via device settings (fan light, dehumidifier oscillate/self-clean/pump) are now controllable immediately without app restart. Fan light capabilities got proper titles. Fixed corrupted German umlauts in the Auto-Reconnect hint of all drivers.",
+    "de": "Fix: Über Geräteeinstellungen aktivierte Capabilities (Lüfter-Licht, Entfeuchter Schwenken/Innentrocknung/Pumpe) sind jetzt sofort ohne App-Neustart steuerbar. Lüfter-Licht-Capabilities haben eigene Titel. Kaputte Umlaute im Auto-Reconnect-Hinweis aller Treiber korrigiert."
+  },
   "1.0.128": {
     "en": "Fix: Auto-Reconnect interval now only reconnects when the device is actually offline. Previously it tore down working connections every N minutes, causing connection thrashing, preventing polling, and eventually leaving devices unresponsive.",
     "de": "Fix: Auto-Reconnect verbindet sich jetzt nur noch neu, wenn das Gerät tatsächlich offline ist. Bisher wurden funktionierende Verbindungen alle N Minuten getrennt, was zu Verbindungsproblemen, ausgefallenen Polls und schliesslich nicht mehr reagierenden Geräten führte."

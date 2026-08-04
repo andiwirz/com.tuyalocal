@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.128",
+  "version": "1.0.129",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -6841,7 +6841,7 @@
               "step": 1,
               "hint": {
                 "en": "If the device is offline, reconnect every N minutes. Has no effect while the device is connected. 0 = disabled.",
-                "de": "Verbindung alle N Minuten neu aufbauen. N�tzlich f�r Ger�te, die nach einer Weile keine Updates mehr senden. 0 = deaktiviert."
+                "de": "Wenn das Gerät offline ist, alle N Minuten erneut verbinden. Bei aktiver Verbindung keine Auswirkung. 0 = deaktiviert."
               }
             },
             
@@ -7423,7 +7423,7 @@
               "step": 1,
               "hint": {
                 "en": "If the device is offline, reconnect every N minutes. Has no effect while the device is connected. 0 = disabled.",
-                "de": "Verbindung alle N Minuten neu aufbauen. N�tzlich f�r Ger�te, die nach einer Weile keine Updates mehr senden. 0 = deaktiviert."
+                "de": "Wenn das Gerät offline ist, alle N Minuten erneut verbinden. Bei aktiver Verbindung keine Auswirkung. 0 = deaktiviert."
               }
             },
             
@@ -7740,7 +7740,7 @@
               "step": 1,
               "hint": {
                 "en": "If the device is offline, reconnect every N minutes. Has no effect while the device is connected. 0 = disabled.",
-                "de": "Verbindung alle N Minuten neu aufbauen. N�tzlich f�r Ger�te, die nach einer Weile keine Updates mehr senden. 0 = deaktiviert."
+                "de": "Wenn das Gerät offline ist, alle N Minuten erneut verbinden. Bei aktiver Verbindung keine Auswirkung. 0 = deaktiviert."
               }
             },
             
@@ -8401,7 +8401,7 @@
               "step": 1,
               "hint": {
                 "en": "If the device is offline, reconnect every N minutes. Has no effect while the device is connected. 0 = disabled.",
-                "de": "Verbindung alle N Minuten neu aufbauen. N�tzlich f�r Ger�te, die nach einer Weile keine Updates mehr senden. 0 = deaktiviert."
+                "de": "Wenn das Gerät offline ist, alle N Minuten erneut verbinden. Bei aktiver Verbindung keine Auswirkung. 0 = deaktiviert."
               }
             },
             
@@ -8821,6 +8821,18 @@
             "de": "Lüftergeschwindigkeit"
           },
           "preventInsights": false
+        },
+        "onoff.light": {
+          "title": {
+            "en": "Light",
+            "de": "Licht"
+          }
+        },
+        "dim.light": {
+          "title": {
+            "en": "Light Brightness",
+            "de": "Licht-Helligkeit"
+          }
         }
       },
       "settings": [
@@ -9794,7 +9806,7 @@
               "step": 1,
               "hint": {
                 "en": "If the device is offline, reconnect every N minutes. Has no effect while the device is connected. 0 = disabled.",
-                "de": "Verbindung alle N Minuten neu aufbauen. N�tzlich f�r Ger�te, die nach einer Weile keine Updates mehr senden. 0 = deaktiviert."
+                "de": "Wenn das Gerät offline ist, alle N Minuten erneut verbinden. Bei aktiver Verbindung keine Auswirkung. 0 = deaktiviert."
               }
             },
             
@@ -10570,7 +10582,7 @@
               "step": 1,
               "hint": {
                 "en": "If the device is offline, reconnect every N minutes. Has no effect while the device is connected. 0 = disabled.",
-                "de": "Verbindung alle N Minuten neu aufbauen. N�tzlich f�r Ger�te, die nach einer Weile keine Updates mehr senden. 0 = deaktiviert."
+                "de": "Wenn das Gerät offline ist, alle N Minuten erneut verbinden. Bei aktiver Verbindung keine Auswirkung. 0 = deaktiviert."
               }
             },
             
@@ -11057,7 +11069,7 @@
               "step": 1,
               "hint": {
                 "en": "If the device is offline, reconnect every N minutes. Has no effect while the device is connected. 0 = disabled.",
-                "de": "Verbindung alle N Minuten neu aufbauen. N�tzlich f�r Ger�te, die nach einer Weile keine Updates mehr senden. 0 = deaktiviert."
+                "de": "Wenn das Gerät offline ist, alle N Minuten erneut verbinden. Bei aktiver Verbindung keine Auswirkung. 0 = deaktiviert."
               }
             },
             
@@ -11441,7 +11453,7 @@
               "step": 1,
               "hint": {
                 "en": "If the device is offline, reconnect every N minutes. Has no effect while the device is connected. 0 = disabled.",
-                "de": "Verbindung alle N Minuten neu aufbauen. N�tzlich f�r Ger�te, die nach einer Weile keine Updates mehr senden. 0 = deaktiviert."
+                "de": "Wenn das Gerät offline ist, alle N Minuten erneut verbinden. Bei aktiver Verbindung keine Auswirkung. 0 = deaktiviert."
               }
             },
             
@@ -11899,7 +11911,7 @@
               "step": 1,
               "hint": {
                 "en": "If the device is offline, reconnect every N minutes. Has no effect while the device is connected. 0 = disabled.",
-                "de": "Verbindung alle N Minuten neu aufbauen. N�tzlich f�r Ger�te, die nach einer Weile keine Updates mehr senden. 0 = deaktiviert."
+                "de": "Wenn das Gerät offline ist, alle N Minuten erneut verbinden. Bei aktiver Verbindung keine Auswirkung. 0 = deaktiviert."
               }
             },
             
@@ -12266,7 +12278,7 @@
               "step": 1,
               "hint": {
                 "en": "If the device is offline, reconnect every N minutes. Has no effect while the device is connected. 0 = disabled.",
-                "de": "Verbindung alle N Minuten neu aufbauen. N�tzlich f�r Ger�te, die nach einer Weile keine Updates mehr senden. 0 = deaktiviert."
+                "de": "Wenn das Gerät offline ist, alle N Minuten erneut verbinden. Bei aktiver Verbindung keine Auswirkung. 0 = deaktiviert."
               }
             },
             
@@ -12695,8 +12707,8 @@
               "max": 1440,
               "step": 1,
               "hint": {
-                "en": "Reconnect to the device every N minutes. 0 = disabled.",
-                "de": "Verbindung alle N Minuten neu aufbauen. 0 = deaktiviert."
+                "en": "If the device is offline, reconnect every N minutes. No effect while connected. 0 = disabled.",
+                "de": "Wenn offline, alle N Minuten erneut verbinden. 0 = deaktiviert."
               }
             },
             {
