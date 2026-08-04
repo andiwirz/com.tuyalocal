@@ -1,4 +1,8 @@
 {
+  "1.0.128": {
+    "en": "Fix: Auto-Reconnect interval now only reconnects when the device is actually offline. Previously it tore down working connections every N minutes, causing connection thrashing, preventing polling, and eventually leaving devices unresponsive.",
+    "de": "Fix: Auto-Reconnect verbindet sich jetzt nur noch neu, wenn das Gerät tatsächlich offline ist. Bisher wurden funktionierende Verbindungen alle N Minuten getrennt, was zu Verbindungsproblemen, ausgefallenen Polls und schliesslich nicht mehr reagierenden Geräten führte."
+  },
   "1.0.127": {
     "en": "Dehumidifier driver: flow action cards for Oscillate, Self-Clean and Water Pump. New capabilities self_clean and pump added.",
     "de": "Entfeuchter-Treiber: Flow-Aktionskarten für Schwenken, Innentrocknung und Wasserpumpe. Neue Capabilities self_clean und pump hinzugefügt."
