@@ -1,8 +1,8 @@
 # Tuya Local — Homey App
 
-**Version 1.0.102** · Local WiFi/LAN control of Tuya smart devices — no cloud, no Zigbee hub required.
+**Version 1.0.145** · Local WiFi/LAN control of Tuya smart devices — no cloud, no Zigbee hub required.
 
-All communication happens over your local network via the Tuya LAN protocol. Sixteen built-in drivers cover the most common device types; a fully generic driver handles anything else.
+All communication happens over your local network via the Tuya LAN protocol. Seventeen built-in drivers cover the most common device types; a fully generic driver handles anything else.
 
 ---
 
@@ -25,6 +25,8 @@ All communication happens over your local network via the Tuya LAN protocol. Six
 | [Smart Kettle](#smart-kettle-1) | Smart kettles with temperature control | Kettle |
 | [Wall Switch](#wall-switch-1) | 1/2/3/4-gang WiFi wall switches | Socket |
 | [Doorbell](#doorbell-1) | Tuya video doorbells (Marmitek Buzz LO, Bcom Majic IPBox, Cleverio CD-200 and compatible) | Doorbell |
+| [Presence Sensor](#presence-sensor-1) | mmWave radar presence sensors (ZY-M100-WIFI and compatible) | Sensor |
+| [EV Charger](#ev-charger-1) | Tuya EV chargers, category `qccdz` (Vevor, Nine, Tera, Emini, Aimiler, Ecopoint, Dowell, Feyree, AfyeEV, Junsun, Zencar, iPengen, Suntree, Immax, Voldt, Wadapower and other rebrands) | EV Charger |
 | [Generic Tuya Device](#generic-tuya-device-1) | Any Tuya device not covered above | Other |
 
 ---
@@ -41,6 +43,8 @@ All communication happens over your local network via the Tuya LAN protocol. Six
 - **Protocol auto-detect** — pairing and repair default to *Auto-detect*, which tries 3.3 → 3.4 → 3.1 → 3.5 → 3.2 → 3.22 in order and saves the working version automatically
 - **Network scanner** — finds Tuya devices via UDP broadcast (ports 6666 / 6667) and a full TCP subnet scan (port 6668)
 - **Auto DP detection** — on pairing, the app connects to the device, collects live data points and maps them to capabilities automatically
+- **Cloud-assisted DP detection** — once Cloud Lookup credentials are saved, pairing additionally reads the device's Tuya specification and matches DPs by the manufacturer's own code names (`envhumid`, `windspeed`, `work_state`, `bright_value`, …) instead of guessing from value shape. It also picks up the *full* list of allowed values for mode and fan-speed pickers rather than only the value the device happens to report at that moment — which is what makes devices with plain numeric enums (`0` / `1`) work out of the box. Entirely optional
+- **Energy dashboard integration** — drivers that measure power feed Homey's energy dashboard; the EV Charger additionally exposes `target_power` so Homey's energy management can steer the charge rate (e.g. solar-surplus charging)
 - **Inline DP editor** — every DP number can be adjusted in the pairing screen before adding the device
 - **Optional capabilities** — tiles are added or removed dynamically based on your DP settings; set a DP to `0` to hide the tile
 - **Live credential updates** — change IP address, Local Key or Protocol Version directly in device settings at any time without re-pairing
@@ -54,7 +58,7 @@ All communication happens over your local network via the Tuya LAN protocol. Six
 
 ## Requirements
 
-- Homey Pro with firmware **≥ 12.0.0**
+- Homey Pro with firmware **≥ 12.13.0** — required by the EV Charger driver's `target_power` capability
 - Device reachable on your **local network**
 - **Device ID**, **Local Key** and **IP address** — see [How to get Device ID and Local Key](#how-to-get-device-id-and-local-key)
 
@@ -174,6 +178,18 @@ homey app install
 | `dp_water_full` |  | `alarm_water` | boolean | 19 | ✓ `0` = disabled |
 | `dp_temperature` |  | `measure_temperature` | number | 0 | ✓ `0` = disabled |
 | `dp_anion` | <img src="assets/capabilities/anion.svg" height="24"> | `anion` | boolean | 0 | ✓ `0` = disabled |
+| `dp_oscillate` | <img src="assets/capabilities/oscillate.svg" height="24"> | `oscillate` | boolean | 0 | ✓ `0` = disabled |
+| `dp_self_clean` | <img src="assets/capabilities/self_clean.svg" height="24"> | `self_clean` | boolean | 0 | ✓ `0` = disabled |
+| `dp_pump` | <img src="assets/capabilities/pump.svg" height="24"> | `pump` | boolean | 0 | ✓ `0` = disabled |
+
+#### Timer Format
+
+Two settings cover the common deviations from the standard timer format.
+
+| Setting | Description | Default |
+|---|---|---|
+| `dp_countdown_timer_numeric` | Enable if the timer DP sends `0`…`24` instead of `cancel` / `1h` … `24h` | off |
+| `dp_countdown_left_minutes` | Enable if the remaining-time DP counts minutes (0–1440) instead of hours | off |
 
 #### Mode & Fan Speed Values
 
@@ -183,6 +199,10 @@ homey app install
 | `fan_speed_values` | `low,medium,middle,high,auto,turbo` |
 
 The exact strings vary by manufacturer. Check the **Raw Data** panel in app settings to find what your device sends. After saving, **restart the Tuya Local app** for the picker to reflect the updated options.
+
+Some dehumidifiers report modes and fan speeds as plain numbers rather than names — set `mode_values = 0,1` and `fan_speed_values = 0,1` to match, otherwise the picker rejects the values and the tiles stay empty.
+
+> **Water tank alarm:** on many models this DP is really a *fault bitmap* covering several error conditions, not a dedicated tank sensor. The driver treats any non-zero value as "tank full", so an unrelated fault can surface as a tank alarm. Watch the raw value in **DP Debug** while filling the tank to confirm what your device actually sends.
 
 ---
 
@@ -294,8 +314,22 @@ Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polli
 | `dp_child_lock` | <img src="assets/capabilities/child_lock.svg" height="24"> | `child_lock` | boolean | 0 | ✓ `0` = disabled |
 | `dp_countdown_timer` | <img src="assets/capabilities/countdown_timer.svg" height="24"> | `countdown_timer` | enum | 0 | ✓ `0` = disabled |
 | `dp_countdown_left` | <img src="assets/capabilities/countdown_left.svg" height="24"> | `countdown_left` | number | 0 | ✓ `0` = disabled |
+| `dp_light_onoff` |  | `onoff.light` | boolean | 0 | ✓ `0` = disabled |
+| `dp_light_dim` |  | `dim.light` | number | 0 | ✓ `0` = disabled |
+| `dp_light_color_temp` |  | `light_temperature` | number | 0 | ✓ `0` = disabled |
 
 The speed slider (`dim`) maps the numeric DP range `speed_min … speed_max` to 0–100 %. Both a numeric speed DP and a string enum DP (`fan_speed`) can be active at the same time.
+
+#### Ceiling Fans with a Light
+
+Fill in the three light DPs and the fan gains separate light controls plus the flow cards **Set light**, **Set light brightness** and the condition **Light is on**. Leave them at `0` for fans without a light — nothing extra appears.
+
+| Setting | Description | Default |
+|---|---|---|
+| `dp_light_dim_min` / `dp_light_dim_max` | Device brightness range, scaled to 0–100 % | 0 / 100 |
+| `dp_light_color_temp_invert` | Enable if warm and cold are swapped | off |
+
+Because the speed slider already occupies `dim`, the light's brightness uses its own `dim.light` sub-capability.
 
 #### Speed, Mode & Direction Values
 
@@ -656,6 +690,130 @@ These DPs fire a trigger when the device pushes a new value.
 |---|---|---|
 | `dp_motion_sensitivity` | DP for motion sensitivity (`0`=low, `1`=medium, `2`=high) | 106 |
 | `motion_reset_seconds` | Seconds after which the motion alarm auto-clears | 30 |
+
+---
+
+### Presence Sensor
+
+Driver for Tuya mmWave radar presence sensors. Push-driven — no polling is used (default `polling_interval = 0`).
+
+The defaults match the **ZY-M100-WIFI** DP layout exactly. Sensors using a different layout are corrected automatically at pairing when Cloud Lookup credentials are saved.
+
+#### Connection
+
+| Setting | Description | Default |
+|---|---|---|
+| `ip` | Device IP address | — |
+| `device_id` | Tuya Device ID | — |
+| `local_key` | Tuya Local Key (16 or 32 chars) | — |
+| `version` | Protocol version | Auto-detect |
+| `polling_interval` | Seconds between GET polls (`0` = push-only, recommended) | 0 |
+| `offline_grace_seconds` | Seconds without data before marking device offline | 60 |
+
+#### Data Points
+
+| Setting | Capability | Type | Default DP | Notes |
+|---|---|---|---|---|
+| `dp_presence` | `alarm_motion` | enum | 1 | `presence` / `none` |
+| `dp_alarm` | `alarm_generic` | enum | 6 | `checking_result`; anything other than `check_success` / `checking` raises the alarm |
+| `dp_distance` | `measure_distance` | number | 9 | Distance to closest target, cm |
+| `dp_luminance` | `measure_luminance` | number | 104 | Illuminance, lux |
+
+#### Radar Settings
+
+These are device settings rather than tiles — they configure the radar itself.
+
+| Setting | Description | Default DP |
+|---|---|---|
+| `dp_sensitivity` | Radar sensitivity, 0–9 | 2 |
+| `dp_near_detection` | Near detection limit, 0–1000 cm (step 10) | 3 |
+| `dp_far_detection` | Far detection limit, 0–1000 cm (step 10) | 4 |
+| `dp_detection_delay` | Seconds before presence is reported | 101 |
+| `dp_fading_time` | Seconds before presence clears after the room empties | 102 |
+
+---
+
+### EV Charger
+
+Driver for Tuya EV chargers (category `qccdz`). Single-phase and three-phase units are both supported, verified against every EV-charger configuration published in the [tuya-local](https://github.com/make-all/tuya-local) project.
+
+Uses Homey's native EV charger capabilities, so the built-in **Start charging** / **Stop charging** actions, the **Is charging** condition and the charging-state trigger are all available without custom flow cards.
+
+#### Connection
+
+| Setting | Description | Default |
+|---|---|---|
+| `ip` | Device IP address | — |
+| `device_id` | Tuya Device ID | — |
+| `local_key` | Tuya Local Key (16 or 32 chars) | — |
+| `version` | Protocol version | Auto-detect |
+| `polling_interval` | Seconds between GET polls | 30 |
+| `reconnect_interval` | Minutes between reconnect attempts while offline (`0` = disabled) | 0 |
+| `offline_grace_seconds` | Seconds without data before marking device offline | 60 |
+
+#### Data Points
+
+| Setting | Capability | Type | Default DP | Notes |
+|---|---|---|---|---|
+| `dp_switch` | `evcharger_charging` | boolean | 18 | Homey's standard charge switch |
+| `dp_work_state` | `evcharger_charging_state` | enum | 3 | Tuya's 8 states mapped onto Homey's 5 — see below |
+| `dp_charge_current` | `target_power` | number | 4 | Charger speaks amps, Homey speaks watts |
+| `dp_phase_a` | voltage / current / power | raw | 6 | Packed DP: 2 B voltage ×0.1 V, 3 B current ×0.001 A, then power in W. Both the 8-byte and 7-byte layouts are decoded automatically |
+| `dp_phase_b` | `measure_*.b` (L2) | raw | 0 | Three-phase only, typically 7 |
+| `dp_phase_c` | `measure_*.c` (L3) | raw | 0 | Three-phase only, typically 8 |
+| `dp_power_total` | `measure_power` | number | 0 | Plain watts, typically 9 (or 5 on some single-phase units). Takes priority over the power decoded from Phase A |
+| `dp_session_energy` | `charge_session_energy` | number | 25 | Energy of current / last session |
+| `dp_energy_total` | `meter_power.charged` | number | 0 | Charger's own lifetime counter, typically 1 — see below |
+| `dp_fault` | `alarm_generic` + `fault_code` | bitmap | 10 | 16-bit bitmap; raw code also exposed as a sensor |
+| `dp_connection_state` | connection state | enum | 13 | Control-pilot state (`controlpi_*`) · ✓ `0` = disabled |
+| `dp_work_mode` | charging mode | enum | 0 | Typically 14 — see below · ✓ `0` = disabled |
+| `dp_temperature` | `measure_temperature` | number | 0 | Typically 24 · ✓ `0` = disabled |
+| `dp_timer_on` | delayed start (h) | number | 0 | Typically 28 · ✓ `0` = disabled |
+| `dp_live_updates` | live measurements | enum | 0 | Typically 27 · ✓ `0` = disabled — see below |
+| `dp_clear_energy` | reset device counter | boolean | 0 | Write-only pulse, typically 16 · ✓ `0` = disabled |
+
+#### Power / Current Conversion
+
+Homey controls the charge rate in watts (`target_power`), the charger accepts amps. The conversion is `W = A × voltage × phases`.
+
+| Setting | Description | Default |
+|---|---|---|
+| `current_min` / `current_max` | Physical amp range of your charger (e.g. 6–16 for 3.7 kW, 6–32 for 7.4 kW). Tuya often reports a far wider range than the hardware allows | 6 / 16 |
+| `phase_count` | 1 or 3 — detected at pairing from the number of phase DPs reported | 1 |
+| `nominal_voltage` | Grid voltage used for the conversion | 230 |
+
+A 16 A single-phase charger becomes a 0–3680 W slider in 230 W steps (1 A each). Anything below the charger's minimum current is treated as idle and stops the charge, rather than requesting an impossible current.
+
+#### DP Scaling
+
+Chargers are not consistent here, and a single pairing snapshot cannot tell the variants apart — so each scale has its own setting. Defaults match the large majority; change one only if a reading is off by a factor of ten or a hundred.
+
+| Setting | Description | Default |
+|---|---|---|
+| `current_scale` | `1` = raw value is amps · `0.1` = raw value is amps × 10 | 1 |
+| `session_energy_scale` | `0.01` = raw value is kWh × 100 · `1` = raw value is kWh | 0.01 |
+| `total_energy_scale` | Same options, for the lifetime counter — some chargers scale it differently from the session counter | 0.01 |
+
+#### Charging State Mapping
+
+Tuya reports eight states, Homey has five:
+
+| Tuya `work_state` | Homey `evcharger_charging_state` |
+|---|---|
+| `charger_free`, `charger_free_fault` | Not plugged in |
+| `charger_insert`, `charger_wait`, `charger_end`, `charger_fault` | Plugged in |
+| `charger_charging` | Charging |
+| `charger_pause` | Paused |
+
+The exact Tuya state stays available through the **Detailed charger state changed** trigger and its matching condition, which can tell *waiting* from *finished*.
+
+#### Notes
+
+> **Total energy:** many chargers expose a lifetime counter (DP 1) that reports a plausible value but never updates over the local connection. Because one reading cannot distinguish a working counter from a frozen one, `dp_energy_total` defaults to `0` and the total is accumulated from the session counter instead — which works on every model tested. Set it to `1` if your charger's own counter does update.
+
+> **Live measurements:** some chargers only stream voltage / current / power while their `online_state` DP is set to `online`. Set `dp_live_updates = 27` and the app re-asserts it on every reconnect.
+
+> **Charging modes:** chargers usually advertise five modes (immediate, to %, fixed kWh, scheduled, delayed) but implement far fewer — on many units only *Charge Now* does anything. DP 33 (`mode_set`) is a bitmask declaring what the hardware actually supports and is more trustworthy than the advertised enum. `dp_work_mode` is therefore disabled by default.
 
 ---
 
@@ -1321,6 +1479,67 @@ All DPs are auto-detected at pairing time. For AOSD and BoboYun, `dp_door_action
 
 ---
 
+### Presence Sensor
+
+#### Triggers
+
+| Trigger | Flow tokens | Notes |
+|---|---|---|
+| Presence detected | — | Radar reports `presence` |
+| Presence cleared | — | Radar reports `none` (after `dp_fading_time`) |
+| Presence sensor connected | — | Device established a LAN connection |
+| Presence sensor disconnected | — | Connection lost after offline grace period |
+| Presence sensor data point changed | `dp` (string), `value` (string) | Any raw DP change |
+
+#### Conditions
+
+| Condition |
+|---|
+| Presence is / is not active |
+| Presence sensor is / is not connected |
+
+#### Actions
+
+| Action | Notes |
+|---|---|
+| Force presence sensor reconnect | Drops and re-establishes the TCP connection |
+| Refresh presence sensor values | Triggers an immediate GET request |
+
+---
+
+### EV Charger
+
+Homey generates **Start charging**, **Stop charging**, **Is charging** and a charging-state trigger automatically from the native EV charger capabilities, plus **Set target power** from `target_power`. The cards below are the driver's own additions.
+
+#### Triggers
+
+| Trigger | Flow tokens | Notes |
+|---|---|---|
+| Charging session finished | `energy` (number) | Fires when the charger leaves the charging state, with the kWh delivered in that session |
+| Detailed charger state changed | `state`, `prev_state` (string) | Raw Tuya state — distinguishes *waiting* / *finished* / *plugged in*, which Homey's standard state groups together |
+| Charger fault occurred | `fault_code` (number) | Raw 16-bit fault bitmap value, debounced against reconnect artifacts |
+| Charger connected | — | Device established a LAN connection |
+| Charger disconnected | — | Connection lost after offline grace period |
+| Charger data point changed | `dp` (string), `value` (string) | Any raw DP change |
+
+#### Conditions
+
+| Condition | Notes |
+|---|---|
+| Detailed charger state is / is not | Compares the raw Tuya `work_state` — finer-grained than Homey's standard state |
+| Charger is / is not connected | — |
+
+#### Actions
+
+| Action | Notes |
+|---|---|
+| Set charge current | Enter amps; clamped to `current_min` … `current_max` and converted to watts internally. Homey's built-in *Set target power* covers the same DP in watts |
+| Reset energy meter | Clears the accumulated total; also sends the device's own clear-energy command when `dp_clear_energy` is set |
+| Force charger reconnect | Drops and re-establishes the TCP connection |
+| Refresh charger values | Triggers an immediate GET request |
+
+---
+
 ## Push Notifications
 
 | Event | Driver | Condition |
@@ -1336,6 +1555,7 @@ All DPs are auto-detected at pairing time. For AOSD and BoboYun, `dp_door_action
 | Garage door left open | Garage Door | Alarm state `unclosed_time` (WOFEA) or `openLongTime` (BoboYun) — uses "left open" message |
 | Garage door alarm | Garage Door | Any other alarm state (e.g. `close_time_alarm`, `closeLongTime`) — uses generic fault message |
 | Motor fault detected | Curtain Motor | `alarm_generic` transitions `false` → `true` (debounced, 30 s grace on reconnect) |
+| Fault detected | EV Charger | Fault bitmap becomes non-zero (debounced against reconnect artifacts) |
 
 ---
 
@@ -1417,6 +1637,15 @@ Fetch device credentials and DP specifications from the Tuya IoT Platform (avail
 | Device unavailable immediately — log shows `Invalid local key length` | Local Key is not exactly 16 characters — likely a copy/paste truncation | Open device **Settings** → re-enter the Local Key (must be exactly 16 characters) |
 | Curtain motor / push-only device enters connect → timeout → disconnect loop | Firmware does not respond to GET requests (e.g. BCM700D-TY01) | Set **Polling Interval** to `0` in device settings — the device will stay connected and push DPs and accept commands normally |
 | Protocol version mismatch after firmware OTA update | OTA changed the required protocol; configured version no longer works | The app auto-rotates through 3.3 / 3.4 / 3.1 / 3.5 after 5 failed reconnects and logs which version connected — update **Protocol Version** in device settings to that version to skip the retry delay |
+| Device goes offline after a while and never recovers | **Auto-Reconnect Interval** set very low, tearing down healthy connections | Fixed in 1.0.128 — auto-reconnect now only fires while the device is genuinely offline. Set the interval back to `0` or a few minutes |
+| Mode or fan-speed tile stays empty | Device reports values that are not in the picker's list (often plain numbers) | Check the raw value in **DP Debug**, then set `mode_values` / `fan_speed_values` to match exactly (e.g. `0,1`) and restart the app |
+| Newly enabled tile does not respond to taps | Capability listener registered only at startup | Fixed in 1.0.129 for Fan and Dehumidifier. On other drivers, restart the Tuya Local app once |
+| Generic picker shows raw numbers instead of labels | `readMap` was previously ignored on numeric DPs | Fixed in 1.0.140. Add a `readMap` with the raw values as **text** keys: `{"0":"Auto","1":"Continuous"}` |
+| EV charger total energy never increases | Charger's lifetime counter (DP 1) does not update over LAN | Leave `dp_energy_total` at `0` — the total is then accumulated from the session counter |
+| EV charger session energy is 100× too low / current 10× too high | Charger uses a different DP scale than the majority | Adjust `session_energy_scale`, `total_energy_scale` or `current_scale` in device settings |
+| EV charger power slider range looks wrong | `current_min` / `current_max` / `phase_count` don't match the hardware | Set them to your charger's real amp range and phase count — the watt range is derived (`W = A × V × phases`) |
+| EV charger shows no voltage / current / power | Charger only streams live values while `online_state` is `online` | Set `dp_live_updates = 27` — the app re-asserts it on every reconnect |
+| EV charging mode picker has no effect | Charger advertises modes it does not implement | Set `dp_work_mode = 0` to hide the picker; DP 33 (`mode_set`) declares what the hardware really supports |
 
 ---
 
