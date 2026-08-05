@@ -210,6 +210,9 @@ class EvChargerDriver extends Homey.Driver {
       session_energy_scale: '0.01',
       total_energy_scale:   '0.01',
       energy_source:        'session',
+      // Chargers with no power DP get the estimate switched on, since otherwise
+      // the power tile would stay permanently empty. Enabled below.
+      estimate_power:       false,
     };
 
     const present = (dp) => Object.prototype.hasOwnProperty.call(dps, String(dp));
@@ -231,6 +234,9 @@ class EvChargerDriver extends Homey.Driver {
     if (present(6))  result.dp_phase_a      = 6;
     if (present(7))  result.dp_phase_b      = 7;
     if (present(8))  result.dp_phase_c      = 8;
+    // Nothing reports power on this charger — estimate it from the current limit
+    // so the power tile and the energy dashboard have something to work with.
+    if (!present(6) && !present(9) && !present(5)) result.estimate_power = true;
     // Reporting phase B/C means a three-phase charger, which sets the watts-per-amp
     // factor used to convert Homey's target_power into the charger's current limit.
     if (present(7) && present(8)) result.phase_count = '3';

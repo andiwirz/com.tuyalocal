@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.148",
+  "version": "1.0.149",
   "compatibility": ">=12.13.0",
   "sdk": 3,
   "platforms": [
@@ -15210,6 +15210,19 @@
               "hint": {
                 "en": "Highest current your charger physically supports (e.g. 16 for 3.7 kW, 32 for 7.4 kW).",
                 "de": "Höchster Strom, den die Wallbox physisch unterstützt (z.B. 16 für 3,7 kW, 32 für 7,4 kW)."
+              }
+            },
+            {
+              "id": "estimate_power",
+              "type": "checkbox",
+              "label": {
+                "en": "Estimate power from the current limit",
+                "de": "Leistung aus Stromlimit schätzen"
+              },
+              "value": false,
+              "hint": {
+                "en": "Many of these chargers report no live power at all. Enable this to derive a wattage from the current limit the charger is set to (limit × voltage × phases) while a charge is running. It is an upper bound, not a measurement: the car may draw less, for example as the battery fills. Ignored when the charger does provide a real power DP.",
+                "de": "Viele dieser Wallboxen melden überhaupt keine Live-Leistung. Diese Option leitet während eines Ladevorgangs einen Wattwert aus dem eingestellten Stromlimit ab (Limit × Spannung × Phasen). Das ist eine Obergrenze, keine Messung: Das Auto kann weniger ziehen, etwa wenn der Akku voller wird. Wird ignoriert, wenn die Wallbox einen echten Leistungs-DP liefert."
               }
             },
             {

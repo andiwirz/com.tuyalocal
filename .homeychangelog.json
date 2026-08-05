@@ -1,4 +1,8 @@
 {
+  "1.0.149": {
+    "en": "EV Charger: new setting derives a power reading from the current limit for chargers that report no live power (limit x voltage x phases). It is enabled automatically at pairing when no power DP is present, and works independently of the energy source, so a charger with a usable energy counter can now show watts as well. The estimate is also gated on the resolved charging state rather than the charge switch, so a cable left plugged in after a finished session no longer books phantom power.",
+    "de": "Wallbox: Neue Einstellung leitet für Wallboxen ohne Live-Leistung einen Wattwert aus dem Stromlimit ab (Limit x Spannung x Phasen). Sie wird beim Pairing automatisch aktiviert, wenn kein Leistungs-DP vorhanden ist, und arbeitet unabhängig von der Energiequelle — eine Wallbox mit brauchbarem Energiezähler kann jetzt also zusätzlich Watt anzeigen. Der Schätzwert richtet sich ausserdem nach dem ermittelten Ladezustand statt nach dem Ladeschalter, sodass ein nach Sitzungsende eingestecktes Kabel keine Phantomleistung mehr verbucht."
+  },
   "1.0.148": {
     "en": "EV Charger: added the two charging states some models report in addition to the usual eight (charger_start_wait and charger_stop_wait, seen on Emini and Zencar). Previously these were logged as unknown and left the charging-state tile stale. They are also selectable in the detailed-state flow cards now.",
     "de": "Wallbox: Die zwei Ladezustände ergänzt, die einige Modelle zusätzlich zu den üblichen acht melden (charger_start_wait und charger_stop_wait, beobachtet bei Emini und Zencar). Bisher wurden sie als unbekannt protokolliert und die Ladezustand-Kachel blieb veraltet. Sie sind jetzt auch in den Flow-Karten für den detaillierten Status auswählbar."

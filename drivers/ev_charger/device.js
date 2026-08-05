@@ -417,11 +417,22 @@ class EvChargerDevice extends BaseTuyaDevice {
    * it is an estimate, not a measurement, and only used when explicitly selected.
    */
   _estimatedWatts() {
-    if (this.getCapabilityValue('evcharger_charging') !== true) return 0;
+    // Gate on the resolved charging state, not the raw charge switch: the switch
+    // can sit at "on" while the session has already finished, which would
+    // otherwise book phantom power for as long as the cable stays plugged in.
+    if (this.getCapabilityValue('evcharger_charging_state') !== 'plugged_in_charging') return 0;
+    // target_power mirrors the current limit the charger reports on DP 4, so the
+    // estimate follows whatever the charger is actually set to.
     const target = this.getCapabilityValue('target_power');
     if (typeof target === 'number' && target > 0) return target;
-    // No target known yet — fall back to the configured maximum current.
+    // No limit known yet — fall back to the configured maximum current.
     return (this.getSetting('current_max') ?? 16) * this._wattsPerAmp();
+  }
+
+  /** True when no DP supplies real power readings, so an estimate is the only option. */
+  _hasNoPowerDp() {
+    return (this.getSetting('dp_power_total') ?? 0) <= 0
+        && (this.getSetting('dp_phase_a') ?? 0) <= 0;
   }
 
   /**
@@ -430,16 +441,23 @@ class EvChargerDevice extends BaseTuyaDevice {
    * value is filtered out before it reaches _handleDps.
    */
   async _onPollTick() {
-    const source = this._energySource();
-    if (source !== 'power' && source !== 'estimate') return;
+    const source   = this._energySource();
+    // Show an estimated wattage whenever the user asked for it and the charger
+    // supplies no real power reading. Deliberately independent of the energy
+    // source, so a charger with a working energy counter can still display power.
+    const showEst  = (this.getSetting('estimate_power') === true || source === 'estimate')
+                      && this._hasNoPowerDp();
+    const integrate = source === 'power' || source === 'estimate';
+    if (!showEst && !integrate) return;
 
-    const watts = source === 'estimate'
+    const watts = (source === 'estimate' || showEst)
       ? this._estimatedWatts()
       : (this.getCapabilityValue('measure_power') ?? 0);
 
-    if (source === 'estimate' && this.hasCapability('measure_power')) {
+    if (showEst && this.hasCapability('measure_power')) {
       await this.setCapabilityValue('measure_power', Math.round(watts)).catch(() => {});
     }
+    if (!integrate) return; // display only — do not accumulate energy
     this._lastPowerWatts = watts;
 
     if (this._lastPowerTime === null) {
@@ -692,6 +710,12 @@ class EvChargerDevice extends BaseTuyaDevice {
     if (changedKeys.some((k) => ['current_scale', 'session_energy_scale', 'total_energy_scale'].includes(k))) {
       this._lastDps = {}; // clear dedup so the next poll re-applies every DP
       this.pollNow().catch(() => {});
+    }
+    // Turning the estimate off leaves a stale wattage on the tile — clear it.
+    if (changedKeys.includes('estimate_power') && this.getSetting('estimate_power') !== true) {
+      if (this._hasNoPowerDp() && this.hasCapability('measure_power')) {
+        await this.setCapabilityValue('measure_power', null).catch(() => {});
+      }
     }
     if (changedKeys.includes('energy_source')) {
       // Restart integration cleanly; the accumulated total is deliberately kept.
