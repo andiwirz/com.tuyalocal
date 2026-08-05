@@ -40,8 +40,22 @@ const WORK_STATES = [
   'charger_charging', 'charger_pause', 'charger_end', 'charger_fault',
 ];
 
+// Tuya's 8 work_state values → Homey's 5 standard evcharger_charging_state
+// values. Tuya is more granular (it separates "waiting" from "finished" from
+// "just plugged in"), so the raw value is additionally exposed through the
+// ev_state_changed trigger and ev_state_is condition.
+const STATE_MAP = {
+  charger_free:       'plugged_out',
+  charger_free_fault: 'plugged_out',
+  charger_insert:     'plugged_in',
+  charger_wait:       'plugged_in',
+  charger_end:        'plugged_in',
+  charger_fault:      'plugged_in',
+  charger_charging:   'plugged_in_charging',
+  charger_pause:      'plugged_in_paused',
+};
+
 const OPTIONAL_CAPABILITIES = [
-  { setting: 'dp_work_state',       capability: 'ev_charger_state'      },
   { setting: 'dp_charge_current',   capability: 'charge_current_limit'  },
   { setting: 'dp_fault',            capability: 'alarm_generic'         },
   { setting: 'dp_fault',            capability: 'fault_code'            },
@@ -70,6 +84,11 @@ class EvChargerDevice extends BaseTuyaDevice {
     this._faultAlarmConfirmed  = false;
     this._currentDebounceTimer = null;
     this._delayDebounceTimer   = null;
+    // Raw Tuya work_state of the previous update — drives the detailed
+    // state-changed trigger, which is finer-grained than Homey's 5-value
+    // evcharger_charging_state. Seeded from the restored DPS cache so a restart
+    // mid-session doesn't fire a spurious "session finished".
+    this._prevWorkState = null;
 
     // Lifetime energy accumulated from session-energy (DP 25) deltas — used
     // only when dp_energy_total = 0 (charger's own counter unavailable/silent).
@@ -86,15 +105,22 @@ class EvChargerDevice extends BaseTuyaDevice {
     await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
     await this._applyCurrentLimitRange();
 
+    // Seed the previous raw state from the DPS cache restored by _baseInit, so a
+    // restart during a charge doesn't look like a fresh state transition.
+    const wsDp = this.getSetting('dp_work_state');
+    if (wsDp > 0 && this._lastDps[String(wsDp)] !== undefined) {
+      const cached = String(this._lastDps[String(wsDp)]);
+      if (STATE_MAP[cached]) this._prevWorkState = cached;
+    }
+
     if (this.getSetting('dp_energy_total') <= 0 && this._energyAccum > 0) {
-      this.setCapabilityValue('meter_power', Math.round(this._energyAccum * 100) / 100).catch(() => {});
+      this.setCapabilityValue('meter_power.charged', Math.round(this._energyAccum * 100) / 100).catch(() => {});
     }
 
     // ── Flow trigger cards ──────────────────────────────────────────────────
     this._triggerDeviceConnected    = this.homey.flow.getDeviceTriggerCard('ev_device_connected');
     this._triggerDeviceDisconnected = this.homey.flow.getDeviceTriggerCard('ev_device_disconnected');
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('ev_dp_changed');
-    this._triggerChargingStarted    = this.homey.flow.getDeviceTriggerCard('ev_charging_started');
     this._triggerChargingEnded      = this.homey.flow.getDeviceTriggerCard('ev_charging_ended');
     this._triggerStateChanged       = this.homey.flow.getDeviceTriggerCard('ev_state_changed');
     this._triggerFaultOn            = this.homey.flow.getDeviceTriggerCard('ev_fault_alarm_on');
@@ -118,7 +144,10 @@ class EvChargerDevice extends BaseTuyaDevice {
       this.registerCapabilityListener(capability, listener);
     };
 
-    register('onoff', async (value) => {
+    // evcharger_charging is Homey's standard charge on/off switch. Homey
+    // generates the "Start/Stop charging" actions and "Is charging" condition
+    // from it automatically — no custom flow cards needed for those.
+    register('evcharger_charging', async (value) => {
       await this._set(this.getSetting('dp_switch'), Boolean(value));
     });
 
@@ -253,7 +282,7 @@ class EvChargerDevice extends BaseTuyaDevice {
       if (this._lastSessionKwh !== null && kwh > this._lastSessionKwh) {
         this._energyAccum += kwh - this._lastSessionKwh;
         this.setStoreValue('energyAccum', this._energyAccum).catch(() => {});
-        await this.setCapabilityValue('meter_power',
+        await this.setCapabilityValue('meter_power.charged',
           Math.round(this._energyAccum * 100) / 100).catch(() => {});
       }
     }
@@ -280,25 +309,28 @@ class EvChargerDevice extends BaseTuyaDevice {
 
       // ── Switch ───────────────────────────────────────────────────────────
       if (settings.dp_switch > 0 && dp === settings.dp_switch) {
-        await this.setCapabilityValue('onoff', Boolean(value)).catch(() => {});
+        await this.setCapabilityValue('evcharger_charging', Boolean(value)).catch(() => {});
         continue;
       }
 
       // ── Work state ───────────────────────────────────────────────────────
       if (settings.dp_work_state > 0 && dp === settings.dp_work_state) {
         const state = String(value);
-        if (!WORK_STATES.includes(state)) {
+        const mapped = STATE_MAP[state];
+        if (!mapped) {
           this._appLog(`work_state: unknown value "${state}" — expected one of ${WORK_STATES.join(', ')}`, 'warn');
           continue;
         }
-        const prev = this.getCapabilityValue('ev_charger_state');
-        await this.setCapabilityValue('ev_charger_state', state).catch(() => {});
-        if (prev !== null && prev !== state) {
-          this._triggerStateChanged.trigger(this, { state, prev_state: prev }).catch(() => {});
-          if (state === 'charger_charging') {
-            this._triggerChargingStarted.trigger(this).catch(() => {});
-          }
-          if (prev === 'charger_charging'
+        // prevRaw comes from _lastDps, which was already updated above — so read
+        // the value captured before this loop iteration overwrote it.
+        const prevRaw = this._prevWorkState ?? null;
+        this._prevWorkState = state;
+
+        await this.setCapabilityValue('evcharger_charging_state', mapped).catch(() => {});
+
+        if (prevRaw !== null && prevRaw !== state) {
+          this._triggerStateChanged.trigger(this, { state, prev_state: prevRaw }).catch(() => {});
+          if (prevRaw === 'charger_charging'
               && ['charger_end', 'charger_pause', 'charger_free'].includes(state)) {
             const kwh = this.getCapabilityValue('charge_session_energy') ?? 0;
             this._triggerChargingEnded.trigger(this, { energy: kwh }).catch(() => {});
@@ -339,7 +371,7 @@ class EvChargerDevice extends BaseTuyaDevice {
       // ── Lifetime energy total (DP 1) ─────────────────────────────────────
       if (settings.dp_energy_total > 0 && dp === settings.dp_energy_total) {
         const kwh = Number(value) * 0.01;
-        await this.setCapabilityValue('meter_power', Math.round(kwh * 100) / 100).catch(() => {});
+        await this.setCapabilityValue('meter_power.charged', Math.round(kwh * 100) / 100).catch(() => {});
         continue;
       }
 
@@ -448,7 +480,7 @@ class EvChargerDevice extends BaseTuyaDevice {
     await this.setStoreValue('energyAccum', 0).catch(() => {});
     await this.setStoreValue('lastSessionKwh', null).catch(() => {});
     if (this.getSetting('dp_energy_total') <= 0) {
-      await this.setCapabilityValue('meter_power', 0).catch(() => {});
+      await this.setCapabilityValue('meter_power.charged', 0).catch(() => {});
     }
     this._appLog('Energy total reset', 'info');
   }

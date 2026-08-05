@@ -1,7 +1,7 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.140",
-  "compatibility": ">=12.0.0",
+  "version": "1.0.141",
+  "compatibility": ">=12.4.5",
   "sdk": 3,
   "platforms": [
     "local"
@@ -637,29 +637,6 @@
       "uiQuickAction": false,
       "insights": false,
       "icon": "/assets/capabilities/pump.svg"
-    },
-    "ev_charger_state": {
-      "type": "enum",
-      "title": {
-        "en": "Charger State",
-        "de": "Ladestatus"
-      },
-      "values": [
-        { "id": "charger_free",       "title": { "en": "Idle",         "de": "Bereit" } },
-        { "id": "charger_insert",     "title": { "en": "Plugged In",   "de": "Eingesteckt" } },
-        { "id": "charger_free_fault", "title": { "en": "Idle (Fault)", "de": "Bereit (Fehler)" } },
-        { "id": "charger_wait",       "title": { "en": "Waiting",      "de": "Wartet" } },
-        { "id": "charger_charging",   "title": { "en": "Charging",     "de": "Lädt" } },
-        { "id": "charger_pause",      "title": { "en": "Paused",       "de": "Pausiert" } },
-        { "id": "charger_end",        "title": { "en": "Finished",     "de": "Beendet" } },
-        { "id": "charger_fault",      "title": { "en": "Fault",        "de": "Fehler" } }
-      ],
-      "getable": true,
-      "setable": false,
-      "uiComponent": "sensor",
-      "uiQuickAction": false,
-      "insights": true,
-      "icon": "/assets/capabilities/motor_state.svg"
     },
     "charge_current_limit": {
       "type": "number",
@@ -4278,20 +4255,14 @@
         ]
       },
       {
-        "id": "ev_charging_started",
-        "title": {
-          "en": "Charging started",
-          "de": "Ladevorgang gestartet"
-        },
-        "args": [
-          { "name": "device", "type": "device", "filter": "driver_id=ev_charger" }
-        ]
-      },
-      {
         "id": "ev_charging_ended",
         "title": {
-          "en": "Charging ended",
-          "de": "Ladevorgang beendet"
+          "en": "Charging session finished",
+          "de": "Ladesitzung abgeschlossen"
+        },
+        "hint": {
+          "en": "Fires when the charger leaves the charging state, with the energy delivered in that session as a token. For a plain start/stop trigger use the built-in \"Started charging\" / \"Stopped charging\" cards.",
+          "de": "Wird ausgelöst, wenn die Wallbox den Ladezustand verlässt — mit der in dieser Sitzung geladenen Energie als Token. Für einen einfachen Start/Stop-Auslöser die eingebauten Karten \"Ladevorgang hat begonnen\" / \"Ladevorgang wurde gestoppt\" verwenden."
         },
         "args": [
           { "name": "device", "type": "device", "filter": "driver_id=ev_charger" }
@@ -4308,8 +4279,12 @@
       {
         "id": "ev_state_changed",
         "title": {
-          "en": "Charger state changed",
-          "de": "Ladestatus geändert"
+          "en": "Detailed charger state changed",
+          "de": "Detaillierter Ladestatus geändert"
+        },
+        "hint": {
+          "en": "Fires on any change of the charger's raw Tuya state, which is more granular than Homey's standard charging state (it tells \"waiting\", \"finished\" and \"plugged in\" apart).",
+          "de": "Wird bei jeder Änderung des rohen Tuya-Status ausgelöst, der feiner ist als der Homey-Standardstatus (unterscheidet \"wartet\", \"beendet\" und \"eingesteckt\")."
         },
         "args": [
           { "name": "device", "type": "device", "filter": "driver_id=ev_charger" }
@@ -5320,24 +5295,18 @@
         ]
       },
       {
-        "id": "ev_is_charging",
-        "title": {
-          "en": "Charger !{{is|is not}} charging",
-          "de": "Wallbox !{{lädt|lädt nicht}}"
-        },
-        "args": [
-          { "name": "device", "type": "device", "filter": "driver_id=ev_charger" }
-        ]
-      },
-      {
         "id": "ev_state_is",
         "title": {
-          "en": "Charger state !{{is|is not}}",
-          "de": "Ladestatus !{{ist|ist nicht}}"
+          "en": "Detailed charger state !{{is|is not}}",
+          "de": "Detaillierter Ladestatus !{{ist|ist nicht}}"
         },
         "titleFormatted": {
-          "en": "Charger state !{{is|is not}} [[state]]",
-          "de": "Ladestatus !{{ist|ist nicht}} [[state]]"
+          "en": "Detailed charger state !{{is|is not}} [[state]]",
+          "de": "Detaillierter Ladestatus !{{ist|ist nicht}} [[state]]"
+        },
+        "hint": {
+          "en": "Checks the charger's raw Tuya state, which distinguishes \"waiting\", \"finished\" and \"plugged in\" — states that Homey's standard charging state groups together.",
+          "de": "Prüft den rohen Tuya-Status, der \"wartet\", \"beendet\" und \"eingesteckt\" unterscheidet — Zustände, die der Homey-Standardstatus zusammenfasst."
         },
         "args": [
           { "name": "device", "type": "device", "filter": "driver_id=ev_charger" },
@@ -15050,20 +15019,20 @@
       },
       "class": "evcharger",
       "capabilities": [
-        "onoff",
-        "ev_charger_state",
+        "evcharger_charging",
+        "evcharger_charging_state",
         "charge_current_limit",
         "measure_power",
         "measure_voltage",
         "measure_current",
         "charge_session_energy",
-        "meter_power"
+        "meter_power.charged"
       ],
       "capabilitiesOptions": {
-        "meter_power": {
+        "meter_power.charged": {
           "title": {
-            "en": "Total Energy",
-            "de": "Gesamtenergie"
+            "en": "Charged Energy",
+            "de": "Geladene Energie"
           }
         },
         "measure_voltage.b": { "title": { "en": "Voltage L2", "de": "Spannung L2" } },
@@ -15074,7 +15043,8 @@
         "measure_power.c":   { "title": { "en": "Power L3",   "de": "Leistung L3" } }
       },
       "energy": {
-        "cumulative": true
+        "evCharger": true,
+        "meterPowerImportedCapability": "meter_power.charged"
       },
       "settings": [
         {
