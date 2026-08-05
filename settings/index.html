@@ -169,6 +169,9 @@
         <option value="sec-kettle">Smart Kettle</option>
         <option value="sec-wallswitch">Wall Switch</option>
         <option value="sec-doorbell">Doorbell</option>
+        <option value="sec-presence">Presence Sensor</option>
+        <option value="sec-evcharger">EV Charger</option>
+        <option value="sec-generic">Generic</option>
         <option value="sec-trouble">Troubleshooting</option>
       </select>
     </div>
@@ -198,6 +201,10 @@
         <li>Switch to the <strong>☁️ Cloud Lookup</strong> tab, paste your credentials, select your data center, and click <strong>Fetch Devices</strong></li>
         <li>Use the <strong>Copy</strong> button to copy Device ID and Local Key</li>
       </ol>
+
+      <h3>Cloud-assisted DP detection</h3>
+      <p>Once your Cloud Lookup credentials have been saved here, pairing gets noticeably more accurate. The local connection only ever sees raw DP numbers and values, so the app has to guess what each one means from the value shape. The cloud specification instead supplies the manufacturer's own name per DP — <code>envhumid</code>, <code>windspeed</code>, <code>work_state</code>, <code>bright_value</code> and so on — which is matched directly.</p>
+      <p style="font-size:12px;color:#666">This mainly helps devices whose enums use plain numbers (<code>0</code> / <code>1</code>) instead of names, where value-shape guessing has nothing to go on, and it reads the <em>full</em> list of allowed values for mode and fan-speed pickers rather than just the one value the device happens to be reporting at that moment. It is entirely optional — pairing works without it, you may just have to correct a few DP numbers by hand afterwards.</p>
 
       <h3>Reporting device issues</h3>
       <p>If a device does not work as expected or a DP mapping is incorrect, please provide the <strong>DP specification</strong> from the Cloud Lookup:</p>
@@ -247,9 +254,15 @@
           <tr><td>dp_water_full</td>       <td>19</td> <td>Water Tank Full</td>        <td><span class="help-badge badge-ro">Read</span></td></tr>
           <tr><td>dp_temperature</td>      <td>0</td>  <td>Temperature (°C)</td>       <td><span class="help-badge badge-ro">Read</span></td></tr>
           <tr><td>dp_anion</td>            <td>0</td>  <td>Ioniser</td>                <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_oscillate</td>        <td>0</td>  <td>Oscillate / swing</td>      <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_self_clean</td>       <td>0</td>  <td>Self-Clean (internal drying)</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_pump</td>             <td>0</td>  <td>Water Pump</td>             <td><span class="help-badge badge-rw">R/W</span></td></tr>
         </tbody>
       </table>
       <p>Set any optional DP to <strong>0</strong> to hide the tile. Use the <strong>DP Debug</strong> and <strong>Raw Data</strong> tabs to find the correct DP numbers for your device.</p>
+      <div class="note"><strong>Numeric mode / fan-speed values:</strong> Some dehumidifiers report modes and fan speeds as plain numbers (<code>"0"</code>, <code>"1"</code>) instead of names like <code>auto</code> or <code>low</code>. Set <em>mode_values = 0,1</em> and <em>fan_speed_values = 0,1</em> to match, otherwise the picker rejects the values and the tiles stay empty.</div>
+      <div class="note"><strong>Timer format:</strong> Two settings cover the common deviations. Enable <em>Timer uses plain numbers</em> if the timer DP sends <code>0</code>…<code>24</code> rather than <code>cancel</code> / <code>1h</code> … <code>24h</code>. Enable <em>Timer Remaining DP is in minutes</em> if the remaining-time DP counts minutes (0–1440) rather than hours.</div>
+      <div class="note"><strong>Water tank alarm:</strong> On many models this DP is really a <em>fault bitmap</em> covering several error conditions, not a dedicated tank sensor. The driver treats any non-zero value as "tank full", so an unrelated fault can surface as a tank alarm. Watch the raw value in <strong>DP Debug</strong> while filling the tank to confirm which value your device actually uses.</div>
     </div>
 
     <div class="section" id="sec-ac">
@@ -292,10 +305,14 @@
           <tr><td>dp_child_lock</td>      <td>0</td> <td>Child Lock</td>            <td>0 = disabled</td>                                                                       <td><span class="help-badge badge-rw">R/W</span></td></tr>
           <tr><td>dp_countdown_timer</td> <td>0</td> <td>Timer</td>                 <td>0 = disabled</td>                                                                       <td><span class="help-badge badge-rw">R/W</span></td></tr>
           <tr><td>dp_countdown_left</td>  <td>0</td> <td>Timer Remaining</td>       <td>0 = disabled</td>                                                                       <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_light_onoff</td>      <td>0</td> <td>Light On / Off</td>        <td>0 = disabled. For ceiling fans with an integrated light (e.g. DP 15)</td>              <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_light_dim</td>        <td>0</td> <td>Light Brightness</td>      <td>0 = disabled. Scaled using <em>dp_light_dim_min</em> / <em>dp_light_dim_max</em> (default 0–100)</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_light_color_temp</td> <td>0</td> <td>Light Color Temp</td>      <td>0 = disabled. Device range 0–100. Enable <em>dp_light_color_temp_invert</em> if warm and cold are swapped</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
         </tbody>
       </table>
       <div class="note"><strong>Speed slider vs. enum:</strong> Both can be active simultaneously. The slider (<em>dim</em>) maps the numeric DP range <em>speed_min … speed_max</em> to 0–100 %. The enum picker (<em>fan_speed</em>) uses named levels like <code>low / medium / high</code>. Set <em>dp_speed = 0</em> to disable the slider, or <em>dp_fan_speed = 0</em> to disable the picker.</div>
       <div class="note"><strong>Fan direction:</strong> Detected automatically at pairing if the device reports <code>forward</code> or <code>reverse</code>. Set <em>dp_direction</em> manually (e.g. DP 63) if the device uses a different DP number.</div>
+      <div class="note"><strong>Ceiling fans with a light:</strong> Fill in the three light DPs and the fan gains a separate light on/off, brightness and colour-temperature control, plus the flow cards "Set light", "Set light brightness" and the condition "Light is on". Leave them at 0 for fans without a light — nothing extra appears. Because the speed slider already uses <em>dim</em>, the light brightness sits on its own <em>dim.light</em> capability.</div>
     </div>
 
     <div class="section" id="sec-humidifier">
@@ -514,6 +531,82 @@
       <div class="note"><strong>Flow actions:</strong> "Enable/Disable motion", "Set night vision", "Set chime volume", and "Set motion sensitivity" all throw an error if the corresponding DP is set to 0. Set the DP number in device settings first.</div>
     </div>
 
+    <div class="section" id="sec-presence">
+      <h2>Presence Sensor — DP reference</h2>
+      <p>Driver for Tuya mmWave radar presence sensors (ZY-M100-WIFI and compatible). Push-driven — <em>polling_interval = 0</em> by default.</p>
+      <table class="help-table">
+        <thead><tr><th>Setting</th><th>Default DP</th><th>Capability / Use</th><th>Notes</th><th>R/W</th></tr></thead>
+        <tbody>
+          <tr><td>dp_presence</td>        <td>1</td>   <td>alarm_motion</td>       <td>enum <code>presence</code> / <code>none</code></td>                                       <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_alarm</td>           <td>6</td>   <td>alarm_generic</td>      <td>enum <code>checking_result</code> — anything other than <code>check_success</code> / <code>checking</code> raises the alarm</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_distance</td>        <td>9</td>   <td>measure_distance</td>   <td>Distance to the closest target, in cm</td>                                                <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_luminance</td>       <td>104</td> <td>measure_luminance</td>  <td>Illuminance in lux</td>                                                                   <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_sensitivity</td>     <td>2</td>   <td>Radar sensitivity</td>  <td>Integer 0–9 — device setting, not a tile</td>                                             <td><span class="help-badge badge-rw">Setting</span></td></tr>
+          <tr><td>dp_near_detection</td>  <td>3</td>   <td>Near detection limit</td> <td>0–1000 cm, step 10</td>                                                                <td><span class="help-badge badge-rw">Setting</span></td></tr>
+          <tr><td>dp_far_detection</td>   <td>4</td>   <td>Far detection limit</td> <td>0–1000 cm, step 10</td>                                                                 <td><span class="help-badge badge-rw">Setting</span></td></tr>
+          <tr><td>dp_detection_delay</td> <td>101</td> <td>Detection delay</td>    <td>Seconds before presence is reported</td>                                                  <td><span class="help-badge badge-rw">Setting</span></td></tr>
+          <tr><td>dp_fading_time</td>     <td>102</td> <td>Fading time</td>        <td>Seconds before presence clears after the room empties</td>                                <td><span class="help-badge badge-rw">Setting</span></td></tr>
+        </tbody>
+      </table>
+      <div class="note"><strong>Other radar models:</strong> The defaults above match the ZY-M100-WIFI layout exactly. Sensors with a different DP layout are corrected automatically at pairing when Cloud Lookup credentials are saved — see <em>Cloud-assisted DP detection</em> under Getting started.</div>
+    </div>
+
+    <div class="section" id="sec-evcharger">
+      <h2>EV Charger — DP reference</h2>
+      <p>Driver for Tuya EV chargers (category <code>qccdz</code>), sold under many brands: Vevor, Nine, Tera, Emini, Aimiler, Ecopoint, Dowell, Feyree, AfyeEV, Junsun, Zencar, iPengen, Suntree, Immax, Voldt, Wadapower and others. Single-phase and three-phase units are both supported.</p>
+      <table class="help-table">
+        <thead><tr><th>Setting</th><th>Default DP</th><th>Capability / Use</th><th>Notes</th><th>R/W</th></tr></thead>
+        <tbody>
+          <tr><td>dp_switch</td>           <td>18</td> <td>evcharger_charging</td>       <td>Homey's standard charge switch — provides the built-in "Start / Stop charging" flow cards</td>                                <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_work_state</td>       <td>3</td>  <td>evcharger_charging_state</td> <td>Tuya's 8 states are mapped onto Homey's 5 (see note below)</td>                                                                <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_charge_current</td>   <td>4</td>  <td>target_power</td>             <td>Charger speaks amps, Homey speaks watts — converted using <em>Phases</em> and <em>Nominal Voltage</em></td>                     <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_phase_a</td>          <td>6</td>  <td>Voltage / Current / Power</td> <td>Raw packed DP: 2 B voltage ×0.1 V, 3 B current ×0.001 A, then power in W. 8-byte and 7-byte layouts both handled</td>          <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_phase_b</td>          <td>0</td>  <td>Voltage / Current / Power L2</td> <td>Three-phase only, typically 7. 0 = single phase</td>                                                                       <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_phase_c</td>          <td>0</td>  <td>Voltage / Current / Power L3</td> <td>Three-phase only, typically 8. 0 = single phase</td>                                                                       <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_power_total</td>      <td>0</td>  <td>measure_power</td>            <td>Plain integer in watts, typically 9 (or 5 on some single-phase units). Takes priority over the power decoded from Phase&nbsp;A</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_session_energy</td>   <td>25</td> <td>charge_session_energy</td>    <td>Energy of the current / last session, ×0.01 kWh</td>                                                                          <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_energy_total</td>     <td>0</td>  <td>meter_power.charged</td>      <td>Charger's own lifetime counter, typically 1. Left at 0 on purpose — see note below</td>                                       <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_fault</td>            <td>10</td> <td>alarm_generic + Fault Code</td> <td>16-bit bitmap. Raw value is exposed as a sensor so it can be matched against the manufacturer's fault table</td>            <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_connection_state</td> <td>13</td> <td>Connection State</td>         <td>Control-pilot state (<code>controlpi_*</code>). 0 = disabled</td>                                                             <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_work_mode</td>        <td>0</td>  <td>Charging Mode</td>            <td>Typically 14. Most units only really implement "Charge Now" — see note below. 0 = disabled</td>                              <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_temperature</td>      <td>0</td>  <td>measure_temperature</td>      <td>Typically 24. 0 = disabled</td>                                                                                               <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_timer_on</td>         <td>0</td>  <td>Delayed Start</td>            <td>Power-on delay in hours, typically 28. 0 = disabled</td>                                                                      <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_live_updates</td>     <td>0</td>  <td>Live measurements</td>        <td>Typically 27. Some chargers only stream live values while this is set to <code>online</code>; re-asserted on every reconnect</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_clear_energy</td>     <td>0</td>  <td>Reset device counter</td>     <td>Write-only pulse, typically 16. Used by the "Reset energy meter" flow action</td>                                              <td><span class="help-badge badge-rw">Write</span></td></tr>
+          <tr><td>current_min / current_max</td> <td>—</td> <td>Hardware current range</td> <td>Physical limits of your charger in amps (e.g. 6–16 for 3.7 kW, 6–32 for 7.4 kW). Tuya often reports a far wider range than the hardware allows</td> <td><span class="help-badge badge-rw">Setting</span></td></tr>
+          <tr><td>phase_count / nominal_voltage</td> <td>—</td> <td>Power conversion</td> <td>W = A × V × phases. Phase count is detected at pairing from the number of phase DPs</td>                                     <td><span class="help-badge badge-rw">Setting</span></td></tr>
+        </tbody>
+      </table>
+      <div class="note"><strong>Charging power (target_power):</strong> Homey controls the charge rate in watts, which lets its energy management steer the charger — for example solar-surplus charging. The slider range follows your <em>current_min / current_max</em> settings: a 16 A single-phase charger becomes 0–3680 W in 230 W steps (1 A each). Anything below the charger's minimum current is treated as idle and stops the charge instead of requesting an impossible current.</div>
+      <div class="note"><strong>Charging state mapping:</strong> Tuya reports eight states, Homey has five. <code>charger_free</code> and <code>charger_free_fault</code> → <em>Not plugged in</em>; <code>charger_insert</code>, <code>charger_wait</code>, <code>charger_end</code> and <code>charger_fault</code> → <em>Plugged in</em>; <code>charger_charging</code> → <em>Charging</em>; <code>charger_pause</code> → <em>Paused</em>. The exact Tuya state stays available through the "Detailed charger state changed" trigger and the matching condition, which can tell "waiting" from "finished".</div>
+      <div class="note"><strong>Total energy:</strong> Many chargers expose a lifetime counter (DP 1) that reports a plausible value but never updates over the local connection. Because a single reading cannot tell a working counter from a frozen one, <em>dp_energy_total</em> stays at 0 and the total is accumulated from the session counter instead — which works on every model tested. If your charger's own counter does update, set <em>dp_energy_total = 1</em>.</div>
+      <div class="note"><strong>Charging modes:</strong> Chargers usually advertise five modes (immediate, to&nbsp;%, fixed kWh, scheduled, delayed) but implement far fewer. On many units only <em>Charge Now</em> actually does anything. If switching modes has no effect, set <em>dp_work_mode = 0</em> to hide the picker.</div>
+    </div>
+
+    <div class="section" id="sec-generic">
+      <h2>Generic — custom DP mapping</h2>
+      <p>The Generic driver maps any DP to a capability of your choice via a JSON configuration, for devices without a dedicated driver. Configure it in the pairing wizard or under <em>dp_config</em> in device settings.</p>
+      <table class="help-table">
+        <thead><tr><th>Field</th><th>Purpose</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td><code>dp</code></td>       <td>DP number (required)</td>                                       <td><code>12</code></td></tr>
+          <tr><td><code>cap</code></td>      <td>Capability id (required)</td>                                   <td><code>generic_switch_1</code></td></tr>
+          <tr><td><code>label</code></td>    <td>Tile title</td>                                                 <td><code>"Timer"</code></td></tr>
+          <tr><td><code>settable</code></td> <td>Allow writing to the DP</td>                                    <td><code>true</code></td></tr>
+          <tr><td><code>readonly</code></td> <td>Never write, even if settable</td>                              <td><code>true</code></td></tr>
+          <tr><td><code>scale</code></td>    <td>Multiplier applied when reading (divides when writing)</td>     <td><code>0.1</code></td></tr>
+          <tr><td><code>min / max / step</code></td> <td>Slider range</td>                                       <td><code>30 / 80 / 5</code></td></tr>
+          <tr><td><code>unit</code></td>     <td>Unit shown next to the value</td>                               <td><code>"%"</code></td></tr>
+          <tr><td><code>options / labels</code></td> <td>Picker values and their display names</td>               <td><code>"0,1"</code> / <code>"Auto, Continuous"</code></td></tr>
+          <tr><td><code>readMap</code></td>  <td>Translate a raw DP value into a capability value</td>            <td><code>{"0":"low","1":"high"}</code></td></tr>
+          <tr><td><code>writeMap</code></td> <td>Translate a capability value into a raw DP value</td>            <td><code>{"low":0,"high":1}</code></td></tr>
+          <tr><td><code>invert</code></td>   <td>Mirror a numeric value within min…max</td>                       <td><code>true</code></td></tr>
+        </tbody>
+      </table>
+      <div class="note"><strong>Numeric enums:</strong> <code>readMap</code> works on numeric DPs too, so a device that reports <code>0</code> / <code>1</code> instead of descriptive strings can still drive a picker with readable labels. Keys are matched as text — write <code>{"0":"Auto","1":"Continuous"}</code>, not <code>{0:"Auto"}</code>.</div>
+      <div class="note"><strong>Flow cards:</strong> "Send DP command" writes any DP by number, with the value auto-parsed (<code>true</code>/<code>false</code> → boolean, digits → number, anything else → text). "DP value is" checks a DP's last known value, and "A specific data point changed" fires only for one chosen DP and carries the new and previous value as tokens.</div>
+    </div>
+
     <div class="section" id="sec-trouble">
       <h2>Troubleshooting</h2>
       <table class="help-table">
@@ -551,6 +644,14 @@
           <tr><td>Device missing DPs or commands rejected</td>           <td>Your device may be using the <strong>Standard Instruction Set</strong> which hides some DPs. Switch to <strong>DP Instruction Set</strong> on iot.tuya.com → Devices → your device → <strong>Instruction Mode</strong>. This exposes all raw DPs with full read/write access.</td></tr>
           <tr><td>Cloud Lookup shows fewer DPs than expected</td>        <td>Same cause — the Standard Instruction Set limits what the cloud API returns. Switch to DP Instruction mode on iot.tuya.com, then re-fetch in Cloud Lookup.</td></tr>
           <tr><td>SET command causes disconnect</td>                     <td>1) Refresh Local Key via ☁️ Cloud Lookup. 2) Enable <em>Fire and Forget</em> in device settings. 3) Try Protocol 3.4. 4) Switch to DP Instruction mode on iot.tuya.com.</td></tr>
+          <tr><td>Device goes offline after a while and never recovers</td> <td>Set <em>Auto-Reconnect Interval</em> back to 0 or a few minutes. It only reconnects while the device is genuinely offline and has no effect on a healthy connection.</td></tr>
+          <tr><td>Mode or fan-speed tile stays empty</td>                 <td>The device reports values that are not in the picker's list. Check the raw value in <strong>DP Debug</strong>, then set <em>mode_values</em> / <em>fan_speed_values</em> to match exactly (numeric devices need e.g. <code>0,1</code>) and restart the app.</td></tr>
+          <tr><td>Newly enabled tile does not respond to taps</td>       <td>Fixed as of v1.0.129 for the Fan and Dehumidifier drivers — capabilities enabled through device settings are now controllable immediately. On other drivers, restart the Tuya Local app once.</td></tr>
+          <tr><td>Generic picker shows raw numbers instead of labels</td> <td>Add a <code>readMap</code> to that DP's entry in <em>dp_config</em>, with the raw values as text keys: <code>{"0":"Auto","1":"Continuous"}</code>.</td></tr>
+          <tr><td>EV charger total energy never increases</td>           <td>Leave <em>dp_energy_total</em> at 0 so the total is accumulated from the session counter. Many chargers expose a lifetime counter that never updates over the local connection.</td></tr>
+          <tr><td>EV charger power slider range looks wrong</td>         <td>Set <em>current_min</em> / <em>current_max</em> to your charger's real amp range and <em>Phases</em> to 1 or 3. The watt range is derived from those (W = A × V × phases).</td></tr>
+          <tr><td>EV charger shows no voltage / current / power</td>     <td>Some chargers only stream live measurements while their <em>online_state</em> DP is set to <code>online</code>. Set <em>dp_live_updates = 27</em> — the app then re-asserts it on every reconnect.</td></tr>
+          <tr><td>EV charging mode picker has no effect</td>             <td>Most of these chargers advertise modes they do not implement; only "Charge Now" tends to work. Set <em>dp_work_mode = 0</em> to hide the picker.</td></tr>
         </tbody>
       </table>
     </div>

@@ -1,4 +1,8 @@
 {
+  "1.0.143": {
+    "en": "Updated the in-app Help: new DP reference sections for EV Charger, Presence Sensor and the Generic driver's JSON mapping, the Fan light DPs and the Dehumidifier oscillate/self-clean/pump DPs documented, a section on cloud-assisted DP detection, and nine new troubleshooting entries.",
+    "de": "Hilfe in der App aktualisiert: neue DP-Referenzen für Wallbox, Präsenzsensor und die JSON-Zuordnung des Generic-Treibers, die Licht-DPs des Lüfters und die Schwenken-/Innentrocknung-/Pumpen-DPs des Entfeuchters dokumentiert, ein Abschnitt zur cloud-gestützten DP-Erkennung sowie neun neue Einträge zur Fehlerbehebung."
+  },
   "1.0.142": {
     "en": "EV Charger driver: added the standard target_power capability, so Homey's energy management can steer the charging power (e.g. solar-surplus charging). Power in watts is converted to the charger's current limit automatically — set Phases and Current Min/Max in device settings to match your hardware. NOTE: this app now requires Homey v12.13.0 or newer.",
     "de": "Wallbox-Treiber: Standard-Capability target_power ergänzt, damit Homeys Energiemanagement die Ladeleistung steuern kann (z.B. PV-Überschussladen). Die Leistung in Watt wird automatisch in das Stromlimit der Wallbox umgerechnet — Phasen und Min/Max-Strom in den Geräteeinstellungen passend zur Hardware setzen. HINWEIS: Diese App benötigt jetzt Homey v12.13.0 oder neuer."
