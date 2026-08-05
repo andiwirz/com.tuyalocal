@@ -5,6 +5,23 @@ const TuyAPI                    = require('tuyapi');
 const { setupCloudLookup }      = require('../../lib/pairCloudLookup');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
+const { detectViaCloud }        = require('../../lib/dpCodeMap');
+
+// Maps this driver's settings keys to the Tuya cloud "code" names that
+// commonly represent them. See lib/dpCodeMap.js. The hardcoded defaults in
+// _buildPendingDevice() match the ZY-M100-WIFI mmWave sensor's DP layout —
+// this map overrides them for other radar sensor models with a different one.
+const CLOUD_CODE_MAP = {
+  dp_presence:       ['presence_state'],
+  dp_sensitivity:    ['sensitivity'],
+  dp_near_detection: ['near_detection'],
+  dp_far_detection:  ['far_detection'],
+  dp_alarm:          ['checking_result'],
+  dp_distance:       ['target_dis_closest'],
+  dp_detection_delay: ['detection_delay'],
+  dp_fading_time:     ['fading_time'],
+  dp_luminance:       ['illuminance'],
+};
 
 class PresenceSensorDriver extends Homey.Driver {
   async onInit() {
@@ -90,8 +107,13 @@ class PresenceSensorDriver extends Homey.Driver {
         this.log('Connection test failed:', err.message);
       }
 
+      // Best-effort: refine the ZY-M100-WIFI-shaped defaults using the device's
+      // Tuya cloud specification — matters for other radar sensor models whose
+      // DP layout differs. Never blocks pairing if unavailable or it fails.
+      const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m));
+
       pendingDevice = this._buildPendingDevice({
-        ip, deviceId, localKey, version: actualVersion,
+        ip, deviceId, localKey, version: actualVersion, detectedDps: cloudDps,
       });
       pendingRawDps = collectedDps;
 
@@ -105,7 +127,7 @@ class PresenceSensorDriver extends Homey.Driver {
     });
   }
 
-  _buildPendingDevice({ ip, deviceId, localKey, version }) {
+  _buildPendingDevice({ ip, deviceId, localKey, version, detectedDps }) {
     return {
       name: this.homey.__('device.defaultName.presence_sensor'),
       data: { id: deviceId },
@@ -116,6 +138,9 @@ class PresenceSensorDriver extends Homey.Driver {
         version,
         polling_interval:     0,
         offline_grace_seconds: 60,
+        // Defaults match the ZY-M100-WIFI mmWave sensor's standard DP layout.
+        // Overridden below by detectedDps (Tuya cloud spec) when available —
+        // e.g. for other radar sensor models with a different layout.
         dp_presence:          1,
         dp_sensitivity:       2,
         dp_near_detection:    3,
@@ -125,6 +150,7 @@ class PresenceSensorDriver extends Homey.Driver {
         dp_detection_delay:   101,
         dp_fading_time:       102,
         dp_luminance:         104,
+        ...(detectedDps || {}),
       },
     };
   }

@@ -22,6 +22,12 @@ const CLOUD_CODE_MAP = {
   dp_fault:           ['fault'],
 };
 
+// When the cloud spec confirms a DP maps to one of these settings, the DP's
+// full declared enum token list is written to the companion setting.
+const CLOUD_ENUM_VALUES_MAP = {
+  dp_mode: 'mode_values',
+};
+
 class HeaterDriver extends Homey.Driver {
   async onInit() {
     this.log('Heater driver initialized');
@@ -129,7 +135,7 @@ class HeaterDriver extends Homey.Driver {
         connected = true;
         if (Object.keys(collectedDps).length > 0) {
           detectedDps = this._detectDps(collectedDps);
-          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m));
+          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m), CLOUD_ENUM_VALUES_MAP);
           if (Object.keys(cloudDps).length > 0) Object.assign(detectedDps, cloudDps);
         }
       } catch (err) {

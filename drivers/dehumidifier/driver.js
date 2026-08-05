@@ -29,6 +29,15 @@ const CLOUD_CODE_MAP = {
   dp_temperature:      ['temp_current', 'temp', 'temperature'],
 };
 
+// When the cloud spec confirms a DP maps to one of these settings, the DP's
+// full declared enum token list is written to the companion setting — fixes
+// devices whose vocabulary isn't the standard manual/laundry/auto/... or
+// low/medium/high/... (e.g. plain numeric enums like "0"/"1").
+const CLOUD_ENUM_VALUES_MAP = {
+  dp_mode:      'mode_values',
+  dp_fan_speed: 'fan_speed_values',
+};
+
 class DehumidifierDriver extends Homey.Driver {
   async onInit() {
     this.log('Dehumidifier driver initialized');
@@ -232,7 +241,7 @@ class DehumidifierDriver extends Homey.Driver {
           // Best-effort refinement using the device's Tuya cloud specification.
           // Only runs if Cloud Lookup credentials were saved previously (Settings
           // → ☁️ Cloud Lookup) — never blocks pairing if unavailable or it fails.
-          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m));
+          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m), CLOUD_ENUM_VALUES_MAP);
           if (Object.keys(cloudDps).length > 0) {
             Object.assign(detectedDps, cloudDps);
             this.log('Final detected DPs (cloud-refined):', JSON.stringify(detectedDps));

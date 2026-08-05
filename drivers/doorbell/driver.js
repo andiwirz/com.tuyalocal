@@ -5,6 +5,26 @@ const TuyAPI                    = require('tuyapi');
 const { setupCloudLookup }      = require('../../lib/pairCloudLookup');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
+const { detectViaCloud }        = require('../../lib/dpCodeMap');
+
+// Maps this driver's settings keys to the Tuya cloud "code" names that
+// commonly represent them. See lib/dpCodeMap.js. The hardcoded defaults in
+// _buildPendingDevice() match a common smart-doorbell DP layout — this map
+// overrides them for other camera/doorbell models with a different one.
+// dp_alarm_message is intentionally excluded — it's a fallback ring source
+// only used when dp_doorbell is disabled (see device.js), not something we
+// want cloud detection to enable by default.
+const CLOUD_CODE_MAP = {
+  dp_doorbell:           ['doorbell_active'],
+  dp_motion_event:       ['movement_detect_pic'],
+  dp_motion_switch:      ['motion_switch'],
+  dp_motion_sensitivity: ['motion_sensitivity'],
+  dp_nightvision:        ['basic_nightvision'],
+  dp_indicator:          ['basic_indicator'],
+  dp_recording:          ['record_switch'],
+  dp_chime_volume:       ['chime_ring_volume'],
+  dp_device_volume:      ['basic_device_volume'],
+};
 
 class DoorbellDriver extends Homey.Driver {
   async onInit() {
@@ -125,8 +145,13 @@ class DoorbellDriver extends Homey.Driver {
         this.log('Connection test failed:', err.message);
       }
 
+      // Best-effort: refine the hardcoded defaults using the device's Tuya
+      // cloud specification — matters for camera/doorbell models whose DP
+      // layout differs. Never blocks pairing if unavailable or it fails.
+      const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m));
+
       pendingDevice = this._buildPendingDevice({
-        ip, deviceId, localKey, version: actualVersion,
+        ip, deviceId, localKey, version: actualVersion, detectedDps: cloudDps,
       });
       pendingRawDps = collectedDps;
 
@@ -140,7 +165,7 @@ class DoorbellDriver extends Homey.Driver {
     });
   }
 
-  _buildPendingDevice({ ip, deviceId, localKey, version }) {
+  _buildPendingDevice({ ip, deviceId, localKey, version, detectedDps }) {
     return {
       name: this.homey.__('device.defaultName.doorbell'),
       data: { id: deviceId },
@@ -151,6 +176,9 @@ class DoorbellDriver extends Homey.Driver {
         version,
         polling_interval:     0,
         offline_grace_seconds: 60,
+        // Defaults match a common smart-doorbell DP layout. Overridden below
+        // by detectedDps (Tuya cloud spec) when available — e.g. for other
+        // camera/doorbell models with a different layout.
         dp_doorbell:          136,
         dp_motion_event:      115,
         dp_alarm_message:     0,
@@ -162,6 +190,7 @@ class DoorbellDriver extends Homey.Driver {
         dp_chime_volume:      157,
         dp_device_volume:     160,
         motion_reset_seconds: 30,
+        ...(detectedDps || {}),
       },
     };
   }

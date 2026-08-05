@@ -25,6 +25,14 @@ const CLOUD_CODE_MAP = {
   dp_light_color_temp: ['temp_value', 'temp_value_v2'],
 };
 
+// When the cloud spec confirms a DP maps to one of these settings, the DP's
+// full declared enum token list is written to the companion setting. Note:
+// this driver's mode capability uses "fan_mode_values" (not "mode_values").
+const CLOUD_ENUM_VALUES_MAP = {
+  dp_mode:      'fan_mode_values',
+  dp_fan_speed: 'fan_speed_values',
+};
+
 class FanDriver extends Homey.Driver {
   async onInit() {
     this.log('Fan driver initialized');
@@ -189,7 +197,7 @@ class FanDriver extends Homey.Driver {
           // Best-effort refinement using the device's Tuya cloud specification.
           // Only runs if Cloud Lookup credentials were saved previously (Settings
           // → ☁️ Cloud Lookup) — never blocks pairing if unavailable or it fails.
-          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m));
+          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m), CLOUD_ENUM_VALUES_MAP);
           if (Object.keys(cloudDps).length > 0) {
             Object.assign(detectedDps, cloudDps);
             this.log('Final detected DPs (cloud-refined):', JSON.stringify(detectedDps));

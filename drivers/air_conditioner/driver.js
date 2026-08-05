@@ -25,6 +25,16 @@ const CLOUD_CODE_MAP = {
   dp_fault:           ['fault'],
 };
 
+// When the cloud spec confirms a DP maps to one of these settings, the DP's
+// full declared enum token list (e.g. "cold,wet,wind,hot") is written to the
+// companion setting — fixes devices whose vocabulary isn't the standard
+// cool/heat/auto/dry/fan or auto/low/medium/high/turbo.
+const CLOUD_ENUM_VALUES_MAP = {
+  dp_mode:      'mode_values',
+  dp_fan_speed: 'fan_speed_values',
+  dp_swing:     'swing_values',
+};
+
 class AirConditionerDriver extends Homey.Driver {
   async onInit() {
     this.log('Air Conditioner driver initialized');
@@ -204,7 +214,7 @@ class AirConditionerDriver extends Homey.Driver {
 
         if (Object.keys(collectedDps).length > 0) {
           const detected = this._detectDps(collectedDps);
-          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m));
+          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m), CLOUD_ENUM_VALUES_MAP);
           if (Object.keys(cloudDps).length > 0) Object.assign(detected, cloudDps);
           this.log('Detected DPs:', JSON.stringify(detected));
           // Merge detected settings into pendingDevice later

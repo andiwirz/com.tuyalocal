@@ -1,4 +1,8 @@
 {
+  "1.0.139": {
+    "en": "Cloud-refined DP detection now also extracts a DP's full enum token list from the Tuya cloud spec (not just the current value) — fixes mode/fan-speed/swing pickers for devices with non-standard vocabularies (e.g. \"cold/wet/wind/hot\" instead of \"cool/dry/fan/heat\"). Applied to Air Conditioner, Dehumidifier, Fan, Heater and Humidifier. Also added cloud-refined detection to Presence Sensor and Doorbell, which previously had no auto-detection at all.",
+    "de": "Die Cloud-verfeinerte DP-Erkennung liest jetzt auch die vollständige Enum-Werteliste eines DP aus der Tuya-Cloud-Spezifikation aus (nicht nur den aktuellen Wert) — behebt Modus-/Lüfterstufen-/Schwenk-Auswahlen bei Geräten mit unüblichem Vokabular (z.B. \"cold/wet/wind/hot\" statt \"cool/dry/fan/heat\"). Angewendet auf Klimaanlage, Entfeuchter, Lüfter, Heizgerät und Luftbefeuchter. Ausserdem Cloud-Erkennung für Presence Sensor und Doorbell ergänzt, die bisher gar keine Auto-Erkennung hatten."
+  },
   "1.0.138": {
     "en": "Cloud-refined DP auto-detection (introduced for Dehumidifier and Fan in 1.0.136) now also applies to Air Conditioner, Curtain Motor, Garage Door, Heat Pump, Heater, Humidifier, Kettle, Light, Pet Feeder, Smart Plug, Thermostat and Wall Switch. Requires Cloud Lookup credentials saved once in Settings.",
     "de": "Die Cloud-verfeinerte DP-Auto-Erkennung (eingeführt für Entfeuchter und Lüfter in 1.0.136) gilt jetzt auch für Klimaanlage, Rollladenmotor, Garagentor, Wärmepumpe, Heizgerät, Luftbefeuchter, Wasserkocher, Licht, Futterautomat, Steckdose, Thermostat und Wandschalter. Benötigt einmal gespeicherte Cloud-Lookup-Zugangsdaten in den Einstellungen."
