@@ -1,4 +1,8 @@
 {
+  "1.0.146": {
+    "en": "Fixed the GitHub links in app settings and the app store listing, which pointed at the repository under its former name.",
+    "de": "GitHub-Links in den App-Einstellungen und im App-Store-Eintrag korrigiert — sie verwiesen auf den früheren Namen des Repositorys."
+  },
   "1.0.145": {
     "en": "EV Charger: the scaling of the current, session-energy and lifetime-energy DPs is now adjustable. Chargers are not consistent here — most report amps and hundredths of a kWh, but some scale the current by ten or use whole kWh, and the two energy counters can even differ on the same unit. Defaults match the large majority; switch them only if a reading is off by a factor of ten or a hundred. The charge current is also clamped to the configured maximum now.",
     "de": "Wallbox: Die Skalierung der DPs für Strom, Sitzungsenergie und Gesamtenergie ist jetzt einstellbar. Wallboxen sind hier nicht einheitlich — die meisten melden Ampere und Hundertstel-kWh, einige verzehnfachen den Strom oder nutzen ganze kWh, und die beiden Energiezähler können sich sogar innerhalb eines Geräts unterscheiden. Die Standardwerte passen zur großen Mehrheit; nur ändern, wenn ein Wert um Faktor zehn oder hundert abweicht. Der Ladestrom wird zudem auf das eingestellte Maximum begrenzt."

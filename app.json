@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.145",
+  "version": "1.0.146",
   "compatibility": ">=12.13.0",
   "sdk": 3,
   "platforms": [
@@ -15618,9 +15618,9 @@
     "large": "/assets/images/large.png",
     "xlarge": "/assets/images/xlarge.png"
   },
-  "source": "https://github.com/andiwirz/com.tuya.local",
+  "source": "https://github.com/andiwirz/com.tuyalocal",
   "bugs": {
-    "url": "https://github.com/andiwirz/com.tuya.local/issues"
+    "url": "https://github.com/andiwirz/com.tuyalocal/issues"
   },
   "contributing": {
     "donate": {
