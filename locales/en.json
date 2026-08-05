@@ -16,7 +16,9 @@
       "wall_switch":     "Wall Switch",
       "thermostat":      "Thermostat",
       "kettle":          "Smart Kettle",
-      "doorbell":        "Doorbell"
+      "doorbell":        "Doorbell",
+      "presence_sensor": "Presence Sensor",
+      "ev_charger":      "EV Charger"
     }
   },
   "notifications": {
@@ -148,6 +150,26 @@
         "percentControl": "Position %  (DP 2, integer 0–100)",
         "workState":      "Work State  (DP 7, enum opening|closing — 0 = disabled)",
         "fault":          "Fault Alarm  (DP 10 or 12, 0 = disabled)"
+      },
+      "ev": {
+        "switch":        "On/Off (Switch)",
+        "workState":     "Charger State",
+        "chargeCur":     "Charge Current Limit (A)",
+        "phaseA":        "Phase A / L1 (V / A / W)",
+        "phaseANote":    "Raw DP providing voltage, current and power in one packet. Both 8-byte and 7-byte layouts are handled automatically.",
+        "phaseB":        "Phase B / L2 (0 = single phase)",
+        "phaseC":        "Phase C / L3 (0 = single phase)",
+        "powerTotal":    "Total Power W (0 = use Phase A)",
+        "energyTotal":   "Lifetime Energy (0 = accumulate locally)",
+        "energyTotalNote": "Leave at 0 if your charger's lifetime counter never updates locally — the total is then accumulated from the session counter, which works on every model.",
+        "sessionEnergy": "Session Energy (kWh)",
+        "fault":         "Fault Bitmap (0 = disabled)",
+        "connState":     "Connection State (0 = disabled)",
+        "workMode":      "Charging Mode (0 = disabled)",
+        "temperature":   "Temperature (0 = disabled)",
+        "timerOn":       "Delayed Start h (0 = disabled)",
+        "liveUpdates":   "Live Updates (0 = disabled)",
+        "clearEnergy":   "Clear Energy DP (0 = disabled)"
       }
     }
   },

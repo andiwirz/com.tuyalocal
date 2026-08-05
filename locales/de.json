@@ -16,7 +16,9 @@
       "wall_switch":     "Wandschalter",
       "thermostat":      "Thermostat",
       "kettle":          "Smarter Wasserkocher",
-      "doorbell":        "Türklingel"
+      "doorbell":        "Türklingel",
+      "presence_sensor": "Präsenzsensor",
+      "ev_charger":      "Wallbox"
     }
   },
   "notifications": {
@@ -148,6 +150,26 @@
         "percentControl": "Position %  (DP 2, Integer 0–100)",
         "workState":      "Bewegungsstatus  (DP 7, Enum opening|closing — 0 = deaktiviert)",
         "fault":          "Fehleralarm  (DP 10 oder 12, 0 = deaktiviert)"
+      },
+      "ev": {
+        "switch":        "Ein/Aus (Schalter)",
+        "workState":     "Ladestatus",
+        "chargeCur":     "Lade-Stromlimit (A)",
+        "phaseA":        "Phase A / L1 (V / A / W)",
+        "phaseANote":    "Roher DP mit Spannung, Strom und Leistung in einem Paket. 8-Byte- und 7-Byte-Layout werden automatisch erkannt.",
+        "phaseB":        "Phase B / L2 (0 = einphasig)",
+        "phaseC":        "Phase C / L3 (0 = einphasig)",
+        "powerTotal":    "Gesamtleistung W (0 = Phase A verwenden)",
+        "energyTotal":   "Gesamtenergie (0 = lokal aufsummieren)",
+        "energyTotalNote": "Bei 0 lassen, wenn der geräteeigene Gesamtzähler lokal nie aktualisiert wird — die Summe wird dann aus dem Sitzungszähler gebildet, was bei jedem Modell funktioniert.",
+        "sessionEnergy": "Sitzungsenergie (kWh)",
+        "fault":         "Fehler-Bitmap (0 = deaktiviert)",
+        "connState":     "Verbindungsstatus (0 = deaktiviert)",
+        "workMode":      "Lademodus (0 = deaktiviert)",
+        "temperature":   "Temperatur (0 = deaktiviert)",
+        "timerOn":       "Verzögerter Start h (0 = deaktiviert)",
+        "liveUpdates":   "Live-Updates (0 = deaktiviert)",
+        "clearEnergy":   "Energie-Reset DP (0 = deaktiviert)"
       }
     }
   },

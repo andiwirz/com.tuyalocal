@@ -253,23 +253,29 @@ class GenericDevice extends BaseTuyaDevice {
   _dpToCap(rawValue, mapping) {
     const scale = mapping.scale || 1;
 
-    if (typeof rawValue === 'number') {
-      // Apply scale first (converts raw DP units â†’ capability units),
-      // then invert if requested.
-      const scaled = scale !== 1 ? rawValue * scale : rawValue;
-      return mapping.invert ? this._invertNumber(scaled, mapping) : scaled;
-    }
-
-    if (typeof rawValue === 'string' && mapping.readMap) {
+    // readMap converts a raw DP token into a capability value. Checked before
+    // the type-specific branches below so numeric raw values can use a
+    // readMap too (e.g. a Tuya numeric enum like 0/1/2) — previously the
+    // number branch returned unconditionally, making readMap dead code for
+    // any DP whose raw value was a number rather than a string.
+    if (mapping.readMap) {
       try {
-        const rm = typeof mapping.readMap === 'string'
+        const rm     = typeof mapping.readMap === 'string'
           ? JSON.parse(mapping.readMap)
           : mapping.readMap;
-        if (rm && rm[rawValue] !== undefined) return rm[rawValue];
+        const mapped = rm ? rm[String(rawValue)] : undefined;
+        if (mapped !== undefined) return mapped;
       } catch (e) {
         this._appLog(`readMap parse failed for DP ${mapping.dp}: ${e.message}`, 'warn');
       }
-      return rawValue;
+      if (typeof rawValue === 'string') return rawValue; // no match — pass string through unchanged
+    }
+
+    if (typeof rawValue === 'number') {
+      // Apply scale first (converts raw DP units → capability units),
+      // then invert if requested.
+      const scaled = scale !== 1 ? rawValue * scale : rawValue;
+      return mapping.invert ? this._invertNumber(scaled, mapping) : scaled;
     }
 
     // Coerce to boolean for boolean-type capabilities

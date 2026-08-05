@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.139",
+  "version": "1.0.140",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -637,6 +637,133 @@
       "uiQuickAction": false,
       "insights": false,
       "icon": "/assets/capabilities/pump.svg"
+    },
+    "ev_charger_state": {
+      "type": "enum",
+      "title": {
+        "en": "Charger State",
+        "de": "Ladestatus"
+      },
+      "values": [
+        { "id": "charger_free",       "title": { "en": "Idle",         "de": "Bereit" } },
+        { "id": "charger_insert",     "title": { "en": "Plugged In",   "de": "Eingesteckt" } },
+        { "id": "charger_free_fault", "title": { "en": "Idle (Fault)", "de": "Bereit (Fehler)" } },
+        { "id": "charger_wait",       "title": { "en": "Waiting",      "de": "Wartet" } },
+        { "id": "charger_charging",   "title": { "en": "Charging",     "de": "Lädt" } },
+        { "id": "charger_pause",      "title": { "en": "Paused",       "de": "Pausiert" } },
+        { "id": "charger_end",        "title": { "en": "Finished",     "de": "Beendet" } },
+        { "id": "charger_fault",      "title": { "en": "Fault",        "de": "Fehler" } }
+      ],
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "uiQuickAction": false,
+      "insights": true,
+      "icon": "/assets/capabilities/motor_state.svg"
+    },
+    "charge_current_limit": {
+      "type": "number",
+      "title": {
+        "en": "Charge Current Limit",
+        "de": "Lade-Stromlimit"
+      },
+      "getable": true,
+      "setable": true,
+      "units": { "en": "A", "de": "A" },
+      "min": 1,
+      "max": 48,
+      "step": 1,
+      "uiComponent": "slider",
+      "uiQuickAction": false,
+      "insights": true,
+      "icon": "/assets/capabilities/power_level.svg"
+    },
+    "charge_session_energy": {
+      "type": "number",
+      "title": {
+        "en": "Session Energy",
+        "de": "Sitzungsenergie"
+      },
+      "getable": true,
+      "setable": false,
+      "units": { "en": "kWh", "de": "kWh" },
+      "decimals": 2,
+      "uiComponent": "sensor",
+      "uiQuickAction": false,
+      "insights": true,
+      "icon": "/assets/capabilities/bolt.svg"
+    },
+    "ev_connection_state": {
+      "type": "enum",
+      "title": {
+        "en": "Connection State",
+        "de": "Verbindungsstatus"
+      },
+      "values": [
+        { "id": "controlpi_12v",     "title": { "en": "Ready (12V)",        "de": "Bereit (12V)" } },
+        { "id": "controlpi_12v_pwm", "title": { "en": "Ready (12V PWM)",    "de": "Bereit (12V PWM)" } },
+        { "id": "controlpi_9v",      "title": { "en": "Connected (9V)",     "de": "Verbunden (9V)" } },
+        { "id": "controlpi_9v_pwm",  "title": { "en": "Charging (9V PWM)",  "de": "Lädt (9V PWM)" } },
+        { "id": "controlpi_6v",      "title": { "en": "Connected (6V)",     "de": "Verbunden (6V)" } },
+        { "id": "controlpi_6v_pwm",  "title": { "en": "Charging (6V PWM)",  "de": "Lädt (6V PWM)" } },
+        { "id": "controlpi_error",   "title": { "en": "CP Error",          "de": "CP-Fehler" } }
+      ],
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "uiQuickAction": false,
+      "insights": false,
+      "icon": "/assets/capabilities/indicator_light.svg"
+    },
+    "ev_work_mode": {
+      "type": "enum",
+      "title": {
+        "en": "Charging Mode",
+        "de": "Lademodus"
+      },
+      "values": [
+        { "id": "charge_now",      "title": { "en": "Charge Now",      "de": "Sofort laden" } },
+        { "id": "charge_pct",      "title": { "en": "Charge to %",     "de": "Bis % laden" } },
+        { "id": "charge_energy",  "title": { "en": "Charge kWh",      "de": "kWh laden" } },
+        { "id": "charge_schedule", "title": { "en": "Scheduled",       "de": "Geplant" } },
+        { "id": "charge_delay",   "title": { "en": "Delayed Start",   "de": "Verzögerter Start" } }
+      ],
+      "getable": true,
+      "setable": true,
+      "uiComponent": "picker",
+      "uiQuickAction": false,
+      "insights": false,
+      "icon": "/assets/capabilities/mode.svg"
+    },
+    "charge_delay_hours": {
+      "type": "number",
+      "title": {
+        "en": "Delayed Start",
+        "de": "Verzögerter Start"
+      },
+      "getable": true,
+      "setable": true,
+      "units": { "en": "h", "de": "Std" },
+      "min": 0,
+      "max": 24,
+      "step": 1,
+      "uiComponent": "slider",
+      "uiQuickAction": false,
+      "insights": false,
+      "icon": "/assets/capabilities/countdown_timer.svg"
+    },
+    "fault_code": {
+      "type": "number",
+      "title": {
+        "en": "Fault Code",
+        "de": "Fehlercode"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "uiQuickAction": false,
+      "insights": false,
+      "icon": "/assets/capabilities/alert.svg"
     },
     "fan_speed": {
       "type": "enum",
@@ -4129,6 +4256,120 @@
             "example": "true"
           }
         ]
+      },
+      {
+        "id": "ev_device_connected",
+        "title": {
+          "en": "Charger connected",
+          "de": "Wallbox verbunden"
+        },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=ev_charger" }
+        ]
+      },
+      {
+        "id": "ev_device_disconnected",
+        "title": {
+          "en": "Charger disconnected",
+          "de": "Wallbox getrennt"
+        },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=ev_charger" }
+        ]
+      },
+      {
+        "id": "ev_charging_started",
+        "title": {
+          "en": "Charging started",
+          "de": "Ladevorgang gestartet"
+        },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=ev_charger" }
+        ]
+      },
+      {
+        "id": "ev_charging_ended",
+        "title": {
+          "en": "Charging ended",
+          "de": "Ladevorgang beendet"
+        },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=ev_charger" }
+        ],
+        "tokens": [
+          {
+            "name": "energy",
+            "type": "number",
+            "title": { "en": "Session energy", "de": "Sitzungsenergie" },
+            "example": 12.35
+          }
+        ]
+      },
+      {
+        "id": "ev_state_changed",
+        "title": {
+          "en": "Charger state changed",
+          "de": "Ladestatus geändert"
+        },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=ev_charger" }
+        ],
+        "tokens": [
+          {
+            "name": "state",
+            "type": "string",
+            "title": { "en": "State", "de": "Status" },
+            "example": "charger_charging"
+          },
+          {
+            "name": "prev_state",
+            "type": "string",
+            "title": { "en": "Previous state", "de": "Vorheriger Status" },
+            "example": "charger_insert"
+          }
+        ]
+      },
+      {
+        "id": "ev_fault_alarm_on",
+        "title": {
+          "en": "Charger fault occurred",
+          "de": "Wallbox-Fehler aufgetreten"
+        },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=ev_charger" }
+        ],
+        "tokens": [
+          {
+            "name": "fault_code",
+            "type": "number",
+            "title": { "en": "Fault code", "de": "Fehlercode" },
+            "example": 256
+          }
+        ]
+      },
+      {
+        "id": "ev_dp_changed",
+        "title": {
+          "en": "Charger data point changed",
+          "de": "Wallbox: Datenpunkt geändert"
+        },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=ev_charger" }
+        ],
+        "tokens": [
+          {
+            "name": "dp",
+            "type": "string",
+            "title": { "en": "DP number", "de": "DP-Nummer" },
+            "example": "3"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "title": { "en": "Value", "de": "Wert" },
+            "example": "charger_charging"
+          }
+        ]
       }
     ],
     "conditions": [
@@ -5065,6 +5306,55 @@
             "name": "device",
             "type": "device",
             "filter": "driver_id=presence_sensor"
+          }
+        ]
+      },
+      {
+        "id": "ev_device_is_connected",
+        "title": {
+          "en": "Charger !{{is|is not}} connected",
+          "de": "Wallbox !{{ist|ist nicht}} verbunden"
+        },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=ev_charger" }
+        ]
+      },
+      {
+        "id": "ev_is_charging",
+        "title": {
+          "en": "Charger !{{is|is not}} charging",
+          "de": "Wallbox !{{lädt|lädt nicht}}"
+        },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=ev_charger" }
+        ]
+      },
+      {
+        "id": "ev_state_is",
+        "title": {
+          "en": "Charger state !{{is|is not}}",
+          "de": "Ladestatus !{{ist|ist nicht}}"
+        },
+        "titleFormatted": {
+          "en": "Charger state !{{is|is not}} [[state]]",
+          "de": "Ladestatus !{{ist|ist nicht}} [[state]]"
+        },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=ev_charger" },
+          {
+            "name": "state",
+            "type": "dropdown",
+            "title": { "en": "State", "de": "Status" },
+            "values": [
+              { "id": "charger_free",       "label": { "en": "Idle",         "de": "Bereit" } },
+              { "id": "charger_insert",     "label": { "en": "Plugged In",   "de": "Eingesteckt" } },
+              { "id": "charger_free_fault", "label": { "en": "Idle (Fault)", "de": "Bereit (Fehler)" } },
+              { "id": "charger_wait",       "label": { "en": "Waiting",      "de": "Wartet" } },
+              { "id": "charger_charging",   "label": { "en": "Charging",     "de": "Lädt" } },
+              { "id": "charger_pause",      "label": { "en": "Paused",       "de": "Pausiert" } },
+              { "id": "charger_end",        "label": { "en": "Finished",     "de": "Beendet" } },
+              { "id": "charger_fault",      "label": { "en": "Fault",        "de": "Fehler" } }
+            ]
           }
         ]
       }
@@ -7740,6 +8030,62 @@
             "type": "device",
             "filter": "driver_id=presence_sensor"
           }
+        ]
+      },
+      {
+        "id": "ev_set_current",
+        "title": {
+          "en": "Set charge current",
+          "de": "Ladestrom setzen"
+        },
+        "titleFormatted": {
+          "en": "Set charge current to [[current]] A",
+          "de": "Ladestrom auf [[current]] A setzen"
+        },
+        "hint": {
+          "en": "Clamped to the Current Min / Current Max range configured in device settings.",
+          "de": "Wird auf den in den Geräteeinstellungen konfigurierten Bereich Min/Max Strom begrenzt."
+        },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=ev_charger" },
+          {
+            "name": "current",
+            "type": "number",
+            "title": { "en": "Current", "de": "Strom" },
+            "min": 1,
+            "max": 48,
+            "step": 1
+          }
+        ]
+      },
+      {
+        "id": "ev_reset_energy",
+        "title": {
+          "en": "Reset energy meter",
+          "de": "Energiezähler zurücksetzen"
+        },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=ev_charger" }
+        ]
+      },
+      {
+        "id": "ev_force_reconnect",
+        "title": {
+          "en": "Force charger reconnect",
+          "de": "Wallbox: Verbindung neu aufbauen"
+        },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=ev_charger" }
+        ]
+      },
+      {
+        "id": "ev_refresh_device",
+        "title": {
+          "en": "Refresh charger values",
+          "de": "Wallbox: Daten aktualisieren"
+        },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=ev_charger" }
         ]
       }
     ]
@@ -14694,6 +15040,449 @@
       "images": {
         "small": "/drivers/presence_sensor/assets/images/small.png",
         "large": "/drivers/presence_sensor/assets/images/large.png"
+      }
+    },
+    {
+      "id": "ev_charger",
+      "name": {
+        "en": "EV Charger",
+        "de": "Wallbox"
+      },
+      "class": "evcharger",
+      "capabilities": [
+        "onoff",
+        "ev_charger_state",
+        "charge_current_limit",
+        "measure_power",
+        "measure_voltage",
+        "measure_current",
+        "charge_session_energy",
+        "meter_power"
+      ],
+      "capabilitiesOptions": {
+        "meter_power": {
+          "title": {
+            "en": "Total Energy",
+            "de": "Gesamtenergie"
+          }
+        },
+        "measure_voltage.b": { "title": { "en": "Voltage L2", "de": "Spannung L2" } },
+        "measure_current.b": { "title": { "en": "Current L2", "de": "Strom L2" } },
+        "measure_power.b":   { "title": { "en": "Power L2",   "de": "Leistung L2" } },
+        "measure_voltage.c": { "title": { "en": "Voltage L3", "de": "Spannung L3" } },
+        "measure_current.c": { "title": { "en": "Current L3", "de": "Strom L3" } },
+        "measure_power.c":   { "title": { "en": "Power L3",   "de": "Leistung L3" } }
+      },
+      "energy": {
+        "cumulative": true
+      },
+      "settings": [
+        {
+          "type": "group",
+          "label": {
+            "en": "Connection",
+            "de": "Verbindung"
+          },
+          "children": [
+            {
+              "id": "ip",
+              "type": "text",
+              "label": {
+                "en": "IP Address",
+                "de": "IP-Adresse"
+              },
+              "value": "",
+              "hint": {
+                "en": "Local IP address of your charger. Tip: assign a static IP in your router so it cannot change.",
+                "de": "Lokale IP-Adresse der Wallbox. Tipp: Statische IP im Router vergeben, damit sie sich nicht ändert."
+              }
+            },
+            {
+              "id": "device_id",
+              "type": "text",
+              "label": {
+                "en": "Device ID",
+                "de": "Geräte-ID"
+              },
+              "value": ""
+            },
+            {
+              "id": "local_key",
+              "type": "text",
+              "label": {
+                "en": "Local Key",
+                "de": "Lokaler Schlüssel"
+              },
+              "value": ""
+            },
+            {
+              "id": "version",
+              "type": "dropdown",
+              "label": {
+                "en": "Protocol Version",
+                "de": "Protokollversion"
+              },
+              "value": "3.3",
+              "values": [
+                { "id": "3.1", "label": { "en": "3.1 (legacy)", "de": "3.1 (veraltet)" } },
+                { "id": "3.3", "label": { "en": "3.3", "de": "3.3" } },
+                { "id": "3.4", "label": { "en": "3.4", "de": "3.4" } },
+                { "id": "3.5", "label": { "en": "3.5", "de": "3.5" } }
+              ]
+            },
+            {
+              "id": "polling_interval",
+              "type": "number",
+              "label": {
+                "en": "Polling Interval (seconds)",
+                "de": "Abfrageintervall (Sekunden)"
+              },
+              "value": 30,
+              "min": 0,
+              "max": 3600,
+              "hint": {
+                "en": "How often to poll the charger. 0 = disabled (rely on device pushes only).",
+                "de": "Wie oft die Wallbox abgefragt wird. 0 = deaktiviert (nur Geräte-Pushes)."
+              }
+            },
+            {
+              "id": "reconnect_interval",
+              "type": "number",
+              "label": {
+                "en": "Auto-Reconnect Interval (minutes)",
+                "de": "Auto-Reconnect-Intervall (Minuten)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 1440,
+              "step": 1,
+              "hint": {
+                "en": "If the device is offline, reconnect every N minutes. No effect while connected. 0 = disabled.",
+                "de": "Wenn offline, alle N Minuten erneut verbinden. Bei aktiver Verbindung keine Auswirkung. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "offline_grace_seconds",
+              "type": "number",
+              "label": {
+                "en": "Offline grace period (seconds)",
+                "de": "Offline-Kulanzzeit (Sekunden)"
+              },
+              "value": 60,
+              "min": 0,
+              "max": 600
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Data Points (DPs)",
+            "de": "Datenpunkte (DPs)"
+          },
+          "children": [
+            {
+              "id": "dp_switch",
+              "type": "number",
+              "label": {
+                "en": "On/Off DP",
+                "de": "Ein/Aus DP"
+              },
+              "value": 18,
+              "hint": {
+                "en": "DP for the charge enable switch (default: 18).",
+                "de": "DP für den Ladefreigabe-Schalter (Standard: 18)."
+              }
+            },
+            {
+              "id": "dp_work_state",
+              "type": "number",
+              "label": {
+                "en": "Charger State DP",
+                "de": "Ladestatus DP"
+              },
+              "value": 3,
+              "hint": {
+                "en": "DP for work_state (idle / plugged in / charging / finished / fault). Set to 0 to disable.",
+                "de": "DP für work_state (bereit / eingesteckt / lädt / beendet / Fehler). 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_charge_current",
+              "type": "number",
+              "label": {
+                "en": "Charge Current Limit DP",
+                "de": "Lade-Stromlimit DP"
+              },
+              "value": 4,
+              "hint": {
+                "en": "DP for the settable charge current in amps (default: 4). Set to 0 to disable.",
+                "de": "DP für den einstellbaren Ladestrom in Ampere (Standard: 4). 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "current_min",
+              "type": "number",
+              "label": {
+                "en": "Current Min (A)",
+                "de": "Min. Strom (A)"
+              },
+              "value": 6,
+              "min": 1,
+              "max": 63,
+              "hint": {
+                "en": "Lowest current your charger physically supports. Tuya often reports a much wider range than the hardware allows.",
+                "de": "Niedrigster Strom, den die Wallbox physisch unterstützt. Tuya meldet oft einen viel weiteren Bereich als die Hardware erlaubt."
+              }
+            },
+            {
+              "id": "current_max",
+              "type": "number",
+              "label": {
+                "en": "Current Max (A)",
+                "de": "Max. Strom (A)"
+              },
+              "value": 16,
+              "min": 1,
+              "max": 63,
+              "hint": {
+                "en": "Highest current your charger physically supports (e.g. 16 for 3.7 kW, 32 for 7.4 kW).",
+                "de": "Höchster Strom, den die Wallbox physisch unterstützt (z.B. 16 für 3,7 kW, 32 für 7,4 kW)."
+              }
+            },
+            {
+              "id": "dp_phase_a",
+              "type": "number",
+              "label": {
+                "en": "Phase A / L1 DP (V / A / W)",
+                "de": "Phase A / L1 DP (V / A / W)"
+              },
+              "value": 6,
+              "hint": {
+                "en": "Raw DP carrying voltage, current and power in one packet (default: 6). Both the 8-byte and 7-byte layouts are handled automatically. Set to 0 to disable.",
+                "de": "Roher DP mit Spannung, Strom und Leistung in einem Paket (Standard: 6). Sowohl 8-Byte- als auch 7-Byte-Layout werden automatisch erkannt. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_phase_b",
+              "type": "number",
+              "label": {
+                "en": "Phase B / L2 DP",
+                "de": "Phase B / L2 DP"
+              },
+              "value": 0,
+              "hint": {
+                "en": "Three-phase chargers only (typically 7). Set to 0 for single-phase units.",
+                "de": "Nur bei dreiphasigen Wallboxen (typisch 7). Bei einphasigen Geräten 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_phase_c",
+              "type": "number",
+              "label": {
+                "en": "Phase C / L3 DP",
+                "de": "Phase C / L3 DP"
+              },
+              "value": 0,
+              "hint": {
+                "en": "Three-phase chargers only (typically 8). Set to 0 for single-phase units.",
+                "de": "Nur bei dreiphasigen Wallboxen (typisch 8). Bei einphasigen Geräten 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_power_total",
+              "type": "number",
+              "label": {
+                "en": "Total Power DP",
+                "de": "Gesamtleistung DP"
+              },
+              "value": 0,
+              "hint": {
+                "en": "Plain-integer power DP in watts (typically 9, or 5 on some single-phase units). When set, it takes priority over the power value decoded from the Phase A DP. Set to 0 to disable.",
+                "de": "Ganzzahliger Leistungs-DP in Watt (typisch 9, bei manchen einphasigen Geräten 5). Wenn gesetzt, hat er Vorrang vor dem aus Phase A dekodierten Wert. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_energy_total",
+              "type": "number",
+              "label": {
+                "en": "Lifetime Energy DP",
+                "de": "Gesamtenergie DP"
+              },
+              "value": 0,
+              "hint": {
+                "en": "The charger's own lifetime energy counter (typically 1). Leave at 0 if it never updates over the local connection — many portable chargers expose it but never refresh it. With 0, the total is accumulated from the session counter instead, which works everywhere.",
+                "de": "Der geräteeigene Gesamtenergiezähler (typisch 1). Bei 0 lassen, wenn er über die lokale Verbindung nie aktualisiert wird — viele mobile Ladegeräte liefern ihn, halten ihn aber nicht aktuell. Mit 0 wird die Gesamtenergie stattdessen aus dem Sitzungszähler aufsummiert, was überall funktioniert."
+              }
+            },
+            {
+              "id": "dp_session_energy",
+              "type": "number",
+              "label": {
+                "en": "Session Energy DP",
+                "de": "Sitzungsenergie DP"
+              },
+              "value": 25,
+              "hint": {
+                "en": "DP for the current/last charge session energy (default: 25). Total energy is accumulated from this counter, because the charger's own lifetime counter (DP 1) does not update over the local connection.",
+                "de": "DP für die Energie der aktuellen/letzten Ladesitzung (Standard: 25). Die Gesamtenergie wird daraus aufsummiert, da der geräteeigene Gesamtzähler (DP 1) über die lokale Verbindung nicht aktualisiert wird."
+              }
+            },
+            {
+              "id": "dp_fault",
+              "type": "number",
+              "label": {
+                "en": "Fault Bitmap DP",
+                "de": "Fehler-Bitmap DP"
+              },
+              "value": 10,
+              "hint": {
+                "en": "DP for the 16-bit fault bitmap (default: 10). Exposes both an alarm and the raw code so it can be matched against the manufacturer's fault table. Set to 0 to disable.",
+                "de": "DP für das 16-Bit-Fehler-Bitmap (Standard: 10). Liefert sowohl einen Alarm als auch den Rohcode, damit er mit der Fehlertabelle des Herstellers abgeglichen werden kann. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_connection_state",
+              "type": "number",
+              "label": {
+                "en": "Connection State DP",
+                "de": "Verbindungsstatus DP"
+              },
+              "value": 0,
+              "hint": {
+                "en": "DP for the control-pilot connection state (typically 13). Set to 0 to disable.",
+                "de": "DP für den Control-Pilot-Verbindungsstatus (typisch 13). 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_work_mode",
+              "type": "number",
+              "label": {
+                "en": "Charging Mode DP",
+                "de": "Lademodus DP"
+              },
+              "value": 0,
+              "hint": {
+                "en": "DP for work_mode (typically 14). Note: many chargers list modes they do not actually implement — only 'Charge Now' is reliably supported on most units. Set to 0 to disable.",
+                "de": "DP für work_mode (typisch 14). Hinweis: Viele Wallboxen listen Modi, die sie nicht umsetzen — nur 'Sofort laden' funktioniert auf den meisten Geräten zuverlässig. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_temperature",
+              "type": "number",
+              "label": {
+                "en": "Temperature DP",
+                "de": "Temperatur DP"
+              },
+              "value": 0,
+              "hint": {
+                "en": "DP for the internal temperature sensor (typically 24). Set to 0 to disable.",
+                "de": "DP für den internen Temperatursensor (typisch 24). 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_timer_on",
+              "type": "number",
+              "label": {
+                "en": "Delayed Start DP",
+                "de": "Verzögerter Start DP"
+              },
+              "value": 0,
+              "hint": {
+                "en": "DP for the power-on delay in hours (typically 28). Set to 0 to disable.",
+                "de": "DP für die Einschaltverzögerung in Stunden (typisch 28). 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_live_updates",
+              "type": "number",
+              "label": {
+                "en": "Live Updates DP",
+                "de": "Live-Updates DP"
+              },
+              "value": 0,
+              "hint": {
+                "en": "Some chargers only stream live voltage/current/power while this DP is set to \"online\" (typically 27). When set, the app re-asserts it on every reconnect. Set to 0 if your charger reports measurements without it.",
+                "de": "Manche Wallboxen senden Spannung/Strom/Leistung nur, wenn dieser DP auf \"online\" steht (typisch 27). Wenn gesetzt, wird er bei jedem Reconnect erneut gesendet. 0 = deaktiviert, wenn das Gerät Messwerte ohnehin liefert."
+              }
+            },
+            {
+              "id": "dp_clear_energy",
+              "type": "number",
+              "label": {
+                "en": "Clear Energy DP",
+                "de": "Energie-Reset DP"
+              },
+              "value": 0,
+              "hint": {
+                "en": "Write-only DP that resets the charger's own energy counter (typically 16). Used by the \"Reset energy meter\" flow action. Set to 0 to reset only the app's own total.",
+                "de": "Schreib-DP, der den geräteeigenen Energiezähler zurücksetzt (typisch 16). Wird von der Flow-Aktion \"Energiezähler zurücksetzen\" verwendet. 0 = nur der app-interne Zähler wird zurückgesetzt."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Device",
+            "de": "Gerät"
+          },
+          "children": [
+            {
+              "id": "fire_and_forget",
+              "type": "checkbox",
+              "label": {
+                "en": "Fire and forget",
+                "de": "Fire and forget"
+              },
+              "value": true,
+              "hint": {
+                "en": "Send commands without waiting for acknowledgement (default: on).",
+                "de": "Befehle ohne Warten auf Bestätigung senden (Standard: ein)."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Status",
+            "de": "Status"
+          },
+          "children": [
+            {
+              "id": "connection_status",
+              "type": "label",
+              "label": {
+                "en": "Connection",
+                "de": "Verbindung"
+              },
+              "value": "—"
+            },
+            {
+              "id": "last_seen",
+              "type": "label",
+              "label": {
+                "en": "Last seen",
+                "de": "Zuletzt gesehen"
+              },
+              "value": "—"
+            }
+          ]
+        }
+      ],
+      "pair": [
+        {
+          "id": "credentials"
+        },
+        {
+          "id": "list_devices"
+        }
+      ],
+      "images": {
+        "small": "/drivers/ev_charger/assets/images/small.png",
+        "large": "/drivers/ev_charger/assets/images/large.png",
+        "xlarge": "/drivers/ev_charger/assets/images/xlarge.png"
       }
     }
   ],
