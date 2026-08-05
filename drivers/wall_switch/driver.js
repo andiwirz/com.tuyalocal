@@ -8,9 +8,16 @@ const { scanNetwork }           = require('../../lib/networkScan');
 const { detectViaCloud }        = require('../../lib/dpCodeMap');
 
 // Maps this driver's settings keys to the Tuya cloud "code" names that
-// commonly represent them. See lib/dpCodeMap.js.
+// commonly represent them. See lib/dpCodeMap.js. Verified against the standard
+// code list for Tuya category "kg" (switch).
 const CLOUD_CODE_MAP = {
-  dp_relay_status: ['switch_1', 'switch'],
+  dp_switch_1:     ['switch_1', 'switch'],
+  dp_switch_2:     ['switch_2'],
+  dp_switch_3:     ['switch_3'],
+  dp_switch_4:     ['switch_4'],
+  // Power-on behaviour (off / on / remember last state) — a separate DP from
+  // the gang switches above, not an alias for switch_1.
+  dp_relay_status: ['relay_status'],
 };
 
 class WallSwitchDriver extends Homey.Driver {

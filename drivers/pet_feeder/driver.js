@@ -11,15 +11,19 @@ const { detectViaCloud }        = require('../../lib/dpCodeMap');
 // commonly represent them. See lib/dpCodeMap.js. dp_portions and
 // dp_manual_button_portions are omitted — too ambiguous to tell apart by
 // code name alone without a concrete device example.
+// Verified against the standard code list for Tuya category "cwwsq" (pet feeder).
 const CLOUD_CODE_MAP = {
   dp_child_lock:      ['child_lock'],
   dp_food_level:       ['food_state', 'food_level'],
-  dp_motor_state:      ['motor_state'],
+  // feed_state is the standard code for the dispensing state on this category.
+  dp_motor_state:      ['feed_state', 'motor_state'],
+  // manual_feed is the standard "dispense N portions" command DP.
+  dp_portions:         ['manual_feed'],
   dp_surplus_grain:    ['surplus_grain'],
   dp_voice_times:      ['voice_times'],
   dp_indicator_light:  ['indicator_light'],
   dp_battery:          ['battery_percentage', 'battery'],
-  dp_battery_status:   ['battery_state'],
+  dp_battery_status:   ['battery_state', 'charge_state'],
   dp_feed_report:      ['feed_report'],
 };
 

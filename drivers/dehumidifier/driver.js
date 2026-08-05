@@ -16,7 +16,7 @@ const CLOUD_CODE_MAP = {
   dp_onoff:            ['switch', 'switch_1', 'power'],
   dp_mode:             ['mode'],
   dp_current_humidity: ['envhumid', 'envhumidity', 'humidity_indoor', 'humidity_current'],
-  dp_target_humidity:  ['humidity', 'humidity_set', 'dehumidify_set_value'],
+  dp_target_humidity:  ['humidity', 'humidity_set', 'dehumidify_set_value', 'dehumidify_set_enum'],
   dp_fan_speed:        ['windspeed', 'fan_speed_enum'],
   dp_child_lock:       ['lock', 'child_lock'],
   dp_oscillate:        ['shake', 'swing'],
@@ -26,7 +26,7 @@ const CLOUD_CODE_MAP = {
   dp_self_clean:       ['dry', 'inner_dry'],
   dp_pump:             ['pump'],
   dp_anion:            ['anion'],
-  dp_temperature:      ['temp_current', 'temp', 'temperature'],
+  dp_temperature:      ['temp_current', 'temp_indoor', 'temp', 'temperature'],
 };
 
 // When the cloud spec confirms a DP maps to one of these settings, the DP's

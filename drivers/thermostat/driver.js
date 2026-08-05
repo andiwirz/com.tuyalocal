@@ -9,13 +9,15 @@ const { detectViaCloud }        = require('../../lib/dpCodeMap');
 
 // Maps this driver's settings keys to the Tuya cloud "code" names that
 // commonly represent them. See lib/dpCodeMap.js.
+// Verified against the standard code list for Tuya category "wk" (thermostat).
 const CLOUD_CODE_MAP = {
   dp_onoff:        ['switch'],
   dp_mode:         ['mode'],
   dp_target_temp:  ['temp_set'],
   dp_current_temp: ['temp_current'],
   dp_child_lock:   ['child_lock', 'lock'],
-  dp_hvac_action:  ['work_state'],
+  // Radiator valves report their open/closed state as valve_state.
+  dp_hvac_action:  ['work_state', 'valve_state'],
   dp_battery:      ['battery_percentage', 'battery'],
   dp_fault:        ['fault'],
 };

@@ -9,9 +9,10 @@ const { detectViaCloud }        = require('../../lib/dpCodeMap');
 
 // Maps this driver's settings keys to the Tuya cloud "code" names that
 // commonly represent them. See lib/dpCodeMap.js.
+// Verified against the standard code list for Tuya category "dj" (light).
 const CLOUD_CODE_MAP = {
-  dp_onoff:      ['switch_led', 'switch'],
-  dp_brightness: ['bright_value', 'bright_value_v2'],
+  dp_onoff:      ['switch_led', 'switch', 'switch_1'],
+  dp_brightness: ['bright_value', 'bright_value_v2', 'bright_value_1'],
   dp_color_temp: ['temp_value', 'temp_value_v2'],
   dp_color_mode: ['work_mode'],
   dp_color:      ['colour_data', 'colour_data_v2'],

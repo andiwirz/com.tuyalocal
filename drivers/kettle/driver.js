@@ -9,9 +9,11 @@ const { detectViaCloud }        = require('../../lib/dpCodeMap');
 
 // Maps this driver's settings keys to the Tuya cloud "code" names that
 // commonly represent them. See lib/dpCodeMap.js.
+// Verified against the standard code list for Tuya category "bh" (kettle).
 const CLOUD_CODE_MAP = {
-  dp_onoff:        ['switch'],
-  dp_mode:         ['mode'],
+  // Some kettles expose the boil command as "start" rather than a plain switch.
+  dp_onoff:        ['switch', 'start'],
+  dp_mode:         ['mode', 'work_type'],
   dp_target_temp:  ['temp_set'],
   dp_current_temp: ['temp_current'],
   dp_status:       ['status', 'work_state'],

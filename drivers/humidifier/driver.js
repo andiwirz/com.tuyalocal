@@ -9,12 +9,15 @@ const { detectViaCloud }        = require('../../lib/dpCodeMap');
 
 // Maps this driver's settings keys to the Tuya cloud "code" names that
 // commonly represent them. See lib/dpCodeMap.js.
+// Verified against the standard code list for Tuya category "jsq" (humidifier).
 const CLOUD_CODE_MAP = {
-  dp_onoff:            ['switch'],
-  dp_mode:             ['mode'],
+  // switch_spray is the primary on/off on many humidifiers — listed after
+  // "switch" so a device exposing both keeps the plain switch as the main power.
+  dp_onoff:            ['switch', 'switch_spray'],
+  dp_mode:             ['mode', 'work_mode', 'spray_mode'],
   dp_target_humidity:  ['humidity_set'],
   dp_current_humidity: ['humidity_current', 'humidity_indoor'],
-  dp_fan_speed:        ['fan_speed_enum', 'level'],
+  dp_fan_speed:        ['fan_speed_enum', 'level', 'level_current'],
   dp_child_lock:       ['child_lock', 'lock'],
   dp_countdown_timer:  ['countdown_set', 'countdown'],
   dp_countdown_left:   ['countdown_left'],

@@ -10,18 +10,21 @@ const { detectViaCloud }        = require('../../lib/dpCodeMap');
 // Maps this driver's settings keys to the Tuya cloud "code" names that
 // commonly represent them. See lib/dpCodeMap.js for why this refines the
 // local value-heuristic DP detection during pairing.
+// Verified against the standard code list for Tuya category "fs" (fan).
 const CLOUD_CODE_MAP = {
   dp_onoff:            ['switch', 'switch_1', 'power'],
   dp_speed:            ['fan_speed', 'speed'],
   dp_fan_speed:        ['fan_speed_enum', 'level'],
-  dp_oscillate:        ['shake', 'swing'],
+  // fan_horizontal / fan_vertical are the standard swing codes for this
+  // category; shake / swing appear on rebadged units.
+  dp_oscillate:        ['fan_horizontal', 'fan_vertical', 'shake', 'swing'],
   dp_direction:        ['fan_direction', 'direction'],
-  dp_mode:             ['mode'],
+  dp_mode:             ['mode', 'work_mode'],
   dp_child_lock:       ['child_lock', 'lock'],
   dp_countdown_timer:  ['countdown', 'countdown_set'],
   dp_countdown_left:   ['countdown_left'],
   dp_light_onoff:      ['light', 'switch_led'],
-  dp_light_dim:        ['bright_value', 'bright_value_v2'],
+  dp_light_dim:        ['bright_value', 'bright_value_v2', 'bright_value_1'],
   dp_light_color_temp: ['temp_value', 'temp_value_v2'],
 };
 
