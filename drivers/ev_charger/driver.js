@@ -57,14 +57,17 @@ class EvChargerDriver extends Homey.Driver {
       });
 
     // ── Actions ─────────────────────────────────────────────────────────────
+    // Convenience card for users who think in amps — the charger's own unit.
+    // Homey's built-in "Set target power" card covers the same DP in watts.
     this.homey.flow.getActionCard('ev_set_current')
       .registerRunListener(async (args) => {
-        if (!args.device.hasCapability('charge_current_limit')) return;
-        const min  = args.device.getSetting('current_min') ?? 6;
-        const max  = args.device.getSetting('current_max') ?? 16;
-        const amps = Math.round(Math.max(min, Math.min(max, args.current)));
-        await args.device.setCapabilityValue('charge_current_limit', amps);
-        return args.device.triggerCapabilityListener('charge_current_limit', amps);
+        if (!args.device.hasCapability('target_power')) return;
+        const min   = args.device.getSetting('current_min') ?? 6;
+        const max   = args.device.getSetting('current_max') ?? 16;
+        const amps  = Math.round(Math.max(min, Math.min(max, args.current)));
+        const watts = amps * args.device._wattsPerAmp();
+        await args.device.setCapabilityValue('target_power', watts);
+        return args.device.triggerCapabilityListener('target_power', watts);
       });
 
     this.homey.flow.getActionCard('ev_reset_energy')
@@ -189,6 +192,8 @@ class EvChargerDriver extends Homey.Driver {
       dp_clear_energy:     0,
       current_min:         6,
       current_max:         16,
+      phase_count:         '1',
+      nominal_voltage:     230,
     };
 
     const present = (dp) => Object.prototype.hasOwnProperty.call(dps, String(dp));
@@ -209,6 +214,9 @@ class EvChargerDriver extends Homey.Driver {
     // actually reported them.
     if (present(7))  result.dp_phase_b      = 7;
     if (present(8))  result.dp_phase_c      = 8;
+    // Reporting phase B/C means a three-phase charger, which sets the watts-per-amp
+    // factor used to convert Homey's target_power into the charger's current limit.
+    if (present(7) && present(8)) result.phase_count = '3';
     if (present(9))  result.dp_power_total  = 9;   // total power, W
     else if (present(5)) result.dp_power_total = 5; // single-phase power, W
     if (present(24)) result.dp_temperature  = 24;

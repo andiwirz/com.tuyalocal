@@ -1,4 +1,8 @@
 {
+  "1.0.142": {
+    "en": "EV Charger driver: added the standard target_power capability, so Homey's energy management can steer the charging power (e.g. solar-surplus charging). Power in watts is converted to the charger's current limit automatically — set Phases and Current Min/Max in device settings to match your hardware. NOTE: this app now requires Homey v12.13.0 or newer.",
+    "de": "Wallbox-Treiber: Standard-Capability target_power ergänzt, damit Homeys Energiemanagement die Ladeleistung steuern kann (z.B. PV-Überschussladen). Die Leistung in Watt wird automatisch in das Stromlimit der Wallbox umgerechnet — Phasen und Min/Max-Strom in den Geräteeinstellungen passend zur Hardware setzen. HINWEIS: Diese App benötigt jetzt Homey v12.13.0 oder neuer."
+  },
   "1.0.141": {
     "en": "EV Charger driver now uses Homey's official EV charger capabilities: evcharger_charging and evcharger_charging_state, with energy.evCharger and meter_power.charged for the energy dashboard. This adds the built-in \"Start/Stop charging\" actions, \"Is charging\" condition and charging-state trigger. Requires Homey v12.4.5 or newer.",
     "de": "Der Wallbox-Treiber nutzt jetzt die offiziellen Homey-EV-Capabilities: evcharger_charging und evcharger_charging_state, mit energy.evCharger und meter_power.charged für das Energie-Dashboard. Damit stehen die eingebauten Aktionen \"Ladevorgang starten/stoppen\", die Bedingung \"Lädt\" und der Ladezustand-Auslöser zur Verfügung. Erfordert Homey v12.4.5 oder neuer."

@@ -1,7 +1,7 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.141",
-  "compatibility": ">=12.4.5",
+  "version": "1.0.142",
+  "compatibility": ">=12.13.0",
   "sdk": 3,
   "platforms": [
     "local"
@@ -637,23 +637,6 @@
       "uiQuickAction": false,
       "insights": false,
       "icon": "/assets/capabilities/pump.svg"
-    },
-    "charge_current_limit": {
-      "type": "number",
-      "title": {
-        "en": "Charge Current Limit",
-        "de": "Lade-Stromlimit"
-      },
-      "getable": true,
-      "setable": true,
-      "units": { "en": "A", "de": "A" },
-      "min": 1,
-      "max": 48,
-      "step": 1,
-      "uiComponent": "slider",
-      "uiQuickAction": false,
-      "insights": true,
-      "icon": "/assets/capabilities/power_level.svg"
     },
     "charge_session_energy": {
       "type": "number",
@@ -15021,7 +15004,7 @@
       "capabilities": [
         "evcharger_charging",
         "evcharger_charging_state",
-        "charge_current_limit",
+        "target_power",
         "measure_power",
         "measure_voltage",
         "measure_current",
@@ -15034,6 +15017,13 @@
             "en": "Charged Energy",
             "de": "Geladene Energie"
           }
+        },
+        "target_power": {
+          "min": 0,
+          "max": 3680,
+          "step": 230,
+          "excludeMin": 0,
+          "excludeMax": 1380
         },
         "measure_voltage.b": { "title": { "en": "Voltage L2", "de": "Spannung L2" } },
         "measure_current.b": { "title": { "en": "Current L2", "de": "Strom L2" } },
@@ -15218,6 +15208,38 @@
               "hint": {
                 "en": "Highest current your charger physically supports (e.g. 16 for 3.7 kW, 32 for 7.4 kW).",
                 "de": "Höchster Strom, den die Wallbox physisch unterstützt (z.B. 16 für 3,7 kW, 32 für 7,4 kW)."
+              }
+            },
+            {
+              "id": "phase_count",
+              "type": "dropdown",
+              "label": {
+                "en": "Phases",
+                "de": "Phasen"
+              },
+              "value": "1",
+              "values": [
+                { "id": "1", "label": { "en": "1-phase", "de": "1-phasig" } },
+                { "id": "3", "label": { "en": "3-phase", "de": "3-phasig" } }
+              ],
+              "hint": {
+                "en": "Used to convert between charging power (W) and the charger's current limit (A): W = A × 230 × phases. Detected automatically during pairing from the number of phase DPs reported.",
+                "de": "Wird zur Umrechnung zwischen Ladeleistung (W) und dem Stromlimit der Wallbox (A) verwendet: W = A × 230 × Phasen. Wird beim Pairing anhand der gemeldeten Phasen-DPs automatisch erkannt."
+              }
+            },
+            {
+              "id": "nominal_voltage",
+              "type": "number",
+              "label": {
+                "en": "Nominal Voltage (V)",
+                "de": "Nennspannung (V)"
+              },
+              "value": 230,
+              "min": 100,
+              "max": 400,
+              "hint": {
+                "en": "Grid voltage used for the power/current conversion. Leave at 230 for most of Europe.",
+                "de": "Netzspannung für die Leistungs-/Strom-Umrechnung. In Europa meist 230 belassen."
               }
             },
             {

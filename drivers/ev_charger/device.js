@@ -56,7 +56,7 @@ const STATE_MAP = {
 };
 
 const OPTIONAL_CAPABILITIES = [
-  { setting: 'dp_charge_current',   capability: 'charge_current_limit'  },
+  { setting: 'dp_charge_current',   capability: 'target_power'          },
   { setting: 'dp_fault',            capability: 'alarm_generic'         },
   { setting: 'dp_fault',            capability: 'fault_code'            },
   { setting: 'dp_connection_state', capability: 'ev_connection_state'   },
@@ -151,17 +151,27 @@ class EvChargerDevice extends BaseTuyaDevice {
       await this._set(this.getSetting('dp_switch'), Boolean(value));
     });
 
-    // Current limit — debounced so slider drags don't flood the charger.
-    register('charge_current_limit', (value) => {
+    // target_power is Homey's standard charge-power control (watts) and is what
+    // its energy management steers — e.g. solar-surplus charging. The charger
+    // itself only accepts a current limit in amps, so watts are converted here.
+    //
+    // Homey clamps to min/max and snaps values inside the exclude range to 0
+    // before the listener runs, so 0 here genuinely means "idle". These chargers
+    // have no 0 A setting: idling is done by stopping the charge instead.
+    // Debounced because Homey may adjust target_power frequently.
+    register('target_power', (value) => {
       clearTimeout(this._currentDebounceTimer);
       return new Promise((resolve) => {
         this._currentDebounceTimer = setTimeout(async () => {
           const dp = this.getSetting('dp_charge_current');
           if (dp > 0) {
-            const min  = this.getSetting('current_min') ?? 6;
-            const max  = this.getSetting('current_max') ?? 16;
-            const amps = Math.round(Math.max(min, Math.min(max, value)));
-            await this._set(dp, amps).catch(() => {});
+            const watts = Number(value) || 0;
+            if (watts <= 0) {
+              // Idle request — stop charging rather than writing an invalid 0 A.
+              await this._set(this.getSetting('dp_switch'), false).catch(() => {});
+            } else {
+              await this._set(dp, this._wattsToAmps(watts)).catch(() => {});
+            }
           }
           resolve();
         }, DEBOUNCE_MS);
@@ -184,14 +194,45 @@ class EvChargerDevice extends BaseTuyaDevice {
     });
   }
 
-  async _applyCurrentLimitRange() {
-    if (!this.hasCapability('charge_current_limit')) return;
+  // ── Power ⇄ current conversion ──────────────────────────────────────────────
+  // The charger speaks amps (DP 4); Homey's target_power speaks watts.
+  //   W = A × V × phases
+
+  /** Watts per amp for this installation (voltage × phase count). */
+  _wattsPerAmp() {
+    const volts  = this.getSetting('nominal_voltage') ?? 230;
+    const phases = parseInt(this.getSetting('phase_count') ?? '1', 10) || 1;
+    return volts * phases;
+  }
+
+  /** Convert a target power in watts to a whole amp value within the hardware range. */
+  _wattsToAmps(watts) {
     const min = this.getSetting('current_min') ?? 6;
     const max = this.getSetting('current_max') ?? 16;
-    if (max > min) {
-      await this._setCapabilityOptionsIfChanged('charge_current_limit', { min, max, step: 1 })
-        .catch(() => {});
-    }
+    const amps = Math.round(watts / this._wattsPerAmp());
+    return Math.max(min, Math.min(max, amps));
+  }
+
+  /**
+   * Keep target_power's slider range in step with the configured hardware limits.
+   *
+   * min is 0 so the device can always idle (required by the SDK), and the
+   * exclude range covers everything below the charger's minimum current — Homey
+   * snaps requests inside it to 0 instead of asking for an impossible current.
+   */
+  async _applyCurrentLimitRange() {
+    if (!this.hasCapability('target_power')) return;
+    const wPerA = this._wattsPerAmp();
+    const min   = this.getSetting('current_min') ?? 6;
+    const max   = this.getSetting('current_max') ?? 16;
+    if (max <= min) return;
+    await this._setCapabilityOptionsIfChanged('target_power', {
+      min:        0,
+      max:        max * wPerA,
+      step:       wPerA, // one amp
+      excludeMin: 0,
+      excludeMax: min * wPerA,
+    }).catch(() => {});
   }
 
   // ── Hook overrides ─────────────────────────────────────────────────────────
@@ -339,10 +380,12 @@ class EvChargerDevice extends BaseTuyaDevice {
         continue;
       }
 
-      // ── Charge current limit ─────────────────────────────────────────────
+      // ── Charge current limit → target_power (A → W) ───────────────────────
+      // The charger may clamp what we asked for, so mirror back what it reports.
       if (settings.dp_charge_current > 0 && dp === settings.dp_charge_current) {
-        if (this.hasCapability('charge_current_limit')) {
-          await this.setCapabilityValue('charge_current_limit', Number(value)).catch(() => {});
+        if (this.hasCapability('target_power')) {
+          const watts = Number(value) * this._wattsPerAmp();
+          await this.setCapabilityValue('target_power', watts).catch(() => {});
         }
         continue;
       }
@@ -501,7 +544,7 @@ class EvChargerDevice extends BaseTuyaDevice {
       await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
       this._registerListeners(); // newly added capabilities need listeners immediately
     }
-    if (changedKeys.some((k) => ['current_min', 'current_max'].includes(k))) {
+    if (changedKeys.some((k) => ['current_min', 'current_max', 'phase_count', 'nominal_voltage'].includes(k))) {
       await this._applyCurrentLimitRange();
     }
   }
