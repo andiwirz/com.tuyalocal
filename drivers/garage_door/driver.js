@@ -5,6 +5,17 @@ const TuyAPI                    = require('tuyapi');
 const { setupCloudLookup } = require('../../lib/pairCloudLookup');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
+const { detectViaCloud }        = require('../../lib/dpCodeMap');
+
+// Maps this driver's settings keys to the Tuya cloud "code" names that
+// commonly represent them. See lib/dpCodeMap.js. Kept minimal — garage door
+// openers vary widely between manufacturers, so only the well-standardised
+// codes are mapped to avoid confidently guessing wrong.
+const CLOUD_CODE_MAP = {
+  dp_switch:       ['switch_1', 'switch'],
+  dp_door_contact: ['doorcontact_state', 'door_contact'],
+  dp_light:        ['switch_led', 'light'],
+};
 
 class GarageDoorDriver extends Homey.Driver {
   async onInit() {
@@ -119,7 +130,11 @@ class GarageDoorDriver extends Homey.Driver {
         }
         Object.assign(collectedDps, rawDps);
         connected = true;
-        if (Object.keys(collectedDps).length > 0) detectedDps = this._detectDps(collectedDps);
+        if (Object.keys(collectedDps).length > 0) {
+          detectedDps = this._detectDps(collectedDps);
+          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m));
+          if (Object.keys(cloudDps).length > 0) Object.assign(detectedDps, cloudDps);
+        }
       } catch (err) {
         connected = false;
         try { if (pairingDevice) pairingDevice.disconnect(); } catch (_e) {}

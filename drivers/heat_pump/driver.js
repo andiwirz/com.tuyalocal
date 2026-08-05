@@ -7,6 +7,19 @@ const net                       = require('net');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
 const { capitalize }            = require('../../lib/utils');
+const { detectViaCloud }        = require('../../lib/dpCodeMap');
+
+// Maps this driver's settings keys to the Tuya cloud "code" names that
+// commonly represent them. See lib/dpCodeMap.js. dp_power_level and dp_preset
+// are omitted — their code names vary too much between heat pump models to
+// guess confidently.
+const CLOUD_CODE_MAP = {
+  dp_onoff:       ['switch'],
+  dp_mode:        ['mode', 'work_mode'],
+  dp_target_temp: ['temp_set'],
+  dp_current_temp: ['temp_current'],
+  dp_fault:       ['fault'],
+};
 
 // ── Mode strings recognised during auto-detect ────────────────────────────────
 // Covers common naming across 15+ pool/water heat pump models.
@@ -125,7 +138,11 @@ class HeatPumpDriver extends Homey.Driver {
         }
         Object.assign(collectedDps, rawDps);
         connected = true;
-        if (Object.keys(collectedDps).length > 0) detectedDps = this._detectDps(collectedDps);
+        if (Object.keys(collectedDps).length > 0) {
+          detectedDps = this._detectDps(collectedDps);
+          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m));
+          if (Object.keys(cloudDps).length > 0) Object.assign(detectedDps, cloudDps);
+        }
       } catch (err) {
         connected = false;
         try { if (pairingDevice) pairingDevice.disconnect(); } catch (_e) {}

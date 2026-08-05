@@ -5,6 +5,25 @@ const TuyAPI                    = require('tuyapi');
 const { setupCloudLookup } = require('../../lib/pairCloudLookup');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
+const { detectViaCloud }        = require('../../lib/dpCodeMap');
+
+// Maps this driver's settings keys to the Tuya cloud "code" names that
+// commonly represent them. See lib/dpCodeMap.js.
+const CLOUD_CODE_MAP = {
+  dp_onoff:           ['switch'],
+  dp_mode:            ['mode'],
+  dp_target_temp:     ['temp_set'],
+  dp_fan_speed:       ['fan_speed_enum', 'windspeed'],
+  dp_swing:           ['switch_vertical', 'shake'],
+  dp_swing_h:         ['switch_horizontal'],
+  dp_sleep:           ['sleep'],
+  dp_eco:             ['eco'],
+  dp_child_lock:      ['child_lock', 'lock'],
+  dp_countdown_timer: ['countdown_set', 'countdown'],
+  dp_countdown_left:  ['countdown_left'],
+  dp_anion:           ['anion'],
+  dp_fault:           ['fault'],
+};
 
 class AirConditionerDriver extends Homey.Driver {
   async onInit() {
@@ -185,6 +204,8 @@ class AirConditionerDriver extends Homey.Driver {
 
         if (Object.keys(collectedDps).length > 0) {
           const detected = this._detectDps(collectedDps);
+          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m));
+          if (Object.keys(cloudDps).length > 0) Object.assign(detected, cloudDps);
           this.log('Detected DPs:', JSON.stringify(detected));
           // Merge detected settings into pendingDevice later
           pendingDevice = this._buildPendingDevice({ ip, deviceId, localKey, version: actualVersion, detectedDps: detected });

@@ -5,6 +5,21 @@ const TuyAPI                    = require('tuyapi');
 const { setupCloudLookup } = require('../../lib/pairCloudLookup');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
+const { detectViaCloud }        = require('../../lib/dpCodeMap');
+
+// Maps this driver's settings keys to the Tuya cloud "code" names that
+// commonly represent them. See lib/dpCodeMap.js. dp_power_factor is omitted
+// — no reliably standardised code name across manufacturers.
+const CLOUD_CODE_MAP = {
+  dp_switch:       ['switch_1', 'switch'],
+  dp_power:        ['cur_power'],
+  dp_current:      ['cur_current'],
+  dp_voltage:      ['cur_voltage'],
+  dp_energy:       ['add_ele', 'energy'],
+  dp_relay_status: ['relay_status'],
+  dp_countdown:    ['countdown_1', 'countdown'],
+  dp_fault:        ['fault'],
+};
 
 class SmartPlugDriver extends Homey.Driver {
   async onInit() {
@@ -121,6 +136,8 @@ class SmartPlugDriver extends Homey.Driver {
         connected = true;
         if (Object.keys(collectedDps).length > 0) {
           detectedDps = this._detectDps(collectedDps);
+          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m));
+          if (Object.keys(cloudDps).length > 0) Object.assign(detectedDps, cloudDps);
           this.log('Detected DPs:', JSON.stringify(detectedDps));
         }
       } catch (err) {

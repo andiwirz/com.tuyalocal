@@ -5,6 +5,19 @@ const TuyAPI                    = require('tuyapi');
 const { setupCloudLookup } = require('../../lib/pairCloudLookup');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
+const { detectViaCloud }        = require('../../lib/dpCodeMap');
+
+// Maps this driver's settings keys to the Tuya cloud "code" names that
+// commonly represent them. See lib/dpCodeMap.js.
+const CLOUD_CODE_MAP = {
+  dp_onoff:        ['switch'],
+  dp_mode:         ['mode'],
+  dp_target_temp:  ['temp_set'],
+  dp_current_temp: ['temp_current'],
+  dp_status:       ['status', 'work_state'],
+  dp_keep_warm:    ['keep_warm', 'warm'],
+  dp_fault:        ['fault'],
+};
 
 class KettleDriver extends Homey.Driver {
   async onInit() {
@@ -106,6 +119,8 @@ class KettleDriver extends Homey.Driver {
         connected = true;
         if (Object.keys(collectedDps).length > 0) {
           detectedDps = this._detectDps(collectedDps);
+          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m));
+          if (Object.keys(cloudDps).length > 0) Object.assign(detectedDps, cloudDps);
         }
       } catch (err) {
         connected = false;

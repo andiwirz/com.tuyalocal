@@ -5,6 +5,22 @@ const TuyAPI                    = require('tuyapi');
 const { setupCloudLookup } = require('../../lib/pairCloudLookup');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
+const { detectViaCloud }        = require('../../lib/dpCodeMap');
+
+// Maps this driver's settings keys to the Tuya cloud "code" names that
+// commonly represent them. See lib/dpCodeMap.js.
+const CLOUD_CODE_MAP = {
+  dp_onoff:           ['switch', 'power'],
+  dp_mode:            ['mode'],
+  dp_target_temp:     ['temp_set'],
+  dp_current_temp:    ['temp_current'],
+  dp_oscillate:       ['shake', 'swing'],
+  dp_child_lock:      ['child_lock', 'lock'],
+  dp_countdown_timer: ['countdown_set', 'countdown'],
+  dp_countdown_left:  ['countdown_left'],
+  dp_work_state:      ['work_state'],
+  dp_fault:           ['fault'],
+};
 
 class HeaterDriver extends Homey.Driver {
   async onInit() {
@@ -111,7 +127,11 @@ class HeaterDriver extends Homey.Driver {
         }
         Object.assign(collectedDps, rawDps);
         connected = true;
-        if (Object.keys(collectedDps).length > 0) detectedDps = this._detectDps(collectedDps);
+        if (Object.keys(collectedDps).length > 0) {
+          detectedDps = this._detectDps(collectedDps);
+          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m));
+          if (Object.keys(cloudDps).length > 0) Object.assign(detectedDps, cloudDps);
+        }
       } catch (err) {
         connected = false;
         try { if (pairingDevice) pairingDevice.disconnect(); } catch (_e) {}

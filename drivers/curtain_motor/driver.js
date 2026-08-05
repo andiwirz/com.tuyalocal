@@ -6,6 +6,17 @@ const { setupCloudLookup } = require('../../lib/pairCloudLookup');
 const net                       = require('net');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
+const { detectViaCloud }        = require('../../lib/dpCodeMap');
+
+// Maps this driver's settings keys to the Tuya cloud "code" names that
+// commonly represent them. See lib/dpCodeMap.js for why this refines the
+// local value-heuristic DP detection during pairing.
+const CLOUD_CODE_MAP = {
+  dp_control:         ['control'],
+  dp_percent_control: ['percent_control', 'percent_state'],
+  dp_work_state:      ['work_state'],
+  dp_fault:           ['fault', 'fault_alarm'],
+};
 
 class CurtainMotorDriver extends Homey.Driver {
   async onInit() {
@@ -127,7 +138,11 @@ class CurtainMotorDriver extends Homey.Driver {
         }
         Object.assign(collectedDps, rawDps);
         connected = true;
-        if (Object.keys(collectedDps).length > 0) detectedDps = this._detectDps(collectedDps);
+        if (Object.keys(collectedDps).length > 0) {
+          detectedDps = this._detectDps(collectedDps);
+          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m));
+          if (Object.keys(cloudDps).length > 0) Object.assign(detectedDps, cloudDps);
+        }
       } catch (err) {
         connected = false;
         try { if (pairingDevice) pairingDevice.disconnect(); } catch (_e) {}

@@ -5,6 +5,13 @@ const TuyAPI                    = require('tuyapi');
 const { setupCloudLookup } = require('../../lib/pairCloudLookup');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
+const { detectViaCloud }        = require('../../lib/dpCodeMap');
+
+// Maps this driver's settings keys to the Tuya cloud "code" names that
+// commonly represent them. See lib/dpCodeMap.js.
+const CLOUD_CODE_MAP = {
+  dp_relay_status: ['switch_1', 'switch'],
+};
 
 class WallSwitchDriver extends Homey.Driver {
   async onInit() {
@@ -112,6 +119,8 @@ class WallSwitchDriver extends Homey.Driver {
         connected = true;
         if (Object.keys(collectedDps).length > 0) {
           detectedDps = this._detectDps(collectedDps);
+          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m));
+          if (Object.keys(cloudDps).length > 0) Object.assign(detectedDps, cloudDps);
           this.log('Detected DPs:', JSON.stringify(detectedDps));
         }
       } catch (err) {

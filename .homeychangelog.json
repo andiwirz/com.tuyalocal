@@ -1,4 +1,8 @@
 {
+  "1.0.138": {
+    "en": "Cloud-refined DP auto-detection (introduced for Dehumidifier and Fan in 1.0.136) now also applies to Air Conditioner, Curtain Motor, Garage Door, Heat Pump, Heater, Humidifier, Kettle, Light, Pet Feeder, Smart Plug, Thermostat and Wall Switch. Requires Cloud Lookup credentials saved once in Settings.",
+    "de": "Die Cloud-verfeinerte DP-Auto-Erkennung (eingeführt für Entfeuchter und Lüfter in 1.0.136) gilt jetzt auch für Klimaanlage, Rollladenmotor, Garagentor, Wärmepumpe, Heizgerät, Luftbefeuchter, Wasserkocher, Licht, Futterautomat, Steckdose, Thermostat und Wandschalter. Benötigt einmal gespeicherte Cloud-Lookup-Zugangsdaten in den Einstellungen."
+  },
   "1.0.137": {
     "en": "Dehumidifier driver: renamed 'Set oscillation' flow card to 'Set dehumidifier oscillation' to avoid confusion with the Fan driver's identically-purposed card — both existed already, just named too similarly to find.",
     "de": "Entfeuchter-Treiber: Flow-Karte 'Schwenken setzen' in 'Entfeuchter-Schwenkung setzen' umbenannt, um Verwechslung mit der gleichnamigen Fan-Treiber-Karte zu vermeiden — beide gab es bereits, nur zu ähnlich benannt, um sie leicht zu finden."

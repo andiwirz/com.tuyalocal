@@ -5,6 +5,23 @@ const TuyAPI                    = require('tuyapi');
 const { setupCloudLookup } = require('../../lib/pairCloudLookup');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
+const { detectViaCloud }        = require('../../lib/dpCodeMap');
+
+// Maps this driver's settings keys to the Tuya cloud "code" names that
+// commonly represent them. See lib/dpCodeMap.js.
+const CLOUD_CODE_MAP = {
+  dp_onoff:            ['switch'],
+  dp_mode:             ['mode'],
+  dp_target_humidity:  ['humidity_set'],
+  dp_current_humidity: ['humidity_current', 'humidity_indoor'],
+  dp_fan_speed:        ['fan_speed_enum', 'level'],
+  dp_child_lock:       ['child_lock', 'lock'],
+  dp_countdown_timer:  ['countdown_set', 'countdown'],
+  dp_countdown_left:   ['countdown_left'],
+  dp_temperature:      ['temp_current'],
+  dp_water_empty:      ['lack_water', 'water_empty'],
+  dp_anion:            ['anion'],
+};
 
 class HumidifierDriver extends Homey.Driver {
   async onInit() {
@@ -118,7 +135,11 @@ class HumidifierDriver extends Homey.Driver {
         }
         Object.assign(collectedDps, rawDps);
         connected = true;
-        if (Object.keys(collectedDps).length > 0) detectedDps = this._detectDps(collectedDps);
+        if (Object.keys(collectedDps).length > 0) {
+          detectedDps = this._detectDps(collectedDps);
+          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m));
+          if (Object.keys(cloudDps).length > 0) Object.assign(detectedDps, cloudDps);
+        }
       } catch (err) {
         connected = false;
         try { if (pairingDevice) pairingDevice.disconnect(); } catch (_e) {}

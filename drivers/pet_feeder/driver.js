@@ -5,6 +5,23 @@ const TuyAPI                    = require('tuyapi');
 const { setupCloudLookup } = require('../../lib/pairCloudLookup');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
+const { detectViaCloud }        = require('../../lib/dpCodeMap');
+
+// Maps this driver's settings keys to the Tuya cloud "code" names that
+// commonly represent them. See lib/dpCodeMap.js. dp_portions and
+// dp_manual_button_portions are omitted — too ambiguous to tell apart by
+// code name alone without a concrete device example.
+const CLOUD_CODE_MAP = {
+  dp_child_lock:      ['child_lock'],
+  dp_food_level:       ['food_state', 'food_level'],
+  dp_motor_state:      ['motor_state'],
+  dp_surplus_grain:    ['surplus_grain'],
+  dp_voice_times:      ['voice_times'],
+  dp_indicator_light:  ['indicator_light'],
+  dp_battery:          ['battery_percentage', 'battery'],
+  dp_battery_status:   ['battery_state'],
+  dp_feed_report:      ['feed_report'],
+};
 
 class PetFeederDriver extends Homey.Driver {
   async onInit() {
@@ -100,7 +117,11 @@ class PetFeederDriver extends Homey.Driver {
         }
         Object.assign(collectedDps, rawDps);
         connected = true;
-        if (Object.keys(collectedDps).length > 0) detectedDps = this._detectDps(collectedDps);
+        if (Object.keys(collectedDps).length > 0) {
+          detectedDps = this._detectDps(collectedDps);
+          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m));
+          if (Object.keys(cloudDps).length > 0) Object.assign(detectedDps, cloudDps);
+        }
       } catch (err) {
         connected = false;
         try { if (pairingDevice) pairingDevice.disconnect(); } catch (_e) {}
