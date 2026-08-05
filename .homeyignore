@@ -1,3 +1,7 @@
 node_modules/
 *.log
 .env
+
+# Development-only files — no purpose on the Homey itself
+discover-dps.js
+COMMUNITY_POST.md
