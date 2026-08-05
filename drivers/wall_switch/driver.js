@@ -109,15 +109,21 @@ class WallSwitchDriver extends Homey.Driver {
           device.on('data', (payload) => {
             if (payload?.dps) Object.assign(tmpDps, payload.dps);
           });
+          // Replies to a DP_REFRESH request arrive on a separate event; some devices
+          // report the packed voltage/current/power DP only that way.
+          device.on('dp-refresh', (payload) => {
+            if (payload?.dps) Object.assign(tmpDps, payload.dps);
+          });
           await Promise.race([
             device.connect(),
             new Promise((_, rej) => setTimeout(() => rej(new Error('Connection timed out')), 8000)),
           ]);
           await new Promise((resolve) => setTimeout(resolve, 2000));
-          if (Object.keys(tmpDps).length === 0) {
-            try { device.refresh(); } catch (_) {}
-            await new Promise((resolve) => setTimeout(resolve, 2000));
-          }
+          // Always ask for a refresh, not just when nothing arrived: devices that do
+          // answer dp_query may still withhold the refresh-only DPs, which is where
+          // packed voltage/current/power values usually live.
+          try { device.refresh(); } catch (_) {}
+          await new Promise((resolve) => setTimeout(resolve, 2000));
           device.disconnect();
           pairingDevice = null;
           rawDps = tmpDps;

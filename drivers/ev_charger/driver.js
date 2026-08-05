@@ -113,15 +113,19 @@ class EvChargerDriver extends Homey.Driver {
           device.on('error', () => {});
           const tmpDps = {};
           device.on('data', (payload) => { if (payload?.dps) Object.assign(tmpDps, payload.dps); });
+          // Replies to a DP_REFRESH request arrive on a separate event; some devices
+          // report the packed voltage/current/power DP only that way.
+          device.on('dp-refresh', (payload) => { if (payload?.dps) Object.assign(tmpDps, payload.dps); });
           await Promise.race([
             device.connect(),
             new Promise((_, rej) => setTimeout(() => rej(new Error('Connection timed out')), 8000)),
           ]);
           await new Promise((resolve) => setTimeout(resolve, 2000));
-          if (Object.keys(tmpDps).length === 0) {
-            try { device.refresh(); } catch (_) {}
-            await new Promise((resolve) => setTimeout(resolve, 2000));
-          }
+          // Always ask for a refresh, not just when nothing arrived: devices that do
+          // answer dp_query may still withhold the refresh-only DPs, which is where
+          // packed voltage/current/power values usually live.
+          try { device.refresh(); } catch (_) {}
+          await new Promise((resolve) => setTimeout(resolve, 2000));
           device.disconnect();
           pairingDevice = null;
           rawDps = tmpDps;
@@ -177,10 +181,11 @@ class EvChargerDriver extends Homey.Driver {
       dp_switch:           18,
       dp_work_state:       3,
       dp_charge_current:   4,
-      // Enabled below only if the charger actually reports it — several models
-      // list phase_a in their cloud specification but never send it locally,
-      // which would otherwise leave empty voltage/current/power tiles behind.
-      dp_phase_a:          0,
+      // DP 6 is near-universal on this category but is often reported only in
+      // reply to a DP_REFRESH request, so it may be absent from a plain query.
+      // The pairing snapshot now includes such replies; the presence check below
+      // still clears it for the few models that genuinely never send it.
+      dp_phase_a:          6,
       dp_phase_b:          0,
       dp_phase_c:          0,
       dp_power_total:      0,
@@ -231,7 +236,10 @@ class EvChargerDriver extends Homey.Driver {
 
     // Optional DPs at their standard positions — enable only if the charger
     // actually reported them.
-    if (present(6))  result.dp_phase_a      = 6;
+    // Clear phase A if the charger sent nothing for it even after the refresh
+    // request, so the settings reflect what the device actually delivers and the
+    // power estimate below can take over instead of leaving empty tiles.
+    if (!present(6)) result.dp_phase_a      = 0;
     if (present(7))  result.dp_phase_b      = 7;
     if (present(8))  result.dp_phase_c      = 8;
     // Nothing reports power on this charger — estimate it from the current limit
