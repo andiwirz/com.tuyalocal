@@ -177,12 +177,21 @@ class EvChargerDriver extends Homey.Driver {
       dp_switch:           18,
       dp_work_state:       3,
       dp_charge_current:   4,
-      dp_phase_a:          6,
+      // Enabled below only if the charger actually reports it — several models
+      // list phase_a in their cloud specification but never send it locally,
+      // which would otherwise leave empty voltage/current/power tiles behind.
+      dp_phase_a:          0,
       dp_phase_b:          0,
       dp_phase_c:          0,
       dp_power_total:      0,
       dp_energy_total:     0,
-      dp_session_energy:   25,
+      // DP 1 is the counter that rises while charging on these units, despite
+      // being named "forward_energy_total". DP 25 ("charge_energy_once") holds
+      // the *previous* completed session and stays static during a charge, so
+      // accumulating from it would never move. Verified against two live
+      // snapshots four minutes apart and against tuya-local, which likewise
+      // treats DP 1 as the energy sensor and DP 25 as "last charge".
+      dp_session_energy:   1,
       dp_fault:            10,
       dp_connection_state: 13,
       dp_work_mode:        0,
@@ -200,6 +209,7 @@ class EvChargerDriver extends Homey.Driver {
       current_scale:        '1',
       session_energy_scale: '0.01',
       total_energy_scale:   '0.01',
+      energy_source:        'session',
     };
 
     const present = (dp) => Object.prototype.hasOwnProperty.call(dps, String(dp));
@@ -218,6 +228,7 @@ class EvChargerDriver extends Homey.Driver {
 
     // Optional DPs at their standard positions — enable only if the charger
     // actually reported them.
+    if (present(6))  result.dp_phase_a      = 6;
     if (present(7))  result.dp_phase_b      = 7;
     if (present(8))  result.dp_phase_c      = 8;
     // Reporting phase B/C means a three-phase charger, which sets the watts-per-amp
@@ -228,6 +239,10 @@ class EvChargerDriver extends Homey.Driver {
     if (present(24)) result.dp_temperature  = 24;
     if (present(28)) result.dp_timer_on     = 28;
     if (present(16)) result.dp_clear_energy = 16;
+
+    // If DP 1 is absent but DP 25 exists, fall back to DP 25 as the counter —
+    // some models only expose that one.
+    if (!present(1) && present(25)) result.dp_session_energy = 25;
 
     // Lifetime counter (DP 1) is deliberately left disabled even when present.
     // Many chargers expose it with a plausible non-zero value that then never

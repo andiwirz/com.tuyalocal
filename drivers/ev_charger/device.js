@@ -55,6 +55,13 @@ const STATE_MAP = {
   charger_pause:      'plugged_in_paused',
 };
 
+// Control-pilot states that mean the charger is actively supplying current.
+// Per the CP standard, 9 V = vehicle connected and 6 V = vehicle ready, while the
+// PWM suffix means the charger is signalling an available current — i.e. a charge
+// is under way. Used to correct work_state on chargers that leave it at
+// "charger_end" for the whole session (observed on SS_V1.x firmware).
+const CP_CHARGING = new Set(['controlpi_9v_pwm', 'controlpi_6v_pwm']);
+
 const OPTIONAL_CAPABILITIES = [
   { setting: 'dp_charge_current',   capability: 'target_power'          },
   { setting: 'dp_fault',            capability: 'alarm_generic'         },
@@ -64,6 +71,11 @@ const OPTIONAL_CAPABILITIES = [
   { setting: 'dp_temperature',      capability: 'measure_temperature'   },
   { setting: 'dp_session_energy',   capability: 'charge_session_energy' },
   { setting: 'dp_timer_on',         capability: 'charge_delay_hours'    },
+  // Voltage and current come only from the packed phase DP. measure_power is
+  // deliberately not optional — the SDK expects it on an EV charger, and the
+  // "estimate" energy source can populate it without a power DP.
+  { setting: 'dp_phase_a',          capability: 'measure_voltage'       },
+  { setting: 'dp_phase_a',          capability: 'measure_current'       },
   // Phase B / C — only present on three-phase chargers
   { setting: 'dp_phase_b',          capability: 'measure_voltage.b'     },
   { setting: 'dp_phase_b',          capability: 'measure_current.b'     },
@@ -90,8 +102,8 @@ class EvChargerDevice extends BaseTuyaDevice {
     // mid-session doesn't fire a spurious "session finished".
     this._prevWorkState = null;
 
-    // Lifetime energy accumulated from session-energy (DP 25) deltas — used
-    // only when dp_energy_total = 0 (charger's own counter unavailable/silent).
+    // Accumulated lifetime energy. Which source feeds it is chosen by the
+    // energy_source setting — see _handleSessionEnergy and _onPollTick.
     this._energyAccum    = 0;
     this._lastSessionKwh = null;
     try {
@@ -100,6 +112,11 @@ class EvChargerDevice extends BaseTuyaDevice {
       const storedSession = this.getStoreValue('lastSessionKwh');
       if (typeof storedSession === 'number') this._lastSessionKwh = storedSession;
     } catch (e) {}
+
+    // Power integration state (energy_source = power | estimate)
+    this._lastPowerTime      = null; // timestamp of the previous integration step
+    this._lastPowerWatts     = 0;    // most recent power reading or estimate
+    this._prevTickPowerWatts = 0;    // power at the previous step, for trapezoidal averaging
 
     await this._migrateCapabilities([]);
     await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
@@ -253,6 +270,10 @@ class EvChargerDevice extends BaseTuyaDevice {
     clearTimeout(this._faultAlarmTimer);
     this._faultAlarmTimer     = null;
     this._faultAlarmConfirmed = false;
+    // Drop the integration baseline: time spent offline must not be counted as
+    // charging time on the next tick.
+    this._lastPowerTime       = null;
+    this._prevTickPowerWatts  = 0;
 
     // Several chargers only stream live voltage/current/power while DP 27 is
     // set to "online". Re-assert it on every connect when the user enabled it.
@@ -330,17 +351,105 @@ class EvChargerDevice extends BaseTuyaDevice {
       await this.setCapabilityValue('charge_session_energy', Math.round(kwh * 100) / 100).catch(() => {});
     }
 
-    // Only accumulate when the charger's own lifetime counter isn't in use.
-    if (this.getSetting('dp_energy_total') <= 0) {
+    // Only accumulate here when the session counter is the chosen source and the
+    // charger's own lifetime counter isn't in use.
+    if (this._energySource() === 'session' && this.getSetting('dp_energy_total') <= 0) {
       if (this._lastSessionKwh !== null && kwh > this._lastSessionKwh) {
         this._energyAccum += kwh - this._lastSessionKwh;
-        this.setStoreValue('energyAccum', this._energyAccum).catch(() => {});
-        await this.setCapabilityValue('meter_power.charged',
-          Math.round(this._energyAccum * 100) / 100).catch(() => {});
+        await this._writeTotalEnergy();
       }
     }
     this._lastSessionKwh = kwh;
     this.setStoreValue('lastSessionKwh', kwh).catch(() => {});
+  }
+
+  /** Which source feeds meter_power.charged. */
+  _energySource() {
+    return this.getSetting('energy_source') || 'session';
+  }
+
+  /**
+   * Writes evcharger_charging_state from the three signals the charger provides.
+   *
+   * work_state alone is not dependable: some firmware reports "charger_end" for
+   * the entire session, which would leave the tile stuck on "Plugged in" while
+   * the car is charging. So when work_state claims the charge is merely plugged
+   * in, but the charge switch is on and the control pilot shows an active PWM
+   * signal, the charging state is reported instead. Called from the work_state,
+   * switch and connection_state handlers, since any of them can change first.
+   */
+  async _updateChargingState() {
+    const raw = this._prevWorkState;
+    if (!raw) return;
+    let state = STATE_MAP[raw];
+    if (!state) return;
+
+    if (state === 'plugged_in'
+        && this.getCapabilityValue('evcharger_charging') === true
+        && CP_CHARGING.has(this._lastConnState)) {
+      state = 'plugged_in_charging';
+    }
+    await this.setCapabilityValue('evcharger_charging_state', state).catch(() => {});
+  }
+
+  async _writeTotalEnergy() {
+    this.setStoreValue('energyAccum', this._energyAccum).catch(() => {});
+    await this.setCapabilityValue('meter_power.charged',
+      Math.round(this._energyAccum * 1000) / 1000).catch(() => {});
+  }
+
+  /**
+   * Best guess at the current charging power in watts, for chargers that report
+   * no usable power DP. While charging, these units draw essentially the current
+   * limit that was set, so limit × voltage × phases is a fair approximation —
+   * it is an estimate, not a measurement, and only used when explicitly selected.
+   */
+  _estimatedWatts() {
+    if (this.getCapabilityValue('evcharger_charging') !== true) return 0;
+    const target = this.getCapabilityValue('target_power');
+    if (typeof target === 'number' && target > 0) return target;
+    // No target known yet — fall back to the configured maximum current.
+    return (this.getSetting('current_max') ?? 16) * this._wattsPerAmp();
+  }
+
+  /**
+   * Trapezoidal energy integration, mirroring the Smart Plug driver. Runs on the
+   * poll timer so that steady power still accumulates even though an unchanged DP
+   * value is filtered out before it reaches _handleDps.
+   */
+  async _onPollTick() {
+    const source = this._energySource();
+    if (source !== 'power' && source !== 'estimate') return;
+
+    const watts = source === 'estimate'
+      ? this._estimatedWatts()
+      : (this.getCapabilityValue('measure_power') ?? 0);
+
+    if (source === 'estimate' && this.hasCapability('measure_power')) {
+      await this.setCapabilityValue('measure_power', Math.round(watts)).catch(() => {});
+    }
+    this._lastPowerWatts = watts;
+
+    if (this._lastPowerTime === null) {
+      // First tick only establishes the baseline — nothing to integrate yet.
+      this._lastPowerTime      = Date.now();
+      this._prevTickPowerWatts = watts;
+      return;
+    }
+
+    const now      = Date.now();
+    const elapsedH = (now - this._lastPowerTime) / 3_600_000;
+    // Cap at twice the poll interval so a long outage cannot produce a huge jump.
+    const maxH     = (this._pollIntervalMs * 2) / 3_600_000;
+    if (elapsedH > 0 && elapsedH < maxH) {
+      const avgWatts = (this._prevTickPowerWatts + watts) / 2;
+      if (avgWatts > 0) {
+        this._energyAccum += (avgWatts * elapsedH) / 1000;
+        await this._writeTotalEnergy();
+      }
+    }
+    this._prevTickPowerWatts = watts;
+    this._lastPowerTime      = now;
   }
 
   // ── DPS handling ───────────────────────────────────────────────────────────
@@ -363,6 +472,7 @@ class EvChargerDevice extends BaseTuyaDevice {
       // ── Switch ───────────────────────────────────────────────────────────
       if (settings.dp_switch > 0 && dp === settings.dp_switch) {
         await this.setCapabilityValue('evcharger_charging', Boolean(value)).catch(() => {});
+        await this._updateChargingState();
         continue;
       }
 
@@ -379,7 +489,7 @@ class EvChargerDevice extends BaseTuyaDevice {
         const prevRaw = this._prevWorkState ?? null;
         this._prevWorkState = state;
 
-        await this.setCapabilityValue('evcharger_charging_state', mapped).catch(() => {});
+        await this._updateChargingState();
 
         if (prevRaw !== null && prevRaw !== state) {
           this._triggerStateChanged.trigger(this, { state, prev_state: prevRaw }).catch(() => {});
@@ -475,9 +585,11 @@ class EvChargerDevice extends BaseTuyaDevice {
 
       // ── Connection state (CP pilot) ──────────────────────────────────────
       if (settings.dp_connection_state > 0 && dp === settings.dp_connection_state) {
+        this._lastConnState = String(value);
         if (this.hasCapability('ev_connection_state')) {
-          await this.setCapabilityValue('ev_connection_state', String(value)).catch(() => {});
+          await this.setCapabilityValue('ev_connection_state', this._lastConnState).catch(() => {});
         }
+        await this._updateChargingState();
         continue;
       }
 
@@ -568,6 +680,12 @@ class EvChargerDevice extends BaseTuyaDevice {
     if (changedKeys.some((k) => ['current_scale', 'session_energy_scale', 'total_energy_scale'].includes(k))) {
       this._lastDps = {}; // clear dedup so the next poll re-applies every DP
       this.pollNow().catch(() => {});
+    }
+    if (changedKeys.includes('energy_source')) {
+      // Restart integration cleanly; the accumulated total is deliberately kept.
+      this._lastPowerTime      = null;
+      this._prevTickPowerWatts = 0;
+      this._appLog(`Energy source changed to "${this._energySource()}"`, 'info');
     }
   }
 }

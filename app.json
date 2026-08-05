@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.146",
+  "version": "1.0.147",
   "compatibility": ">=12.13.0",
   "sdk": 3,
   "platforms": [
@@ -672,7 +672,7 @@
       "setable": false,
       "uiComponent": "sensor",
       "uiQuickAction": false,
-      "insights": false,
+      "insights": true,
       "icon": "/assets/capabilities/indicator_light.svg"
     },
     "ev_work_mode": {
@@ -722,7 +722,7 @@
       "setable": false,
       "uiComponent": "sensor",
       "uiQuickAction": false,
-      "insights": false,
+      "insights": true,
       "icon": "/assets/capabilities/alert.svg"
     },
     "fan_speed": {
@@ -15211,6 +15211,24 @@
               }
             },
             {
+              "id": "energy_source",
+              "type": "dropdown",
+              "label": {
+                "en": "Energy source for the dashboard",
+                "de": "Energiequelle für das Dashboard"
+              },
+              "value": "session",
+              "values": [
+                { "id": "session",  "label": { "en": "Session counter (default)",       "de": "Sitzungszähler (Standard)" } },
+                { "id": "power",    "label": { "en": "Measured power over time",         "de": "Gemessene Leistung über Zeit" } },
+                { "id": "estimate", "label": { "en": "Estimated from current limit",     "de": "Aus Stromlimit geschätzt" } }
+              ],
+              "hint": {
+                "en": "How the total charged energy is determined. 'Session counter' adds up the charger's own per-session values — accurate, but useless if that DP does not move or is scaled unexpectedly. 'Measured power' integrates the live power reading over time, which needs a working power DP. 'Estimated' assumes the charger draws the configured current limit while charging — an approximation for units that report neither, but it does make the energy dashboard work.",
+                "de": "Wie die geladene Gesamtenergie bestimmt wird. 'Sitzungszähler' summiert die geräteeigenen Sitzungswerte — genau, aber wirkungslos, wenn dieser DP sich nicht bewegt oder anders skaliert ist. 'Gemessene Leistung' integriert die Live-Leistung über die Zeit und benötigt einen funktionierenden Leistungs-DP. 'Geschätzt' nimmt an, dass die Wallbox während des Ladens das eingestellte Stromlimit zieht — eine Näherung für Geräte, die weder das eine noch das andere liefern, dafür funktioniert das Energie-Dashboard."
+              }
+            },
+            {
               "id": "current_scale",
               "type": "dropdown",
               "label": {
@@ -15365,10 +15383,10 @@
                 "en": "Session Energy DP",
                 "de": "Sitzungsenergie DP"
               },
-              "value": 25,
+              "value": 1,
               "hint": {
-                "en": "DP for the current/last charge session energy (default: 25). Total energy is accumulated from this counter, because the charger's own lifetime counter (DP 1) does not update over the local connection.",
-                "de": "DP für die Energie der aktuellen/letzten Ladesitzung (Standard: 25). Die Gesamtenergie wird daraus aufsummiert, da der geräteeigene Gesamtzähler (DP 1) über die lokale Verbindung nicht aktualisiert wird."
+                "en": "DP of the counter that RISES while charging — the total energy is accumulated from its increases. On most of these chargers that is DP 1, even though Tuya names it \"forward_energy_total\". DP 25 (\"charge_energy_once\") usually holds the previous completed session and stays unchanged during a charge, so accumulating from it would never move. Check both in DP Debug during a charge and pick the one that counts up.",
+                "de": "DP des Zählers, der beim Laden STEIGT — die Gesamtenergie wird aus seinen Zuwächsen gebildet. Bei den meisten dieser Wallboxen ist das DP 1, obwohl Tuya ihn \"forward_energy_total\" nennt. DP 25 (\"charge_energy_once\") enthält meist die vorherige abgeschlossene Sitzung und bleibt während des Ladens unverändert — daraus aufzusummieren würde sich nie bewegen. Beide während eines Ladevorgangs in DP Debug beobachten und den nehmen, der hochzählt."
               }
             },
             {
