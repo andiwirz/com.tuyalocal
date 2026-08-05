@@ -1,4 +1,8 @@
 {
+  "1.0.135": {
+    "en": "Fix: pairing wizard for Fan, Heater and Light showed copy-pasted Dehumidifier fields (humidity, water tank, ioniser) instead of their own DPs. Now shows the correct fields for each driver, including the new light DPs for Fan and oscillate/self-clean/pump for Dehumidifier.",
+    "de": "Fix: Der Pairing-Assistent von Fan, Heater und Light zeigte kopierte Dehumidifier-Felder (Luftfeuchtigkeit, Wassertank, Ionisator) statt der eigenen DPs. Zeigt jetzt für jeden Treiber die richtigen Felder, inkl. der neuen Licht-DPs beim Fan und Schwenken/Innentrocknung/Pumpe beim Dehumidifier."
+  },
   "1.0.134": {
     "en": "Fan driver: new dedicated flow cards for the light — 'Set light' (on/off), 'Light is on' condition, and 'Set light brightness'. Only appear once the light DPs are configured in device settings.",
     "de": "Fan-Treiber: neue eigene Flow-Karten fürs Licht — 'Licht setzen' (ein/aus), Bedingung 'Licht ist an' und 'Licht-Helligkeit setzen'. Erscheinen erst, wenn die Licht-DPs in den Geräteeinstellungen konfiguriert sind."
