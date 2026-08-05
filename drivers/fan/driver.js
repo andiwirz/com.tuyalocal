@@ -5,6 +5,25 @@ const TuyAPI                    = require('tuyapi');
 const { setupCloudLookup } = require('../../lib/pairCloudLookup');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
+const { detectViaCloud }        = require('../../lib/dpCodeMap');
+
+// Maps this driver's settings keys to the Tuya cloud "code" names that
+// commonly represent them. See lib/dpCodeMap.js for why this refines the
+// local value-heuristic DP detection during pairing.
+const CLOUD_CODE_MAP = {
+  dp_onoff:            ['switch', 'switch_1', 'power'],
+  dp_speed:            ['fan_speed', 'speed'],
+  dp_fan_speed:        ['fan_speed_enum', 'level'],
+  dp_oscillate:        ['shake', 'swing'],
+  dp_direction:        ['fan_direction', 'direction'],
+  dp_mode:             ['mode'],
+  dp_child_lock:       ['child_lock', 'lock'],
+  dp_countdown_timer:  ['countdown', 'countdown_set'],
+  dp_countdown_left:   ['countdown_left'],
+  dp_light_onoff:      ['light', 'switch_led'],
+  dp_light_dim:        ['bright_value', 'bright_value_v2'],
+  dp_light_color_temp: ['temp_value', 'temp_value_v2'],
+};
 
 class FanDriver extends Homey.Driver {
   async onInit() {
@@ -165,6 +184,16 @@ class FanDriver extends Homey.Driver {
         connected = true;
         if (Object.keys(collectedDps).length > 0) {
           detectedDps = this._detectDps(collectedDps);
+          this.log('Locally detected DPs (value heuristic):', JSON.stringify(detectedDps));
+
+          // Best-effort refinement using the device's Tuya cloud specification.
+          // Only runs if Cloud Lookup credentials were saved previously (Settings
+          // → ☁️ Cloud Lookup) — never blocks pairing if unavailable or it fails.
+          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m));
+          if (Object.keys(cloudDps).length > 0) {
+            Object.assign(detectedDps, cloudDps);
+            this.log('Final detected DPs (cloud-refined):', JSON.stringify(detectedDps));
+          }
         }
       } catch (err) {
         connected = false;

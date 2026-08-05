@@ -1,4 +1,8 @@
 {
+  "1.0.136": {
+    "en": "Dehumidifier & Fan drivers: pairing now refines DP auto-detection using the device's Tuya cloud specification (code names like \"envhumid\", \"windspeed\", \"shake\", \"dry\") when Cloud Lookup credentials have been saved. Fixes wrong/colliding DP guesses for devices whose enums use plain numbers instead of descriptive strings.",
+    "de": "Entfeuchter- & Fan-Treiber: Das Pairing verfeinert die automatische DP-Erkennung jetzt mithilfe der Tuya-Cloud-Spezifikation des Geräts (Code-Namen wie \"envhumid\", \"windspeed\", \"shake\", \"dry\"), sofern Cloud-Lookup-Zugangsdaten gespeichert sind. Behebt falsche/kollidierende DP-Vermutungen bei Geräten, deren Enums reine Zahlen statt beschreibender Strings verwenden."
+  },
   "1.0.135": {
     "en": "Fix: pairing wizard for Fan, Heater and Light showed copy-pasted Dehumidifier fields (humidity, water tank, ioniser) instead of their own DPs. Now shows the correct fields for each driver, including the new light DPs for Fan and oscillate/self-clean/pump for Dehumidifier.",
     "de": "Fix: Der Pairing-Assistent von Fan, Heater und Light zeigte kopierte Dehumidifier-Felder (Luftfeuchtigkeit, Wassertank, Ionisator) statt der eigenen DPs. Zeigt jetzt für jeden Treiber die richtigen Felder, inkl. der neuen Licht-DPs beim Fan und Schwenken/Innentrocknung/Pumpe beim Dehumidifier."

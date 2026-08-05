@@ -5,6 +5,29 @@ const TuyAPI                    = require('tuyapi');
 const { setupCloudLookup } = require('../../lib/pairCloudLookup');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
+const { detectViaCloud }        = require('../../lib/dpCodeMap');
+
+// Maps this driver's settings keys to the Tuya cloud "code" names that
+// commonly represent them (case-insensitive, non-alphanumeric chars ignored).
+// Used to refine local value-heuristic DP detection during pairing — see
+// lib/dpCodeMap.js for why this is far more reliable than guessing from
+// value shape alone (e.g. devices whose enums use plain numbers "0"/"1").
+const CLOUD_CODE_MAP = {
+  dp_onoff:            ['switch', 'switch_1', 'power'],
+  dp_mode:             ['mode'],
+  dp_current_humidity: ['envhumid', 'envhumidity', 'humidity_indoor', 'humidity_current'],
+  dp_target_humidity:  ['humidity', 'humidity_set', 'dehumidify_set_value'],
+  dp_fan_speed:        ['windspeed', 'fan_speed_enum'],
+  dp_child_lock:       ['lock', 'child_lock'],
+  dp_oscillate:        ['shake', 'swing'],
+  dp_water_full:       ['fault', 'water_full_alarm', 'tank_full'],
+  dp_countdown_timer:  ['countdown', 'countdown_set'],
+  dp_countdown_left:   ['countdown_left'],
+  dp_self_clean:       ['dry', 'inner_dry'],
+  dp_pump:             ['pump'],
+  dp_anion:            ['anion'],
+  dp_temperature:      ['temp_current', 'temp', 'temperature'],
+};
 
 class DehumidifierDriver extends Homey.Driver {
   async onInit() {
@@ -204,7 +227,16 @@ class DehumidifierDriver extends Homey.Driver {
         connected = true;
         if (Object.keys(collectedDps).length > 0) {
           detectedDps = this._detectDps(collectedDps);
-          this.log('Detected DPs:', JSON.stringify(detectedDps));
+          this.log('Locally detected DPs (value heuristic):', JSON.stringify(detectedDps));
+
+          // Best-effort refinement using the device's Tuya cloud specification.
+          // Only runs if Cloud Lookup credentials were saved previously (Settings
+          // → ☁️ Cloud Lookup) — never blocks pairing if unavailable or it fails.
+          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m));
+          if (Object.keys(cloudDps).length > 0) {
+            Object.assign(detectedDps, cloudDps);
+            this.log('Final detected DPs (cloud-refined):', JSON.stringify(detectedDps));
+          }
         }
       } catch (err) {
         connected = false;
