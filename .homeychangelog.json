@@ -1,4 +1,8 @@
 {
+  "1.0.131": {
+    "en": "Dehumidifier driver: new settings 'Timer uses plain numbers' and 'Timer Remaining DP is in minutes' for devices (e.g. Klarstein Dryfy) that send numeric timer values (0-24) instead of \"cancel\"/\"1h\"...\"24h\", or report remaining time in minutes instead of hours.",
+    "de": "Entfeuchter-Treiber: neue Einstellungen 'Timer verwendet reine Zahlen' und 'Verbleibende Zeit DP in Minuten' für Geräte (z.B. Klarstein Dryfy), die numerische Timer-Werte (0-24) statt \"cancel\"/\"1h\"...\"24h\" senden oder die Restzeit in Minuten statt Stunden melden."
+  },
   "1.0.130": {
     "en": "Fan driver: new 'Set timer' flow action card. Added 'Invert Color Temp' setting for lights whose color-temperature DP runs the opposite direction (0=warm/100=cool).",
     "de": "Fan-Treiber: neue 'Timer setzen' Flow-Aktionskarte. Einstellung 'Farbtemperatur invertieren' hinzugefügt für Lichter, deren Farbtemperatur-DP umgekehrt läuft (0=warm/100=kalt)."

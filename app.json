@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.130",
+  "version": "1.0.131",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -7001,6 +7001,19 @@
               }
             },
             {
+              "id": "dp_countdown_left_minutes",
+              "type": "checkbox",
+              "label": {
+                "en": "Timer Remaining DP is in minutes",
+                "de": "Verbleibende Zeit DP in Minuten"
+              },
+              "value": false,
+              "hint": {
+                "en": "Enable if the DP above reports minutes (e.g. 0–1440) instead of hours. The value is divided by 60 before display.",
+                "de": "Aktivieren wenn der obige DP Minuten (z.B. 0–1440) statt Stunden liefert. Der Wert wird vor der Anzeige durch 60 geteilt."
+              }
+            },
+            {
               "id": "dp_countdown_timer",
               "type": "number",
               "label": {
@@ -7011,6 +7024,19 @@
               "hint": {
                 "en": "DP number for countdown timer (default: 17). Set to 0 to disable.",
                 "de": "DP-Nummer für den Countdown-Timer (Standard: 17). 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_countdown_timer_numeric",
+              "type": "checkbox",
+              "label": {
+                "en": "Timer uses plain numbers",
+                "de": "Timer verwendet reine Zahlen"
+              },
+              "value": false,
+              "hint": {
+                "en": "Enable if the device sends plain numbers (0, 1, 2 … 24) for the timer DP instead of \"cancel\"/\"1h\" … \"24h\" strings.",
+                "de": "Aktivieren wenn das Gerät für den Timer-DP reine Zahlen (0, 1, 2 … 24) statt \"cancel\"/\"1h\" … \"24h\" sendet."
               }
             },
             {

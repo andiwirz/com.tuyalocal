@@ -4,6 +4,20 @@ const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 
 const DEBOUNCE_MS = 300; // debounce delay for slider capabilities
 
+// Some devices (e.g. Klarstein Dryfy) transmit the timer DP as a plain numeric
+// enum ("0".."24") instead of the "cancel"/"1h".."24h" strings the countdown_timer
+// capability expects. dp_countdown_timer_numeric enables translation both ways.
+function countdownRawToCap(rawValue) {
+  const s = String(rawValue);
+  if (s === '0') return 'cancel';
+  return /^\d+$/.test(s) ? `${s}h` : s;
+}
+function countdownCapToRaw(capValue) {
+  if (capValue === 'cancel') return '0';
+  const m = String(capValue).match(/^(\d+)h$/);
+  return m ? m[1] : capValue;
+}
+
 // Maps settings keys → Homey capabilities.
 // settable: false = read-only, no capability listener registered.
 // debounce: true  = delay physical command to avoid rapid-fire sends (e.g. sliders).
@@ -104,6 +118,13 @@ class DehumidifierDevice extends BaseTuyaDevice {
                 .then(resolve).catch(resolve);
             }, DEBOUNCE_MS);
           });
+        });
+      } else if (entry.capability === 'countdown_timer') {
+        this.registerCapabilityListener('countdown_timer', async (value) => {
+          const raw = this.getSetting('dp_countdown_timer_numeric')
+            ? countdownCapToRaw(value)
+            : value;
+          await this._set(this.getSetting(entry.settingKey), raw);
         });
       } else {
         this.registerCapabilityListener(entry.capability, async (value) => {
@@ -249,6 +270,27 @@ class DehumidifierDevice extends BaseTuyaDevice {
       if (entry.capability === 'measure_temperature') {
         const divisor = this.getSetting('temp_divisor') || 10;
         await this.setCapabilityValue('measure_temperature', converted / divisor).catch(() => {});
+        continue;
+      }
+
+      if (entry.capability === 'countdown_timer') {
+        const capValue = settings.dp_countdown_timer_numeric
+          ? countdownRawToCap(value)
+          : converted;
+        await this.setCapabilityValue('countdown_timer', capValue).catch((err) => {
+          this._appLog(
+            `countdown_timer: could not set "${capValue}" (raw DP value: ${JSON.stringify(value)}). ` +
+            `If your device sends plain numbers (0, 1, 2 … 24) instead of "cancel"/"1h" … "24h", ` +
+            `enable "Timer uses plain numbers" in the device settings.`,
+            'warn',
+          );
+        });
+        continue;
+      }
+
+      if (entry.capability === 'countdown_left') {
+        const minutes = settings.dp_countdown_left_minutes;
+        await this.setCapabilityValue('countdown_left', minutes ? converted / 60 : converted).catch(() => {});
         continue;
       }
 
