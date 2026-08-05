@@ -170,7 +170,7 @@ class EvChargerDevice extends BaseTuyaDevice {
               // Idle request — stop charging rather than writing an invalid 0 A.
               await this._set(this.getSetting('dp_switch'), false).catch(() => {});
             } else {
-              await this._set(dp, this._wattsToAmps(watts)).catch(() => {});
+              await this._set(dp, this._wattsToRawCurrent(watts)).catch(() => {});
             }
           }
           resolve();
@@ -205,12 +205,24 @@ class EvChargerDevice extends BaseTuyaDevice {
     return volts * phases;
   }
 
-  /** Convert a target power in watts to a whole amp value within the hardware range. */
-  _wattsToAmps(watts) {
-    const min = this.getSetting('current_min') ?? 6;
-    const max = this.getSetting('current_max') ?? 16;
-    const amps = Math.round(watts / this._wattsPerAmp());
-    return Math.max(min, Math.min(max, amps));
+  /**
+   * Multiplier turning a raw DP value into its real-world unit. Chargers are not
+   * consistent here: most report the current limit as plain amps and energy in
+   * hundredths of a kWh, but some scale the current by ten, and the session and
+   * lifetime counters can even use different scales on the same unit — hence one
+   * setting per DP rather than one shared assumption.
+   */
+  _scaleOf(settingKey, fallback) {
+    const v = parseFloat(this.getSetting(settingKey));
+    return Number.isFinite(v) && v > 0 ? v : fallback;
+  }
+
+  /** Convert a target power in watts to the raw value the charger expects on its current DP. */
+  _wattsToRawCurrent(watts) {
+    const min  = this.getSetting('current_min') ?? 6;
+    const max  = this.getSetting('current_max') ?? 16;
+    const amps = Math.max(min, Math.min(max, Math.round(watts / this._wattsPerAmp())));
+    return Math.round(amps / this._scaleOf('current_scale', 1));
   }
 
   /**
@@ -382,9 +394,13 @@ class EvChargerDevice extends BaseTuyaDevice {
 
       // ── Charge current limit → target_power (A → W) ───────────────────────
       // The charger may clamp what we asked for, so mirror back what it reports.
+      // Clamped to the slider's own maximum: a charger reporting more amps than
+      // current_max would otherwise produce a value the capability rejects.
       if (settings.dp_charge_current > 0 && dp === settings.dp_charge_current) {
         if (this.hasCapability('target_power')) {
-          const watts = Number(value) * this._wattsPerAmp();
+          const amps    = Number(value) * this._scaleOf('current_scale', 1);
+          const maxAmps = settings.current_max ?? 16;
+          const watts   = Math.min(amps, maxAmps) * this._wattsPerAmp();
           await this.setCapabilityValue('target_power', watts).catch(() => {});
         }
         continue;
@@ -413,14 +429,14 @@ class EvChargerDevice extends BaseTuyaDevice {
 
       // ── Lifetime energy total (DP 1) ─────────────────────────────────────
       if (settings.dp_energy_total > 0 && dp === settings.dp_energy_total) {
-        const kwh = Number(value) * 0.01;
+        const kwh = Number(value) * this._scaleOf('total_energy_scale', 0.01);
         await this.setCapabilityValue('meter_power.charged', Math.round(kwh * 100) / 100).catch(() => {});
         continue;
       }
 
       // ── Session energy (DP 25) ───────────────────────────────────────────
       if (settings.dp_session_energy > 0 && dp === settings.dp_session_energy) {
-        await this._handleSessionEnergy(Number(value) * 0.01);
+        await this._handleSessionEnergy(Number(value) * this._scaleOf('session_energy_scale', 0.01));
         continue;
       }
 
@@ -546,6 +562,12 @@ class EvChargerDevice extends BaseTuyaDevice {
     }
     if (changedKeys.some((k) => ['current_min', 'current_max', 'phase_count', 'nominal_voltage'].includes(k))) {
       await this._applyCurrentLimitRange();
+    }
+    // A corrected scale changes how existing readings should be interpreted, so
+    // pull fresh values rather than leaving the old ones on screen.
+    if (changedKeys.some((k) => ['current_scale', 'session_energy_scale', 'total_energy_scale'].includes(k))) {
+      this._lastDps = {}; // clear dedup so the next poll re-applies every DP
+      this.pollNow().catch(() => {});
     }
   }
 }

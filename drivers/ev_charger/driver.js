@@ -194,6 +194,12 @@ class EvChargerDriver extends Homey.Driver {
       current_max:         16,
       phase_count:         '1',
       nominal_voltage:     230,
+      // Scales the vast majority of chargers use. A handful deviate (current ×10,
+      // or whole kWh instead of hundredths) and cannot be told apart from a single
+      // pairing snapshot, so these stay adjustable in device settings.
+      current_scale:        '1',
+      session_energy_scale: '0.01',
+      total_energy_scale:   '0.01',
     };
 
     const present = (dp) => Object.prototype.hasOwnProperty.call(dps, String(dp));

@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.144",
+  "version": "1.0.145",
   "compatibility": ">=12.13.0",
   "sdk": 3,
   "platforms": [
@@ -15208,6 +15208,57 @@
               "hint": {
                 "en": "Highest current your charger physically supports (e.g. 16 for 3.7 kW, 32 for 7.4 kW).",
                 "de": "Höchster Strom, den die Wallbox physisch unterstützt (z.B. 16 für 3,7 kW, 32 für 7,4 kW)."
+              }
+            },
+            {
+              "id": "current_scale",
+              "type": "dropdown",
+              "label": {
+                "en": "Current DP scale",
+                "de": "Skalierung Strom-DP"
+              },
+              "value": "1",
+              "values": [
+                { "id": "1",   "label": { "en": "1 — raw value is amps (default)", "de": "1 — Rohwert ist Ampere (Standard)" } },
+                { "id": "0.1", "label": { "en": "0.1 — raw value is amps × 10",    "de": "0,1 — Rohwert ist Ampere × 10" } }
+              ],
+              "hint": {
+                "en": "A few chargers report and expect the current limit multiplied by ten (130 means 13 A). If the reported charge current is ten times too high, switch this to 0.1.",
+                "de": "Einige Wallboxen melden und erwarten das Stromlimit verzehnfacht (130 bedeutet 13 A). Wenn der angezeigte Ladestrom zehnmal zu hoch ist, hier 0,1 wählen."
+              }
+            },
+            {
+              "id": "session_energy_scale",
+              "type": "dropdown",
+              "label": {
+                "en": "Session energy DP scale",
+                "de": "Skalierung Sitzungsenergie-DP"
+              },
+              "value": "0.01",
+              "values": [
+                { "id": "0.01", "label": { "en": "0.01 — raw value is kWh × 100 (default)", "de": "0,01 — Rohwert ist kWh × 100 (Standard)" } },
+                { "id": "1",    "label": { "en": "1 — raw value is kWh",                    "de": "1 — Rohwert ist kWh" } }
+              ],
+              "hint": {
+                "en": "Most chargers report session energy in hundredths of a kWh; a few report whole kWh. If session energy reads a hundred times too low, switch this to 1.",
+                "de": "Die meisten Wallboxen melden die Sitzungsenergie in Hundertstel-kWh, einige in ganzen kWh. Wenn die Sitzungsenergie hundertmal zu niedrig ist, hier 1 wählen."
+              }
+            },
+            {
+              "id": "total_energy_scale",
+              "type": "dropdown",
+              "label": {
+                "en": "Lifetime energy DP scale",
+                "de": "Skalierung Gesamtenergie-DP"
+              },
+              "value": "0.01",
+              "values": [
+                { "id": "0.01", "label": { "en": "0.01 — raw value is kWh × 100 (default)", "de": "0,01 — Rohwert ist kWh × 100 (Standard)" } },
+                { "id": "1",    "label": { "en": "1 — raw value is kWh",                    "de": "1 — Rohwert ist kWh" } }
+              ],
+              "hint": {
+                "en": "Only used when Lifetime Energy DP is not 0. Some chargers scale this DP differently from the session counter, so it has its own setting.",
+                "de": "Wird nur verwendet, wenn der Gesamtenergie-DP nicht 0 ist. Manche Wallboxen skalieren diesen DP anders als den Sitzungszähler, daher eine eigene Einstellung."
               }
             },
             {
