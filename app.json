@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.129",
+  "version": "1.0.130",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -6185,6 +6185,59 @@
         }
       },
       {
+        "id": "fan_set_timer",
+        "title": {
+          "en": "Set timer",
+          "de": "Timer setzen"
+        },
+        "titleFormatted": {
+          "en": "Set timer to [[timer]]",
+          "de": "Timer auf [[timer]] setzen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=fan"
+          },
+          {
+            "name": "timer",
+            "type": "dropdown",
+            "title": {
+              "en": "Duration",
+              "de": "Dauer"
+            },
+            "values": [
+              { "id": "cancel", "label": { "en": "Off",  "de": "Aus" } },
+              { "id": "1h",  "label": { "en": "1 h",  "de": "1 Std" } },
+              { "id": "2h",  "label": { "en": "2 h",  "de": "2 Std" } },
+              { "id": "3h",  "label": { "en": "3 h",  "de": "3 Std" } },
+              { "id": "4h",  "label": { "en": "4 h",  "de": "4 Std" } },
+              { "id": "5h",  "label": { "en": "5 h",  "de": "5 Std" } },
+              { "id": "6h",  "label": { "en": "6 h",  "de": "6 Std" } },
+              { "id": "7h",  "label": { "en": "7 h",  "de": "7 Std" } },
+              { "id": "8h",  "label": { "en": "8 h",  "de": "8 Std" } },
+              { "id": "9h",  "label": { "en": "9 h",  "de": "9 Std" } },
+              { "id": "10h", "label": { "en": "10 h", "de": "10 Std" } },
+              { "id": "11h", "label": { "en": "11 h", "de": "11 Std" } },
+              { "id": "12h", "label": { "en": "12 h", "de": "12 Std" } },
+              { "id": "13h", "label": { "en": "13 h", "de": "13 Std" } },
+              { "id": "14h", "label": { "en": "14 h", "de": "14 Std" } },
+              { "id": "15h", "label": { "en": "15 h", "de": "15 Std" } },
+              { "id": "16h", "label": { "en": "16 h", "de": "16 Std" } },
+              { "id": "17h", "label": { "en": "17 h", "de": "17 Std" } },
+              { "id": "18h", "label": { "en": "18 h", "de": "18 Std" } },
+              { "id": "19h", "label": { "en": "19 h", "de": "19 Std" } },
+              { "id": "20h", "label": { "en": "20 h", "de": "20 Std" } },
+              { "id": "21h", "label": { "en": "21 h", "de": "21 Std" } },
+              { "id": "22h", "label": { "en": "22 h", "de": "22 Std" } },
+              { "id": "23h", "label": { "en": "23 h", "de": "23 Std" } },
+              { "id": "24h", "label": { "en": "24 h", "de": "24 Std" } }
+            ]
+          }
+        ]
+      },
+      {
         "id": "feeder_feed_now",
         "title": {
           "en": "Feed now",
@@ -9185,8 +9238,21 @@
               },
               "value": 0,
               "hint": {
-                "en": "DP for light color temperature (device range 0–100, warm→cold). Set to 0 to disable.",
-                "de": "DP für Licht Farbtemperatur (Gerätewert 0–100, warm→kalt). 0 = deaktiviert."
+                "en": "DP for light color temperature (device range 0–100). Set to 0 to disable.",
+                "de": "DP für Licht Farbtemperatur (Gerätewert 0–100). 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_light_color_temp_invert",
+              "type": "checkbox",
+              "label": {
+                "en": "Invert Color Temp",
+                "de": "Farbtemperatur invertieren"
+              },
+              "value": false,
+              "hint": {
+                "en": "Enable if 0 = warm and 100 = cool (reverse direction).",
+                "de": "Aktivieren wenn 0 = warm und 100 = kalt (umgekehrte Richtung)."
               }
             }
           ]

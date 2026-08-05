@@ -119,11 +119,15 @@ class FanDevice extends BaseTuyaDevice {
       });
     });
 
-    // ── light_temperature (0=warm, 1=cold → device 0–100) ───────────────────
+    // ── light_temperature (Homey 0=cold, 1=warm → device 0–100) ─────────────
+    // dp_light_color_temp_invert flips the direction for devices where the raw
+    // DP is 0=warm/100=cold instead of the assumed 0=cold/100=warm.
     register('light_temperature', async (value) => {
       const dp = this.getSetting('dp_light_color_temp');
       if (dp > 0) {
-        const raw = Math.round(Math.max(0, Math.min(1, value)) * 100);
+        const invert = this.getSetting('dp_light_color_temp_invert') || false;
+        const clamped = Math.max(0, Math.min(1, value));
+        const raw = Math.round((invert ? 1 - clamped : clamped) * 100);
         await this._set(dp, raw).catch(() => {});
       }
     });
@@ -179,7 +183,9 @@ class FanDevice extends BaseTuyaDevice {
       // ── Light color temp (0–100) → light_temperature (0–1) ──────────────
       if (settings.dp_light_color_temp > 0 && dp === settings.dp_light_color_temp) {
         if (this.hasCapability('light_temperature')) {
-          const temp = Math.max(0, Math.min(1, Number(value) / 100));
+          const invert = settings.dp_light_color_temp_invert || false;
+          const raw    = Math.max(0, Math.min(1, Number(value) / 100));
+          const temp   = invert ? 1 - raw : raw;
           await this.setCapabilityValue('light_temperature', temp).catch(() => {});
         }
         continue;

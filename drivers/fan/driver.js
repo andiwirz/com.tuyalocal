@@ -80,6 +80,13 @@ class FanDriver extends Homey.Driver {
         return args.device.triggerCapabilityListener('fan_direction', args.direction);
       });
 
+    this.homey.flow.getActionCard('fan_set_timer')
+      .registerRunListener(async (args) => {
+        if (!args.device.hasCapability('countdown_timer')) return;
+        await args.device.setCapabilityValue('countdown_timer', args.timer);
+        return args.device.triggerCapabilityListener('countdown_timer', args.timer);
+      });
+
     this.homey.flow.getActionCard('fan_force_reconnect')
       .registerRunListener(async (args) => args.device.forceReconnect());
 

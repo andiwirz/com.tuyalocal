@@ -1,4 +1,8 @@
 {
+  "1.0.130": {
+    "en": "Fan driver: new 'Set timer' flow action card. Added 'Invert Color Temp' setting for lights whose color-temperature DP runs the opposite direction (0=warm/100=cool).",
+    "de": "Fan-Treiber: neue 'Timer setzen' Flow-Aktionskarte. Einstellung 'Farbtemperatur invertieren' hinzugefügt für Lichter, deren Farbtemperatur-DP umgekehrt läuft (0=warm/100=kalt)."
+  },
   "1.0.129": {
     "en": "Fix: capabilities enabled via device settings (fan light, dehumidifier oscillate/self-clean/pump) are now controllable immediately without app restart. Fan light capabilities got proper titles. Fixed corrupted German umlauts in the Auto-Reconnect hint of all drivers.",
     "de": "Fix: Über Geräteeinstellungen aktivierte Capabilities (Lüfter-Licht, Entfeuchter Schwenken/Innentrocknung/Pumpe) sind jetzt sofort ohne App-Neustart steuerbar. Lüfter-Licht-Capabilities haben eigene Titel. Kaputte Umlaute im Auto-Reconnect-Hinweis aller Treiber korrigiert."
