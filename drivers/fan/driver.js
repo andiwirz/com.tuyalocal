@@ -48,6 +48,11 @@ class FanDriver extends Homey.Driver {
         args.device.getCapabilityValue('fan_direction') === args.direction
       );
 
+    this.homey.flow.getConditionCard('fan_light_is_on')
+      .registerRunListener(async (args) =>
+        args.device.getCapabilityValue('onoff.light') === true
+      );
+
     // ── Actions ─────────────────────────────────────────────────────────────
     this.homey.flow.getActionCard('fan_set_mode')
       .registerArgumentAutocompleteListener('mode', modeAC)
@@ -85,6 +90,22 @@ class FanDriver extends Homey.Driver {
         if (!args.device.hasCapability('countdown_timer')) return;
         await args.device.setCapabilityValue('countdown_timer', args.timer);
         return args.device.triggerCapabilityListener('countdown_timer', args.timer);
+      });
+
+    this.homey.flow.getActionCard('fan_set_light')
+      .registerRunListener(async (args) => {
+        if (!args.device.hasCapability('onoff.light')) return;
+        const enabled = args.enabled === 'true';
+        await args.device.setCapabilityValue('onoff.light', enabled);
+        return args.device.triggerCapabilityListener('onoff.light', enabled);
+      });
+
+    this.homey.flow.getActionCard('fan_set_light_dim')
+      .registerRunListener(async (args) => {
+        if (!args.device.hasCapability('dim.light')) return;
+        const value = Math.max(0, Math.min(1, Number(args.brightness) / 100));
+        await args.device.setCapabilityValue('dim.light', value);
+        return args.device.triggerCapabilityListener('dim.light', value);
       });
 
     this.homey.flow.getActionCard('fan_force_reconnect')

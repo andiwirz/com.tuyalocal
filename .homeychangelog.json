@@ -1,4 +1,8 @@
 {
+  "1.0.134": {
+    "en": "Fan driver: new dedicated flow cards for the light — 'Set light' (on/off), 'Light is on' condition, and 'Set light brightness'. Only appear once the light DPs are configured in device settings.",
+    "de": "Fan-Treiber: neue eigene Flow-Karten fürs Licht — 'Licht setzen' (ein/aus), Bedingung 'Licht ist an' und 'Licht-Helligkeit setzen'. Erscheinen erst, wenn die Licht-DPs in den Geräteeinstellungen konfiguriert sind."
+  },
   "1.0.133": {
     "en": "Internal rebuild — no functional changes.",
     "de": "Interner Rebuild — keine funktionalen Änderungen."
