@@ -10,6 +10,12 @@ class GenericDriver extends Homey.Driver {
   async onInit() {
     this.log('Generic driver initialized');
 
+    // ── Triggers ─────────────────────────────────────────────────────────────
+    // Filters the "A specific data point changed" card so it only fires for
+    // the DP number configured in the flow card, not every DP on the device.
+    this.homey.flow.getDeviceTriggerCard('generic_dp_value_changed')
+      .registerRunListener(async (args, state) => Number(args.dp) === Number(state.dp));
+
     // ── Actions ──────────────────────────────────────────────────────────────
     this.homey.flow.getActionCard('generic_force_reconnect')
       .registerRunListener(async (args) => {
@@ -40,6 +46,24 @@ class GenericDriver extends Homey.Driver {
       .registerRunListener(async (args) =>
         args.device._conn?.connected === true
       );
+
+    this.homey.flow.getConditionCard('generic_dp_value_is')
+      .registerRunListener(async ({ device, dp, value }) => {
+        const raw = device._lastDps?.[String(dp)];
+        if (raw === undefined) return false; // no data received for this DP yet
+
+        // Parse the condition's value string the same way generic_send_dp does.
+        let parsed;
+        const v = String(value).trim();
+        if (v === 'true')       parsed = true;
+        else if (v === 'false') parsed = false;
+        else if (v !== '' && !isNaN(v) && !isNaN(parseFloat(v))) parsed = parseFloat(v);
+        else parsed = v;
+
+        if (typeof parsed === 'boolean') return Boolean(raw) === parsed;
+        if (typeof parsed === 'number')  return Number(raw) === parsed;
+        return String(raw) === parsed;
+      });
   }
 
   async onPair(session) {

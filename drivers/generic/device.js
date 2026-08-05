@@ -27,6 +27,7 @@ class GenericDevice extends BaseTuyaDevice {
     this._triggerDeviceConnected    = this.homey.flow.getDeviceTriggerCard('generic_device_connected');
     this._triggerDeviceDisconnected = this.homey.flow.getDeviceTriggerCard('generic_device_disconnected');
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('generic_dp_changed');
+    this._triggerDpValueChanged     = this.homey.flow.getDeviceTriggerCard('generic_dp_value_changed');
 
     this._registerListeners();
 
@@ -287,7 +288,8 @@ class GenericDevice extends BaseTuyaDevice {
     let   changed  = false;
 
     for (const [dpStr, rawValue] of Object.entries(dps)) {
-      if (this._lastDps[dpStr] === rawValue) continue;
+      const prevValue = this._lastDps[dpStr];
+      if (prevValue === rawValue) continue;
       this._lastDps[dpStr] = rawValue;
       changed = true;
 
@@ -297,6 +299,16 @@ class GenericDevice extends BaseTuyaDevice {
       // Always trigger dp_changed flow card
       this._triggerDpChanged
         .trigger(this, { dp: dpStr, value: String(rawValue) })
+        .catch(() => {});
+
+      // Fires only for flows configured to watch this specific DP number
+      // (filtered in driver.js via the "dp" state/args comparison).
+      this._triggerDpValueChanged
+        .trigger(
+          this,
+          { value: String(rawValue), previous_value: prevValue === undefined ? '' : String(prevValue) },
+          { dp: dpNum },
+        )
         .catch(() => {});
 
       if (!mapping) {

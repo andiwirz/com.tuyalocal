@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.131",
+  "version": "1.0.132",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -2170,6 +2170,62 @@
         ]
       },
       {
+        "id": "generic_dp_value_changed",
+        "title": {
+          "en": "A specific data point changed",
+          "de": "Ein bestimmter Datenpunkt hat sich geändert"
+        },
+        "titleFormatted": {
+          "en": "DP [[dp]] changed",
+          "de": "DP [[dp]] hat sich geändert"
+        },
+        "hint": {
+          "en": "Fires only when the given DP number changes value. Use the Value / Previous Value tokens in the notification text or a further AND card.",
+          "de": "Feuert nur, wenn sich der Wert des angegebenen DP ändert. Nutze die Tokens Wert / Vorheriger Wert im Benachrichtigungstext oder in einer weiteren UND-Karte."
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=generic"
+          },
+          {
+            "name": "dp",
+            "type": "number",
+            "title": {
+              "en": "DP number",
+              "de": "DP-Nummer"
+            },
+            "placeholder": {
+              "en": "e.g. 11"
+            },
+            "min": 1,
+            "max": 255,
+            "step": 1
+          }
+        ],
+        "tokens": [
+          {
+            "name": "value",
+            "type": "string",
+            "title": {
+              "en": "Value",
+              "de": "Wert"
+            },
+            "example": "true"
+          },
+          {
+            "name": "previous_value",
+            "type": "string",
+            "title": {
+              "en": "Previous Value",
+              "de": "Vorheriger Wert"
+            },
+            "example": "false"
+          }
+        ]
+      },
+      {
         "id": "generic_device_connected",
         "title": {
           "en": "Device connected",
@@ -3879,6 +3935,53 @@
             "name": "device",
             "type": "device",
             "filter": "driver_id=generic"
+          }
+        ]
+      },
+      {
+        "id": "generic_dp_value_is",
+        "title": {
+          "en": "DP value !{{is|is not}} ...",
+          "de": "DP-Wert !{{ist|ist nicht}} ..."
+        },
+        "titleFormatted": {
+          "en": "DP [[dp]] value !{{is|is not}} [[value]]",
+          "de": "DP [[dp]] Wert !{{ist|ist nicht}} [[value]]"
+        },
+        "hint": {
+          "en": "Compares the last known value of a DP. Value is parsed automatically: 'true'/'false' → boolean, numbers → number, everything else → string.",
+          "de": "Vergleicht den zuletzt bekannten Wert eines DP. Wert wird automatisch geparst: 'true'/'false' → Boolean, Zahlen → Zahl, alles andere → String."
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=generic"
+          },
+          {
+            "name": "dp",
+            "type": "number",
+            "title": {
+              "en": "DP number",
+              "de": "DP-Nummer"
+            },
+            "placeholder": {
+              "en": "e.g. 11"
+            },
+            "min": 1,
+            "max": 255,
+            "step": 1
+          },
+          {
+            "name": "value",
+            "type": "text",
+            "title": {
+              "en": "Value",
+              "de": "Wert"
+            },
+            "placeholder": {
+              "en": "e.g. true / 6 / on"
+            }
           }
         ]
       },
