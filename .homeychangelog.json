@@ -1,4 +1,8 @@
 {
+  "1.0.137": {
+    "en": "Dehumidifier driver: renamed 'Set oscillation' flow card to 'Set dehumidifier oscillation' to avoid confusion with the Fan driver's identically-purposed card — both existed already, just named too similarly to find.",
+    "de": "Entfeuchter-Treiber: Flow-Karte 'Schwenken setzen' in 'Entfeuchter-Schwenkung setzen' umbenannt, um Verwechslung mit der gleichnamigen Fan-Treiber-Karte zu vermeiden — beide gab es bereits, nur zu ähnlich benannt, um sie leicht zu finden."
+  },
   "1.0.136": {
     "en": "Dehumidifier & Fan drivers: pairing now refines DP auto-detection using the device's Tuya cloud specification (code names like \"envhumid\", \"windspeed\", \"shake\", \"dry\") when Cloud Lookup credentials have been saved. Fixes wrong/colliding DP guesses for devices whose enums use plain numbers instead of descriptive strings.",
     "de": "Entfeuchter- & Fan-Treiber: Das Pairing verfeinert die automatische DP-Erkennung jetzt mithilfe der Tuya-Cloud-Spezifikation des Geräts (Code-Namen wie \"envhumid\", \"windspeed\", \"shake\", \"dry\"), sofern Cloud-Lookup-Zugangsdaten gespeichert sind. Behebt falsche/kollidierende DP-Vermutungen bei Geräten, deren Enums reine Zahlen statt beschreibender Strings verwenden."

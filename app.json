@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.136",
+  "version": "1.0.137",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -5441,12 +5441,12 @@
       {
         "id": "dehumidifier_set_oscillate",
         "title": {
-          "en": "Set oscillation",
-          "de": "Schwenken setzen"
+          "en": "Set dehumidifier oscillation",
+          "de": "Entfeuchter-Schwenkung setzen"
         },
         "titleFormatted": {
-          "en": "Set oscillation [[enabled]]",
-          "de": "Schwenken [[enabled]] setzen"
+          "en": "Set dehumidifier oscillation [[enabled]]",
+          "de": "Entfeuchter-Schwenkung [[enabled]]"
         },
         "args": [
           {
