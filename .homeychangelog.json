@@ -1,4 +1,8 @@
 {
+  "1.0.133": {
+    "en": "Internal rebuild — no functional changes.",
+    "de": "Interner Rebuild — keine funktionalen Änderungen."
+  },
   "1.0.132": {
     "en": "Generic driver: new AND card 'DP value is' to check a specific DP's last value in a flow condition. New WHEN card 'A specific data point changed' that fires only for one chosen DP, with Value/Previous Value tokens — e.g. trigger on the water-alarm DP of a dehumidifier without watching every DP.",
     "de": "Generic-Treiber: neue UND-Karte 'DP-Wert ist' zum Prüfen des letzten Werts eines bestimmten DP in einer Flow-Bedingung. Neue WENN-Karte 'Ein bestimmter Datenpunkt hat sich geändert', die nur für einen gewählten DP feuert, mit Wert/Vorheriger-Wert-Tokens — z.B. Auslösen am Wasseralarm-DP eines Entfeuchters ohne jeden DP zu beobachten."

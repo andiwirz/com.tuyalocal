@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.132",
+  "version": "1.0.133",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -1446,51 +1446,87 @@
         },
         {
           "id": "13",
-          "title": { "en": "13", "de": "13" }
+          "title": {
+            "en": "13",
+            "de": "13"
+          }
         },
         {
           "id": "14",
-          "title": { "en": "14", "de": "14" }
+          "title": {
+            "en": "14",
+            "de": "14"
+          }
         },
         {
           "id": "15",
-          "title": { "en": "15", "de": "15" }
+          "title": {
+            "en": "15",
+            "de": "15"
+          }
         },
         {
           "id": "16",
-          "title": { "en": "16", "de": "16" }
+          "title": {
+            "en": "16",
+            "de": "16"
+          }
         },
         {
           "id": "17",
-          "title": { "en": "17", "de": "17" }
+          "title": {
+            "en": "17",
+            "de": "17"
+          }
         },
         {
           "id": "18",
-          "title": { "en": "18", "de": "18" }
+          "title": {
+            "en": "18",
+            "de": "18"
+          }
         },
         {
           "id": "19",
-          "title": { "en": "19", "de": "19" }
+          "title": {
+            "en": "19",
+            "de": "19"
+          }
         },
         {
           "id": "20",
-          "title": { "en": "20", "de": "20" }
+          "title": {
+            "en": "20",
+            "de": "20"
+          }
         },
         {
           "id": "25",
-          "title": { "en": "25", "de": "25" }
+          "title": {
+            "en": "25",
+            "de": "25"
+          }
         },
         {
           "id": "30",
-          "title": { "en": "30", "de": "30" }
+          "title": {
+            "en": "30",
+            "de": "30"
+          }
         },
         {
           "id": "40",
-          "title": { "en": "40", "de": "40" }
+          "title": {
+            "en": "40",
+            "de": "40"
+          }
         },
         {
           "id": "50",
-          "title": { "en": "50", "de": "50" }
+          "title": {
+            "en": "50",
+            "de": "50"
+          }
         }
       ],
       "getable": true,
@@ -1507,9 +1543,27 @@
         "de": "Modus"
       },
       "values": [
-        { "id": "manual",  "title": { "en": "Manual",  "de": "Manuell" } },
-        { "id": "auto",    "title": { "en": "Auto",    "de": "Auto" } },
-        { "id": "program", "title": { "en": "Program", "de": "Programm" } }
+        {
+          "id": "manual",
+          "title": {
+            "en": "Manual",
+            "de": "Manuell"
+          }
+        },
+        {
+          "id": "auto",
+          "title": {
+            "en": "Auto",
+            "de": "Auto"
+          }
+        },
+        {
+          "id": "program",
+          "title": {
+            "en": "Program",
+            "de": "Programm"
+          }
+        }
       ],
       "getable": true,
       "setable": true,
@@ -1523,11 +1577,41 @@
         "de": "Status"
       },
       "values": [
-        { "id": "standby",  "title": { "en": "Standby",      "de": "Standby" } },
-        { "id": "heating",  "title": { "en": "Heating",       "de": "Heizt" } },
-        { "id": "cooling",  "title": { "en": "Cooling",       "de": "Kühlt ab" } },
-        { "id": "warm",     "title": { "en": "Keeping warm",  "de": "Warmhalten" } },
-        { "id": "done",     "title": { "en": "Done",          "de": "Fertig" } }
+        {
+          "id": "standby",
+          "title": {
+            "en": "Standby",
+            "de": "Standby"
+          }
+        },
+        {
+          "id": "heating",
+          "title": {
+            "en": "Heating",
+            "de": "Heizt"
+          }
+        },
+        {
+          "id": "cooling",
+          "title": {
+            "en": "Cooling",
+            "de": "Kühlt ab"
+          }
+        },
+        {
+          "id": "warm",
+          "title": {
+            "en": "Keeping warm",
+            "de": "Warmhalten"
+          }
+        },
+        {
+          "id": "done",
+          "title": {
+            "en": "Done",
+            "de": "Fertig"
+          }
+        }
       ],
       "getable": true,
       "setable": false,
@@ -1542,9 +1626,27 @@
         "de": "Modus"
       },
       "values": [
-        { "id": "boil",      "title": { "en": "Boil",      "de": "Kochen" } },
-        { "id": "heat",      "title": { "en": "Heat",      "de": "Erhitzen" } },
-        { "id": "keep_warm", "title": { "en": "Keep warm", "de": "Warmhalten" } }
+        {
+          "id": "boil",
+          "title": {
+            "en": "Boil",
+            "de": "Kochen"
+          }
+        },
+        {
+          "id": "heat",
+          "title": {
+            "en": "Heat",
+            "de": "Erhitzen"
+          }
+        },
+        {
+          "id": "keep_warm",
+          "title": {
+            "en": "Keep warm",
+            "de": "Warmhalten"
+          }
+        }
       ],
       "getable": true,
       "setable": true,
@@ -2255,64 +2357,201 @@
       },
       {
         "id": "thermostat_device_connected",
-        "title": { "en": "Device connected", "de": "Gerät verbunden" },
-        "args": [{ "name": "device", "type": "device", "filter": "driver_id=thermostat" }]
+        "title": {
+          "en": "Device connected",
+          "de": "Gerät verbunden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=thermostat"
+          }
+        ]
       },
       {
         "id": "thermostat_device_disconnected",
-        "title": { "en": "Device disconnected", "de": "Gerät getrennt" },
-        "args": [{ "name": "device", "type": "device", "filter": "driver_id=thermostat" }]
+        "title": {
+          "en": "Device disconnected",
+          "de": "Gerät getrennt"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=thermostat"
+          }
+        ]
       },
       {
         "id": "thermostat_dp_changed",
-        "title": { "en": "A data point changed", "de": "Ein Datenpunkt hat sich geändert" },
-        "args": [{ "name": "device", "type": "device", "filter": "driver_id=thermostat" }],
+        "title": {
+          "en": "A data point changed",
+          "de": "Ein Datenpunkt hat sich geändert"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=thermostat"
+          }
+        ],
         "tokens": [
-          { "name": "dp", "type": "string", "title": { "en": "DP number", "de": "DP-Nummer" } },
-          { "name": "value", "type": "string", "title": { "en": "Value", "de": "Wert" } }
+          {
+            "name": "dp",
+            "type": "string",
+            "title": {
+              "en": "DP number",
+              "de": "DP-Nummer"
+            }
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "title": {
+              "en": "Value",
+              "de": "Wert"
+            }
+          }
         ]
       },
       {
         "id": "thermostat_mode_changed",
-        "title": { "en": "Thermostat mode changed", "de": "Thermostat-Modus geändert" },
-        "args": [{ "name": "device", "type": "device", "filter": "driver_id=thermostat" }],
+        "title": {
+          "en": "Thermostat mode changed",
+          "de": "Thermostat-Modus geändert"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=thermostat"
+          }
+        ],
         "tokens": [
-          { "name": "mode", "type": "string", "title": { "en": "Mode", "de": "Modus" } },
-          { "name": "prev_mode", "type": "string", "title": { "en": "Previous mode", "de": "Vorheriger Modus" } }
+          {
+            "name": "mode",
+            "type": "string",
+            "title": {
+              "en": "Mode",
+              "de": "Modus"
+            }
+          },
+          {
+            "name": "prev_mode",
+            "type": "string",
+            "title": {
+              "en": "Previous mode",
+              "de": "Vorheriger Modus"
+            }
+          }
         ]
       },
       {
         "id": "kettle_device_connected",
-        "title": { "en": "Device connected", "de": "Gerät verbunden" },
-        "args": [{ "name": "device", "type": "device", "filter": "driver_id=kettle" }]
+        "title": {
+          "en": "Device connected",
+          "de": "Gerät verbunden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=kettle"
+          }
+        ]
       },
       {
         "id": "kettle_device_disconnected",
-        "title": { "en": "Device disconnected", "de": "Gerät getrennt" },
-        "args": [{ "name": "device", "type": "device", "filter": "driver_id=kettle" }]
+        "title": {
+          "en": "Device disconnected",
+          "de": "Gerät getrennt"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=kettle"
+          }
+        ]
       },
       {
         "id": "kettle_dp_changed",
-        "title": { "en": "A data point changed", "de": "Ein Datenpunkt hat sich geändert" },
-        "args": [{ "name": "device", "type": "device", "filter": "driver_id=kettle" }],
+        "title": {
+          "en": "A data point changed",
+          "de": "Ein Datenpunkt hat sich geändert"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=kettle"
+          }
+        ],
         "tokens": [
-          { "name": "dp", "type": "string", "title": { "en": "DP number", "de": "DP-Nummer" } },
-          { "name": "value", "type": "string", "title": { "en": "Value", "de": "Wert" } }
+          {
+            "name": "dp",
+            "type": "string",
+            "title": {
+              "en": "DP number",
+              "de": "DP-Nummer"
+            }
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "title": {
+              "en": "Value",
+              "de": "Wert"
+            }
+          }
         ]
       },
       {
         "id": "kettle_status_changed",
-        "title": { "en": "Kettle status changed", "de": "Wasserkocher-Status geändert" },
-        "args": [{ "name": "device", "type": "device", "filter": "driver_id=kettle" }],
+        "title": {
+          "en": "Kettle status changed",
+          "de": "Wasserkocher-Status geändert"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=kettle"
+          }
+        ],
         "tokens": [
-          { "name": "status", "type": "string", "title": { "en": "Status", "de": "Status" } },
-          { "name": "prev_status", "type": "string", "title": { "en": "Previous status", "de": "Vorheriger Status" } }
+          {
+            "name": "status",
+            "type": "string",
+            "title": {
+              "en": "Status",
+              "de": "Status"
+            }
+          },
+          {
+            "name": "prev_status",
+            "type": "string",
+            "title": {
+              "en": "Previous status",
+              "de": "Vorheriger Status"
+            }
+          }
         ]
       },
       {
         "id": "kettle_boil_done",
-        "title": { "en": "Kettle finished boiling", "de": "Wasserkocher fertig" },
-        "args": [{ "name": "device", "type": "device", "filter": "driver_id=kettle" }]
+        "title": {
+          "en": "Kettle finished boiling",
+          "de": "Wasserkocher fertig"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=kettle"
+          }
+        ]
       },
       {
         "id": "switch_device_connected",
@@ -2356,8 +2595,22 @@
           }
         ],
         "tokens": [
-          { "name": "dp",    "type": "string", "title": { "en": "DP number", "de": "DP-Nummer" } },
-          { "name": "value", "type": "string", "title": { "en": "Value",     "de": "Wert" } }
+          {
+            "name": "dp",
+            "type": "string",
+            "title": {
+              "en": "DP number",
+              "de": "DP-Nummer"
+            }
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "title": {
+              "en": "Value",
+              "de": "Wert"
+            }
+          }
         ]
       },
       {
@@ -2379,18 +2632,59 @@
           {
             "name": "gang",
             "type": "dropdown",
-            "title": { "en": "Gang", "de": "Kanal" },
+            "title": {
+              "en": "Gang",
+              "de": "Kanal"
+            },
             "values": [
-              { "id": "1", "label": { "en": "Switch 1", "de": "Schalter 1" } },
-              { "id": "2", "label": { "en": "Switch 2", "de": "Schalter 2" } },
-              { "id": "3", "label": { "en": "Switch 3", "de": "Schalter 3" } },
-              { "id": "4", "label": { "en": "Switch 4", "de": "Schalter 4" } }
+              {
+                "id": "1",
+                "label": {
+                  "en": "Switch 1",
+                  "de": "Schalter 1"
+                }
+              },
+              {
+                "id": "2",
+                "label": {
+                  "en": "Switch 2",
+                  "de": "Schalter 2"
+                }
+              },
+              {
+                "id": "3",
+                "label": {
+                  "en": "Switch 3",
+                  "de": "Schalter 3"
+                }
+              },
+              {
+                "id": "4",
+                "label": {
+                  "en": "Switch 4",
+                  "de": "Schalter 4"
+                }
+              }
             ]
           }
         ],
         "tokens": [
-          { "name": "gang",  "type": "string",  "title": { "en": "Gang",  "de": "Kanal" } },
-          { "name": "state", "type": "boolean", "title": { "en": "State", "de": "Zustand" } }
+          {
+            "name": "gang",
+            "type": "string",
+            "title": {
+              "en": "Gang",
+              "de": "Kanal"
+            }
+          },
+          {
+            "name": "state",
+            "type": "boolean",
+            "title": {
+              "en": "State",
+              "de": "Zustand"
+            }
+          }
         ]
       },
       {
@@ -3987,27 +4281,75 @@
       },
       {
         "id": "thermostat_device_is_connected",
-        "title": { "en": "Device !{{is|is not}} connected", "de": "Gerät ist !{{verbunden|nicht verbunden}}" },
-        "args": [{ "name": "device", "type": "device", "filter": "driver_id=thermostat" }]
+        "title": {
+          "en": "Device !{{is|is not}} connected",
+          "de": "Gerät ist !{{verbunden|nicht verbunden}}"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=thermostat"
+          }
+        ]
       },
       {
         "id": "thermostat_mode_is",
-        "title": { "en": "Thermostat mode !{{is|is not}} ...", "de": "Thermostat-Modus !{{ist|ist nicht}} ..." },
-        "titleFormatted": { "en": "Mode !{{is|is not}} [[mode]]", "de": "Modus !{{ist|ist nicht}} [[mode]]" },
+        "title": {
+          "en": "Thermostat mode !{{is|is not}} ...",
+          "de": "Thermostat-Modus !{{ist|ist nicht}} ..."
+        },
+        "titleFormatted": {
+          "en": "Mode !{{is|is not}} [[mode]]",
+          "de": "Modus !{{ist|ist nicht}} [[mode]]"
+        },
         "args": [
-          { "name": "device", "type": "device", "filter": "driver_id=thermostat" },
-          { "name": "mode", "type": "text", "title": { "en": "Mode", "de": "Modus" }, "placeholder": { "en": "e.g. auto", "de": "z.B. auto" } }
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=thermostat"
+          },
+          {
+            "name": "mode",
+            "type": "text",
+            "title": {
+              "en": "Mode",
+              "de": "Modus"
+            },
+            "placeholder": {
+              "en": "e.g. auto",
+              "de": "z.B. auto"
+            }
+          }
         ]
       },
       {
         "id": "kettle_device_is_connected",
-        "title": { "en": "Device !{{is|is not}} connected", "de": "Gerät ist !{{verbunden|nicht verbunden}}" },
-        "args": [{ "name": "device", "type": "device", "filter": "driver_id=kettle" }]
+        "title": {
+          "en": "Device !{{is|is not}} connected",
+          "de": "Gerät ist !{{verbunden|nicht verbunden}}"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=kettle"
+          }
+        ]
       },
       {
         "id": "kettle_is_heating",
-        "title": { "en": "Kettle !{{is|is not}} heating", "de": "Wasserkocher !{{heizt|heizt nicht}}" },
-        "args": [{ "name": "device", "type": "device", "filter": "driver_id=kettle" }]
+        "title": {
+          "en": "Kettle !{{is|is not}} heating",
+          "de": "Wasserkocher !{{heizt|heizt nicht}}"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=kettle"
+          }
+        ]
       },
       {
         "id": "switch_device_is_connected",
@@ -4042,12 +4384,39 @@
           {
             "name": "gang",
             "type": "dropdown",
-            "title": { "en": "Gang", "de": "Kanal" },
+            "title": {
+              "en": "Gang",
+              "de": "Kanal"
+            },
             "values": [
-              { "id": "1", "label": { "en": "Switch 1", "de": "Schalter 1" } },
-              { "id": "2", "label": { "en": "Switch 2", "de": "Schalter 2" } },
-              { "id": "3", "label": { "en": "Switch 3", "de": "Schalter 3" } },
-              { "id": "4", "label": { "en": "Switch 4", "de": "Schalter 4" } }
+              {
+                "id": "1",
+                "label": {
+                  "en": "Switch 1",
+                  "de": "Schalter 1"
+                }
+              },
+              {
+                "id": "2",
+                "label": {
+                  "en": "Switch 2",
+                  "de": "Schalter 2"
+                }
+              },
+              {
+                "id": "3",
+                "label": {
+                  "en": "Switch 3",
+                  "de": "Schalter 3"
+                }
+              },
+              {
+                "id": "4",
+                "label": {
+                  "en": "Switch 4",
+                  "de": "Schalter 4"
+                }
+              }
             ]
           }
         ]
@@ -5079,8 +5448,20 @@
               "de": "Schwenken"
             },
             "values": [
-              { "id": "true",  "label": { "en": "On",  "de": "Ein" } },
-              { "id": "false", "label": { "en": "Off", "de": "Aus" } }
+              {
+                "id": "true",
+                "label": {
+                  "en": "On",
+                  "de": "Ein"
+                }
+              },
+              {
+                "id": "false",
+                "label": {
+                  "en": "Off",
+                  "de": "Aus"
+                }
+              }
             ]
           }
         ]
@@ -5109,8 +5490,20 @@
               "de": "Innentrocknung"
             },
             "values": [
-              { "id": "true",  "label": { "en": "On",  "de": "Ein" } },
-              { "id": "false", "label": { "en": "Off", "de": "Aus" } }
+              {
+                "id": "true",
+                "label": {
+                  "en": "On",
+                  "de": "Ein"
+                }
+              },
+              {
+                "id": "false",
+                "label": {
+                  "en": "Off",
+                  "de": "Aus"
+                }
+              }
             ]
           }
         ]
@@ -5139,8 +5532,20 @@
               "de": "Wasserpumpe"
             },
             "values": [
-              { "id": "true",  "label": { "en": "On",  "de": "Ein" } },
-              { "id": "false", "label": { "en": "Off", "de": "Aus" } }
+              {
+                "id": "true",
+                "label": {
+                  "en": "On",
+                  "de": "Ein"
+                }
+              },
+              {
+                "id": "false",
+                "label": {
+                  "en": "Off",
+                  "de": "Aus"
+                }
+              }
             ]
           }
         ]
@@ -5224,8 +5629,14 @@
           {
             "name": "dp",
             "type": "number",
-            "title": { "en": "DP number", "de": "DP-Nummer" },
-            "placeholder": { "en": "e.g. 12", "de": "z.B. 12" },
+            "title": {
+              "en": "DP number",
+              "de": "DP-Nummer"
+            },
+            "placeholder": {
+              "en": "e.g. 12",
+              "de": "z.B. 12"
+            },
             "min": 1,
             "max": 255,
             "step": 1
@@ -5233,79 +5644,229 @@
           {
             "name": "value",
             "type": "text",
-            "title": { "en": "Value", "de": "Wert" },
-            "placeholder": { "en": "e.g. true / 6 / on / 1h", "de": "z.B. true / 6 / on / 1h" }
+            "title": {
+              "en": "Value",
+              "de": "Wert"
+            },
+            "placeholder": {
+              "en": "e.g. true / 6 / on / 1h",
+              "de": "z.B. true / 6 / on / 1h"
+            }
           }
         ]
       },
       {
         "id": "thermostat_force_reconnect",
-        "title": { "en": "Force reconnect", "de": "Verbindung neu aufbauen" },
-        "args": [{ "name": "device", "type": "device", "filter": "driver_id=thermostat" }]
+        "title": {
+          "en": "Force reconnect",
+          "de": "Verbindung neu aufbauen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=thermostat"
+          }
+        ]
       },
       {
         "id": "thermostat_refresh_device",
-        "title": { "en": "Refresh device values", "de": "Gerätewerte aktualisieren" },
-        "args": [{ "name": "device", "type": "device", "filter": "driver_id=thermostat" }]
+        "title": {
+          "en": "Refresh device values",
+          "de": "Gerätewerte aktualisieren"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=thermostat"
+          }
+        ]
       },
       {
         "id": "thermostat_set_mode",
-        "title": { "en": "Set thermostat mode", "de": "Thermostat-Modus setzen" },
-        "titleFormatted": { "en": "Set mode to [[mode]]", "de": "Modus auf [[mode]] setzen" },
+        "title": {
+          "en": "Set thermostat mode",
+          "de": "Thermostat-Modus setzen"
+        },
+        "titleFormatted": {
+          "en": "Set mode to [[mode]]",
+          "de": "Modus auf [[mode]] setzen"
+        },
         "args": [
-          { "name": "device", "type": "device", "filter": "driver_id=thermostat" },
-          { "name": "mode", "type": "text", "title": { "en": "Mode", "de": "Modus" }, "placeholder": { "en": "e.g. auto", "de": "z.B. auto" } }
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=thermostat"
+          },
+          {
+            "name": "mode",
+            "type": "text",
+            "title": {
+              "en": "Mode",
+              "de": "Modus"
+            },
+            "placeholder": {
+              "en": "e.g. auto",
+              "de": "z.B. auto"
+            }
+          }
         ]
       },
       {
         "id": "thermostat_set_target_temp",
-        "title": { "en": "Set target temperature", "de": "Zieltemperatur setzen" },
-        "titleFormatted": { "en": "Set temperature to [[temperature]] °C", "de": "Temperatur auf [[temperature]] °C setzen" },
+        "title": {
+          "en": "Set target temperature",
+          "de": "Zieltemperatur setzen"
+        },
+        "titleFormatted": {
+          "en": "Set temperature to [[temperature]] °C",
+          "de": "Temperatur auf [[temperature]] °C setzen"
+        },
         "args": [
-          { "name": "device", "type": "device", "filter": "driver_id=thermostat" },
-          { "name": "temperature", "type": "number", "title": { "en": "Temperature (°C)", "de": "Temperatur (°C)" }, "min": 5, "max": 35, "step": 0.5 }
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=thermostat"
+          },
+          {
+            "name": "temperature",
+            "type": "number",
+            "title": {
+              "en": "Temperature (°C)",
+              "de": "Temperatur (°C)"
+            },
+            "min": 5,
+            "max": 35,
+            "step": 0.5
+          }
         ]
       },
       {
         "id": "kettle_force_reconnect",
-        "title": { "en": "Force reconnect", "de": "Verbindung neu aufbauen" },
-        "args": [{ "name": "device", "type": "device", "filter": "driver_id=kettle" }]
+        "title": {
+          "en": "Force reconnect",
+          "de": "Verbindung neu aufbauen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=kettle"
+          }
+        ]
       },
       {
         "id": "kettle_refresh_device",
-        "title": { "en": "Refresh device values", "de": "Gerätewerte aktualisieren" },
-        "args": [{ "name": "device", "type": "device", "filter": "driver_id=kettle" }]
+        "title": {
+          "en": "Refresh device values",
+          "de": "Gerätewerte aktualisieren"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=kettle"
+          }
+        ]
       },
       {
         "id": "kettle_set_target_temp",
-        "title": { "en": "Set target temperature", "de": "Zieltemperatur setzen" },
-        "titleFormatted": { "en": "Set temperature to [[temperature]] °C", "de": "Temperatur auf [[temperature]] °C setzen" },
+        "title": {
+          "en": "Set target temperature",
+          "de": "Zieltemperatur setzen"
+        },
+        "titleFormatted": {
+          "en": "Set temperature to [[temperature]] °C",
+          "de": "Temperatur auf [[temperature]] °C setzen"
+        },
         "args": [
-          { "name": "device", "type": "device", "filter": "driver_id=kettle" },
-          { "name": "temperature", "type": "number", "title": { "en": "Temperature (°C)", "de": "Temperatur (°C)" }, "min": 40, "max": 100, "step": 5 }
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=kettle"
+          },
+          {
+            "name": "temperature",
+            "type": "number",
+            "title": {
+              "en": "Temperature (°C)",
+              "de": "Temperatur (°C)"
+            },
+            "min": 40,
+            "max": 100,
+            "step": 5
+          }
         ]
       },
       {
         "id": "kettle_set_mode",
-        "title": { "en": "Set kettle mode", "de": "Wasserkocher-Modus setzen" },
-        "titleFormatted": { "en": "Set mode to [[mode]]", "de": "Modus auf [[mode]] setzen" },
+        "title": {
+          "en": "Set kettle mode",
+          "de": "Wasserkocher-Modus setzen"
+        },
+        "titleFormatted": {
+          "en": "Set mode to [[mode]]",
+          "de": "Modus auf [[mode]] setzen"
+        },
         "args": [
-          { "name": "device", "type": "device", "filter": "driver_id=kettle" },
-          { "name": "mode", "type": "text", "title": { "en": "Mode", "de": "Modus" }, "placeholder": { "en": "e.g. boil", "de": "z.B. boil" } }
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=kettle"
+          },
+          {
+            "name": "mode",
+            "type": "text",
+            "title": {
+              "en": "Mode",
+              "de": "Modus"
+            },
+            "placeholder": {
+              "en": "e.g. boil",
+              "de": "z.B. boil"
+            }
+          }
         ]
       },
       {
         "id": "kettle_set_keep_warm",
-        "title": { "en": "Set keep warm", "de": "Warmhalten setzen" },
-        "titleFormatted": { "en": "Set keep warm to [[state]]", "de": "Warmhalten auf [[state]] setzen" },
+        "title": {
+          "en": "Set keep warm",
+          "de": "Warmhalten setzen"
+        },
+        "titleFormatted": {
+          "en": "Set keep warm to [[state]]",
+          "de": "Warmhalten auf [[state]] setzen"
+        },
         "args": [
-          { "name": "device", "type": "device", "filter": "driver_id=kettle" },
           {
-            "name": "state", "type": "dropdown",
-            "title": { "en": "State", "de": "Zustand" },
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=kettle"
+          },
+          {
+            "name": "state",
+            "type": "dropdown",
+            "title": {
+              "en": "State",
+              "de": "Zustand"
+            },
             "values": [
-              { "id": "on",  "label": { "en": "On",  "de": "Ein" } },
-              { "id": "off", "label": { "en": "Off", "de": "Aus" } }
+              {
+                "id": "on",
+                "label": {
+                  "en": "On",
+                  "de": "Ein"
+                }
+              },
+              {
+                "id": "off",
+                "label": {
+                  "en": "Off",
+                  "de": "Aus"
+                }
+              }
             ]
           }
         ]
@@ -5357,21 +5918,63 @@
           {
             "name": "gang",
             "type": "dropdown",
-            "title": { "en": "Gang", "de": "Kanal" },
+            "title": {
+              "en": "Gang",
+              "de": "Kanal"
+            },
             "values": [
-              { "id": "1", "label": { "en": "Switch 1", "de": "Schalter 1" } },
-              { "id": "2", "label": { "en": "Switch 2", "de": "Schalter 2" } },
-              { "id": "3", "label": { "en": "Switch 3", "de": "Schalter 3" } },
-              { "id": "4", "label": { "en": "Switch 4", "de": "Schalter 4" } }
+              {
+                "id": "1",
+                "label": {
+                  "en": "Switch 1",
+                  "de": "Schalter 1"
+                }
+              },
+              {
+                "id": "2",
+                "label": {
+                  "en": "Switch 2",
+                  "de": "Schalter 2"
+                }
+              },
+              {
+                "id": "3",
+                "label": {
+                  "en": "Switch 3",
+                  "de": "Schalter 3"
+                }
+              },
+              {
+                "id": "4",
+                "label": {
+                  "en": "Switch 4",
+                  "de": "Schalter 4"
+                }
+              }
             ]
           },
           {
             "name": "state",
             "type": "dropdown",
-            "title": { "en": "State", "de": "Zustand" },
+            "title": {
+              "en": "State",
+              "de": "Zustand"
+            },
             "values": [
-              { "id": "on",  "label": { "en": "On",  "de": "Ein" } },
-              { "id": "off", "label": { "en": "Off", "de": "Aus" } }
+              {
+                "id": "on",
+                "label": {
+                  "en": "On",
+                  "de": "Ein"
+                }
+              },
+              {
+                "id": "off",
+                "label": {
+                  "en": "Off",
+                  "de": "Aus"
+                }
+              }
             ]
           }
         ]
@@ -5395,12 +5998,39 @@
           {
             "name": "gang",
             "type": "dropdown",
-            "title": { "en": "Gang", "de": "Kanal" },
+            "title": {
+              "en": "Gang",
+              "de": "Kanal"
+            },
             "values": [
-              { "id": "1", "label": { "en": "Switch 1", "de": "Schalter 1" } },
-              { "id": "2", "label": { "en": "Switch 2", "de": "Schalter 2" } },
-              { "id": "3", "label": { "en": "Switch 3", "de": "Schalter 3" } },
-              { "id": "4", "label": { "en": "Switch 4", "de": "Schalter 4" } }
+              {
+                "id": "1",
+                "label": {
+                  "en": "Switch 1",
+                  "de": "Schalter 1"
+                }
+              },
+              {
+                "id": "2",
+                "label": {
+                  "en": "Switch 2",
+                  "de": "Schalter 2"
+                }
+              },
+              {
+                "id": "3",
+                "label": {
+                  "en": "Switch 3",
+                  "de": "Schalter 3"
+                }
+              },
+              {
+                "id": "4",
+                "label": {
+                  "en": "Switch 4",
+                  "de": "Schalter 4"
+                }
+              }
             ]
           }
         ]
@@ -6311,31 +6941,181 @@
               "de": "Dauer"
             },
             "values": [
-              { "id": "cancel", "label": { "en": "Off",  "de": "Aus" } },
-              { "id": "1h",  "label": { "en": "1 h",  "de": "1 Std" } },
-              { "id": "2h",  "label": { "en": "2 h",  "de": "2 Std" } },
-              { "id": "3h",  "label": { "en": "3 h",  "de": "3 Std" } },
-              { "id": "4h",  "label": { "en": "4 h",  "de": "4 Std" } },
-              { "id": "5h",  "label": { "en": "5 h",  "de": "5 Std" } },
-              { "id": "6h",  "label": { "en": "6 h",  "de": "6 Std" } },
-              { "id": "7h",  "label": { "en": "7 h",  "de": "7 Std" } },
-              { "id": "8h",  "label": { "en": "8 h",  "de": "8 Std" } },
-              { "id": "9h",  "label": { "en": "9 h",  "de": "9 Std" } },
-              { "id": "10h", "label": { "en": "10 h", "de": "10 Std" } },
-              { "id": "11h", "label": { "en": "11 h", "de": "11 Std" } },
-              { "id": "12h", "label": { "en": "12 h", "de": "12 Std" } },
-              { "id": "13h", "label": { "en": "13 h", "de": "13 Std" } },
-              { "id": "14h", "label": { "en": "14 h", "de": "14 Std" } },
-              { "id": "15h", "label": { "en": "15 h", "de": "15 Std" } },
-              { "id": "16h", "label": { "en": "16 h", "de": "16 Std" } },
-              { "id": "17h", "label": { "en": "17 h", "de": "17 Std" } },
-              { "id": "18h", "label": { "en": "18 h", "de": "18 Std" } },
-              { "id": "19h", "label": { "en": "19 h", "de": "19 Std" } },
-              { "id": "20h", "label": { "en": "20 h", "de": "20 Std" } },
-              { "id": "21h", "label": { "en": "21 h", "de": "21 Std" } },
-              { "id": "22h", "label": { "en": "22 h", "de": "22 Std" } },
-              { "id": "23h", "label": { "en": "23 h", "de": "23 Std" } },
-              { "id": "24h", "label": { "en": "24 h", "de": "24 Std" } }
+              {
+                "id": "cancel",
+                "label": {
+                  "en": "Off",
+                  "de": "Aus"
+                }
+              },
+              {
+                "id": "1h",
+                "label": {
+                  "en": "1 h",
+                  "de": "1 Std"
+                }
+              },
+              {
+                "id": "2h",
+                "label": {
+                  "en": "2 h",
+                  "de": "2 Std"
+                }
+              },
+              {
+                "id": "3h",
+                "label": {
+                  "en": "3 h",
+                  "de": "3 Std"
+                }
+              },
+              {
+                "id": "4h",
+                "label": {
+                  "en": "4 h",
+                  "de": "4 Std"
+                }
+              },
+              {
+                "id": "5h",
+                "label": {
+                  "en": "5 h",
+                  "de": "5 Std"
+                }
+              },
+              {
+                "id": "6h",
+                "label": {
+                  "en": "6 h",
+                  "de": "6 Std"
+                }
+              },
+              {
+                "id": "7h",
+                "label": {
+                  "en": "7 h",
+                  "de": "7 Std"
+                }
+              },
+              {
+                "id": "8h",
+                "label": {
+                  "en": "8 h",
+                  "de": "8 Std"
+                }
+              },
+              {
+                "id": "9h",
+                "label": {
+                  "en": "9 h",
+                  "de": "9 Std"
+                }
+              },
+              {
+                "id": "10h",
+                "label": {
+                  "en": "10 h",
+                  "de": "10 Std"
+                }
+              },
+              {
+                "id": "11h",
+                "label": {
+                  "en": "11 h",
+                  "de": "11 Std"
+                }
+              },
+              {
+                "id": "12h",
+                "label": {
+                  "en": "12 h",
+                  "de": "12 Std"
+                }
+              },
+              {
+                "id": "13h",
+                "label": {
+                  "en": "13 h",
+                  "de": "13 Std"
+                }
+              },
+              {
+                "id": "14h",
+                "label": {
+                  "en": "14 h",
+                  "de": "14 Std"
+                }
+              },
+              {
+                "id": "15h",
+                "label": {
+                  "en": "15 h",
+                  "de": "15 Std"
+                }
+              },
+              {
+                "id": "16h",
+                "label": {
+                  "en": "16 h",
+                  "de": "16 Std"
+                }
+              },
+              {
+                "id": "17h",
+                "label": {
+                  "en": "17 h",
+                  "de": "17 Std"
+                }
+              },
+              {
+                "id": "18h",
+                "label": {
+                  "en": "18 h",
+                  "de": "18 Std"
+                }
+              },
+              {
+                "id": "19h",
+                "label": {
+                  "en": "19 h",
+                  "de": "19 Std"
+                }
+              },
+              {
+                "id": "20h",
+                "label": {
+                  "en": "20 h",
+                  "de": "20 Std"
+                }
+              },
+              {
+                "id": "21h",
+                "label": {
+                  "en": "21 h",
+                  "de": "21 Std"
+                }
+              },
+              {
+                "id": "22h",
+                "label": {
+                  "en": "22 h",
+                  "de": "22 Std"
+                }
+              },
+              {
+                "id": "23h",
+                "label": {
+                  "en": "23 h",
+                  "de": "23 Std"
+                }
+              },
+              {
+                "id": "24h",
+                "label": {
+                  "en": "24 h",
+                  "de": "24 Std"
+                }
+              }
             ]
           }
         ]
@@ -6753,11 +7533,32 @@
           {
             "name": "mode",
             "type": "dropdown",
-            "title": { "en": "Mode", "de": "Modus" },
+            "title": {
+              "en": "Mode",
+              "de": "Modus"
+            },
             "values": [
-              { "id": "0", "label": { "en": "Auto", "de": "Auto" } },
-              { "id": "1", "label": { "en": "Off", "de": "Aus" } },
-              { "id": "2", "label": { "en": "Color (always on)", "de": "Farbe (immer an)" } }
+              {
+                "id": "0",
+                "label": {
+                  "en": "Auto",
+                  "de": "Auto"
+                }
+              },
+              {
+                "id": "1",
+                "label": {
+                  "en": "Off",
+                  "de": "Aus"
+                }
+              },
+              {
+                "id": "2",
+                "label": {
+                  "en": "Color (always on)",
+                  "de": "Farbe (immer an)"
+                }
+              }
             ]
           }
         ]
@@ -6781,7 +7582,10 @@
           {
             "name": "volume",
             "type": "number",
-            "title": { "en": "Volume (0–100)", "de": "Lautstärke (0–100)" },
+            "title": {
+              "en": "Volume (0–100)",
+              "de": "Lautstärke (0–100)"
+            },
             "min": 0,
             "max": 100,
             "step": 10
@@ -6807,11 +7611,32 @@
           {
             "name": "sensitivity",
             "type": "dropdown",
-            "title": { "en": "Sensitivity", "de": "Empfindlichkeit" },
+            "title": {
+              "en": "Sensitivity",
+              "de": "Empfindlichkeit"
+            },
             "values": [
-              { "id": "0", "label": { "en": "Low", "de": "Niedrig" } },
-              { "id": "1", "label": { "en": "Medium", "de": "Mittel" } },
-              { "id": "2", "label": { "en": "High", "de": "Hoch" } }
+              {
+                "id": "0",
+                "label": {
+                  "en": "Low",
+                  "de": "Niedrig"
+                }
+              },
+              {
+                "id": "1",
+                "label": {
+                  "en": "Medium",
+                  "de": "Mittel"
+                }
+              },
+              {
+                "id": "2",
+                "label": {
+                  "en": "High",
+                  "de": "Hoch"
+                }
+              }
             ]
           }
         ]
@@ -6990,7 +7815,10 @@
             {
               "id": "reconnect_interval",
               "type": "number",
-              "label": { "en": "Auto-Reconnect Interval (minutes)", "de": "Auto-Reconnect-Intervall (Minuten)" },
+              "label": {
+                "en": "Auto-Reconnect Interval (minutes)",
+                "de": "Auto-Reconnect-Intervall (Minuten)"
+              },
               "value": 0,
               "min": 0,
               "max": 1440,
@@ -7000,7 +7828,6 @@
                 "de": "Wenn das Gerät offline ist, alle N Minuten erneut verbinden. Bei aktiver Verbindung keine Auswirkung. 0 = deaktiviert."
               }
             },
-            
             {
               "id": "offline_grace_seconds",
               "type": "number",
@@ -7364,76 +8191,348 @@
       "settings": [
         {
           "type": "group",
-          "label": { "en": "Connection", "de": "Verbindung" },
+          "label": {
+            "en": "Connection",
+            "de": "Verbindung"
+          },
           "children": [
-            { "id": "ip", "type": "text", "label": { "en": "IP Address", "de": "IP-Adresse" }, "value": "" },
-            { "id": "device_id", "type": "text", "label": { "en": "Device ID", "de": "Geräte-ID" }, "value": "" },
-            { "id": "local_key", "type": "text", "label": { "en": "Local Key", "de": "Lokaler Schlüssel" }, "value": "" },
             {
-              "id": "version", "type": "dropdown",
-              "label": { "en": "Protocol Version", "de": "Protokollversion" },
+              "id": "ip",
+              "type": "text",
+              "label": {
+                "en": "IP Address",
+                "de": "IP-Adresse"
+              },
+              "value": ""
+            },
+            {
+              "id": "device_id",
+              "type": "text",
+              "label": {
+                "en": "Device ID",
+                "de": "Geräte-ID"
+              },
+              "value": ""
+            },
+            {
+              "id": "local_key",
+              "type": "text",
+              "label": {
+                "en": "Local Key",
+                "de": "Lokaler Schlüssel"
+              },
+              "value": ""
+            },
+            {
+              "id": "version",
+              "type": "dropdown",
+              "label": {
+                "en": "Protocol Version",
+                "de": "Protokollversion"
+              },
               "value": "3.3",
               "values": [
-                { "id": "3.3", "label": "3.3" },
-                { "id": "3.4", "label": "3.4" },
-                { "id": "3.5", "label": "3.5" },
-                { "id": "3.2", "label": "3.2" },
-                { "id": "3.1", "label": "3.1" }
+                {
+                  "id": "3.3",
+                  "label": "3.3"
+                },
+                {
+                  "id": "3.4",
+                  "label": "3.4"
+                },
+                {
+                  "id": "3.5",
+                  "label": "3.5"
+                },
+                {
+                  "id": "3.2",
+                  "label": "3.2"
+                },
+                {
+                  "id": "3.1",
+                  "label": "3.1"
+                }
               ]
             },
-            { "id": "polling_interval", "type": "number", "label": { "en": "Polling Interval (s)", "de": "Abfrageintervall (s)" }, "value": 30, "min": 0, "max": 3600, "step": 1 },
-            { "id": "reconnect_interval", "type": "number", "label": { "en": "Auto-Reconnect Interval (minutes)", "de": "Auto-Reconnect-Intervall (Minuten)" }, "value": 0, "min": 0, "max": 1440, "step": 1, "hint": { "en": "If the device is offline, reconnect every N minutes. No effect while connected. 0 = disabled.", "de": "Wenn offline, alle N Minuten erneut verbinden. 0 = deaktiviert." } },
-            { "id": "offline_grace_seconds", "type": "number", "label": { "en": "Offline Grace Period (s)", "de": "Offline-Toleranz (s)" }, "value": 60, "min": 0, "max": 3600, "step": 1 }
+            {
+              "id": "polling_interval",
+              "type": "number",
+              "label": {
+                "en": "Polling Interval (s)",
+                "de": "Abfrageintervall (s)"
+              },
+              "value": 30,
+              "min": 0,
+              "max": 3600,
+              "step": 1
+            },
+            {
+              "id": "reconnect_interval",
+              "type": "number",
+              "label": {
+                "en": "Auto-Reconnect Interval (minutes)",
+                "de": "Auto-Reconnect-Intervall (Minuten)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 1440,
+              "step": 1,
+              "hint": {
+                "en": "If the device is offline, reconnect every N minutes. No effect while connected. 0 = disabled.",
+                "de": "Wenn offline, alle N Minuten erneut verbinden. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "offline_grace_seconds",
+              "type": "number",
+              "label": {
+                "en": "Offline Grace Period (s)",
+                "de": "Offline-Toleranz (s)"
+              },
+              "value": 60,
+              "min": 0,
+              "max": 3600,
+              "step": 1
+            }
           ]
         },
         {
           "type": "group",
-          "label": { "en": "Data Points", "de": "Datenpunkte" },
-          "children": [
-            { "id": "dp_onoff", "type": "number", "label": { "en": "DP On/Off", "de": "DP Ein/Aus" }, "value": 1, "min": 0, "max": 255, "step": 1 },
-            { "id": "dp_target_temp", "type": "number", "label": { "en": "DP Target Temperature", "de": "DP Zieltemperatur" }, "value": 2, "min": 0, "max": 255, "step": 1 },
-            { "id": "dp_current_temp", "type": "number", "label": { "en": "DP Current Temperature", "de": "DP Aktuelle Temperatur" }, "value": 3, "min": 0, "max": 255, "step": 1 },
-            { "id": "dp_mode", "type": "number", "label": { "en": "DP Mode (0 = disabled)", "de": "DP Modus (0 = deaktiviert)" }, "value": 4, "min": 0, "max": 255, "step": 1 },
-            { "id": "dp_child_lock", "type": "number", "label": { "en": "DP Child Lock (0 = disabled)", "de": "DP Kindersicherung (0 = deaktiviert)" }, "value": 0, "min": 0, "max": 255, "step": 1 },
-            { "id": "dp_battery", "type": "number", "label": { "en": "DP Battery % (0 = disabled, for TRVs)", "de": "DP Batterie % (0 = deaktiviert, für TRVs)" }, "value": 0, "min": 0, "max": 255, "step": 1 },
-            { "id": "dp_fault", "type": "number", "label": { "en": "DP Fault (0 = disabled)", "de": "DP Fehler (0 = deaktiviert)" }, "value": 0, "min": 0, "max": 255, "step": 1 },
-            { "id": "dp_hvac_action", "type": "number", "label": { "en": "DP HVAC Action (0 = disabled)", "de": "DP Heizstatus (0 = deaktiviert)" }, "hint": { "en": "DP that indicates the boiler is actively heating. Common values: 1 or 'heating' = heating, 0 or 'idle' = idle. Enables the 'Heating' indicator in the device card.", "de": "DP der anzeigt ob der Heizkessel aktiv heizt. Häufige Werte: 1 oder 'heating' = heizt, 0 oder 'idle' = inaktiv. Aktiviert den 'Heizt'-Indikator in der Gerätekachel." }, "value": 0, "min": 0, "max": 255, "step": 1 }
-          ]
-        },
-        {
-          "type": "group",
-          "label": { "en": "Temperature", "de": "Temperatur" },
-          "children": [
-            { "id": "temp_divisor", "type": "dropdown", "label": { "en": "Temperature Divisor", "de": "Temperatur-Divisor" }, "hint": { "en": "Set to 10 if your device reports temperatures ×10 (e.g. 220 = 22.0°C).", "de": "Auf 10 setzen wenn das Gerät Temperaturen ×10 meldet (z.B. 220 = 22,0°C)." }, "value": "1", "values": [{ "id": "1", "label": "1 (raw °C)" }, { "id": "10", "label": "10 (value ÷ 10)" }] },
-            { "id": "temp_min", "type": "number", "label": { "en": "Min °C", "de": "Min °C" }, "value": 5, "min": 0, "max": 50, "step": 1 },
-            { "id": "temp_max", "type": "number", "label": { "en": "Max °C", "de": "Max °C" }, "value": 35, "min": 5, "max": 70, "step": 1 },
-            { "id": "temp_step", "type": "number", "label": { "en": "Step °C", "de": "Schritt °C" }, "value": 0.5, "min": 0.1, "max": 5, "step": 0.1 }
-          ]
-        },
-        {
-          "type": "group",
-          "label": { "en": "Mode Values", "de": "Moduswerte" },
+          "label": {
+            "en": "Data Points",
+            "de": "Datenpunkte"
+          },
           "children": [
             {
-              "id": "mode_values", "type": "text",
-              "label": { "en": "Mode values (comma-separated)", "de": "Moduswerte (kommagetrennt)" },
-              "hint": { "en": "Exact strings the device uses. Common: manual,auto,program or heat,cool,off", "de": "Exakte Strings des Geräts. Häufig: manual,auto,program oder heat,cool,off" },
+              "id": "dp_onoff",
+              "type": "number",
+              "label": {
+                "en": "DP On/Off",
+                "de": "DP Ein/Aus"
+              },
+              "value": 1,
+              "min": 0,
+              "max": 255,
+              "step": 1
+            },
+            {
+              "id": "dp_target_temp",
+              "type": "number",
+              "label": {
+                "en": "DP Target Temperature",
+                "de": "DP Zieltemperatur"
+              },
+              "value": 2,
+              "min": 0,
+              "max": 255,
+              "step": 1
+            },
+            {
+              "id": "dp_current_temp",
+              "type": "number",
+              "label": {
+                "en": "DP Current Temperature",
+                "de": "DP Aktuelle Temperatur"
+              },
+              "value": 3,
+              "min": 0,
+              "max": 255,
+              "step": 1
+            },
+            {
+              "id": "dp_mode",
+              "type": "number",
+              "label": {
+                "en": "DP Mode (0 = disabled)",
+                "de": "DP Modus (0 = deaktiviert)"
+              },
+              "value": 4,
+              "min": 0,
+              "max": 255,
+              "step": 1
+            },
+            {
+              "id": "dp_child_lock",
+              "type": "number",
+              "label": {
+                "en": "DP Child Lock (0 = disabled)",
+                "de": "DP Kindersicherung (0 = deaktiviert)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "step": 1
+            },
+            {
+              "id": "dp_battery",
+              "type": "number",
+              "label": {
+                "en": "DP Battery % (0 = disabled, for TRVs)",
+                "de": "DP Batterie % (0 = deaktiviert, für TRVs)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "step": 1
+            },
+            {
+              "id": "dp_fault",
+              "type": "number",
+              "label": {
+                "en": "DP Fault (0 = disabled)",
+                "de": "DP Fehler (0 = deaktiviert)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "step": 1
+            },
+            {
+              "id": "dp_hvac_action",
+              "type": "number",
+              "label": {
+                "en": "DP HVAC Action (0 = disabled)",
+                "de": "DP Heizstatus (0 = deaktiviert)"
+              },
+              "hint": {
+                "en": "DP that indicates the boiler is actively heating. Common values: 1 or 'heating' = heating, 0 or 'idle' = idle. Enables the 'Heating' indicator in the device card.",
+                "de": "DP der anzeigt ob der Heizkessel aktiv heizt. Häufige Werte: 1 oder 'heating' = heizt, 0 oder 'idle' = inaktiv. Aktiviert den 'Heizt'-Indikator in der Gerätekachel."
+              },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "step": 1
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Temperature",
+            "de": "Temperatur"
+          },
+          "children": [
+            {
+              "id": "temp_divisor",
+              "type": "dropdown",
+              "label": {
+                "en": "Temperature Divisor",
+                "de": "Temperatur-Divisor"
+              },
+              "hint": {
+                "en": "Set to 10 if your device reports temperatures ×10 (e.g. 220 = 22.0°C).",
+                "de": "Auf 10 setzen wenn das Gerät Temperaturen ×10 meldet (z.B. 220 = 22,0°C)."
+              },
+              "value": "1",
+              "values": [
+                {
+                  "id": "1",
+                  "label": "1 (raw °C)"
+                },
+                {
+                  "id": "10",
+                  "label": "10 (value ÷ 10)"
+                }
+              ]
+            },
+            {
+              "id": "temp_min",
+              "type": "number",
+              "label": {
+                "en": "Min °C",
+                "de": "Min °C"
+              },
+              "value": 5,
+              "min": 0,
+              "max": 50,
+              "step": 1
+            },
+            {
+              "id": "temp_max",
+              "type": "number",
+              "label": {
+                "en": "Max °C",
+                "de": "Max °C"
+              },
+              "value": 35,
+              "min": 5,
+              "max": 70,
+              "step": 1
+            },
+            {
+              "id": "temp_step",
+              "type": "number",
+              "label": {
+                "en": "Step °C",
+                "de": "Schritt °C"
+              },
+              "value": 0.5,
+              "min": 0.1,
+              "max": 5,
+              "step": 0.1
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Mode Values",
+            "de": "Moduswerte"
+          },
+          "children": [
+            {
+              "id": "mode_values",
+              "type": "text",
+              "label": {
+                "en": "Mode values (comma-separated)",
+                "de": "Moduswerte (kommagetrennt)"
+              },
+              "hint": {
+                "en": "Exact strings the device uses. Common: manual,auto,program or heat,cool,off",
+                "de": "Exakte Strings des Geräts. Häufig: manual,auto,program oder heat,cool,off"
+              },
               "value": "manual,auto,program"
             }
           ]
         },
         {
           "type": "group",
-          "label": { "en": "Status", "de": "Status" },
+          "label": {
+            "en": "Status",
+            "de": "Status"
+          },
           "children": [
-            { "id": "connection_status", "type": "text", "label": { "en": "Connection", "de": "Verbindung" }, "value": "—" },
-            { "id": "last_seen", "type": "text", "label": { "en": "Last data received", "de": "Zuletzt Daten empfangen" }, "value": "—" }
+            {
+              "id": "connection_status",
+              "type": "text",
+              "label": {
+                "en": "Connection",
+                "de": "Verbindung"
+              },
+              "value": "—"
+            },
+            {
+              "id": "last_seen",
+              "type": "text",
+              "label": {
+                "en": "Last data received",
+                "de": "Zuletzt Daten empfangen"
+              },
+              "value": "—"
+            }
           ]
         }
       ],
       "pair": [
-        { "id": "credentials", "navigation": { "next": "list_devices" } },
-        { "id": "list_devices" }
+        {
+          "id": "credentials",
+          "navigation": {
+            "next": "list_devices"
+          }
+        },
+        {
+          "id": "list_devices"
+        }
       ],
       "images": {
         "small": "/drivers/thermostat/assets/images/small.png",
@@ -7455,80 +8554,322 @@
       "settings": [
         {
           "type": "group",
-          "label": { "en": "Connection", "de": "Verbindung" },
+          "label": {
+            "en": "Connection",
+            "de": "Verbindung"
+          },
           "children": [
-            { "id": "ip", "type": "text", "label": { "en": "IP Address", "de": "IP-Adresse" }, "value": "" },
-            { "id": "device_id", "type": "text", "label": { "en": "Device ID", "de": "Geräte-ID" }, "value": "" },
-            { "id": "local_key", "type": "text", "label": { "en": "Local Key", "de": "Lokaler Schlüssel" }, "value": "" },
             {
-              "id": "version", "type": "dropdown",
-              "label": { "en": "Protocol Version", "de": "Protokollversion" },
+              "id": "ip",
+              "type": "text",
+              "label": {
+                "en": "IP Address",
+                "de": "IP-Adresse"
+              },
+              "value": ""
+            },
+            {
+              "id": "device_id",
+              "type": "text",
+              "label": {
+                "en": "Device ID",
+                "de": "Geräte-ID"
+              },
+              "value": ""
+            },
+            {
+              "id": "local_key",
+              "type": "text",
+              "label": {
+                "en": "Local Key",
+                "de": "Lokaler Schlüssel"
+              },
+              "value": ""
+            },
+            {
+              "id": "version",
+              "type": "dropdown",
+              "label": {
+                "en": "Protocol Version",
+                "de": "Protokollversion"
+              },
               "value": "3.3",
               "values": [
-                { "id": "3.3", "label": "3.3" },
-                { "id": "3.4", "label": "3.4" },
-                { "id": "3.5", "label": "3.5" },
-                { "id": "3.2", "label": "3.2" },
-                { "id": "3.1", "label": "3.1" }
+                {
+                  "id": "3.3",
+                  "label": "3.3"
+                },
+                {
+                  "id": "3.4",
+                  "label": "3.4"
+                },
+                {
+                  "id": "3.5",
+                  "label": "3.5"
+                },
+                {
+                  "id": "3.2",
+                  "label": "3.2"
+                },
+                {
+                  "id": "3.1",
+                  "label": "3.1"
+                }
               ]
             },
-            { "id": "polling_interval", "type": "number", "label": { "en": "Polling Interval (s)", "de": "Abfrageintervall (s)" }, "value": 10, "min": 0, "max": 3600, "step": 1 },
-            { "id": "reconnect_interval", "type": "number", "label": { "en": "Auto-Reconnect Interval (minutes)", "de": "Auto-Reconnect-Intervall (Minuten)" }, "value": 0, "min": 0, "max": 1440, "step": 1, "hint": { "en": "If the device is offline, reconnect every N minutes. No effect while connected. 0 = disabled.", "de": "Wenn offline, alle N Minuten erneut verbinden. 0 = deaktiviert." } },
-            { "id": "offline_grace_seconds", "type": "number", "label": { "en": "Offline Grace Period (s)", "de": "Offline-Toleranz (s)" }, "value": 60, "min": 0, "max": 3600, "step": 1 }
+            {
+              "id": "polling_interval",
+              "type": "number",
+              "label": {
+                "en": "Polling Interval (s)",
+                "de": "Abfrageintervall (s)"
+              },
+              "value": 10,
+              "min": 0,
+              "max": 3600,
+              "step": 1
+            },
+            {
+              "id": "reconnect_interval",
+              "type": "number",
+              "label": {
+                "en": "Auto-Reconnect Interval (minutes)",
+                "de": "Auto-Reconnect-Intervall (Minuten)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 1440,
+              "step": 1,
+              "hint": {
+                "en": "If the device is offline, reconnect every N minutes. No effect while connected. 0 = disabled.",
+                "de": "Wenn offline, alle N Minuten erneut verbinden. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "offline_grace_seconds",
+              "type": "number",
+              "label": {
+                "en": "Offline Grace Period (s)",
+                "de": "Offline-Toleranz (s)"
+              },
+              "value": 60,
+              "min": 0,
+              "max": 3600,
+              "step": 1
+            }
           ]
         },
         {
           "type": "group",
-          "label": { "en": "Data Points", "de": "Datenpunkte" },
-          "children": [
-            { "id": "dp_onoff", "type": "number", "label": { "en": "DP On/Off", "de": "DP Ein/Aus" }, "value": 1, "min": 0, "max": 255, "step": 1 },
-            { "id": "dp_current_temp", "type": "number", "label": { "en": "DP Current Temperature", "de": "DP Aktuelle Temperatur" }, "value": 2, "min": 0, "max": 255, "step": 1 },
-            { "id": "dp_target_temp", "type": "number", "label": { "en": "DP Target Temperature (0 = disabled)", "de": "DP Zieltemperatur (0 = deaktiviert)" }, "value": 4, "min": 0, "max": 255, "step": 1 },
-            { "id": "dp_keep_warm", "type": "number", "label": { "en": "DP Keep Warm (0 = disabled)", "de": "DP Warmhalten (0 = deaktiviert)" }, "value": 13, "min": 0, "max": 255, "step": 1 },
-            { "id": "dp_status", "type": "number", "label": { "en": "DP Status (0 = disabled)", "de": "DP Status (0 = deaktiviert)" }, "value": 15, "min": 0, "max": 255, "step": 1 },
-            { "id": "dp_mode", "type": "number", "label": { "en": "DP Mode (0 = disabled)", "de": "DP Modus (0 = deaktiviert)" }, "value": 16, "min": 0, "max": 255, "step": 1 },
-            { "id": "dp_fault", "type": "number", "label": { "en": "DP Fault (0 = disabled)", "de": "DP Fehler (0 = deaktiviert)" }, "value": 0, "min": 0, "max": 255, "step": 1 }
-          ]
-        },
-        {
-          "type": "group",
-          "label": { "en": "Temperature Range", "de": "Temperaturbereich" },
-          "children": [
-            { "id": "temp_min", "type": "number", "label": { "en": "Min °C", "de": "Min °C" }, "value": 40, "min": 0, "max": 100, "step": 1 },
-            { "id": "temp_max", "type": "number", "label": { "en": "Max °C", "de": "Max °C" }, "value": 100, "min": 0, "max": 100, "step": 1 },
-            { "id": "temp_step", "type": "number", "label": { "en": "Step °C", "de": "Schritt °C" }, "value": 5, "min": 1, "max": 10, "step": 1 }
-          ]
-        },
-        {
-          "type": "group",
-          "label": { "en": "Mode & Status Values", "de": "Modus- & Statuswerte" },
+          "label": {
+            "en": "Data Points",
+            "de": "Datenpunkte"
+          },
           "children": [
             {
-              "id": "mode_values", "type": "text",
-              "label": { "en": "Mode values (comma-separated)", "de": "Moduswerte (kommagetrennt)" },
-              "hint": { "en": "Exact strings the device uses. Common: boil,heat,keep_warm or boiling_quick,setting_quick,temp_boiling,temp_setting", "de": "Exakte Strings des Geräts. Häufig: boil,heat,keep_warm" },
+              "id": "dp_onoff",
+              "type": "number",
+              "label": {
+                "en": "DP On/Off",
+                "de": "DP Ein/Aus"
+              },
+              "value": 1,
+              "min": 0,
+              "max": 255,
+              "step": 1
+            },
+            {
+              "id": "dp_current_temp",
+              "type": "number",
+              "label": {
+                "en": "DP Current Temperature",
+                "de": "DP Aktuelle Temperatur"
+              },
+              "value": 2,
+              "min": 0,
+              "max": 255,
+              "step": 1
+            },
+            {
+              "id": "dp_target_temp",
+              "type": "number",
+              "label": {
+                "en": "DP Target Temperature (0 = disabled)",
+                "de": "DP Zieltemperatur (0 = deaktiviert)"
+              },
+              "value": 4,
+              "min": 0,
+              "max": 255,
+              "step": 1
+            },
+            {
+              "id": "dp_keep_warm",
+              "type": "number",
+              "label": {
+                "en": "DP Keep Warm (0 = disabled)",
+                "de": "DP Warmhalten (0 = deaktiviert)"
+              },
+              "value": 13,
+              "min": 0,
+              "max": 255,
+              "step": 1
+            },
+            {
+              "id": "dp_status",
+              "type": "number",
+              "label": {
+                "en": "DP Status (0 = disabled)",
+                "de": "DP Status (0 = deaktiviert)"
+              },
+              "value": 15,
+              "min": 0,
+              "max": 255,
+              "step": 1
+            },
+            {
+              "id": "dp_mode",
+              "type": "number",
+              "label": {
+                "en": "DP Mode (0 = disabled)",
+                "de": "DP Modus (0 = deaktiviert)"
+              },
+              "value": 16,
+              "min": 0,
+              "max": 255,
+              "step": 1
+            },
+            {
+              "id": "dp_fault",
+              "type": "number",
+              "label": {
+                "en": "DP Fault (0 = disabled)",
+                "de": "DP Fehler (0 = deaktiviert)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "step": 1
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Temperature Range",
+            "de": "Temperaturbereich"
+          },
+          "children": [
+            {
+              "id": "temp_min",
+              "type": "number",
+              "label": {
+                "en": "Min °C",
+                "de": "Min °C"
+              },
+              "value": 40,
+              "min": 0,
+              "max": 100,
+              "step": 1
+            },
+            {
+              "id": "temp_max",
+              "type": "number",
+              "label": {
+                "en": "Max °C",
+                "de": "Max °C"
+              },
+              "value": 100,
+              "min": 0,
+              "max": 100,
+              "step": 1
+            },
+            {
+              "id": "temp_step",
+              "type": "number",
+              "label": {
+                "en": "Step °C",
+                "de": "Schritt °C"
+              },
+              "value": 5,
+              "min": 1,
+              "max": 10,
+              "step": 1
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Mode & Status Values",
+            "de": "Modus- & Statuswerte"
+          },
+          "children": [
+            {
+              "id": "mode_values",
+              "type": "text",
+              "label": {
+                "en": "Mode values (comma-separated)",
+                "de": "Moduswerte (kommagetrennt)"
+              },
+              "hint": {
+                "en": "Exact strings the device uses. Common: boil,heat,keep_warm or boiling_quick,setting_quick,temp_boiling,temp_setting",
+                "de": "Exakte Strings des Geräts. Häufig: boil,heat,keep_warm"
+              },
               "value": "boil,heat,keep_warm"
             },
             {
-              "id": "status_values", "type": "text",
-              "label": { "en": "Status values (comma-separated)", "de": "Statuswerte (kommagetrennt)" },
-              "hint": { "en": "Exact strings the device reports. Common: standby,heating,cooling,warm,done", "de": "Exakte Strings die das Gerät meldet." },
+              "id": "status_values",
+              "type": "text",
+              "label": {
+                "en": "Status values (comma-separated)",
+                "de": "Statuswerte (kommagetrennt)"
+              },
+              "hint": {
+                "en": "Exact strings the device reports. Common: standby,heating,cooling,warm,done",
+                "de": "Exakte Strings die das Gerät meldet."
+              },
               "value": "standby,heating,cooling,warm,done"
             }
           ]
         },
         {
           "type": "group",
-          "label": { "en": "Status", "de": "Status" },
+          "label": {
+            "en": "Status",
+            "de": "Status"
+          },
           "children": [
-            { "id": "connection_status", "type": "text", "label": { "en": "Connection", "de": "Verbindung" }, "value": "—" },
-            { "id": "last_seen", "type": "text", "label": { "en": "Last data received", "de": "Zuletzt Daten empfangen" }, "value": "—" }
+            {
+              "id": "connection_status",
+              "type": "text",
+              "label": {
+                "en": "Connection",
+                "de": "Verbindung"
+              },
+              "value": "—"
+            },
+            {
+              "id": "last_seen",
+              "type": "text",
+              "label": {
+                "en": "Last data received",
+                "de": "Zuletzt Daten empfangen"
+              },
+              "value": "—"
+            }
           ]
         }
       ],
       "pair": [
-        { "id": "credentials", "navigation": { "next": "list_devices" } },
-        { "id": "list_devices" }
+        {
+          "id": "credentials",
+          "navigation": {
+            "next": "list_devices"
+          }
+        },
+        {
+          "id": "list_devices"
+        }
       ],
       "images": {
         "small": "/drivers/kettle/assets/images/small.png",
@@ -7557,39 +8898,72 @@
             {
               "id": "ip",
               "type": "text",
-              "label": { "en": "IP Address", "de": "IP-Adresse" },
+              "label": {
+                "en": "IP Address",
+                "de": "IP-Adresse"
+              },
               "value": ""
             },
             {
               "id": "device_id",
               "type": "text",
-              "label": { "en": "Device ID", "de": "Geräte-ID" },
+              "label": {
+                "en": "Device ID",
+                "de": "Geräte-ID"
+              },
               "value": ""
             },
             {
               "id": "local_key",
               "type": "text",
-              "label": { "en": "Local Key", "de": "Lokaler Schlüssel" },
+              "label": {
+                "en": "Local Key",
+                "de": "Lokaler Schlüssel"
+              },
               "value": ""
             },
             {
               "id": "version",
               "type": "dropdown",
-              "label": { "en": "Protocol Version", "de": "Protokollversion" },
+              "label": {
+                "en": "Protocol Version",
+                "de": "Protokollversion"
+              },
               "value": "3.3",
               "values": [
-                { "id": "3.3", "label": "3.3" },
-                { "id": "3.4", "label": "3.4" },
-                { "id": "3.5", "label": "3.5" },
-                { "id": "3.2", "label": "3.2" },
-                { "id": "3.1", "label": "3.1" }
+                {
+                  "id": "3.3",
+                  "label": "3.3"
+                },
+                {
+                  "id": "3.4",
+                  "label": "3.4"
+                },
+                {
+                  "id": "3.5",
+                  "label": "3.5"
+                },
+                {
+                  "id": "3.2",
+                  "label": "3.2"
+                },
+                {
+                  "id": "3.1",
+                  "label": "3.1"
+                }
               ]
             },
             {
               "id": "polling_interval",
               "type": "number",
-              "label": { "en": "Polling Interval (s)", "de": "Abfrageintervall (s)" },
-              "hint": { "en": "0 = polling disabled (push only)", "de": "0 = Polling deaktiviert (nur Push)" },
+              "label": {
+                "en": "Polling Interval (s)",
+                "de": "Abfrageintervall (s)"
+              },
+              "hint": {
+                "en": "0 = polling disabled (push only)",
+                "de": "0 = Polling deaktiviert (nur Push)"
+              },
               "value": 30,
               "min": 0,
               "max": 3600,
@@ -7598,7 +8972,10 @@
             {
               "id": "reconnect_interval",
               "type": "number",
-              "label": { "en": "Auto-Reconnect Interval (minutes)", "de": "Auto-Reconnect-Intervall (Minuten)" },
+              "label": {
+                "en": "Auto-Reconnect Interval (minutes)",
+                "de": "Auto-Reconnect-Intervall (Minuten)"
+              },
               "value": 0,
               "min": 0,
               "max": 1440,
@@ -7608,12 +8985,17 @@
                 "de": "Wenn das Gerät offline ist, alle N Minuten erneut verbinden. Bei aktiver Verbindung keine Auswirkung. 0 = deaktiviert."
               }
             },
-            
             {
               "id": "offline_grace_seconds",
               "type": "number",
-              "label": { "en": "Offline Grace Period (s)", "de": "Offline-Toleranz (s)" },
-              "hint": { "en": "Seconds to wait before triggering 'device disconnected' flows. 0 = immediate.", "de": "Sekunden bis 'Gerät getrennt'-Flows ausgelöst werden. 0 = sofort." },
+              "label": {
+                "en": "Offline Grace Period (s)",
+                "de": "Offline-Toleranz (s)"
+              },
+              "hint": {
+                "en": "Seconds to wait before triggering 'device disconnected' flows. 0 = immediate.",
+                "de": "Sekunden bis 'Gerät getrennt'-Flows ausgelöst werden. 0 = sofort."
+              },
               "value": 60,
               "min": 0,
               "max": 3600,
@@ -7631,8 +9013,14 @@
             {
               "id": "dp_switch_1",
               "type": "number",
-              "label": { "en": "DP Switch 1 (main)", "de": "DP Schalter 1 (Haupt)" },
-              "hint": { "en": "Data point for gang 1. Default: 1", "de": "Datenpunkt für Kanal 1. Standard: 1" },
+              "label": {
+                "en": "DP Switch 1 (main)",
+                "de": "DP Schalter 1 (Haupt)"
+              },
+              "hint": {
+                "en": "Data point for gang 1. Default: 1",
+                "de": "Datenpunkt für Kanal 1. Standard: 1"
+              },
               "value": 1,
               "min": 0,
               "max": 255,
@@ -7641,8 +9029,14 @@
             {
               "id": "dp_switch_2",
               "type": "number",
-              "label": { "en": "DP Switch 2", "de": "DP Schalter 2" },
-              "hint": { "en": "Data point for gang 2. 0 = disabled.", "de": "Datenpunkt für Kanal 2. 0 = deaktiviert." },
+              "label": {
+                "en": "DP Switch 2",
+                "de": "DP Schalter 2"
+              },
+              "hint": {
+                "en": "Data point for gang 2. 0 = disabled.",
+                "de": "Datenpunkt für Kanal 2. 0 = deaktiviert."
+              },
               "value": 0,
               "min": 0,
               "max": 255,
@@ -7651,8 +9045,14 @@
             {
               "id": "dp_switch_3",
               "type": "number",
-              "label": { "en": "DP Switch 3", "de": "DP Schalter 3" },
-              "hint": { "en": "Data point for gang 3. 0 = disabled.", "de": "Datenpunkt für Kanal 3. 0 = deaktiviert." },
+              "label": {
+                "en": "DP Switch 3",
+                "de": "DP Schalter 3"
+              },
+              "hint": {
+                "en": "Data point for gang 3. 0 = disabled.",
+                "de": "Datenpunkt für Kanal 3. 0 = deaktiviert."
+              },
               "value": 0,
               "min": 0,
               "max": 255,
@@ -7661,8 +9061,14 @@
             {
               "id": "dp_switch_4",
               "type": "number",
-              "label": { "en": "DP Switch 4", "de": "DP Schalter 4" },
-              "hint": { "en": "Data point for gang 4. 0 = disabled.", "de": "Datenpunkt für Kanal 4. 0 = deaktiviert." },
+              "label": {
+                "en": "DP Switch 4",
+                "de": "DP Schalter 4"
+              },
+              "hint": {
+                "en": "Data point for gang 4. 0 = disabled.",
+                "de": "Datenpunkt für Kanal 4. 0 = deaktiviert."
+              },
               "value": 0,
               "min": 0,
               "max": 255,
@@ -7680,27 +9086,45 @@
             {
               "id": "name_switch_1",
               "type": "text",
-              "label": { "en": "Name Switch 1", "de": "Name Schalter 1" },
-              "hint": { "en": "Custom label for the main switch tile.", "de": "Benutzerdefinierter Name für die Hauptschalter-Kachel." },
+              "label": {
+                "en": "Name Switch 1",
+                "de": "Name Schalter 1"
+              },
+              "hint": {
+                "en": "Custom label for the main switch tile.",
+                "de": "Benutzerdefinierter Name für die Hauptschalter-Kachel."
+              },
               "value": ""
             },
             {
               "id": "name_switch_2",
               "type": "text",
-              "label": { "en": "Name Switch 2", "de": "Name Schalter 2" },
-              "hint": { "en": "Custom label for switch 2 tile. Leave empty for default.", "de": "Benutzerdefinierter Name für Schalter 2. Leer = Standard." },
+              "label": {
+                "en": "Name Switch 2",
+                "de": "Name Schalter 2"
+              },
+              "hint": {
+                "en": "Custom label for switch 2 tile. Leave empty for default.",
+                "de": "Benutzerdefinierter Name für Schalter 2. Leer = Standard."
+              },
               "value": ""
             },
             {
               "id": "name_switch_3",
               "type": "text",
-              "label": { "en": "Name Switch 3", "de": "Name Schalter 3" },
+              "label": {
+                "en": "Name Switch 3",
+                "de": "Name Schalter 3"
+              },
               "value": ""
             },
             {
               "id": "name_switch_4",
               "type": "text",
-              "label": { "en": "Name Switch 4", "de": "Name Schalter 4" },
+              "label": {
+                "en": "Name Switch 4",
+                "de": "Name Schalter 4"
+              },
               "value": ""
             }
           ]
@@ -7715,7 +9139,10 @@
             {
               "id": "dp_countdown_1",
               "type": "number",
-              "label": { "en": "DP Countdown 1 (seconds)", "de": "DP Countdown 1 (Sekunden)" },
+              "label": {
+                "en": "DP Countdown 1 (seconds)",
+                "de": "DP Countdown 1 (Sekunden)"
+              },
               "value": 0,
               "min": 0,
               "max": 255,
@@ -7724,7 +9151,10 @@
             {
               "id": "dp_countdown_2",
               "type": "number",
-              "label": { "en": "DP Countdown 2 (seconds)", "de": "DP Countdown 2 (Sekunden)" },
+              "label": {
+                "en": "DP Countdown 2 (seconds)",
+                "de": "DP Countdown 2 (Sekunden)"
+              },
               "value": 0,
               "min": 0,
               "max": 255,
@@ -7733,7 +9163,10 @@
             {
               "id": "dp_countdown_3",
               "type": "number",
-              "label": { "en": "DP Countdown 3", "de": "DP Countdown 3" },
+              "label": {
+                "en": "DP Countdown 3",
+                "de": "DP Countdown 3"
+              },
               "value": 0,
               "min": 0,
               "max": 255,
@@ -7742,7 +9175,10 @@
             {
               "id": "dp_countdown_4",
               "type": "number",
-              "label": { "en": "DP Countdown 4", "de": "DP Countdown 4" },
+              "label": {
+                "en": "DP Countdown 4",
+                "de": "DP Countdown 4"
+              },
               "value": 0,
               "min": 0,
               "max": 255,
@@ -7751,8 +9187,14 @@
             {
               "id": "dp_relay_status",
               "type": "number",
-              "label": { "en": "DP Relay Status", "de": "DP Relaiszustand" },
-              "hint": { "en": "Power-on behavior: off/on/last. 0 = disabled.", "de": "Einschaltverhalten: off/on/last. 0 = deaktiviert." },
+              "label": {
+                "en": "DP Relay Status",
+                "de": "DP Relaiszustand"
+              },
+              "hint": {
+                "en": "Power-on behavior: off/on/last. 0 = disabled.",
+                "de": "Einschaltverhalten: off/on/last. 0 = deaktiviert."
+              },
               "value": 0,
               "min": 0,
               "max": 255,
@@ -7761,12 +9203,33 @@
             {
               "id": "relay_status",
               "type": "dropdown",
-              "label": { "en": "Turn On Behavior", "de": "Einschaltverhalten" },
+              "label": {
+                "en": "Turn On Behavior",
+                "de": "Einschaltverhalten"
+              },
               "value": "off",
               "values": [
-                { "id": "off", "label": { "en": "Off", "de": "Aus" } },
-                { "id": "on", "label": { "en": "On", "de": "Ein" } },
-                { "id": "last", "label": { "en": "Last state", "de": "Letzter Zustand" } }
+                {
+                  "id": "off",
+                  "label": {
+                    "en": "Off",
+                    "de": "Aus"
+                  }
+                },
+                {
+                  "id": "on",
+                  "label": {
+                    "en": "On",
+                    "de": "Ein"
+                  }
+                },
+                {
+                  "id": "last",
+                  "label": {
+                    "en": "Last state",
+                    "de": "Letzter Zustand"
+                  }
+                }
               ]
             }
           ]
@@ -7781,23 +9244,42 @@
             {
               "id": "connection_status",
               "type": "text",
-              "label": { "en": "Connection", "de": "Verbindung" },
+              "label": {
+                "en": "Connection",
+                "de": "Verbindung"
+              },
               "value": "—",
-              "hint": { "en": "Updated automatically by the app. Do not edit.", "de": "Wird automatisch aktualisiert. Nicht bearbeiten." }
+              "hint": {
+                "en": "Updated automatically by the app. Do not edit.",
+                "de": "Wird automatisch aktualisiert. Nicht bearbeiten."
+              }
             },
             {
               "id": "last_seen",
               "type": "text",
-              "label": { "en": "Last data received", "de": "Zuletzt Daten empfangen" },
+              "label": {
+                "en": "Last data received",
+                "de": "Zuletzt Daten empfangen"
+              },
               "value": "—",
-              "hint": { "en": "Updated automatically by the app. Do not edit.", "de": "Wird automatisch aktualisiert. Nicht bearbeiten." }
+              "hint": {
+                "en": "Updated automatically by the app. Do not edit.",
+                "de": "Wird automatisch aktualisiert. Nicht bearbeiten."
+              }
             }
           ]
         }
       ],
       "pair": [
-        { "id": "credentials", "navigation": { "next": "list_devices" } },
-        { "id": "list_devices" }
+        {
+          "id": "credentials",
+          "navigation": {
+            "next": "list_devices"
+          }
+        },
+        {
+          "id": "list_devices"
+        }
       ],
       "images": {
         "small": "/drivers/wall_switch/assets/images/small.png",
@@ -7915,7 +9397,10 @@
             {
               "id": "reconnect_interval",
               "type": "number",
-              "label": { "en": "Auto-Reconnect Interval (minutes)", "de": "Auto-Reconnect-Intervall (Minuten)" },
+              "label": {
+                "en": "Auto-Reconnect Interval (minutes)",
+                "de": "Auto-Reconnect-Intervall (Minuten)"
+              },
               "value": 0,
               "min": 0,
               "max": 1440,
@@ -7925,7 +9410,6 @@
                 "de": "Wenn das Gerät offline ist, alle N Minuten erneut verbinden. Bei aktiver Verbindung keine Auswirkung. 0 = deaktiviert."
               }
             },
-            
             {
               "id": "offline_grace_seconds",
               "type": "number",
@@ -8576,7 +10060,10 @@
             {
               "id": "reconnect_interval",
               "type": "number",
-              "label": { "en": "Auto-Reconnect Interval (minutes)", "de": "Auto-Reconnect-Intervall (Minuten)" },
+              "label": {
+                "en": "Auto-Reconnect Interval (minutes)",
+                "de": "Auto-Reconnect-Intervall (Minuten)"
+              },
               "value": 0,
               "min": 0,
               "max": 1440,
@@ -8586,7 +10073,6 @@
                 "de": "Wenn das Gerät offline ist, alle N Minuten erneut verbinden. Bei aktiver Verbindung keine Auswirkung. 0 = deaktiviert."
               }
             },
-            
             {
               "id": "offline_grace_seconds",
               "type": "number",
@@ -9994,7 +11480,10 @@
             {
               "id": "reconnect_interval",
               "type": "number",
-              "label": { "en": "Auto-Reconnect Interval (minutes)", "de": "Auto-Reconnect-Intervall (Minuten)" },
+              "label": {
+                "en": "Auto-Reconnect Interval (minutes)",
+                "de": "Auto-Reconnect-Intervall (Minuten)"
+              },
               "value": 0,
               "min": 0,
               "max": 1440,
@@ -10004,7 +11493,6 @@
                 "de": "Wenn das Gerät offline ist, alle N Minuten erneut verbinden. Bei aktiver Verbindung keine Auswirkung. 0 = deaktiviert."
               }
             },
-            
             {
               "id": "offline_grace_seconds",
               "type": "number",
@@ -10770,7 +12258,10 @@
             {
               "id": "reconnect_interval",
               "type": "number",
-              "label": { "en": "Auto-Reconnect Interval (minutes)", "de": "Auto-Reconnect-Intervall (Minuten)" },
+              "label": {
+                "en": "Auto-Reconnect Interval (minutes)",
+                "de": "Auto-Reconnect-Intervall (Minuten)"
+              },
               "value": 0,
               "min": 0,
               "max": 1440,
@@ -10780,7 +12271,6 @@
                 "de": "Wenn das Gerät offline ist, alle N Minuten erneut verbinden. Bei aktiver Verbindung keine Auswirkung. 0 = deaktiviert."
               }
             },
-            
             {
               "id": "offline_grace_seconds",
               "type": "number",
@@ -11257,7 +12747,10 @@
             {
               "id": "reconnect_interval",
               "type": "number",
-              "label": { "en": "Auto-Reconnect Interval (minutes)", "de": "Auto-Reconnect-Intervall (Minuten)" },
+              "label": {
+                "en": "Auto-Reconnect Interval (minutes)",
+                "de": "Auto-Reconnect-Intervall (Minuten)"
+              },
               "value": 0,
               "min": 0,
               "max": 1440,
@@ -11267,7 +12760,6 @@
                 "de": "Wenn das Gerät offline ist, alle N Minuten erneut verbinden. Bei aktiver Verbindung keine Auswirkung. 0 = deaktiviert."
               }
             },
-            
             {
               "id": "offline_grace_seconds",
               "type": "number",
@@ -11641,7 +13133,10 @@
             {
               "id": "reconnect_interval",
               "type": "number",
-              "label": { "en": "Auto-Reconnect Interval (minutes)", "de": "Auto-Reconnect-Intervall (Minuten)" },
+              "label": {
+                "en": "Auto-Reconnect Interval (minutes)",
+                "de": "Auto-Reconnect-Intervall (Minuten)"
+              },
               "value": 0,
               "min": 0,
               "max": 1440,
@@ -11651,7 +13146,6 @@
                 "de": "Wenn das Gerät offline ist, alle N Minuten erneut verbinden. Bei aktiver Verbindung keine Auswirkung. 0 = deaktiviert."
               }
             },
-            
             {
               "id": "offline_grace_seconds",
               "type": "number",
@@ -12099,7 +13593,10 @@
             {
               "id": "reconnect_interval",
               "type": "number",
-              "label": { "en": "Auto-Reconnect Interval (minutes)", "de": "Auto-Reconnect-Intervall (Minuten)" },
+              "label": {
+                "en": "Auto-Reconnect Interval (minutes)",
+                "de": "Auto-Reconnect-Intervall (Minuten)"
+              },
               "value": 0,
               "min": 0,
               "max": 1440,
@@ -12109,7 +13606,6 @@
                 "de": "Wenn das Gerät offline ist, alle N Minuten erneut verbinden. Bei aktiver Verbindung keine Auswirkung. 0 = deaktiviert."
               }
             },
-            
             {
               "id": "offline_grace_seconds",
               "type": "number",
@@ -12466,7 +13962,10 @@
             {
               "id": "reconnect_interval",
               "type": "number",
-              "label": { "en": "Auto-Reconnect Interval (minutes)", "de": "Auto-Reconnect-Intervall (Minuten)" },
+              "label": {
+                "en": "Auto-Reconnect Interval (minutes)",
+                "de": "Auto-Reconnect-Intervall (Minuten)"
+              },
               "value": 0,
               "min": 0,
               "max": 1440,
@@ -12476,7 +13975,6 @@
                 "de": "Wenn das Gerät offline ist, alle N Minuten erneut verbinden. Bei aktiver Verbindung keine Auswirkung. 0 = deaktiviert."
               }
             },
-            
             {
               "id": "offline_grace_seconds",
               "type": "number",
