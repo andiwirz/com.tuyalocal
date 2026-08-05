@@ -38,21 +38,33 @@ const DEBOUNCE_MS = 300;
 const WORK_STATES = [
   'charger_free', 'charger_insert', 'charger_free_fault', 'charger_wait',
   'charger_charging', 'charger_pause', 'charger_end', 'charger_fault',
+  // Reported by some models (Emini, Zencar) in addition to the eight above.
+  'charger_start_wait', 'charger_stop_wait',
 ];
 
 // Tuya's 8 work_state values → Homey's 5 standard evcharger_charging_state
 // values. Tuya is more granular (it separates "waiting" from "finished" from
 // "just plugged in"), so the raw value is additionally exposed through the
 // ev_state_changed trigger and ev_state_is condition.
+// Homey offers five values; Tuya reports up to ten. The collapse below matches
+// how tuya-local reads the same firmware, which labels charger_free as
+// "available" and charger_free_fault as "fault_unplugged" — so the "free" prefix
+// reliably means nothing is connected. Because the firmware distinguishes
+// charger_free_fault from plain charger_fault, the latter is taken to mean a
+// fault while something *is* connected. Either way the fault itself is reported
+// through alarm_generic and fault_code, not through this capability.
+// plugged_in_discharging is unused: none of these chargers are bidirectional.
 const STATE_MAP = {
   charger_free:       'plugged_out',
   charger_free_fault: 'plugged_out',
   charger_insert:     'plugged_in',
   charger_wait:       'plugged_in',
+  charger_start_wait: 'plugged_in',
   charger_end:        'plugged_in',
   charger_fault:      'plugged_in',
   charger_charging:   'plugged_in_charging',
   charger_pause:      'plugged_in_paused',
+  charger_stop_wait:  'plugged_in_paused',
 };
 
 // Control-pilot states that mean the charger is actively supplying current.

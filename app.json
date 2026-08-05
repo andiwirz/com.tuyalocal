@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.147",
+  "version": "1.0.148",
   "compatibility": ">=12.13.0",
   "sdk": 3,
   "platforms": [
@@ -5302,8 +5302,10 @@
               { "id": "charger_insert",     "label": { "en": "Plugged In",   "de": "Eingesteckt" } },
               { "id": "charger_free_fault", "label": { "en": "Idle (Fault)", "de": "Bereit (Fehler)" } },
               { "id": "charger_wait",       "label": { "en": "Waiting",      "de": "Wartet" } },
+              { "id": "charger_start_wait", "label": { "en": "Waiting to start", "de": "Wartet auf Start" } },
               { "id": "charger_charging",   "label": { "en": "Charging",     "de": "Lädt" } },
               { "id": "charger_pause",      "label": { "en": "Paused",       "de": "Pausiert" } },
+              { "id": "charger_stop_wait",  "label": { "en": "Stopping",     "de": "Wird gestoppt" } },
               { "id": "charger_end",        "label": { "en": "Finished",     "de": "Beendet" } },
               { "id": "charger_fault",      "label": { "en": "Fault",        "de": "Fehler" } }
             ]
