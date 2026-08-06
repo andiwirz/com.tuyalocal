@@ -1,4 +1,8 @@
 {
+  "1.0.153": {
+    "en": "EV Charger icon is now a real vector graphic, so it renders in the mobile app and adapts to the light and dark theme. Same artwork as before, just no longer an embedded bitmap.",
+    "de": "Das Wallbox-Symbol ist jetzt eine echte Vektorgrafik — es wird dadurch in der Mobil-App angezeigt und passt sich dem hellen und dunklen Design an. Gleiche Darstellung wie bisher, nur kein eingebettetes Bitmap mehr."
+  },
   "1.0.152": {
     "en": "Restored the previous EV Charger icon.",
     "de": "Vorheriges Wallbox-Symbol wiederhergestellt."
