@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.155",
+  "version": "1.0.156",
   "compatibility": ">=12.13.0",
   "sdk": 3,
   "platforms": [
@@ -15411,7 +15411,7 @@
               }
             },
             {
-              "id": "energy_source",
+              "id": "total_energy_source",
               "type": "dropdown",
               "label": {
                 "en": "Energy source for the dashboard",

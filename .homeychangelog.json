@@ -1,4 +1,8 @@
 {
+  "1.0.156": {
+    "en": "Renamed the EV Charger setting that selects the energy source, because Homey reserves the prefix it used. If you had changed it away from the default, please set it again in the device settings.",
+    "de": "Die Wallbox-Einstellung zur Wahl der Energiequelle wurde umbenannt, da Homey das bisher verwendete Präfix reserviert. Falls du sie vom Standard abweichend gesetzt hattest, bitte in den Geräteeinstellungen erneut wählen."
+  },
   "1.0.155": {
     "en": "Removed protocol version 3.22 from auto-detection, device settings and the pairing wizard. It is not a protocol: the library has no code path for it and silently treated it as 3.1, so choosing it gave you 3.1 under a different name and auto-detection wasted a timeout repeating the 3.1 attempt. Detection is now one step shorter. Version 3.2 is offered everywhere instead, which the library does implement.",
     "de": "Protokollversion 3.22 aus Auto-Erkennung, Geräteeinstellungen und Pairing-Assistent entfernt. Es ist kein Protokoll: Die Bibliothek hat dafür keinen Codepfad und behandelte es still als 3.1 — die Auswahl ergab also 3.1 unter anderem Namen, und die Auto-Erkennung verschwendete ein Zeitlimit auf einen zweiten 3.1-Versuch. Die Erkennung ist jetzt einen Schritt kürzer. Stattdessen wird überall 3.2 angeboten, das die Bibliothek tatsächlich unterstützt."

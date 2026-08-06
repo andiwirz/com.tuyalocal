@@ -214,7 +214,7 @@ class EvChargerDriver extends Homey.Driver {
       current_scale:        '1',
       session_energy_scale: '0.01',
       total_energy_scale:   '0.01',
-      energy_source:        'session',
+      total_energy_source:        'session',
       // Chargers with no power DP get the estimate switched on, since otherwise
       // the power tile would stay permanently empty. Enabled below.
       estimate_power:       false,

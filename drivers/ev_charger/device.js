@@ -115,7 +115,7 @@ class EvChargerDevice extends BaseTuyaDevice {
     this._prevWorkState = null;
 
     // Accumulated lifetime energy. Which source feeds it is chosen by the
-    // energy_source setting — see _handleSessionEnergy and _onPollTick.
+    // total_energy_source setting — see _handleSessionEnergy and _onPollTick.
     this._energyAccum    = 0;
     this._lastSessionKwh = null;
     try {
@@ -125,7 +125,7 @@ class EvChargerDevice extends BaseTuyaDevice {
       if (typeof storedSession === 'number') this._lastSessionKwh = storedSession;
     } catch (e) {}
 
-    // Power integration state (energy_source = power | estimate)
+    // Power integration state (total_energy_source = power | estimate)
     this._lastPowerTime      = null; // timestamp of the previous integration step
     this._lastPowerWatts     = 0;    // most recent power reading or estimate
     this._prevTickPowerWatts = 0;    // power at the previous step, for trapezoidal averaging
@@ -377,7 +377,7 @@ class EvChargerDevice extends BaseTuyaDevice {
 
   /** Which source feeds meter_power.charged. */
   _energySource() {
-    return this.getSetting('energy_source') || 'session';
+    return this.getSetting('total_energy_source') || 'session';
   }
 
   /**
@@ -726,7 +726,7 @@ class EvChargerDevice extends BaseTuyaDevice {
         await this.setCapabilityValue('measure_power', null).catch(() => {});
       }
     }
-    if (changedKeys.includes('energy_source')) {
+    if (changedKeys.includes('total_energy_source')) {
       // Restart integration cleanly; the accumulated total is deliberately kept.
       this._lastPowerTime      = null;
       this._prevTickPowerWatts = 0;
