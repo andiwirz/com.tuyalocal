@@ -204,7 +204,7 @@ class HeatPumpDevice extends BaseTuyaDevice {
           await this.setCapabilityValue('target_temperature', Number(value) / div).catch(() => {});
           // A temperature push without a simultaneous mode DP update indicates the
           // mode was changed via cloud (SmartLife). Refresh to pick up the current mode.
-          setTimeout(() => { this._conn?.refresh().catch(() => {}); }, 1500);
+          setTimeout(() => { this.refreshDps().catch(() => {}); }, 1500);
           break;
         }
 
@@ -226,7 +226,7 @@ class HeatPumpDevice extends BaseTuyaDevice {
             // Each mode stores its own target temperature. After a mode change the
             // device silently switches to the stored temperature for that mode without
             // pushing the new value. A short-delay refresh fetches the updated temp.
-            setTimeout(() => { this._conn?.refresh().catch(() => {}); }, 1500);
+            setTimeout(() => { this.refreshDps().catch(() => {}); }, 1500);
           }
           break;
         }

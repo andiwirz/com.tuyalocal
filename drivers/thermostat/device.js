@@ -148,7 +148,7 @@ class ThermostatDevice extends BaseTuyaDevice {
               .catch(() => {});
             // Some thermostats store a mode-specific target temperature. Refresh
             // after a short delay to pick up the temperature the device switched to.
-            setTimeout(() => { this._conn?.refresh().catch(() => {}); }, 1500);
+            setTimeout(() => { this.refreshDps().catch(() => {}); }, 1500);
           }
           break;
         }

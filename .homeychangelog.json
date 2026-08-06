@@ -1,4 +1,8 @@
 {
+  "1.0.154": {
+    "en": "Data-point refresh requests now name the data points each device is actually configured for, instead of the fixed set of six the underlying library defaults to. Any data point outside that set was previously never requested — which mattered for values on higher numbers such as 101 and 102, and for devices that report nothing except in reply to a refresh. Applies to every driver.",
+    "de": "Aktualisierungsanfragen nennen jetzt die Datenpunkte, für die das jeweilige Gerät konfiguriert ist, statt der sechs fest vorgegebenen der zugrunde liegenden Bibliothek. Datenpunkte außerhalb dieser Menge wurden bisher nie angefragt — relevant für Werte auf höheren Nummern wie 101 und 102 sowie für Geräte, die nur auf eine Aktualisierungsanfrage antworten. Gilt für alle Treiber."
+  },
   "1.0.153": {
     "en": "EV Charger icon is now a real vector graphic, so it renders in the mobile app and adapts to the light and dark theme. Same artwork as before, just no longer an embedded bitmap.",
     "de": "Das Wallbox-Symbol ist jetzt eine echte Vektorgrafik — es wird dadurch in der Mobil-App angezeigt und passt sich dem hellen und dunklen Design an. Gleiche Darstellung wie bisher, nur kein eingebettetes Bitmap mehr."

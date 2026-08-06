@@ -90,7 +90,7 @@ class SmartPlugDevice extends BaseTuyaDevice {
     // Some plugs only report voltage/current/power in response to a refresh() command
     // and not in the standard GET — without this, energy data could be silent for the
     // entire first poll interval after connecting.
-    setTimeout(() => { this._conn?.refresh().catch(() => {}); }, 2500);
+    setTimeout(() => { this.refreshDps().catch(() => {}); }, 2500);
   }
 
   /**

@@ -447,7 +447,7 @@ class EvChargerDevice extends BaseTuyaDevice {
     // exactly those values — so ask for a refresh on every tick as well. Overlapping
     // requests are suppressed by the connection's own in-flight guard.
     if ((this.getSetting('dp_phase_a') ?? 0) > 0) {
-      this._conn?.refresh().catch(() => {});
+      this.refreshDps().catch(() => {});
     }
 
     const source   = this._energySource();

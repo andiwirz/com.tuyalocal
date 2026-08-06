@@ -95,6 +95,20 @@ class GenericDevice extends BaseTuyaDevice {
     this._mappingsCache = null;
   }
 
+  /**
+   * This driver keeps its DP numbers in the dp_config JSON rather than in
+   * individual dp_* settings, so the generic derivation in the base class finds
+   * nothing. Take them from the mapping instead, so refresh requests name the
+   * DPs this device actually uses.
+   */
+  _configuredDps() {
+    const out = new Set();
+    for (const m of this._getMappings()) {
+      if (Number.isInteger(m.dp) && m.dp >= 1 && m.dp <= 255) out.add(m.dp);
+    }
+    return [...out].sort((a, b) => a - b);
+  }
+
   async _syncCapabilities() {
     const mappings    = this._getMappings();
     const mappedCaps  = new Set(mappings.map((m) => m.cap));
