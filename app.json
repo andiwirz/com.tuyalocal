@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.154",
+  "version": "1.0.155",
   "compatibility": ">=12.13.0",
   "sdk": 3,
   "platforms": [
@@ -646,7 +646,10 @@
       },
       "getable": true,
       "setable": false,
-      "units": { "en": "kWh", "de": "kWh" },
+      "units": {
+        "en": "kWh",
+        "de": "kWh"
+      },
       "decimals": 2,
       "uiComponent": "sensor",
       "uiQuickAction": false,
@@ -660,13 +663,55 @@
         "de": "Verbindungsstatus"
       },
       "values": [
-        { "id": "controlpi_12v",     "title": { "en": "Ready (12V)",        "de": "Bereit (12V)" } },
-        { "id": "controlpi_12v_pwm", "title": { "en": "Ready (12V PWM)",    "de": "Bereit (12V PWM)" } },
-        { "id": "controlpi_9v",      "title": { "en": "Connected (9V)",     "de": "Verbunden (9V)" } },
-        { "id": "controlpi_9v_pwm",  "title": { "en": "Charging (9V PWM)",  "de": "Lädt (9V PWM)" } },
-        { "id": "controlpi_6v",      "title": { "en": "Connected (6V)",     "de": "Verbunden (6V)" } },
-        { "id": "controlpi_6v_pwm",  "title": { "en": "Charging (6V PWM)",  "de": "Lädt (6V PWM)" } },
-        { "id": "controlpi_error",   "title": { "en": "CP Error",          "de": "CP-Fehler" } }
+        {
+          "id": "controlpi_12v",
+          "title": {
+            "en": "Ready (12V)",
+            "de": "Bereit (12V)"
+          }
+        },
+        {
+          "id": "controlpi_12v_pwm",
+          "title": {
+            "en": "Ready (12V PWM)",
+            "de": "Bereit (12V PWM)"
+          }
+        },
+        {
+          "id": "controlpi_9v",
+          "title": {
+            "en": "Connected (9V)",
+            "de": "Verbunden (9V)"
+          }
+        },
+        {
+          "id": "controlpi_9v_pwm",
+          "title": {
+            "en": "Charging (9V PWM)",
+            "de": "Lädt (9V PWM)"
+          }
+        },
+        {
+          "id": "controlpi_6v",
+          "title": {
+            "en": "Connected (6V)",
+            "de": "Verbunden (6V)"
+          }
+        },
+        {
+          "id": "controlpi_6v_pwm",
+          "title": {
+            "en": "Charging (6V PWM)",
+            "de": "Lädt (6V PWM)"
+          }
+        },
+        {
+          "id": "controlpi_error",
+          "title": {
+            "en": "CP Error",
+            "de": "CP-Fehler"
+          }
+        }
       ],
       "getable": true,
       "setable": false,
@@ -682,11 +727,41 @@
         "de": "Lademodus"
       },
       "values": [
-        { "id": "charge_now",      "title": { "en": "Charge Now",      "de": "Sofort laden" } },
-        { "id": "charge_pct",      "title": { "en": "Charge to %",     "de": "Bis % laden" } },
-        { "id": "charge_energy",  "title": { "en": "Charge kWh",      "de": "kWh laden" } },
-        { "id": "charge_schedule", "title": { "en": "Scheduled",       "de": "Geplant" } },
-        { "id": "charge_delay",   "title": { "en": "Delayed Start",   "de": "Verzögerter Start" } }
+        {
+          "id": "charge_now",
+          "title": {
+            "en": "Charge Now",
+            "de": "Sofort laden"
+          }
+        },
+        {
+          "id": "charge_pct",
+          "title": {
+            "en": "Charge to %",
+            "de": "Bis % laden"
+          }
+        },
+        {
+          "id": "charge_energy",
+          "title": {
+            "en": "Charge kWh",
+            "de": "kWh laden"
+          }
+        },
+        {
+          "id": "charge_schedule",
+          "title": {
+            "en": "Scheduled",
+            "de": "Geplant"
+          }
+        },
+        {
+          "id": "charge_delay",
+          "title": {
+            "en": "Delayed Start",
+            "de": "Verzögerter Start"
+          }
+        }
       ],
       "getable": true,
       "setable": true,
@@ -703,7 +778,10 @@
       },
       "getable": true,
       "setable": true,
-      "units": { "en": "h", "de": "Std" },
+      "units": {
+        "en": "h",
+        "de": "Std"
+      },
       "min": 0,
       "max": 24,
       "step": 1,
@@ -4224,7 +4302,11 @@
           "de": "Wallbox verbunden"
         },
         "args": [
-          { "name": "device", "type": "device", "filter": "driver_id=ev_charger" }
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=ev_charger"
+          }
         ]
       },
       {
@@ -4234,7 +4316,11 @@
           "de": "Wallbox getrennt"
         },
         "args": [
-          { "name": "device", "type": "device", "filter": "driver_id=ev_charger" }
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=ev_charger"
+          }
         ]
       },
       {
@@ -4248,13 +4334,20 @@
           "de": "Wird ausgelöst, wenn die Wallbox den Ladezustand verlässt — mit der in dieser Sitzung geladenen Energie als Token. Für einen einfachen Start/Stop-Auslöser die eingebauten Karten \"Ladevorgang hat begonnen\" / \"Ladevorgang wurde gestoppt\" verwenden."
         },
         "args": [
-          { "name": "device", "type": "device", "filter": "driver_id=ev_charger" }
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=ev_charger"
+          }
         ],
         "tokens": [
           {
             "name": "energy",
             "type": "number",
-            "title": { "en": "Session energy", "de": "Sitzungsenergie" },
+            "title": {
+              "en": "Session energy",
+              "de": "Sitzungsenergie"
+            },
             "example": 12.35
           }
         ]
@@ -4270,19 +4363,29 @@
           "de": "Wird bei jeder Änderung des rohen Tuya-Status ausgelöst, der feiner ist als der Homey-Standardstatus (unterscheidet \"wartet\", \"beendet\" und \"eingesteckt\")."
         },
         "args": [
-          { "name": "device", "type": "device", "filter": "driver_id=ev_charger" }
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=ev_charger"
+          }
         ],
         "tokens": [
           {
             "name": "state",
             "type": "string",
-            "title": { "en": "State", "de": "Status" },
+            "title": {
+              "en": "State",
+              "de": "Status"
+            },
             "example": "charger_charging"
           },
           {
             "name": "prev_state",
             "type": "string",
-            "title": { "en": "Previous state", "de": "Vorheriger Status" },
+            "title": {
+              "en": "Previous state",
+              "de": "Vorheriger Status"
+            },
             "example": "charger_insert"
           }
         ]
@@ -4294,13 +4397,20 @@
           "de": "Wallbox-Fehler aufgetreten"
         },
         "args": [
-          { "name": "device", "type": "device", "filter": "driver_id=ev_charger" }
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=ev_charger"
+          }
         ],
         "tokens": [
           {
             "name": "fault_code",
             "type": "number",
-            "title": { "en": "Fault code", "de": "Fehlercode" },
+            "title": {
+              "en": "Fault code",
+              "de": "Fehlercode"
+            },
             "example": 256
           }
         ]
@@ -4312,19 +4422,29 @@
           "de": "Wallbox: Datenpunkt geändert"
         },
         "args": [
-          { "name": "device", "type": "device", "filter": "driver_id=ev_charger" }
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=ev_charger"
+          }
         ],
         "tokens": [
           {
             "name": "dp",
             "type": "string",
-            "title": { "en": "DP number", "de": "DP-Nummer" },
+            "title": {
+              "en": "DP number",
+              "de": "DP-Nummer"
+            },
             "example": "3"
           },
           {
             "name": "value",
             "type": "string",
-            "title": { "en": "Value", "de": "Wert" },
+            "title": {
+              "en": "Value",
+              "de": "Wert"
+            },
             "example": "charger_charging"
           }
         ]
@@ -5274,7 +5394,11 @@
           "de": "Wallbox !{{ist|ist nicht}} verbunden"
         },
         "args": [
-          { "name": "device", "type": "device", "filter": "driver_id=ev_charger" }
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=ev_charger"
+          }
         ]
       },
       {
@@ -5292,22 +5416,89 @@
           "de": "Prüft den rohen Tuya-Status, der \"wartet\", \"beendet\" und \"eingesteckt\" unterscheidet — Zustände, die der Homey-Standardstatus zusammenfasst."
         },
         "args": [
-          { "name": "device", "type": "device", "filter": "driver_id=ev_charger" },
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=ev_charger"
+          },
           {
             "name": "state",
             "type": "dropdown",
-            "title": { "en": "State", "de": "Status" },
+            "title": {
+              "en": "State",
+              "de": "Status"
+            },
             "values": [
-              { "id": "charger_free",       "label": { "en": "Idle",         "de": "Bereit" } },
-              { "id": "charger_insert",     "label": { "en": "Plugged In",   "de": "Eingesteckt" } },
-              { "id": "charger_free_fault", "label": { "en": "Idle (Fault)", "de": "Bereit (Fehler)" } },
-              { "id": "charger_wait",       "label": { "en": "Waiting",      "de": "Wartet" } },
-              { "id": "charger_start_wait", "label": { "en": "Waiting to start", "de": "Wartet auf Start" } },
-              { "id": "charger_charging",   "label": { "en": "Charging",     "de": "Lädt" } },
-              { "id": "charger_pause",      "label": { "en": "Paused",       "de": "Pausiert" } },
-              { "id": "charger_stop_wait",  "label": { "en": "Stopping",     "de": "Wird gestoppt" } },
-              { "id": "charger_end",        "label": { "en": "Finished",     "de": "Beendet" } },
-              { "id": "charger_fault",      "label": { "en": "Fault",        "de": "Fehler" } }
+              {
+                "id": "charger_free",
+                "label": {
+                  "en": "Idle",
+                  "de": "Bereit"
+                }
+              },
+              {
+                "id": "charger_insert",
+                "label": {
+                  "en": "Plugged In",
+                  "de": "Eingesteckt"
+                }
+              },
+              {
+                "id": "charger_free_fault",
+                "label": {
+                  "en": "Idle (Fault)",
+                  "de": "Bereit (Fehler)"
+                }
+              },
+              {
+                "id": "charger_wait",
+                "label": {
+                  "en": "Waiting",
+                  "de": "Wartet"
+                }
+              },
+              {
+                "id": "charger_start_wait",
+                "label": {
+                  "en": "Waiting to start",
+                  "de": "Wartet auf Start"
+                }
+              },
+              {
+                "id": "charger_charging",
+                "label": {
+                  "en": "Charging",
+                  "de": "Lädt"
+                }
+              },
+              {
+                "id": "charger_pause",
+                "label": {
+                  "en": "Paused",
+                  "de": "Pausiert"
+                }
+              },
+              {
+                "id": "charger_stop_wait",
+                "label": {
+                  "en": "Stopping",
+                  "de": "Wird gestoppt"
+                }
+              },
+              {
+                "id": "charger_end",
+                "label": {
+                  "en": "Finished",
+                  "de": "Beendet"
+                }
+              },
+              {
+                "id": "charger_fault",
+                "label": {
+                  "en": "Fault",
+                  "de": "Fehler"
+                }
+              }
             ]
           }
         ]
@@ -7402,8 +7593,20 @@
               "de": "Licht"
             },
             "values": [
-              { "id": "true",  "label": { "en": "On",  "de": "Ein" } },
-              { "id": "false", "label": { "en": "Off", "de": "Aus" } }
+              {
+                "id": "true",
+                "label": {
+                  "en": "On",
+                  "de": "Ein"
+                }
+              },
+              {
+                "id": "false",
+                "label": {
+                  "en": "Off",
+                  "de": "Aus"
+                }
+              }
             ]
           }
         ]
@@ -8001,11 +8204,18 @@
           "de": "Wird auf den in den Geräteeinstellungen konfigurierten Bereich Min/Max Strom begrenzt."
         },
         "args": [
-          { "name": "device", "type": "device", "filter": "driver_id=ev_charger" },
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=ev_charger"
+          },
           {
             "name": "current",
             "type": "number",
-            "title": { "en": "Current", "de": "Strom" },
+            "title": {
+              "en": "Current",
+              "de": "Strom"
+            },
             "min": 1,
             "max": 48,
             "step": 1
@@ -8019,7 +8229,11 @@
           "de": "Energiezähler zurücksetzen"
         },
         "args": [
-          { "name": "device", "type": "device", "filter": "driver_id=ev_charger" }
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=ev_charger"
+          }
         ]
       },
       {
@@ -8029,7 +8243,11 @@
           "de": "Wallbox: Verbindung neu aufbauen"
         },
         "args": [
-          { "name": "device", "type": "device", "filter": "driver_id=ev_charger" }
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=ev_charger"
+          }
         ]
       },
       {
@@ -8039,7 +8257,11 @@
           "de": "Wallbox: Daten aktualisieren"
         },
         "args": [
-          { "name": "device", "type": "device", "filter": "driver_id=ev_charger" }
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=ev_charger"
+          }
         ]
       }
     ]
@@ -8159,13 +8381,6 @@
                   "label": {
                     "en": "3.2",
                     "de": "3.2"
-                  }
-                },
-                {
-                  "id": "3.22",
-                  "label": {
-                    "en": "3.22 (newer chips)",
-                    "de": "3.22 (neuere Chips)"
                   }
                 }
               ]
@@ -9746,13 +9961,6 @@
                     "en": "3.2",
                     "de": "3.2"
                   }
-                },
-                {
-                  "id": "3.22",
-                  "label": {
-                    "en": "3.22 (newer chips)",
-                    "de": "3.22 (neuere Chips)"
-                  }
                 }
               ]
             },
@@ -9991,13 +10199,6 @@
                   "label": {
                     "en": "3.2",
                     "de": "3.2"
-                  }
-                },
-                {
-                  "id": "3.22",
-                  "label": {
-                    "en": "3.22 (newer chips)",
-                    "de": "3.22 (neuere Chips)"
                   }
                 }
               ]
@@ -10404,13 +10605,6 @@
                   "label": {
                     "en": "3.2",
                     "de": "3.2"
-                  }
-                },
-                {
-                  "id": "3.22",
-                  "label": {
-                    "en": "3.22 (newer chips)",
-                    "de": "3.22 (neuere Chips)"
                   }
                 }
               ]
@@ -10958,13 +11152,6 @@
                     "en": "3.2",
                     "de": "3.2"
                   }
-                },
-                {
-                  "id": "3.22",
-                  "label": {
-                    "en": "3.22 (newer chips)",
-                    "de": "3.22 (neuere Chips)"
-                  }
                 }
               ]
             },
@@ -11432,13 +11619,6 @@
                     "en": "3.2",
                     "de": "3.2"
                   }
-                },
-                {
-                  "id": "3.22",
-                  "label": {
-                    "en": "3.22 (newer chips)",
-                    "de": "3.22 (neuere Chips)"
-                  }
                 }
               ]
             },
@@ -11824,13 +12004,6 @@
                   "label": {
                     "en": "3.2",
                     "de": "3.2"
-                  }
-                },
-                {
-                  "id": "3.22",
-                  "label": {
-                    "en": "3.22 (newer chips)",
-                    "de": "3.22 (neuere Chips)"
                   }
                 }
               ]
@@ -12267,13 +12440,6 @@
                     "en": "3.2",
                     "de": "3.2"
                   }
-                },
-                {
-                  "id": "3.22",
-                  "label": {
-                    "en": "3.22 (newer chips)",
-                    "de": "3.22 (neuere Chips)"
-                  }
                 }
               ]
             },
@@ -12602,13 +12768,6 @@
                   "label": {
                     "en": "3.2",
                     "de": "3.2"
-                  }
-                },
-                {
-                  "id": "3.22",
-                  "label": {
-                    "en": "3.22 (newer chips)",
-                    "de": "3.22 (neuere Chips)"
                   }
                 }
               ]
@@ -13092,13 +13251,6 @@
                     "en": "3.2",
                     "de": "3.2"
                   }
-                },
-                {
-                  "id": "3.22",
-                  "label": {
-                    "en": "3.22 (newer chips)",
-                    "de": "3.22 (neuere Chips)"
-                  }
                 }
               ]
             },
@@ -13477,13 +13629,6 @@
                   "label": {
                     "en": "3.2",
                     "de": "3.2"
-                  }
-                },
-                {
-                  "id": "3.22",
-                  "label": {
-                    "en": "3.22 (newer chips)",
-                    "de": "3.22 (neuere Chips)"
                   }
                 }
               ]
@@ -13937,13 +14082,6 @@
                     "en": "3.2",
                     "de": "3.2"
                   }
-                },
-                {
-                  "id": "3.22",
-                  "label": {
-                    "en": "3.22 (newer chips)",
-                    "de": "3.22 (neuere Chips)"
-                  }
                 }
               ]
             },
@@ -14306,13 +14444,6 @@
                   "label": {
                     "en": "3.2",
                     "de": "3.2"
-                  }
-                },
-                {
-                  "id": "3.22",
-                  "label": {
-                    "en": "3.22 (newer chips)",
-                    "de": "3.22 (neuere Chips)"
                   }
                 }
               ]
@@ -14736,13 +14867,6 @@
                     "en": "3.2",
                     "de": "3.2"
                   }
-                },
-                {
-                  "id": "3.22",
-                  "label": {
-                    "en": "3.22 (newer chips)",
-                    "de": "3.22 (neuere Chips)"
-                  }
                 }
               ]
             },
@@ -15027,12 +15151,42 @@
           "excludeMin": 0,
           "excludeMax": 1380
         },
-        "measure_voltage.b": { "title": { "en": "Voltage L2", "de": "Spannung L2" } },
-        "measure_current.b": { "title": { "en": "Current L2", "de": "Strom L2" } },
-        "measure_power.b":   { "title": { "en": "Power L2",   "de": "Leistung L2" } },
-        "measure_voltage.c": { "title": { "en": "Voltage L3", "de": "Spannung L3" } },
-        "measure_current.c": { "title": { "en": "Current L3", "de": "Strom L3" } },
-        "measure_power.c":   { "title": { "en": "Power L3",   "de": "Leistung L3" } }
+        "measure_voltage.b": {
+          "title": {
+            "en": "Voltage L2",
+            "de": "Spannung L2"
+          }
+        },
+        "measure_current.b": {
+          "title": {
+            "en": "Current L2",
+            "de": "Strom L2"
+          }
+        },
+        "measure_power.b": {
+          "title": {
+            "en": "Power L2",
+            "de": "Leistung L2"
+          }
+        },
+        "measure_voltage.c": {
+          "title": {
+            "en": "Voltage L3",
+            "de": "Spannung L3"
+          }
+        },
+        "measure_current.c": {
+          "title": {
+            "en": "Current L3",
+            "de": "Strom L3"
+          }
+        },
+        "measure_power.c": {
+          "title": {
+            "en": "Power L3",
+            "de": "Leistung L3"
+          }
+        }
       },
       "energy": {
         "evCharger": true,
@@ -15086,10 +15240,41 @@
               },
               "value": "3.3",
               "values": [
-                { "id": "3.1", "label": { "en": "3.1 (legacy)", "de": "3.1 (veraltet)" } },
-                { "id": "3.3", "label": { "en": "3.3", "de": "3.3" } },
-                { "id": "3.4", "label": { "en": "3.4", "de": "3.4" } },
-                { "id": "3.5", "label": { "en": "3.5", "de": "3.5" } }
+                {
+                  "id": "3.1",
+                  "label": {
+                    "en": "3.1 (legacy)",
+                    "de": "3.1 (veraltet)"
+                  }
+                },
+                {
+                  "id": "3.3",
+                  "label": {
+                    "en": "3.3",
+                    "de": "3.3"
+                  }
+                },
+                {
+                  "id": "3.4",
+                  "label": {
+                    "en": "3.4",
+                    "de": "3.4"
+                  }
+                },
+                {
+                  "id": "3.5",
+                  "label": {
+                    "en": "3.5",
+                    "de": "3.5"
+                  }
+                },
+                {
+                  "id": "3.2",
+                  "label": {
+                    "en": "3.2",
+                    "de": "3.2"
+                  }
+                }
               ]
             },
             {
@@ -15234,9 +15419,27 @@
               },
               "value": "session",
               "values": [
-                { "id": "session",  "label": { "en": "Session counter (default)",       "de": "Sitzungszähler (Standard)" } },
-                { "id": "power",    "label": { "en": "Measured power over time",         "de": "Gemessene Leistung über Zeit" } },
-                { "id": "estimate", "label": { "en": "Estimated from current limit",     "de": "Aus Stromlimit geschätzt" } }
+                {
+                  "id": "session",
+                  "label": {
+                    "en": "Session counter (default)",
+                    "de": "Sitzungszähler (Standard)"
+                  }
+                },
+                {
+                  "id": "power",
+                  "label": {
+                    "en": "Measured power over time",
+                    "de": "Gemessene Leistung über Zeit"
+                  }
+                },
+                {
+                  "id": "estimate",
+                  "label": {
+                    "en": "Estimated from current limit",
+                    "de": "Aus Stromlimit geschätzt"
+                  }
+                }
               ],
               "hint": {
                 "en": "How the total charged energy is determined. 'Session counter' adds up the charger's own per-session values — accurate, but useless if that DP does not move or is scaled unexpectedly. 'Measured power' integrates the live power reading over time, which needs a working power DP. 'Estimated' assumes the charger draws the configured current limit while charging — an approximation for units that report neither, but it does make the energy dashboard work.",
@@ -15252,8 +15455,20 @@
               },
               "value": "1",
               "values": [
-                { "id": "1",   "label": { "en": "1 — raw value is amps (default)", "de": "1 — Rohwert ist Ampere (Standard)" } },
-                { "id": "0.1", "label": { "en": "0.1 — raw value is amps × 10",    "de": "0,1 — Rohwert ist Ampere × 10" } }
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "1 — raw value is amps (default)",
+                    "de": "1 — Rohwert ist Ampere (Standard)"
+                  }
+                },
+                {
+                  "id": "0.1",
+                  "label": {
+                    "en": "0.1 — raw value is amps × 10",
+                    "de": "0,1 — Rohwert ist Ampere × 10"
+                  }
+                }
               ],
               "hint": {
                 "en": "A few chargers report and expect the current limit multiplied by ten (130 means 13 A). If the reported charge current is ten times too high, switch this to 0.1.",
@@ -15269,8 +15484,20 @@
               },
               "value": "0.01",
               "values": [
-                { "id": "0.01", "label": { "en": "0.01 — raw value is kWh × 100 (default)", "de": "0,01 — Rohwert ist kWh × 100 (Standard)" } },
-                { "id": "1",    "label": { "en": "1 — raw value is kWh",                    "de": "1 — Rohwert ist kWh" } }
+                {
+                  "id": "0.01",
+                  "label": {
+                    "en": "0.01 — raw value is kWh × 100 (default)",
+                    "de": "0,01 — Rohwert ist kWh × 100 (Standard)"
+                  }
+                },
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "1 — raw value is kWh",
+                    "de": "1 — Rohwert ist kWh"
+                  }
+                }
               ],
               "hint": {
                 "en": "Most chargers report session energy in hundredths of a kWh; a few report whole kWh. If session energy reads a hundred times too low, switch this to 1.",
@@ -15286,8 +15513,20 @@
               },
               "value": "0.01",
               "values": [
-                { "id": "0.01", "label": { "en": "0.01 — raw value is kWh × 100 (default)", "de": "0,01 — Rohwert ist kWh × 100 (Standard)" } },
-                { "id": "1",    "label": { "en": "1 — raw value is kWh",                    "de": "1 — Rohwert ist kWh" } }
+                {
+                  "id": "0.01",
+                  "label": {
+                    "en": "0.01 — raw value is kWh × 100 (default)",
+                    "de": "0,01 — Rohwert ist kWh × 100 (Standard)"
+                  }
+                },
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "1 — raw value is kWh",
+                    "de": "1 — Rohwert ist kWh"
+                  }
+                }
               ],
               "hint": {
                 "en": "Only used when Lifetime Energy DP is not 0. Some chargers scale this DP differently from the session counter, so it has its own setting.",
@@ -15303,8 +15542,20 @@
               },
               "value": "1",
               "values": [
-                { "id": "1", "label": { "en": "1-phase", "de": "1-phasig" } },
-                { "id": "3", "label": { "en": "3-phase", "de": "3-phasig" } }
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "1-phase",
+                    "de": "1-phasig"
+                  }
+                },
+                {
+                  "id": "3",
+                  "label": {
+                    "en": "3-phase",
+                    "de": "3-phasig"
+                  }
+                }
               ],
               "hint": {
                 "en": "Used to convert between charging power (W) and the charger's current limit (A): W = A × 230 × phases. Detected automatically during pairing from the number of phase DPs reported.",

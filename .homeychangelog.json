@@ -1,4 +1,8 @@
 {
+  "1.0.155": {
+    "en": "Removed protocol version 3.22 from auto-detection, device settings and the pairing wizard. It is not a protocol: the library has no code path for it and silently treated it as 3.1, so choosing it gave you 3.1 under a different name and auto-detection wasted a timeout repeating the 3.1 attempt. Detection is now one step shorter. Version 3.2 is offered everywhere instead, which the library does implement.",
+    "de": "Protokollversion 3.22 aus Auto-Erkennung, Geräteeinstellungen und Pairing-Assistent entfernt. Es ist kein Protokoll: Die Bibliothek hat dafür keinen Codepfad und behandelte es still als 3.1 — die Auswahl ergab also 3.1 unter anderem Namen, und die Auto-Erkennung verschwendete ein Zeitlimit auf einen zweiten 3.1-Versuch. Die Erkennung ist jetzt einen Schritt kürzer. Stattdessen wird überall 3.2 angeboten, das die Bibliothek tatsächlich unterstützt."
+  },
   "1.0.154": {
     "en": "Data-point refresh requests now name the data points each device is actually configured for, instead of the fixed set of six the underlying library defaults to. Any data point outside that set was previously never requested — which mattered for values on higher numbers such as 101 and 102, and for devices that report nothing except in reply to a refresh. Applies to every driver.",
     "de": "Aktualisierungsanfragen nennen jetzt die Datenpunkte, für die das jeweilige Gerät konfiguriert ist, statt der sechs fest vorgegebenen der zugrunde liegenden Bibliothek. Datenpunkte außerhalb dieser Menge wurden bisher nie angefragt — relevant für Werte auf höheren Nummern wie 101 und 102 sowie für Geräte, die nur auf eine Aktualisierungsanfrage antworten. Gilt für alle Treiber."
