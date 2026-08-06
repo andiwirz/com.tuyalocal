@@ -1,4 +1,8 @@
 {
+  "1.0.157": {
+    "en": "EV Charger: the log now points out when an unmapped data point is counting up, naming the number to enter. This is the usual reason the charged-energy total stays at zero: chargers added before version 1.0.147 still point at data point 25, which holds the previous session and does not move during a charge, while the counter that actually rises is data point 1. Existing chargers need that one setting changed by hand.",
+    "de": "Wallbox: Das Protokoll weist jetzt darauf hin, wenn ein nicht zugeordneter Datenpunkt hochzählt, und nennt die einzutragende Nummer. Das ist der übliche Grund für eine Gesamtenergie, die bei null bleibt: Vor Version 1.0.147 hinzugefügte Wallboxen zeigen weiterhin auf Datenpunkt 25, der die vorherige Sitzung enthält und sich während des Ladens nicht bewegt, während Datenpunkt 1 tatsächlich hochzählt. Bei bestehenden Wallboxen muss diese eine Einstellung von Hand geändert werden."
+  },
   "1.0.156": {
     "en": "Renamed the EV Charger setting that selects the energy source, because Homey reserves the prefix it used. If you had changed it away from the default, please set it again in the device settings.",
     "de": "Die Wallbox-Einstellung zur Wahl der Energiequelle wurde umbenannt, da Homey das bisher verwendete Präfix reserviert. Falls du sie vom Standard abweichend gesetzt hattest, bitte in den Geräteeinstellungen erneut wählen."

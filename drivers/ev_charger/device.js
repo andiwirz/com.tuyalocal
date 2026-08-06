@@ -665,6 +665,25 @@ class EvChargerDevice extends BaseTuyaDevice {
       // Live-updates DP echoes back its own value — expected, not worth logging.
       if (settings.dp_live_updates > 0 && dp === settings.dp_live_updates) continue;
 
+      // An unmapped numeric DP that keeps climbing is almost always the energy
+      // counter pointed at the wrong DP number — the usual cause of a total that
+      // never moves. Say so once, with the number to enter, instead of leaving
+      // the value silently discarded.
+      if (typeof value === 'number' && !this._risingHinted?.has(dp)) {
+        const prev = this._unmappedPrev?.[dp];
+        if (typeof prev === 'number' && value > prev) {
+          (this._risingHinted = this._risingHinted || new Set()).add(dp);
+          this._appLog(
+            `DP ${dp} is counting up (${prev} → ${value}) but is not mapped to anything. ` +
+            `If the charged-energy total stays at zero, set "Session Energy DP" to ${dp} ` +
+            `in the device settings — on most of these chargers the rising counter is DP 1, ` +
+            `while DP 25 holds the previous session and does not move during a charge.`,
+            'warn',
+          );
+        }
+        (this._unmappedPrev = this._unmappedPrev || {})[dp] = value;
+      }
+
       this.log(`Unknown DP ${dp}:`, value);
     }
 
