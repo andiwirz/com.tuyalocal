@@ -118,6 +118,9 @@ class EvChargerDevice extends BaseTuyaDevice {
     // total_energy_source setting — see _handleSessionEnergy and _onPollTick.
     this._energyAccum    = 0;
     this._lastSessionKwh = null;
+    // Deliberately not persisted: after a restart the elapsed time is unknown, so
+    // the first reading re-establishes the baseline rather than being judged.
+    this._lastSessionTime = null;
     try {
       const stored = this.getStoreValue('energyAccum');
       if (typeof stored === 'number' && stored > 0) this._energyAccum = stored;
@@ -367,11 +370,15 @@ class EvChargerDevice extends BaseTuyaDevice {
     // charger's own lifetime counter isn't in use.
     if (this._energySource() === 'session' && this.getSetting('dp_energy_total') <= 0) {
       if (this._lastSessionKwh !== null && kwh > this._lastSessionKwh) {
-        this._energyAccum += kwh - this._lastSessionKwh;
-        await this._writeTotalEnergy();
+        const delta = kwh - this._lastSessionKwh;
+        if (this._isPlausibleDelta(delta)) {
+          this._energyAccum += delta;
+          await this._writeTotalEnergy();
+        }
       }
     }
-    this._lastSessionKwh = kwh;
+    this._lastSessionKwh  = kwh;
+    this._lastSessionTime = Date.now();
     this.setStoreValue('lastSessionKwh', kwh).catch(() => {});
   }
 
@@ -402,6 +409,39 @@ class EvChargerDevice extends BaseTuyaDevice {
       state = 'plugged_in_charging';
     }
     await this.setCapabilityValue('evcharger_charging_state', state).catch(() => {});
+  }
+
+  /**
+   * Rejects a session-counter jump that no amount of charging could have produced
+   * in the time that has passed.
+   *
+   * The session counter is firmware-maintained and can glitch — a charger has been
+   * observed reporting 48.3 kWh for a session that actually delivered about 10,
+   * hours after charging had already stopped, apparently after two brief restarts
+   * confused its internal tally. Because the lifetime total is built from these
+   * deltas, one bad reading would corrupt it permanently.
+   *
+   * The ceiling is what the charger could deliver at its configured maximum
+   * current over the elapsed time, plus generous headroom so that a genuine long
+   * gap (Homey restarted or offline mid-charge) is never discarded.
+   */
+  _isPlausibleDelta(deltaKwh) {
+    if (!this._lastSessionTime) return true; // no baseline yet — cannot judge
+    const elapsedH = (Date.now() - this._lastSessionTime) / 3_600_000;
+    const maxKw    = ((this.getSetting('current_max') ?? 16) * this._wattsPerAmp()) / 1000;
+    // ×1.25 absorbs mains above nominal; +0.5 kWh covers short polling intervals,
+    // where elapsed time alone would give an unrealistically tight bound.
+    const ceiling  = (maxKw * elapsedH * 1.25) + 0.5;
+    if (deltaKwh <= ceiling) return true;
+
+    this._appLog(
+      `Ignored an implausible energy jump of ${deltaKwh.toFixed(2)} kWh: at most ` +
+      `${ceiling.toFixed(2)} kWh could have been delivered in the ${(elapsedH * 60).toFixed(1)} min ` +
+      `since the last reading. The charger's own session counter most likely glitched; ` +
+      `the running total was left untouched.`,
+      'warn',
+    );
+    return false;
   }
 
   async _writeTotalEnergy() {
@@ -704,8 +744,9 @@ class EvChargerDevice extends BaseTuyaDevice {
       await this._set(dp, true).catch((err) =>
         this._appLog(`clear-energy command failed: ${err.message}`, 'warn'));
     }
-    this._energyAccum    = 0;
-    this._lastSessionKwh = null;
+    this._energyAccum     = 0;
+    this._lastSessionKwh  = null;
+    this._lastSessionTime = null;
     await this.setStoreValue('energyAccum', 0).catch(() => {});
     await this.setStoreValue('lastSessionKwh', null).catch(() => {});
     if (this.getSetting('dp_energy_total') <= 0) {
