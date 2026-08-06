@@ -441,6 +441,15 @@ class EvChargerDevice extends BaseTuyaDevice {
    * value is filtered out before it reaches _handleDps.
    */
   async _onPollTick() {
+    // Voltage, current and power live in the packed phase DP, which most chargers
+    // send only in reply to a refresh request. The base polling loop alternates
+    // between a full query and a refresh, which would halve the update rate for
+    // exactly those values — so ask for a refresh on every tick as well. Overlapping
+    // requests are suppressed by the connection's own in-flight guard.
+    if ((this.getSetting('dp_phase_a') ?? 0) > 0) {
+      this._conn?.refresh().catch(() => {});
+    }
+
     const source   = this._energySource();
     // Show an estimated wattage whenever the user asked for it and the charger
     // supplies no real power reading. Deliberately independent of the energy
