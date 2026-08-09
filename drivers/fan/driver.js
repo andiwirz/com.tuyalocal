@@ -13,8 +13,13 @@ const { detectViaCloud }        = require('../../lib/dpCodeMap');
 // Verified against the standard code list for Tuya category "fs" (fan).
 const CLOUD_CODE_MAP = {
   dp_onoff:            ['switch', 'switch_1', 'power'],
-  dp_speed:            ['fan_speed', 'speed'],
-  dp_fan_speed:        ['fan_speed_enum', 'level'],
+  // "fan_speed" is used by Tuya for both an integer percentage and an enum step
+  // switch, so both settings claim the code and the declared type decides which
+  // one gets it. Without that check an enum step switch lands on the numeric
+  // setting, and writing a number to an enum DP is rejected by the device.
+  dp_speed:            [{ code: 'fan_speed', type: 'Integer' }, { code: 'speed', type: 'Integer' }],
+  dp_fan_speed:        ['fan_speed_enum', 'level',
+                        { code: 'fan_speed', type: 'Enum' }, { code: 'speed', type: 'Enum' }],
   // fan_horizontal / fan_vertical are the standard swing codes for this
   // category; shake / swing appear on rebadged units.
   dp_oscillate:        ['fan_horizontal', 'fan_vertical', 'shake', 'swing'],
@@ -249,13 +254,18 @@ class FanDriver extends Homey.Driver {
 
     const dp_onoff = (boolDps.find((d) => d.dp === 1) || boolDps[0])?.dp ?? 1;
 
-    // Numeric speed: look for a small integer (1–100) on DPs 2–10
+    // Numeric speed: look for a small integer (1–100) on DPs 2–10.
+    // Deliberately no fallback: DP 3 carries an integer speed on many fans and an
+    // enum step switch on others, and writing an integer to an enum DP is rejected
+    // by the device. An empty field the user can fill in beats a guess that looks
+    // configured and silently fails.
     const speedEntry = intDps.find((d) => d.dp !== dp_onoff && d.val >= 1 && d.val <= 100 && d.dp <= 10);
-    const dp_speed = speedEntry?.dp ?? 3;
+    const dp_speed = speedEntry?.dp ?? 0;
 
-    const KNOWN_FAN   = ['low', 'medium', 'middle', 'high', 'auto', 'turbo'];
-    const fanEntry    = enumDps.find((d) => KNOWN_FAN.includes(String(d.val).toLowerCase()));
-    const dp_fan_speed = fanEntry?.dp ?? 0;
+    const KNOWN_FAN        = ['low', 'medium', 'middle', 'high', 'auto', 'turbo'];
+    const fanEntry         = enumDps.find((d) => KNOWN_FAN.includes(String(d.val).toLowerCase()));
+    let   dp_fan_speed     = fanEntry?.dp ?? 0;
+    let   fan_speed_values = 'low,medium,high,auto,turbo';
 
     const KNOWN_MODES  = ['normal', 'sleep', 'nature', 'breeze', 'smart', 'natural'];
     const modeEntry    = enumDps.find((d) => KNOWN_MODES.includes(String(d.val).toLowerCase()));
@@ -266,8 +276,34 @@ class FanDriver extends Homey.Driver {
     const dirEntry     = enumDps.find((d) => KNOWN_DIR.includes(String(d.val).toLowerCase()));
     const dp_direction = dirEntry?.dp ?? 0;
 
-    const timerEntry        = enumDps.find((d) => String(d.val) === 'cancel' || /^\d+h$/.test(String(d.val)));
+    // The standard token list declares the idle state as "cancel", but plenty of
+    // firmware reports "off" instead. Mode and direction are excluded so a mode
+    // enum that happens to sit at "off" cannot be taken for a timer.
+    const timerEntry = enumDps.find((d) => {
+      if (d.dp === dp_mode || d.dp === dp_direction) return false;
+      const v = String(d.val).toLowerCase();
+      return v === 'cancel' || v === 'off' || /^\d+h$/.test(v);
+    });
     const dp_countdown_timer = timerEntry?.dp ?? 0;
+
+    // Step switches whose tokens are plain numbers ("1".."6") instead of words are
+    // common on ceiling fans and match none of the KNOWN_FAN tokens above. They are
+    // enums, so they belong on dp_fan_speed rather than the numeric dp_speed.
+    if (dp_fan_speed === 0) {
+      const numericFan = enumDps.find((d) =>
+        d.dp !== dp_mode && d.dp !== dp_direction && d.dp !== dp_countdown_timer
+        && /^\d+$/.test(String(d.val)));
+      if (numericFan) {
+        dp_fan_speed = numericFan.dp;
+        // Locally only the DP's current value is visible, so the token list has to
+        // be assumed: six steps covers the usual ceiling-fan remote, widened if the
+        // live value is already higher. The cloud path overwrites this with the
+        // declared range, and the field stays editable in device settings.
+        const observed = parseInt(numericFan.val, 10);
+        const steps    = Math.max(6, Number.isFinite(observed) ? observed : 6);
+        fan_speed_values = Array.from({ length: steps }, (_, i) => String(i + 1)).join(',');
+      }
+    }
 
     // Oscillation: a boolean DP that is not on/off, not light on/off
     // We detect light on/off first so we can exclude it
@@ -299,7 +335,7 @@ class FanDriver extends Homey.Driver {
       dp_onoff, dp_speed, dp_fan_speed, dp_oscillate, dp_direction, dp_mode,
       dp_child_lock: 0, dp_countdown_timer, dp_countdown_left: 0,
       speed_min, speed_max,
-      fan_speed_values: 'low,medium,high,auto,turbo',
+      fan_speed_values,
       fan_mode_values:  'normal,sleep,nature,breeze,smart',
       dp_light_onoff, dp_light_dim, dp_light_dim_min, dp_light_dim_max, dp_light_color_temp,
     };
