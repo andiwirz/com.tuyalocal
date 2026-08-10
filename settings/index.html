@@ -346,6 +346,7 @@
           <tr><td>dp_countdown_left</td>   <td>18</td> <td>Timer Remaining</td>        <td><span class="help-badge badge-ro">Read</span></td></tr>
           <tr><td>dp_water_full</td>       <td>19</td> <td>Water Tank Full</td>        <td><span class="help-badge badge-ro">Read</span></td></tr>
           <tr><td>dp_temperature</td>      <td>0</td>  <td>Temperature (°C)</td>       <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>temp_divisor</td>        <td>10</td> <td>Temperature scaling</td>    <td><span class="help-badge badge-rw">Setting</span></td></tr>
           <tr><td>dp_anion</td>            <td>0</td>  <td>Ioniser</td>                <td><span class="help-badge badge-rw">R/W</span></td></tr>
           <tr><td>dp_oscillate</td>        <td>0</td>  <td>Oscillate / swing</td>      <td><span class="help-badge badge-rw">R/W</span></td></tr>
           <tr><td>dp_self_clean</td>       <td>0</td>  <td>Self-Clean (internal drying)</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
@@ -353,6 +354,7 @@
         </tbody>
       </table>
       <p>Set any optional DP to <strong>0</strong> to hide the tile. Use the <strong>DP Debug</strong> and <strong>Raw Data</strong> tabs to find the correct DP numbers for your device.</p>
+      <div class="note"><strong>Temperature scaling:</strong> Most dehumidifiers send the temperature multiplied by 10 (e.g. 220 = 22.0 °C), which is why <em>temp_divisor</em> defaults to 10. If the reading comes out 10× too low, the device sends whole degrees — set <em>temp_divisor = 1</em>.</div>
       <div class="note"><strong>Numeric mode / fan-speed values:</strong> Some dehumidifiers report modes and fan speeds as plain numbers (<code>"0"</code>, <code>"1"</code>) instead of names like <code>auto</code> or <code>low</code>. Set <em>mode_values = 0,1</em> and <em>fan_speed_values = 0,1</em> to match, otherwise the picker rejects the values and the tiles stay empty.</div>
       <div class="note"><strong>Timer format:</strong> Two settings cover the common deviations. Enable <em>Timer uses plain numbers</em> if the timer DP sends <code>0</code>…<code>24</code> rather than <code>cancel</code> / <code>1h</code> … <code>24h</code>. Enable <em>Timer Remaining DP is in minutes</em> if the remaining-time DP counts minutes (0–1440) rather than hours.</div>
       <div class="note"><strong>Water tank alarm:</strong> On many models this DP is really a <em>fault bitmap</em> covering several error conditions, not a dedicated tank sensor. The driver treats any non-zero value as "tank full", so an unrelated fault can surface as a tank alarm. Watch the raw value in <strong>DP Debug</strong> while filling the tank to confirm which value your device actually uses.</div>
@@ -422,7 +424,8 @@
           <tr><td>dp_water_empty</td>      <td>0</td>  <td>Water Tank Empty</td>       <td>0 = disabled. <strong>Note:</strong> fires when tank is <em>empty</em> (opposite of dehumidifier)</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
           <tr><td>dp_countdown_timer</td>  <td>0</td>  <td>Timer</td>                  <td>0 = disabled</td>                                                                         <td><span class="help-badge badge-rw">R/W</span></td></tr>
           <tr><td>dp_countdown_left</td>   <td>0</td>  <td>Timer Remaining</td>        <td>0 = disabled</td>                                                                         <td><span class="help-badge badge-ro">Read</span></td></tr>
-          <tr><td>dp_temperature</td>      <td>0</td>  <td>Temperature (°C)</td>       <td>0 = disabled</td>                                                                         <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_temperature</td>      <td>0</td>  <td>Temperature (°C)</td>       <td>0 = disabled. Divided by <em>temp_divisor</em></td>                                       <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>temp_divisor</td>        <td>10</td> <td>Temperature scaling</td>    <td>Most humidifiers send ×10 (220 = 22.0 °C). Set to 1 for whole degrees</td>                <td><span class="help-badge badge-rw">Setting</span></td></tr>
           <tr><td>dp_anion</td>            <td>0</td>  <td>Ioniser</td>                <td>0 = disabled</td>                                                                         <td><span class="help-badge badge-rw">R/W</span></td></tr>
         </tbody>
       </table>
@@ -538,10 +541,13 @@
           <tr><td>dp_percent_control</td>  <td>2</td>  <td>windowcoverings_set</td>    <td>Integer 0–100. 0 = fully closed, 100 = fully open (default convention). Enable <em>invert_position</em> if reversed.</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
           <tr><td>dp_work_state</td>       <td>7</td>  <td>windowcoverings_state</td>  <td>Read-only movement state: <code>opening</code> / <code>closing</code>. 0 = disabled.</td>             <td><span class="help-badge badge-ro">Read</span></td></tr>
           <tr><td>dp_fault</td>            <td>0</td>  <td>Fault Alarm</td>            <td>Bitmap. Zemismart v1: DP 10 · v2: DP 12. 0 = disabled.</td>                                            <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_position_best</td>    <td>0</td>  <td>Favourite position DP</td>  <td>Zemismart v2: DP 19. Used by the <em>Move curtain to favourite position</em> flow action. 0 = disabled.</td> <td><span class="help-badge badge-rw">Write</span></td></tr>
+          <tr><td>position_best</td>       <td>50</td> <td>Favourite position value</td><td>The percentage that flow action sends to the DP above.</td>                                            <td><span class="help-badge badge-rw">Setting</span></td></tr>
         </tbody>
       </table>
       <div class="note"><strong>invert_position:</strong> Enable in device settings if 0% shows as "open" and 100% as "closed" on your device. This inverts the position slider so Homey's 0 = closed, 100 = open convention is respected.</div>
-      <div class="note"><strong>Zemismart v2 extra DPs:</strong> DP 16 (border / limit calibration) and DP 19 (favourite position) are motor-setup commands not exposed as Homey tiles. They can be sent via the Generic Tuya Device driver if needed.</div>
+      <div class="note"><strong>Favourite position:</strong> There is no tile for it — it is a flow action. Set <em>dp_position_best</em> to the DP your motor uses (DP 19 on Zemismart v2) and <em>position_best</em> to the percentage you want, then use <em>Move curtain to favourite position</em> in a flow.</div>
+      <div class="note"><strong>Zemismart v2 extra DPs:</strong> DP 16 (border / limit calibration) is a motor-setup command not exposed in Homey. It can be sent via the Generic Tuya Device driver if needed.</div>
       <div class="note"><strong>control_back / motor direction:</strong> DP 5 reverses the motor spin direction. This is a physical wiring compensation setting — change it in the Tuya / Smart Life app, not via Homey.</div>
     </div>
 

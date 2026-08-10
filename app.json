@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.162",
+  "version": "1.0.163",
   "compatibility": ">=12.13.0",
   "sdk": 3,
   "platforms": [
@@ -17,280 +17,6 @@
   "category": [
     "appliances"
   ],
-  "changelog": {
-    "1.0.124": {
-      "en": "Generic driver: new 'Send DP command' THEN flow card — set any data point by number and value directly from a flow. Value is auto-parsed: 'true'/'false' → boolean, numbers → integer/float, anything else → string.",
-      "de": "Generic-Treiber: neuer 'DP-Befehl senden' DANN-Flow-Karte — beliebigen Datenpunkt per Nummer und Wert direkt aus einem Flow setzen. Wert wird automatisch geparst: 'true'/'false' → Boolean, Zahlen → Integer/Float, sonst → String."
-    },
-    "1.0.123": {
-      "en": "Cloud Lookup: completely rewrote S1-S3 based on how tinytuya and tuya-homebridge actually work. S1 uses /v1.0/iot-01/associated-users/devices; S2 uses /v1.3/iot-03/devices?source_type=tuyaUser (v1.3 required — v1.0 returns error 1109); S3 uses source_type=homeApp for smartlife/tuyaSmart schemas. All use cursor-based pagination (last_row_key).",
-      "de": "Cloud-Lookup: S1-S3 komplett neu nach dem Vorbild von tinytuya/tuya-homebridge. S1: /v1.0/iot-01/associated-users/devices; S2: /v1.3/iot-03/devices?source_type=tuyaUser (v1.3 erforderlich — v1.0 liefert Fehler 1109); S3: source_type=homeApp für smartlife/tuyaSmart. Alle cursor-basiert (last_row_key)."
-    },
-    "1.0.122": {
-      "en": "Cloud Lookup: S5 no longer returns early — S6 and S7 always run as supplementary strategies to collect additional devices that S5 misses due to project-level caps. All results are merged and deduplicated.",
-      "de": "Cloud-Lookup: S5 bricht nicht mehr vorzeitig ab — S6 und S7 laufen immer ergänzend um Geräte zu finden die S5 wegen Projekt-Limits verpasst. Alle Ergebnisse werden zusammengeführt und dedupliziert."
-    },
-    "1.0.121": {
-      "en": "Cloud Lookup: added Strategy 6 (/v1.0/iot-03/devices without source_type) and Strategy 7 (/v1.0/projects/{id}/devices) for accounts where S1-S5 return fewer devices than expected. All strategies now use has_more field for correct pagination termination.",
-      "de": "Cloud-Lookup: Strategie 6 (/v1.0/iot-03/devices ohne source_type) und Strategie 7 (/v1.0/projects/{id}/devices) hinzugefügt für Konten wo S1-S5 weniger Geräte liefern als erwartet. Alle Strategien nutzen has_more für korrekte Paginierung."
-    },
-    "1.0.120": {
-      "en": "Cloud Lookup S5: pagination now uses both page_no and last_row_key cursor (whichever the API returns), and stops as soon as no new unique devices are found — prevents runaway 50-page loops.",
-      "de": "Cloud-Lookup S5: Paginierung nutzt jetzt page_no und last_row_key Cursor (je nachdem was die API liefert) und stoppt sobald keine neuen Geräte mehr gefunden werden — verhindert endlose 50-Seiten-Schleifen."
-    },
-    "1.0.119": {
-      "en": "Cloud Lookup: Strategy 5 now uses cursor-based pagination (last_row_key) instead of page_no — the v2.0/cloud/thing/device endpoint ignores page_no and always returned the same first 20 devices. Also stops immediately if no new unique devices are found (safety net).",
-      "de": "Cloud-Lookup: Strategie 5 verwendet jetzt cursor-basierte Paginierung (last_row_key) statt page_no — der v2.0/cloud/thing/device Endpoint ignorierte page_no und lieferte immer dieselben ersten 20 Geräte. Stoppt auch sofort wenn keine neuen Geräte gefunden werden."
-    },
-    "1.0.118": {
-      "en": "Cloud Lookup: local key enrichment now mirrors cloudEnrich strategy — tries v2.0/cloud/thing/batch first (primary source), then falls back to v1.0/iot-03/devices/factory-infos. Fixes accounts where factory-infos alone doesn't return local_key.",
-      "de": "Cloud-Lookup: Local Key Anreicherung spiegelt jetzt die cloudEnrich-Strategie — zuerst v2.0/cloud/thing/batch (primäre Quelle), dann Fallback auf v1.0/iot-03/devices/factory-infos. Behebt Konten wo factory-infos allein keinen local_key liefert."
-    },
-    "1.0.117": {
-      "en": "Cloud Lookup: single-phase redesign — local keys are now fetched inline via factory-infos batches during the same cloudLookup call. Eliminates the two-phase approach and the query-param routing workaround; all devices return with their local key in one response.",
-      "de": "Cloud-Lookup: Einphasiges Design — Local Keys werden jetzt direkt über factory-infos Batches im selben cloudLookup-Aufruf geholt. Zweiphasen-Ansatz und Query-Param-Routing-Workaround entfernt; alle Geräte inkl. Local Key in einer Antwort."
-    },
-    "1.0.116": {
-      "en": "Cloud Lookup: local key enrichment now reuses the existing cloudlookup endpoint (deviceIds parameter) instead of the new cloudenrich endpoint — Homey's API router only reliably dispatches to endpoints present at app install time.",
-      "de": "Cloud-Lookup: Local Key Anreicherung nutzt jetzt den bestehenden cloudlookup-Endpunkt (deviceIds-Parameter) statt des neuen cloudenrich-Endpunkts — Homeys API-Router dispatcht nur zuverlässig zu Endpunkten die beim App-Install vorhanden waren."
-    },
-    "1.0.115": {
-      "en": "Cloud Lookup: fixed 'Missing implementation for api endpoint cloudenrich' — added explicit lowercase method alias that Homey's case-sensitive API router requires.",
-      "de": "Cloud-Lookup: 'Missing implementation for api endpoint cloudenrich' behoben — expliziter Lowercase-Alias hinzugefügt, den Homeys case-sensitiver API-Router benötigt."
-    },
-    "1.0.114": {
-      "en": "Cloud Lookup: fixed local key not showing after two-phase split — table now displays keys already returned by the list endpoint immediately; enrichment only runs for devices still missing a key; enrich errors shown in the UI.",
-      "de": "Cloud-Lookup: Local Key nach Zweiphasen-Split nicht mehr angezeigt — behoben. Tabelle zeigt jetzt sofort Keys die der List-Endpoint bereits liefert; Anreicherung läuft nur für Geräte ohne Key; Fehler werden im UI angezeigt."
-    },
-    "1.0.113": {
-      "en": "Cloud Lookup: split into two phases to avoid Homey.api() timeout on large accounts. Phase 1 fetches the full device list instantly; Phase 2 loads local keys in batches of 20 in the background — the table appears immediately and keys fill in progressively.",
-      "de": "Cloud-Lookup: in zwei Phasen aufgeteilt um Homey.api()-Timeout bei großen Konten zu vermeiden. Phase 1 holt die Geräteliste sofort; Phase 2 lädt Local Keys in 20er-Batches im Hintergrund — die Tabelle erscheint sofort und die Keys füllen sich progressiv."
-    },
-    "1.0.112": {
-      "en": "Cloud Lookup: added automatic retry with backoff on Tuya rate-limit (429) responses, and 120 ms inter-batch delay in enrichment to stay below the 10 req/s API limit.",
-      "de": "Cloud-Lookup: automatischer Retry mit Backoff bei Tuya-Rate-Limit (429) und 120 ms Pause zwischen Batch-Aufrufen um das API-Limit von 10 req/s nicht zu überschreiten."
-    },
-    "1.0.111": {
-      "en": "Cloud Lookup: fixed truncated device list for accounts with more than 20 devices. Strategies 1–3 now all use the paginated /iot-03/devices endpoint (which properly respects page_size) instead of the legacy /users/{uid}/devices endpoint that silently caps at 20.",
-      "de": "Cloud-Lookup: Abgeschnittene Geräteliste bei mehr als 20 Geräten behoben. Strategien 1–3 verwenden jetzt durchgehend den paginierten /iot-03/devices-Endpunkt (der page_size korrekt respektiert) statt des alten /users/{uid}/devices-Endpunkts der still bei 20 kürzt."
-    },
-    "1.0.110": {
-      "en": "Fixed unnecessary capability option updates on every restart. setCapabilityOptions is now guarded by a cache and only fires when values actually changed — prevents spurious device-update events in Homey.",
-      "de": "Unnötige Capability-Options-Updates bei jedem Neustart behoben. setCapabilityOptions wird jetzt durch einen Cache geschützt und nur ausgeführt wenn sich die Werte tatsächlich geändert haben."
-    },
-    "1.0.109": {
-      "en": "Cloud Lookup: fixed 'sign invalid' on batch enrichment — device_ids commas were percent-encoded (%2C) which Tuya rejects after URL normalisation. Replaced slow per-device enrichment with a fast v1.0 factory-infos batch call for local keys.",
-      "de": "Cloud-Lookup: 'sign invalid' beim Batch-Enrich behoben — Kommas in device_ids wurden als %2C kodiert, was Tuya nach URL-Normalisierung ablehnt. Langsame Einzel-Geräte-Anreicherung durch schnellen factory-infos-Batch-Aufruf ersetzt."
-    },
-    "1.0.108": {
-      "en": "Cloud Lookup: fixed truncated device list (only 20 of 91 returned) — Strategy 1 now paginates the per-UID device endpoint. Fixed timeout in app settings for large accounts by capping per-device enrichment calls.",
-      "de": "Cloud-Lookup: Abgeschnittene Geräteliste behoben (nur 20 von 91 zurückgegeben) — Strategy 1 paginiert jetzt den UID-Geräte-Endpunkt. Timeout in App-Einstellungen bei großen Konten durch Begrenzung der Einzel-Geräte-Anreicherung behoben."
-    },
-    "1.0.107": {
-      "en": "New driver: Presence Sensor (ZY-M100-WIFI mmWave). Detects presence, distance (cm) and illuminance (lux) via Tuya LAN. Includes flow triggers for presence detected/cleared and DP-level debug trigger.",
-      "de": "Neuer Treiber: Präsenzsensor (ZY-M100-WIFI mmWave). Erkennt Anwesenheit, Entfernung (cm) und Beleuchtungsstärke (Lux) über Tuya LAN. Flow-Auslöser für Anwesenheit erkannt/beendet und DP-Debug-Auslöser enthalten."
-    },
-    "1.0.106": {
-      "en": "Heat Pump / Thermostat: fixed mode not syncing when device sends mixed-case values (e.g. \"Cool\" instead of \"cool\"). Mode strings are now normalised to lowercase before dedup comparison, preventing them from getting stuck in the cache.",
-      "de": "Wärmepumpe / Thermostat: Modus wird jetzt korrekt synchronisiert wenn das Gerät gemischte Groß-/Kleinschreibung sendet (z.B. \"Cool\" statt \"cool\"). Modus-Strings werden vor dem Cache-Vergleich normalisiert."
-    },
-    "1.0.105": {
-      "en": "Pairing help text translated to English in all drivers (Athom review feedback).",
-      "de": "Pairing-Hilfetext in allen Treibern auf Englisch übersetzt (Athom Review-Feedback)."
-    },
-    "1.0.104": {
-      "en": "Heat Pump: mode now syncs back when changed via SmartLife. When the device pushes a temperature update (caused by a cloud mode change), a refresh is triggered to also fetch the updated mode.",
-      "de": "Wärmepumpe: Modus wird jetzt auch synchronisiert wenn er über SmartLife geändert wird. Bei einer Temperatur-Push-Meldung (ausgelöst durch eine Cloud-Modusänderung) wird ein Refresh ausgelöst um den neuen Modus abzurufen."
-    },
-    "1.0.103": {
-      "en": "Heat Pump / Thermostat: target temperature now re-syncs after a mode change. Each mode stores its own temperature — a short-delay refresh fetches the updated value automatically.",
-      "de": "Wärmepumpe / Thermostat: Zieltemperatur wird nach einem Moduswechsel automatisch neu synchronisiert. Jeder Modus speichert eine eigene Temperatur — ein verzögerter Refresh holt den aktualisierten Wert ab."
-    },
-    "1.0.102": {
-      "en": "Fixed Cloud Lookup in app settings: api.js function names and app.json api section now use lowercase keys matching Homey's internal endpoint normalization.",
-      "de": "Cloud-Lookup in App-Einstellungen vollständig behoben: Funktionsnamen in api.js und api-Sektion in app.json verwenden jetzt Kleinbuchstaben entsprechend Homeys interner Endpunkt-Normalisierung."
-    },
-    "1.0.101": {
-      "en": "Fixed Cloud Lookup in app settings: Homey resolves Homey.api() calls by normalizing the URL path to lowercase — function names in api.js now match that convention.",
-      "de": "Cloud-Lookup in App-Einstellungen behoben: Homey normalisiert Homey.api()-Aufrufe zu Kleinbuchstaben — Funktionsnamen in api.js entsprechen nun dieser Konvention."
-    },
-    "1.0.100": {
-      "en": "Fixed crash: invalid local key length (not 16 characters) now shows a clear error in the device log instead of crashing with RangeError.",
-      "de": "Absturz behoben: Ein ungültiger Local Key (nicht 16 Zeichen) zeigt jetzt eine verständliche Fehlermeldung im Geräte-Log statt eines RangeError-Absturzes."
-    },
-    "1.0.99": {
-      "en": "Fixed app settings REST API (cloud lookup and device detail endpoints now correctly exposed as Homey SDK3 API routes). Pairing check_device_exists handler was already registered correctly in all drivers.",
-      "de": "App-Einstellungen REST-API korrigiert (Cloud-Lookup und Gerätedetail-Endpunkte jetzt korrekt als Homey SDK3 API-Routen registriert). Pairing check_device_exists-Handler war in allen Treibern bereits korrekt registriert."
-    },
-    "1.0.49": {
-      "en": "Curtain Motor: added 'Invert open/close direction' setting — enable when the Open action physically closes the curtain (motor wired in reverse). Added 'Favourite Position DP' setting and 'Move to favourite position' flow action for Zemismart v2 (DP 19 position_best).",
-      "de": "Rolladenmotor: 'Öffnen/Schließen-Richtung umkehren'-Einstellung hinzugefügt — aktivieren wenn Öffnen-Aktion den Vorhang schließt (Motor verkehrt verdrahtet). 'Lieblingsposition-DP'-Einstellung und 'Zur Lieblingsposition fahren'-Flow-Aktion für Zemismart v2 (DP 19 position_best) hinzugefügt."
-    },
-    "1.0.48": {
-      "en": "New Curtain Motor driver: supports Zemismart v1/v2 and compatible Tuya category-cl curtain motors. Open/stop/close commands, position slider (0–100 %), invert position option, fault alarm. Auto-detects all DP layouts at pairing time. Full flow card support.",
-      "de": "Neuer Rollladenmotor-Treiber: Zemismart v1/v2 und kompatible Tuya-Rollladenmotoren (Kategorie cl). Auf/Stop/Zu-Befehle, Positionsregler (0–100 %), invertierbare Position, Fehleralarm. Auto-Erkennung aller DP-Layouts beim Einrichten. Vollständige Flow-Karten-Unterstützung."
-    },
-    "1.0.47": {
-      "en": "Garage Door: fixed 'works only once' bug on WOFEA and other single-relay openers. Root cause: the device drops the TCP connection immediately after a relay pulse, causing a 10 s reconnect delay before the next command could be sent. Fix: relay-pulse commands now use fire-and-forget (no response echo awaited, no spurious error shown) and the reconnect delay is reduced from 10 s to 3 s.",
-      "de": "Garagentor: 'Funktioniert nur einmal'-Fehler bei WOFEA und ähnlichen Einkanal-Antrieben behoben. Ursache: Gerät trennt die TCP-Verbindung sofort nach dem Relaisimpuls, wodurch 10 s Wartezeit bis zum nächsten Befehl entstanden. Fix: Relaisimpuls-Befehle nutzen jetzt Fire-and-Forget (keine Antwort abgewartet, kein falscher Fehler angezeigt) und die Wiederverbindungszeit wurde von 10 s auf 3 s reduziert."
-    },
-    "1.0.46": {
-      "en": "Code quality fixes: Heat Pump — added fault alarm debounce (suppresses false alarms on reconnect), mode/preset listeners now correctly re-register when DP is enabled via settings, _syncModeOptions/_syncPresetOptions called on DP change. Garage Door — push notifications now fire for all alarm states (not just left-open). Shared: isNewProtocol extracted to getter in TuyaConnection; capitalize() helper extracted to lib/utils; changelog sorted correctly.",
-      "de": "Code-Qualitätsfixes: Wärmepumpe — Fehleralarm-Entprellung hinzugefügt (unterdrückt Fehlalarme beim Reconnect), Modus-/Voreinstellungs-Listener werden bei DP-Änderung in Einstellungen korrekt neu registriert, _syncModeOptions/_syncPresetOptions bei DP-Änderung aufgerufen. Garagentor — Push-Benachrichtigungen werden jetzt für alle Alarmzustände ausgelöst. Allgemein: isNewProtocol als Getter in TuyaConnection; capitalize()-Hilfsfunktion nach lib/utils extrahiert; Changelog korrekt sortiert."
-    },
-    "1.0.45": {
-      "en": "Device class corrections: Heat Pump changed to heatpump, Pet Feeder changed to petfeeder — both now use the correct dedicated Homey SDK device classes. Heat Pump driver icon updated.",
-      "de": "Geräteklassen korrigiert: Wärmepumpe auf heatpump, Futterautomat auf petfeeder — beide verwenden jetzt die korrekten dedizierten Homey-SDK-Geräteklassen. Wärmepumpen-Icon aktualisiert."
-    },
-    "1.0.44": {
-      "en": "Garage Door: added '1-button relay toggle' setting. Enable this for WOFEA and other single-relay openers — the tile button and Open/Close flow actions will send a relay pulse (dp_switch) instead of the open/close command. The door status continues to be read from the contact sensor.",
-      "de": "Garagentor: '1-Tasten Relais-Toggle'-Einstellung hinzugefügt. Für WOFEA und andere Einkanal-Antriebe aktivieren — Kachel-Taste und Auf/Zu-Flow-Aktionen senden einen Relaisimpuls (dp_switch) statt eines Befehls. Türstatus wird weiterhin vom Kontaktsensor gelesen."
-    },
-    "1.0.43": {
-      "en": "New Heat Pump driver: universal pool / air-water heat pump support covering Phalén Calidi XP, Fairland InverterPlus, Brustec BR80, BWT FI45, CBC Pool BP, Madimack Elite V3, Mountfield Azuro, Waterco Electroheat ECO-VS, Aquastrong HEX, Arcelik/Axen, Apricus, ITS 45HD and more. On/off, target/current temperature, mode picker, preset picker, fault alarm, inverter power level — all configurable via DP settings. Auto-detection covers all major DP layouts at pairing time.",
-      "de": "Neuer Wärmepumpen-Treiber: universelle Unterstützung für Pool- und Luft-Wasser-Wärmepumpen (Phalén Calidi XP, Fairland InverterPlus, Brustec BR80, BWT FI45, CBC Pool BP, Madimack Elite V3, Mountfield Azuro, Waterco Electroheat ECO-VS, Aquastrong HEX, Arcelik/Axen, Apricus, ITS 45HD u.v.m.). Ein/Aus, Soll-/Ist-Temperatur, Modus-Picker, Voreinstellungs-Picker, Fehleralarm, Leistungsstufe — alles über DP-Einstellungen konfigurierbar. Auto-Erkennung aller gängigen DP-Layouts beim Einrichten."
-    },
-    "1.0.42": {
-      "en": "Garage Door: fixed auto-detect assigning dp_door_control = 0 when DP 6 was absent from the device's initial GET response. WOFEA devices only include DP 6 in the response when it was recently used — the fallback now always defaults to DP 6 instead of 0, preventing the 'set string on bool DP' timeout.",
-      "de": "Garagentor: Auto-Erkennung setzte dp_door_control = 0 wenn DP 6 nicht in der initialen GET-Antwort des Geräts war. WOFEA-Geräte senden DP 6 nur wenn er kürzlich benutzt wurde — der Fallback verwendet jetzt immer DP 6 statt 0, verhindert den 'String auf Bool-DP' Timeout."
-    },
-    "1.0.41": {
-      "en": "Garage Door: AOSD (garage door with light) and BoboYun gatePro support. New DPs: action state (opened/closed/opening/closing), separate open/close bool DPs, integrated light. Auto-detect covers all four device families at pairing time.",
-      "de": "Garagentor: AOSD (Garagentor mit Licht) und BoboYun gatePro Unterstützung. Neue DPs: Bewegungsstatus (opened/closed/opening/closing), separate Öffnen/Schließen-Bool-DPs, integriertes Licht. Auto-Erkennung unterstützt alle vier Geräteklassen beim Einrichten."
-    },
-    "1.0.40": {
-      "en": "Garage Door: ZC34T / swing-arm opener compatibility — string-based door state (DP 1: 'open'/'closed') is now handled alongside the WOFEA bool contact sensor. Added 'Stop garage door' flow action for devices that support a stop command (ZC34T DP 101). Auto-detect correctly identifies ZC34T vs WOFEA DP patterns at pairing time.",
-      "de": "Garagentor: ZC34T / Schwenkarm-Kompatibilität — String-basierter Türstatus (DP 1: 'open'/'closed') wird jetzt zusätzlich zum WOFEA Bool-Kontaktsensor unterstützt. Neue Flow-Aktion 'Garagentor stoppen' für Geräte mit Stop-Befehl (ZC34T DP 101). Auto-Erkennung identifiziert ZC34T- vs. WOFEA-DP-Muster beim Einrichten korrekt."
-    },
-    "1.0.39": {
-      "en": "Added Garage Door driver: WOFEA and compatible Tuya garage door openers. Door open/closed state from magnetic contact sensor (DP 3), open/close commands via DP 6, relay toggle via DP 1. Optional door-alarm state (DP 12: left open / close timeout). Full flow card support: opened/closed triggers, alarm trigger, open/close/toggle actions.",
-      "de": "Neuer Garagentor-Treiber: WOFEA und kompatible Tuya-Garagentorantriebe. Offen/Geschlossen-Status über Magnetkontakt (DP 3), Auf/Zu-Befehl über DP 6, Relais-Toggle über DP 1. Optionaler Toralarm (DP 12: zu lange offen / Schließ-Timeout). Vollständige Flow-Karten: Offen/Geschlossen-Auslöser, Alarm-Auslöser, Auf/Zu/Toggle-Aktionen."
-    },
-    "1.0.38": {
-      "en": "Pet Feeder: fixed 'Feed now' action card failing with type error after portions picker change.",
-      "de": "Futterautomat: Fehler im 'Jetzt füttern'-Aktionskarte nach Umstellung auf Picker behoben."
-    },
-    "1.0.37": {
-      "en": "Pet Feeder: portions control changed from slider to picker for easier use — range adapts to portions_min/max settings.",
-      "de": "Futterautomat: Portionen-Steuerung von Slider auf Picker umgestellt für einfachere Bedienung — Bereich passt sich an portions_min/max-Einstellungen an."
-    },
-    "1.0.36": {
-      "en": "Pet Feeder: battery level (measure_battery), indicator light, voice playback toggle, battery status sensor, voice times and manual button portions now configurable; portions slider resets after dispensing. Protocol 3.22 support (newer Tuya chips/gateways). Generic driver: readonly and invert flags per DP, float:true alias. AC & Heater: configurable fault alarm grace period; Heater offline grace period added. Reliability fixes: capability-listener crash on optional DPs fixed (5 drivers), socket leak on pairing timeout, DPS handler serialised, heartbeat watchdog improved. Humidifier/Dehumidifier: configurable temperature divisor; water-filled trigger now fires correctly. Smart Plug: fault alarm flow trigger added. BREAKING: dehumidifier flow card IDs renamed with dehumidifier_ prefix — existing flows must be recreated.",
-      "de": "Futterautomat: Akkustand (measure_battery), Kontrollleuchte, Sprachausgabe-Toggle, Akkustatus-Sensor, Sprachwiederholungen und manuelle Portionen konfigurierbar; Portionen-Slider setzt sich zurück. Protokoll 3.22. Generic-Treiber: readonly/invert-Flags, float:true-Alias. Klimaanlage & Heizgerät: Alarm-Karenzzeit konfigurierbar; Heizgerät Offline-Karenzzeit. Stabilitätsfixes: Absturz bei optionalen Capabilities, Socket-Leak beim Pairing, DPS-Queue, Heartbeat-Verbesserung. Luftbefeuchter/-entfeuchter: konfigurierbarer Temperaturdivisor; Wasser-befüllt-Trigger. Smart Plug Fehleralarm-Trigger. WICHTIG: Dehumidifier Flow-Karten mit dehumidifier_-Präfix — bestehende Flows neu erstellen."
-    },
-    "1.0.35": {
-      "en": "Added Pet Feeder driver: automatic DP detection, food level monitoring with push notifications (low/empty), feeding-done trigger, portions slider, and full flow card support. Food level enum extended with 'less' and 'lack' values for Mypin/video-feeder compatibility. New pet feeder device icon. All drivers: added configurable offline grace period (default 60 s) — the 'device disconnected' flow trigger is now delayed until the device has been offline for the full grace period, eliminating spurious nightly offline notifications caused by brief Tuya firmware reconnect cycles.",
-      "de": "Neuer Futterautomat-Treiber: automatische DP-Erkennung, Futterstand-Überwachung mit Push-Benachrichtigungen (niedrig/leer), Fütterung-abgeschlossen-Trigger, Portionen-Schieberegler und vollständige Flow-Karten-Unterstützung. Futterstand-Enum um Werte 'less' und 'lack' für Mypin-/Video-Futterautomaten erweitert. Neues Geräte-Icon für den Futterautomaten. Alle Treiber: Konfigurierbare Offline-Karenzzeit (Standard 60 s) — der 'Gerät getrennt'-Flow-Auslöser wird jetzt erst nach Ablauf der Karenzzeit ausgelöst, was unnötige nächtliche Offline-Benachrichtigungen durch kurze Tuya-Firmware-Reconnect-Zyklen verhindert."
-    },
-    "1.0.34": {
-      "en": "Removed repair flow from all drivers — IP address, local key, and protocol version can be updated directly in the device settings page, making the separate repair dialog unnecessary.",
-      "de": "Reparatur-Dialog aus allen Treibern entfernt — IP-Adresse, Local Key und Protokollversion können direkt in den Geräteeinstellungen geändert werden; ein separater Dialog ist nicht mehr notwendig."
-    },
-    "1.0.33": {
-      "en": "Added capability icons for all custom capabilities: mode, fan_speed, fan_mode, fan_direction, target_humidity, child_lock, oscillate, anion, countdown_timer, power_factor, and all AC capabilities (ac_mode, ac_fan_speed, ac_swing, ac_swing_h, ac_sleep, ac_eco).",
-      "de": "Capability-Icons für alle benutzerdefinierten Fähigkeiten hinzugefügt: Modus, Lüftergeschwindigkeit, Lüftermodus, Lüfterrichtung, Ziel-Luftfeuchtigkeit, Kindersicherung, Schwenkung, Ionisator, Countdown-Timer, Leistungsfaktor sowie alle Klimaanlagen-Fähigkeiten (Modus, Lüftergeschwindigkeit, Lamellen, horizontale Lamellen, Schlafmodus, ECO)."
-    },
-    "1.0.32": {
-      "en": "Fan driver: added fan direction (forward / reverse) capability with auto-detection at pairing time, plus flow cards for direction changed trigger, direction condition, and set direction action.",
-      "de": "Lüfter-Treiber: Lüfterrichtung (Vorwärts / Rückwärts) als optionale Fähigkeit hinzugefügt, inkl. Auto-Erkennung beim Einrichten und Flow-Karten (Auslöser, Bedingung, Aktion)."
-    },
-    "1.0.31": {
-      "en": "Added four new drivers: Fan (speed slider + enum speed + oscillation + mode), Humidifier (humidity sensor + target + water-empty alarm), Heater (target/current temperature + mode + fault alarm), and Light (brightness + color temperature + HSV color). All drivers include auto-detection of DPs at pairing time, repair flow, and full flow card support (triggers, conditions, actions).",
-      "de": "Vier neue Treiber hinzugefügt: Lüfter (Geschwindigkeitsregler + Enum-Geschwindigkeit + Schwenkung + Modus), Luftbefeuchter (Luftfeuchtigkeitssensor + Sollwert + Leer-Tank-Alarm), Heizgerät (Soll-/Ist-Temperatur + Modus + Fehleralarm) und Licht (Helligkeit + Farbtemperatur + HSV-Farbe). Alle Treiber enthalten Auto-Erkennung der DPs beim Einrichten, Reparatur-Dialog und vollständige Flow-Karten-Unterstützung (Auslöser, Bedingungen, Aktionen)."
-    },
-    "1.0.30": {
-      "en": "Reduced diagnostic log spam: repeated identical error messages (e.g. 'connection timed out' during offline periods) are now shown in full for the first 3 occurrences, then suppressed with a summary every 10th repeat. A 'suppressed N more times' notice appears when the message changes. Log counter resets on successful reconnect.",
-      "de": "Diagnose-Log-Spam reduziert: Wiederholte identische Fehlermeldungen (z.B. 'connection timed out' bei Offline-Phasen) werden jetzt für die ersten 3 Vorkommen vollständig angezeigt, danach unterdrückt und jede 10. Wiederholung zusammengefasst. Bei Nachrichtenwechsel erscheint ein Hinweis 'N-mal unterdrückt'. Zähler wird bei erfolgreichem Reconnect zurückgesetzt."
-    },
-    "1.0.29": {
-      "en": "Fixed root cause of HMAC mismatch app crash: after auto-detect or reconnect strips a TuyAPI instance's event listeners, any in-flight socket data could trigger an unhandled error event and crash the app. A no-op error handler is now attached before disconnect in both autoDetect.js and TuyaConnection.js to absorb residual errors during socket teardown.",
-      "de": "Grundursache des HMAC-Mismatch-App-Absturzes behoben: Wenn Auto-Erkennung oder Reconnect die Event-Listener einer TuyAPI-Instanz entfernt, konnte eingehende Socket-Daten ein unbehandeltes Error-Event auslösen und die App abstürzen. Vor dem Disconnect wird jetzt in autoDetect.js und TuyaConnection.js ein No-Op-Fehlerhandler registriert, der Restfehler beim Socket-Abbau absorbiert."
-    },
-    "1.0.28": {
-      "en": "Improved diagnostic hints for well-known TuyAPI errors: HMAC mismatch now shows a clear explanation (wrong or rotated Local Key, or protocol version mismatch 3.3 vs 3.4) with actionable steps. ECONNRESET/ECONNREFUSED hint also applied at the process level.",
-      "de": "Verbesserte Diagnosehinweise für bekannte TuyAPI-Fehler: HMAC-Mismatch zeigt jetzt eine klare Erklärung (falscher oder gewechselter Local Key, oder Protokollversionsfehler 3.3 vs. 3.4) mit konkreten Handlungsschritten. ECONNRESET/ECONNREFUSED-Hinweis auch auf Prozessebene ergänzt."
-    },
-    "1.0.27": {
-      "en": "Fixed app crash caused by 'connection timed out' from TuyAPI — the error was thrown on the raw socket (not the TuyAPI instance) and bypassed all error handlers. Connection timeouts now correctly trigger a reconnect instead of leaving a zombie connection. Added process-level uncaughtException and unhandledRejection handlers as a safety net against similar escaping errors.",
-      "de": "App-Absturz durch 'connection timed out' von TuyAPI behoben — der Fehler wurde auf dem Raw-Socket (nicht auf der TuyAPI-Instanz) ausgelöst und umging alle Fehlerbehandler. Verbindungs-Timeouts lösen jetzt korrekt einen Reconnect aus statt eine Zombie-Verbindung zu hinterlassen. Prozess-weite uncaughtException- und unhandledRejection-Handler als Sicherheitsnetz für ähnliche entkommende Fehler hinzugefügt."
-    },
-    "1.0.26": {
-      "en": "Dehumidifier: water alarm oscillation guard reworked again — oscillation window increased from 5 minutes to 2 hours (configurable via new 'Alarm guard window' device setting, default 2 h, range 0.5–24 h) and confirmation debounce increased from 2 minutes to 10 minutes. The guard timestamp is now persisted across Homey restarts so a reboot no longer resets the window. Eliminates hourly spurious notifications caused by devices that emit a periodic alarm pulse every ~60 minutes.",
-      "de": "Entfeuchter: Wasseralarm-Entprellung erneut überarbeitet — Schwingungsschutzfenster von 5 Minuten auf 2 Stunden erhöht (konfigurierbar über neues Gerätesetting 'Alarm-Schutzfenster', Standard 2 h, Bereich 0,5–24 h) und Bestätigungsdebounce von 2 Minuten auf 10 Minuten erhöht. Der Zeitstempel wird jetzt über Homey-Neustarts hinweg gespeichert, sodass ein Neustart das Fenster nicht mehr zurücksetzt. Behebt stündliche Fehlmeldungen bei Geräten, die alle ~60 Minuten einen periodischen Alarm-Puls senden."
-    },
-    "1.0.25": {
-      "en": "Repair dialog: connection test result is now correctly reflected — saving fails with an error message if the device cannot be reached, instead of silently reporting success. Settings are only updated when the connection test actually passes.",
-      "de": "Reparatur-Dialog: Ergebnis des Verbindungstests wird jetzt korrekt angezeigt — Speichern schlägt mit Fehlermeldung fehl wenn das Gerät nicht erreichbar ist, statt fälschlicherweise Erfolg zu melden. Einstellungen werden nur gespeichert wenn der Verbindungstest tatsächlich erfolgreich war."
-    },
-    "1.0.24": {
-      "en": "All drivers: immediate full-state refresh after any unsolicited push — when the device proactively sends a data packet (e.g. AC pushing power state), Homey now immediately follows up with a GET so all other DPs (mode, temperature, fan speed) update at once instead of waiting for the next poll cycle.",
-      "de": "Alle Treiber: sofortige Vollzustandsabfrage nach jedem Push — wenn das Gerät proaktiv ein Datenpaket sendet (z.B. Klimaanlage meldet Einschaltzustand), sendet Homey sofort ein GET nach, sodass alle anderen DPs (Modus, Temperatur, Lüftergeschwindigkeit) sofort aktualisiert werden, anstatt auf den nächsten Poll-Zyklus zu warten."
-    },
-    "1.0.23": {
-      "en": "Repair dialog fixed for all drivers — the form now correctly loads current settings and shows an error if loading fails. Root cause: Homey SDK v3 serves repair views from drivers/{id}/repair/, not drivers/{id}/pair/. All four drivers now have the correct repair view location.",
-      "de": "Reparatur-Dialog für alle Treiber behoben — das Formular lädt jetzt korrekt die aktuellen Einstellungen und zeigt eine Fehlermeldung wenn das Laden fehlschlägt. Ursache: Homey SDK v3 sucht Reparatur-Ansichten unter drivers/{id}/repair/, nicht drivers/{id}/pair/. Alle vier Treiber haben jetzt den korrekten Speicherort."
-    },
-    "1.0.22": {
-      "en": "AC driver: added flow cards — Trigger: 'AC mode changed' (tokens: new mode, previous mode). Conditions: 'AC fan speed is', 'AC sleep mode is on', 'AC fault alarm is active'. Actions: set ECO mode, set ioniser, set horizontal swing, set child lock.",
-      "de": "Klimaanlage: Flow-Karten hinzugefügt — Auslöser: 'Klimaanlage: Modus geändert' (Tags: neuer Modus, vorheriger Modus). Bedingungen: Lüftergeschwindigkeit ist, Schlafmodus ist aktiv, Fehleralarm ist aktiv. Aktionen: ECO-Modus, Ionisator, horizontale Schwenkung, Kindersicherung setzen."
-    },
-    "1.0.21": {
-      "en": "AC driver: swing picker now correctly seeds its value list with the detected swing position when it is not covered by the default 'off,on' (e.g. 'updown'). Late optional-DP discovery: if sleep (DP 103), ioniser (DP 11) or horizontal swing (DP 110) were missing at pairing time because the AC was in a mode where it does not report them, they are now automatically configured the first time those DPs appear in a data packet after each reconnect.",
-      "de": "Klimaanlage: Swing-Picker übernimmt den erkannten Swing-Wert korrekt in die Werteliste, wenn er nicht in den Standardwerten 'off,on' enthalten ist (z.B. 'updown'). Nachträgliche Erkennung optionaler DPs: Wenn Sleep (DP 103), Ionisator (DP 11) oder horizontaler Swing (DP 110) beim Pairing fehlten, weil die Klimaanlage sie in diesem Betriebsmodus nicht meldet, werden sie jetzt automatisch konfiguriert, sobald diese DPs nach einem Reconnect im ersten Datenpaket auftauchen."
-    },
-    "1.0.20": {
-      "en": "AC driver: mode and fan speed pickers now show all common options immediately after pairing (no longer seeded with current value only). Added configurable target temperature step, min and max (device settings). Added fault code token to the 'AC fault alarm triggered' flow card. Repair dialog now shows an error message instead of silently showing an empty form.",
-      "de": "Klimaanlage: Modus- und Lüftergeschwindigkeits-Picker zeigen nach dem Pairing sofort alle gängigen Optionen (nicht mehr nur den aktuellen Wert). Konfigurierbarer Temperaturschritt sowie Min/Max für die Zieltemperatur hinzugefügt (Geräteeinstellungen). Fehlercode-Tag zum Flow-Karten 'Klimaanlage: Fehleralarm ausgelöst' hinzugefügt. Reparatur-Dialog zeigt jetzt eine Fehlermeldung statt eines leeren Formulars."
-    },
-    "1.0.19": {
-      "en": "AC driver: swing changed to enum picker with configurable values; added horizontal swing (DP 110) and ioniser (DP 11) support; improved auto-detect at pairing. Dehumidifier: fixed spurious water-full alarm loop caused by firmware oscillation (5-min stable-false guard + 2-min confirmation debounce). Updated README and Help tab.",
-      "de": "Klimaanlage: Swing jetzt als Enum-Picker mit konfigurierbaren Werten; horizontaler Swing (DP 110) und Ionisator (DP 11) hinzugefügt; Auto-Erkennung beim Einrichten verbessert. Entfeuchter: Endlosschleife bei falschem Wassertank-Alarm behoben (5-Minuten-Stabil-Schutz + 2-Minuten-Bestätigungsdebounce). README und Hilfe-Tab aktualisiert."
-    },
-    "1.0.18": {
-      "en": "Initial public release.",
-      "de": "Erste öffentliche Version."
-    },
-    "1.0.50": {
-      "en": "Fixed: mode and fan-speed choices in flow cards (Set mode, Mode is, Set fan speed, Fan speed is) now read from the device's mode_values / fan_speed_values settings instead of a hardcoded list. Affects Dehumidifier, Air Conditioner, Fan, Humidifier and Heater drivers. Existing flows that used the old dropdown choices must be re-saved to pick the new values from the autocomplete.",
-      "de": "Behoben: Modus- und Lüftergeschwindigkeit-Auswahlen in Flow-Karten lesen jetzt aus den Geräte-Einstellungen mode_values / fan_speed_values statt aus einer fest codierten Liste. Betrifft Entfeuchter, Klimaanlage, Lüfter, Luftbefeuchter und Heizgerät. Bestehende Flows die die alten Auswahlfelder verwenden müssen erneut gespeichert werden."
-    },
-    "1.0.51": {
-      "en": "App Store description updated to comply with Homey guidelines.",
-      "de": "App-Store-Beschreibung gemäss Homey-Richtlinien aktualisiert."
-    },
-    "1.0.52": {
-      "en": "Heater: added Work State DP support (e.g. DP 11 \"heating\"/\"no_heating\"). New Heating tile indicator and flow cards: \"Heater started heating\" and \"Heater stopped heating\" triggers, \"Heater is heating\" condition.",
-      "de": "Heizgerät: Arbeitsstatus-DP hinzugefügt (z.B. DP 11 \"heating\"/\"no_heating\"). Neue Heizstatus-Kachel und Flow-Karten: Auslöser \"Heizt jetzt\" / \"Heizt nicht mehr\", Bedingung \"Heizt\"."
-    },
-    "1.0.98": {
-      "en": "Fixed: push-only devices (e.g. BCM700D-TY01 curtain motors) no longer enter a connect/disconnect loop when the device does not respond to GET requests. The connection now stays up and SET commands work. Set Polling Interval to 0 for these devices.",
-      "de": "Behoben: Push-only Geräte (z.B. BCM700D-TY01 Rolladenmotor) geraten nicht mehr in eine Connect/Disconnect-Schleife wenn das Gerät nicht auf GET-Anfragen antwortet. Die Verbindung bleibt stabil und SET-Befehle funktionieren. Abfrageintervall auf 0 setzen für solche Geräte."
-    },
-    "1.0.97": {
-      "en": "Connection: automatic protocol version rotation after 5 failed reconnects (handles devices that changed protocol after firmware OTA). Connection: outbound heartbeat every 15s to keep strict firmware sockets alive. Thermostat: new 'DP HVAC Action' setting — shows a live heating indicator in the device card when the boiler is actively firing.",
-      "de": "Verbindung: Automatische Protokollversionsrotation nach 5 fehlgeschlagenen Reconnects (für Geräte die nach Firmware-OTA die Protokollversion gewechselt haben). Verbindung: Ausgehender Heartbeat alle 15s um bei strenger Firmware die Socket-Verbindung aufrechtzuerhalten. Thermostat: Neue Einstellung 'DP Heizstatus' — zeigt in der Gerätekachel an wenn der Heizkessel aktiv heizt."
-    },
-    "1.0.96": {
-      "en": "Fixed: Error 900 (IR/RF blasters) no longer triggers reconnect. Doorbell: repeated rings and motions now always fire even with same DP value (persist:false). Smart Plug: energy DPs (voltage/current/power) are now force-refreshed immediately after connecting.",
-      "de": "Behoben: Fehler 900 (IR/RF-Blaster) löst keinen Reconnect mehr aus. Türklingel: Wiederholte Klingel-/Bewegungsereignisse werden auch bei gleichem DP-Wert immer ausgelöst (persist:false). Smart Plug: Energie-DPs (Spannung/Strom/Leistung) werden direkt nach dem Verbinden aktualisiert."
-    },
-    "1.0.95": {
-      "en": "All drivers: added 'Auto-Reconnect Interval' setting — reconnects the device every N minutes automatically. Replaces the need for a manual Force Reconnect flow. Set to 0 to disable (default).",
-      "de": "Alle Treiber: Einstellung 'Auto-Reconnect-Intervall' hinzugefügt — verbindet das Gerät alle N Minuten automatisch neu. Ersetzt den manuellen Force-Reconnect-Flow. 0 = deaktiviert (Standard)."
-    },
-    "1.0.94": {
-      "en": "Doorbell: added 'Doorbell Rang' capability — the device card now shows a visual indicator for 5 seconds when the doorbell button is pressed.",
-      "de": "Türklingel: Capability 'Türklingel geläutet' hinzugefügt — die Gerätekachel zeigt jetzt 5 Sekunden lang einen visuellen Indikator, wenn die Klingel gedrückt wird."
-    },
-    "1.0.93": {
-      "en": "Heat Pump: added 'Measured Temperature Divisor (override)' setting — fixes devices like Weau where target temperature is raw °C but measured temperature is ×10.",
-      "de": "Wärmepumpe: Einstellung 'Ist-Temperatur-Divisor (Override)' — behebt Geräte wie Weau, bei denen Soll-Temp direktes °C ist, Ist-Temp aber ×10."
-    },
-    "1.0.92": {
-      "en": "New Doorbell driver: supports Marmitek Buzz LO and compatible Tuya video doorbells (category sp). Doorbell rang trigger, motion detection alarm with configurable auto-reset timer, flow cards for ring and motion events, enable/disable motion detection action.",
-      "de": "Neuer Türklingel-Treiber: Marmitek Buzz LO und kompatible Tuya-Video-Türklingeln (Kategorie sp). Klingel-Auslöser, Bewegungsalarm mit konfigurierbarem Auto-Reset, Flow-Karten für Klingel- und Bewegungsereignisse, Bewegungserkennung aktivieren/deaktivieren."
-    }
-  },
   "permissions": [],
   "api": {
     "cloudlookup": {
@@ -8644,9 +8370,32 @@
               },
               "value": 0,
               "hint": {
-                "en": "DP number for temperature sensor (raw value ÷ 10, e.g. 220 = 22.0 °C). Set to 0 to disable.",
-                "de": "DP-Nummer für den Temperatursensor (Rohwert ÷ 10, z.B. 220 = 22,0 °C). 0 = deaktiviert."
+                "en": "DP number for temperature sensor. Divided by the Temperature Divisor below. Set to 0 to disable.",
+                "de": "DP-Nummer für den Temperatursensor. Wird durch den Temperatur-Divisor unten geteilt. 0 = deaktiviert."
               }
+            },
+            {
+              "id": "temp_divisor",
+              "type": "dropdown",
+              "label": {
+                "en": "Temperature Divisor",
+                "de": "Temperatur-Divisor"
+              },
+              "hint": {
+                "en": "Most dehumidifiers report temperatures ×10 (e.g. 220 = 22.0 °C). Set to 1 if yours reports whole degrees.",
+                "de": "Die meisten Luftentfeuchter melden Temperaturen ×10 (z.B. 220 = 22,0 °C). Auf 1 setzen, wenn das Gerät ganze Grad meldet."
+              },
+              "value": "10",
+              "values": [
+                {
+                  "id": "1",
+                  "label": "1 (raw °C)"
+                },
+                {
+                  "id": "10",
+                  "label": "10 (value ÷ 10)"
+                }
+              ]
             },
             {
               "id": "dp_anion",
@@ -11804,9 +11553,32 @@
               },
               "value": 0,
               "hint": {
-                "en": "DP for temperature sensor. Set to 0 to disable.",
-                "de": "DP für Temperatursensor. 0 = deaktiviert."
+                "en": "DP for temperature sensor. Divided by the Temperature Divisor below. Set to 0 to disable.",
+                "de": "DP für Temperatursensor. Wird durch den Temperatur-Divisor unten geteilt. 0 = deaktiviert."
               }
+            },
+            {
+              "id": "temp_divisor",
+              "type": "dropdown",
+              "label": {
+                "en": "Temperature Divisor",
+                "de": "Temperatur-Divisor"
+              },
+              "hint": {
+                "en": "Most humidifiers report temperatures ×10 (e.g. 220 = 22.0 °C). Set to 1 if yours reports whole degrees.",
+                "de": "Die meisten Luftbefeuchter melden Temperaturen ×10 (z.B. 220 = 22,0 °C). Auf 1 setzen, wenn das Gerät ganze Grad meldet."
+              },
+              "value": "10",
+              "values": [
+                {
+                  "id": "1",
+                  "label": "1 (raw °C)"
+                },
+                {
+                  "id": "10",
+                  "label": "10 (value ÷ 10)"
+                }
+              ]
             },
             {
               "id": "dp_anion",
@@ -14278,6 +14050,22 @@
               "hint": {
                 "en": "DP to move to a preset favourite position. Zemismart v2: DP 19. 0 = disabled.",
                 "de": "DP für die voreingestellte Lieblingsposition. Zemismart v2: DP 19. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "position_best",
+              "type": "number",
+              "label": {
+                "en": "Favourite Position",
+                "de": "Lieblingsposition"
+              },
+              "value": 50,
+              "min": 0,
+              "max": 100,
+              "step": 1,
+              "hint": {
+                "en": "The position in percent that the 'Move curtain to favourite position' flow action sends to the DP above.",
+                "de": "Position in Prozent, die die Flow-Aktion 'Rollo zur Lieblingsposition fahren' an den DP oben sendet."
               }
             }
           ]
