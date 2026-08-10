@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.161",
+  "version": "1.0.162",
   "compatibility": ">=12.13.0",
   "sdk": 3,
   "platforms": [
@@ -3674,6 +3674,16 @@
             "name": "device",
             "type": "device",
             "filter": "driver_id=pet_feeder"
+          }
+        ],
+        "tokens": [
+          {
+            "name": "portions",
+            "type": "number",
+            "title": {
+              "en": "Servings",
+              "de": "Portionen"
+            }
           }
         ]
       },

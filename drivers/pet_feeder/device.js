@@ -54,6 +54,16 @@ const OPTIONAL_CAPABILITIES = [
   { setting: 'dp_battery_status',    capability: 'battery_status'   },
 ];
 
+// A feed report arriving within this window after (re)connecting is the device
+// restating its stored last feed, not a fresh one — firmware on protocol 3.4/3.5
+// pushes its state asynchronously, so that restatement can arrive as a push.
+// Triggering on it would fire "Feeding completed" on every app restart.
+const FEED_REPORT_CONNECT_GRACE_MS = 15000;
+
+// Devices that report both a terminal motor state and a feed report would fire the
+// trigger twice for one feed. Whichever arrives first wins, the other is ignored.
+const FEEDING_DONE_COOLDOWN_MS = 10000;
+
 class PetFeederDevice extends BaseTuyaDevice {
   async onInit() {
     this.log('Device initialized:', this.getName());
@@ -116,11 +126,54 @@ class PetFeederDevice extends BaseTuyaDevice {
     clearTimeout(this._portionsResetTimer);
   }
 
+  _onConnected() {
+    this._connectedAt = Date.now();
+  }
+
+  /**
+   * Fires the "Feeding completed" trigger, suppressing a second call for the same
+   * feed. `portions` is the number of servings dispensed where the device reports
+   * it, 0 where only a motor state was available.
+   */
+  _fireFeedingDone(portions, source) {
+    const now = Date.now();
+    if (this._lastFeedingDoneAt && now - this._lastFeedingDoneAt < FEEDING_DONE_COOLDOWN_MS) {
+      this.log(`Feeding completed (${source}) ignored — already reported ${now - this._lastFeedingDoneAt} ms ago`);
+      return;
+    }
+    this._lastFeedingDoneAt = now;
+    this.log(`Feeding completed (${source}), portions: ${portions}`);
+    this._triggerFeedingDone.trigger(this, { portions }).catch(() => {});
+  }
+
   // â”€â”€ DPS handling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  async _handleDps(dps) {
+  async _handleDps(dps, meta = {}) {
     const settings = this.getSettings();
     let   changed  = false;
+
+    // ── Feeding completed, detected from the feed report (DP 15) ────────────────
+    // Some feeders never leave "standby" on DP 4 and never send the spec's "done"
+    // state, so the motor-state path below never fires on them. What they do send is
+    // an unsolicited report of the servings actually dispensed, once per feed.
+    //
+    // That report cannot be detected by comparing values: two feeds of 2 servings
+    // report 2 and then 2 again, which the unchanged-DP skip further down discards.
+    // Nor can it be detected by mere arrival, because every poll reply restates the
+    // last value. What identifies a feed is the *unsolicited* arrival of a non-zero
+    // report — hence isPush, and hence this block sitting above the skip.
+    const feedReportDp = settings.dp_feed_report;
+    if (meta.isPush && feedReportDp > 0 && Object.prototype.hasOwnProperty.call(dps, String(feedReportDp))) {
+      const portions = Number(dps[String(feedReportDp)]);
+      if (portions > 0) {
+        const sinceConnect = this._connectedAt ? Date.now() - this._connectedAt : Infinity;
+        if (sinceConnect < FEED_REPORT_CONNECT_GRACE_MS) {
+          this.log(`Feed report ${portions} ignored — arrived ${sinceConnect} ms after connect (stored state, not a fresh feed)`);
+        } else {
+          this._fireFeedingDone(portions, `DP ${feedReportDp} push`);
+        }
+      }
+    }
 
     for (const [dpStr, value] of Object.entries(dps)) {
       if (this._lastDps[dpStr] === value) continue;
@@ -175,7 +228,12 @@ class PetFeederDevice extends BaseTuyaDevice {
           converted === 'done' ||
           (converted === 'standby' && prev === 'feeding');
         if (feedingComplete) {
-          this._triggerFeedingDone.trigger(this).catch(() => {});
+          // The portions token is only known when the device also reports a feed
+          // count; 0 means "this device does not say how much it dispensed".
+          const reported = this.hasCapability('feed_report')
+            ? Number(this.getCapabilityValue('feed_report')) || 0
+            : 0;
+          this._fireFeedingDone(reported, `DP ${dp} = ${converted}`);
         }
 
         // "no_food" means the motor tried to run but the hopper was empty.
