@@ -14,16 +14,42 @@ const { detectViaCloud }        = require('../../lib/dpCodeMap');
 // dp_alarm_message is intentionally excluded — it's a fallback ring source
 // only used when dp_doorbell is disabled (see device.js), not something we
 // want cloud detection to enable by default.
+//
+// The second alias on several keys covers wireless chimes / plug-in receivers,
+// whose DPs start at 1 and share no numbering with the camera layout above. Without
+// them such a unit pairs with every DP pointing at nothing and stays silent.
 const CLOUD_CODE_MAP = {
-  dp_doorbell:           ['doorbell_active'],
+  dp_doorbell:           ['doorbell_active', 'doorbell_call'],
   dp_motion_event:       ['movement_detect_pic'],
   dp_motion_switch:      ['motion_switch'],
   dp_motion_sensitivity: ['motion_sensitivity'],
   dp_nightvision:        ['basic_nightvision'],
   dp_indicator:          ['basic_indicator'],
   dp_recording:          ['record_switch'],
-  dp_chime_volume:       ['chime_ring_volume'],
+  dp_chime_volume:       ['chime_ring_volume', 'doorbell_volume_value'],
   dp_device_volume:      ['basic_device_volume'],
+  dp_night_light:        ['switch_night_light'],
+  dp_ring_tone:          ['doorbell_ring_value'],
+};
+
+// Fallback DP numbers for a camera doorbell, used when nothing better is known.
+// Also handed to detectViaCloud so that the ones this particular device provably
+// does not have are switched off instead of left pointing at nothing.
+const DEFAULT_DPS = {
+  dp_doorbell:           136,
+  dp_motion_event:       115,
+  dp_alarm_message:      0,
+  dp_motion_switch:      134,
+  dp_motion_sensitivity: 106,
+  dp_nightvision:        108,
+  dp_indicator:          101,
+  dp_recording:          150,
+  dp_chime_volume:       157,
+  dp_device_volume:      160,
+  // Chime-only DPs — off by default so a camera doorbell is unaffected. Cloud code
+  // names fill them in for the units that have them.
+  dp_night_light:        0,
+  dp_ring_tone:          0,
 };
 
 class DoorbellDriver extends Homey.Driver {
@@ -79,6 +105,30 @@ class DoorbellDriver extends Homey.Driver {
         const dp = args.device.getSetting('dp_motion_sensitivity');
         if (!dp) throw new Error('Motion sensitivity DP is set to 0 (disabled) in device settings');
         await args.device._set(dp, args.sensitivity);
+      });
+
+    // Night light and ring tone exist on wireless chimes. The night light also has
+    // a tile (onoff.light), but Homey generates no flow cards for sub-capabilities,
+    // so both the action and the condition have to be declared explicitly.
+    this.homey.flow.getActionCard('doorbell_set_night_light')
+      .registerRunListener(async (args) => {
+        const dp = args.device.getSetting('dp_night_light');
+        if (!dp) throw new Error('Night light DP is set to 0 (disabled) in device settings');
+        const on = args.state === 'true';
+        await args.device._set(dp, on);
+        if (args.device.hasCapability('onoff.light')) {
+          await args.device.setCapabilityValue('onoff.light', on).catch(() => {});
+        }
+      });
+
+    this.homey.flow.getConditionCard('doorbell_night_light_is_on')
+      .registerRunListener(async (args) => args.device.getCapabilityValue('onoff.light') === true);
+
+    this.homey.flow.getActionCard('doorbell_set_ring_tone')
+      .registerRunListener(async (args) => {
+        const dp = args.device.getSetting('dp_ring_tone');
+        if (!dp) throw new Error('Ring tone DP is set to 0 (disabled) in device settings');
+        await args.device._set(dp, Math.round(args.tone));
       });
   }
 
@@ -154,7 +204,7 @@ class DoorbellDriver extends Homey.Driver {
       // Best-effort: refine the hardcoded defaults using the device's Tuya
       // cloud specification — matters for camera/doorbell models whose DP
       // layout differs. Never blocks pairing if unavailable or it fails.
-      const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m));
+      const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m), {}, DEFAULT_DPS);
 
       pendingDevice = this._buildPendingDevice({
         ip, deviceId, localKey, version: actualVersion, detectedDps: cloudDps,
@@ -182,19 +232,10 @@ class DoorbellDriver extends Homey.Driver {
         version,
         polling_interval:     0,
         offline_grace_seconds: 60,
-        // Defaults match a common smart-doorbell DP layout. Overridden below
-        // by detectedDps (Tuya cloud spec) when available — e.g. for other
-        // camera/doorbell models with a different layout.
-        dp_doorbell:          136,
-        dp_motion_event:      115,
-        dp_alarm_message:     0,
-        dp_motion_switch:     134,
-        dp_motion_sensitivity: 106,
-        dp_nightvision:       108,
-        dp_indicator:         101,
-        dp_recording:         150,
-        dp_chime_volume:      157,
-        dp_device_volume:     160,
+        // Camera-doorbell defaults, overridden by detectedDps (Tuya cloud spec)
+        // where available — both for models with a different layout and for chimes,
+        // where the spec also switches off the defaults the device does not have.
+        ...DEFAULT_DPS,
         motion_reset_seconds: 30,
         ...(detectedDps || {}),
       },

@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.163",
+  "version": "1.0.165",
   "compatibility": ">=12.13.0",
   "sdk": 3,
   "platforms": [
@@ -5082,6 +5082,20 @@
         ]
       },
       {
+        "id": "doorbell_night_light_is_on",
+        "title": {
+          "en": "Night light !{{is|is not}} on",
+          "de": "Türklingel: Nachtlicht !{{ist|ist nicht}} an"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=doorbell"
+          }
+        ]
+      },
+      {
         "id": "doorbell_device_is_connected",
         "title": {
           "en": "Doorbell !{{is|is not}} connected",
@@ -7845,6 +7859,77 @@
             "min": 0,
             "max": 100,
             "step": 10
+          }
+        ]
+      },
+      {
+        "id": "doorbell_set_night_light",
+        "title": {
+          "en": "Set night light",
+          "de": "Türklingel: Nachtlicht setzen"
+        },
+        "titleFormatted": {
+          "en": "Turn night light [[state]]",
+          "de": "Nachtlicht [[state]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=doorbell"
+          },
+          {
+            "name": "state",
+            "type": "dropdown",
+            "title": {
+              "en": "State",
+              "de": "Zustand"
+            },
+            "values": [
+              {
+                "id": "true",
+                "label": {
+                  "en": "On",
+                  "de": "Ein"
+                }
+              },
+              {
+                "id": "false",
+                "label": {
+                  "en": "Off",
+                  "de": "Aus"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "doorbell_set_ring_tone",
+        "title": {
+          "en": "Set ring tone",
+          "de": "Türklingel: Klingelton setzen"
+        },
+        "titleFormatted": {
+          "en": "Set ring tone to [[tone]]",
+          "de": "Klingelton setzen auf [[tone]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=doorbell"
+          },
+          {
+            "name": "tone",
+            "type": "number",
+            "title": {
+              "en": "Melody number",
+              "de": "Melodie-Nummer"
+            },
+            "min": 0,
+            "max": 32,
+            "step": 1
           }
         ]
       },
@@ -14128,10 +14213,15 @@
       },
       "class": "doorbell",
       "capabilities": [
-        "alarm_generic",
-        "alarm_motion"
+        "alarm_generic"
       ],
       "capabilitiesOptions": {
+        "onoff.light": {
+          "title": {
+            "en": "Night Light",
+            "de": "Nachtlicht"
+          }
+        },
         "alarm_generic": {
           "title": {
             "en": "Doorbell Rang",
@@ -14458,6 +14548,36 @@
               "hint": {
                 "en": "DP for the doorbell speaker volume (0–10). Marmitek Buzz LO: DP 160. Set to 0 to disable.",
                 "de": "DP für die Lautstärke des Türklingel-Lautsprechers (0–10). Marmitek Buzz LO: DP 160. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_night_light",
+              "type": "number",
+              "label": {
+                "en": "Night Light DP",
+                "de": "Nachtlicht DP"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "Boolean DP for the night light on wireless chimes (typically DP 4). Adds a light tile to the device. Set to 0 to disable.",
+                "de": "Boolescher DP für das Nachtlicht bei Funk-Gongs (meist DP 4). Fügt dem Gerät eine Licht-Kachel hinzu. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_ring_tone",
+              "type": "number",
+              "label": {
+                "en": "Ring Tone DP",
+                "de": "Klingelton DP"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "Integer DP selecting the melody on wireless chimes (typically DP 2, range 0–32). Used by the 'Set ring tone' flow action. Set to 0 to disable.",
+                "de": "Ganzzahliger DP zur Melodieauswahl bei Funk-Gongs (meist DP 2, Bereich 0–32). Wird von der Flow-Aktion 'Klingelton setzen' verwendet. 0 = deaktiviert."
               }
             }
           ]

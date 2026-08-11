@@ -12,9 +12,14 @@
        horizontal scrollbar. Dropping the emoji from the labels took the row down to
        about 320 px, enough headroom for a wider-rendering system font; overflow-x is
        the backstop, so a narrower pane scrolls the bar alone and never the page.
-       overflow-y must stay
-       hidden or the auto value would also apply vertically and clip-scroll the
-       3 px active underline that deliberately overhangs the bar's bottom border. */
+       overflow-y is hidden because the auto value would otherwise also apply
+       vertically and add a second scrollbar inside the bar.
+       Consequence for the active marker: nothing may overhang the bar's edges, or
+       overflow would clip it — which is exactly what happened to the earlier
+       underline built from border-bottom plus a negative margin. The marker is
+       therefore drawn *inside* the button with an inset shadow, and backed up by a
+       filled background and a heavier weight so that a host stylesheet overriding
+       any single one of the three still leaves the active tab obvious. */
     .tab-bar {
       display: flex;
       gap: 0;
@@ -33,24 +38,55 @@
       white-space: nowrap;
       flex: 0 0 auto;
       border: none;
-      background: none;
+      background: transparent;
       font-size: 13px;
       font-weight: 500;
-      color: #666;
+      color: #5f6368;
       cursor: pointer;
-      border-bottom: 3px solid transparent;
-      margin-bottom: -2px;
       border-radius: 0;
+      box-shadow: inset 0 -3px 0 transparent;
+      transition: background 0.15s ease, color 0.15s ease;
     }
-    .tab-btn:hover  { color: #1a73e8; background: #f8f9fa; }
-    .tab-btn.active { color: #1a73e8; border-bottom-color: #1a73e8; }
+    .tab-bar .tab-btn:hover        { color: #1a73e8; background: #f1f3f4; }
+    /* !important on the active state only: the settings page is rendered inside
+       Homey's own document, whose stylesheet also targets bare <button> elements —
+       which is why these tabs render as uniform grey boxes there rather than the flat
+       transparent ones seen when opening this file directly. Losing that fight on the
+       inactive tabs is cosmetic; losing it on the active one leaves the user unable to
+       tell which tab they are on, so this declaration does not negotiate. */
+    .tab-bar .tab-btn.active {
+      color: #1a73e8 !important;
+      background: #e8f0fe !important;
+      font-weight: 600 !important;
+      box-shadow: inset 0 -3px 0 #1a73e8 !important;
+    }
+    .tab-bar .tab-btn.active:hover { background: #d9e6fd !important; }
 
     /* ── Content ── */
     .tab-panel { display: none; padding: 16px; }
     .tab-panel.active { display: block; }
 
-    h2   { margin: 0 0 4px; font-size: 15px; }
-    h3   { margin: 18px 0 6px; font-size: 13px; font-weight: 600; color: #333; }
+    /* Headings carry weight, size, colour and — for h2 — a rule underneath, rather
+       than relying on the browser's default bold for headings. Homey's settings view
+       styles bare h2/h3 itself, which flattened them to nearly the same grey as the
+       body text; the selectors are scoped to .tab-panel so they outrank a plain h2
+       from the host stylesheet without resorting to !important. */
+    h2, h3 { color: #1d1d1f; }
+    .tab-panel h2 {
+      margin: 0 0 10px;
+      padding-bottom: 6px;
+      font-size: 17px;
+      font-weight: 700;
+      color: #1d1d1f;
+      border-bottom: 1px solid #e3e5e8;
+      letter-spacing: -0.2px;
+    }
+    .tab-panel h3 {
+      margin: 22px 0 6px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #1d1d1f;
+    }
     p    { color: #666; margin: 0 0 12px; font-size: 12px; line-height: 1.5; }
     .section { margin-bottom: 24px; }
     .bar { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; }
@@ -108,9 +144,15 @@
     #dpPlaceholder { color: #999; font-size: 12px; padding: 16px 0; }
 
     /* ── Help nav ── */
+    /* Both --tabbar-h and scroll-padding-top are overwritten at runtime from the
+       measured height of the tab bar. The fallback here only has to be close: the
+       row's real height depends on the host's font metrics, which differ between
+       Homey's settings view and a browser, and a value that is too small leaves a
+       slit through which the content scrolls between the two sticky bars. */
+    :root { --tabbar-h: 39px; }
     .help-nav {
       position: sticky;
-      top: 44px;            /* just below the sticky tab bar */
+      top: var(--tabbar-h);
       z-index: 5;
       background: #fff;
       border-bottom: 1px solid #e8e8e8;
@@ -155,6 +197,30 @@
     .note { background: #fef9e7; border-left: 3px solid #f9ab00; padding: 8px 10px; border-radius: 0 6px 6px 0; font-size: 12px; color: #555; margin-bottom: 14px; line-height: 1.5; }
     .help-link { color: #1a73e8; text-decoration: none; }
     .help-link:hover { text-decoration: underline; }
+
+    /* Collapsible note. The native marker is replaced because a flex summary hides
+       it in WebKit, and the row needs flex to keep the caret next to the text. */
+    details.note > summary {
+      cursor: pointer;
+      font-weight: 600;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      user-select: none;
+    }
+    details.note > summary::-webkit-details-marker { display: none; }
+    details.note > summary::before {
+      content: '▸';
+      /* inline-block is required: transform is ignored on non-replaced inline
+         elements, so without it the caret never turns. */
+      display: inline-block;
+      font-size: 10px;
+      color: #b8860b;
+      transition: transform 0.15s ease;
+    }
+    details.note[open] > summary::before { transform: rotate(90deg); }
+    details.note > summary:hover { color: #7a5c00; }
 
     /* ── Boot splash ─────────────────────────────────────── */
     /* The page opens with empty dropdowns and unfilled credential fields until
@@ -245,6 +311,8 @@
       <select id="helpJump">
         <option value="">— select section —</option>
         <option value="sec-start">Getting started</option>
+        <option value="sec-report">Reporting device issues</option>
+        <option value="sec-dpmode">DP Instruction Mode</option>
         <option value="sec-plug">Smart Plug</option>
         <option value="sec-dehumidifier">Dehumidifier</option>
         <option value="sec-ac">Air Conditioner</option>
@@ -283,8 +351,8 @@
         The Local Key changes every time you reset or re-pair a device in the Tuya / Smart Life app. If a device stops connecting, get the new key.
       </div>
 
-      <h3>Method 1 — Cloud Lookup (recommended)</h3>
-      <p>Use the <strong>Cloud Lookup</strong> tab (above) to fetch Device ID and Local Key directly from the Tuya IoT Platform — no CLI tools needed.</p>
+      <h3>Getting the Device ID and Local Key</h3>
+      <p>Use the <strong>Cloud Lookup</strong> tab (above) to fetch both directly from the Tuya IoT Platform — no CLI tools needed. Everything below is a one-time setup on Tuya's side; afterwards the tab lists every device in your Tuya account at the press of a button.</p>
       <ol style="font-size:12px;line-height:1.8;color:#333">
         <li>On <strong>iot.tuya.com</strong>, create a free account, then <strong>Cloud</strong> → <strong>Create Cloud Project</strong> (Trial Edition is enough)</li>
         <li>In the project, <strong>Service API</strong> → <strong>Authorize</strong>: <strong>IoT Core</strong> and <strong>Authorization</strong> must be listed, otherwise every request fails with <em>permission deny</em></li>
@@ -293,23 +361,72 @@
         <li>Switch to the <strong>Cloud Lookup</strong> tab, paste your credentials, select the data center your Tuya account is registered in, and click <strong>Fetch Devices</strong></li>
         <li>Use the <strong>Copy</strong> button to copy Device ID and Local Key</li>
       </ol>
-      <div class="note"><strong>If lookup used to work and now fails:</strong> a Trial Edition project expires after about a month. Extend it for free under <strong>Project</strong> → <strong>Extend</strong>. The symptom is the same <em>permission deny</em> as a missing API authorization.</div>
+      <div class="note"><strong>If lookup used to work and now fails:</strong> a Trial Edition project expires after about a month. Extend it for free under <strong>Project</strong> → <strong>Extend</strong>. The symptom is the same <em>permission deny</em> as a missing API authorization. On some accounts the same expiry hides the Local Key column instead of failing outright — check <strong>Service API</strong> → <strong>IoT Core</strong> → <strong>View Details</strong> for the subscription status.</div>
+      <div class="note"><strong>The data center trap.</strong> A free Tuya account is locked to <strong>one</strong> data center: whichever you pick for your first project applies to every project on that account, and changing it means deleting all projects and starting over. Worse, the choice is partly made for you — accounts registered in some countries (the UK among them) are assigned Western Europe and cannot select Central Europe at all, however the region is set. If your Smart Life account sits in a region your project cannot reach, no combination of settings here will find your devices. The way out reported by users who hit this: create a fresh Tuya account registered in a region where all data centers are offered, then link Smart Life to a project under that account. If you are starting over anyway, deleting the old empty projects first avoids inheriting the locked choice.</div>
 
       <h3>Cloud-assisted DP detection</h3>
       <p>Once your Cloud Lookup credentials have been saved here, pairing gets noticeably more accurate. The local connection only ever sees raw DP numbers and values, so the app has to guess what each one means from the value shape. The cloud specification instead supplies the manufacturer's own name per DP — <code>envhumid</code>, <code>windspeed</code>, <code>work_state</code>, <code>bright_value</code> and so on — which is matched directly.</p>
       <p style="font-size:12px;color:#666">This mainly helps devices whose enums use plain numbers (<code>0</code> / <code>1</code>) instead of names, where value-shape guessing has nothing to go on, and it reads the <em>full</em> list of allowed values for mode and fan-speed pickers rather than just the one value the device happens to be reporting at that moment. It is entirely optional — pairing works without it, you may just have to correct a few DP numbers by hand afterwards.</p>
 
-      <h3>Reporting device issues</h3>
-      <p>If a device does not work as expected or a DP mapping is incorrect, three things make the difference between a guess and a fix. Send whichever of them you can — the first one alone already helps.</p>
-      <ol style="font-size:12px;line-height:1.8;color:#333">
-        <li><strong>The live DP table</strong> — <strong>DP Debug</strong> tab → select the device → <strong>Copy DP Table</strong>, and <strong>Copy</strong> under <em>Raw Data</em>. This is what the device really reports over the local connection. Operating the device with its own remote while watching the table shows which DP belongs to which function.</li>
-        <li><strong>The DP specification</strong> — <strong>Cloud Lookup</strong> tab → fetch your devices → <strong>click the device name</strong> → <strong>Copy DP Table</strong>. This adds the manufacturer's own name, type and allowed range per DP, which the local connection never reveals.</li>
-        <li><strong>The diagnostic log</strong> — <strong>Logs</strong> tab → filter <em>Warnings &amp; Errors</em> → <strong>Copy</strong>. Needed whenever a device disconnects, refuses commands or never connects at all.</li>
-      </ol>
-      <p style="font-size:12px;color:#666">Together these give the developer the DP numbers, types and value ranges of your specific model, plus what happened on the wire — enough to correct a mapping without owning the device. Post them on the <a href="#" onclick="openUrl('https://community.homey.app/t/154077'); return false;" class="help-link">community forum</a> or as a <a href="#" onclick="openUrl('https://github.com/andiwirz/com.tuyalocal/issues'); return false;" class="help-link">GitHub issue</a>. Please also state the device brand and model, and what you expected to happen instead. Both copies contain your device ID — remove it if you would rather not post it publicly. The Local Key is never included.</p>
+      <h3>Enum values are matched exactly</h3>
+      <p>Mode and fan-speed settings hold the tokens the device itself uses, and the comparison is literal — <strong>case included</strong>. A device whose modes are <code>Heat,Cool,Auto</code> rejects <code>heat,cool,auto</code>, and the symptom is deceptive: the command appears to go through, then the device snaps straight back to its previous mode. Devices seen in the wild use <code>cold,wet,wind,hot</code> instead of cool/dry/fan/heat, or <code>bheat,eheat,sheat,bcool,ecool,scool,auto</code> for boost/eco/silent variants. Read the exact tokens from the <strong>DP specification</strong> in Cloud Lookup and copy them verbatim into <em>mode_values</em> / <em>fan_speed_values</em>. With Cloud Lookup credentials saved this is filled in automatically at pairing.</p>
 
       <h3>Find the IP address</h3>
-      <p>Use <strong>Scan Network</strong> in the pairing wizard (UDP broadcast + TCP subnet scan, ~10 s), or check your router's DHCP table. Assign a static IP / DHCP reservation so it never changes.</p>
+      <p>Use <strong>Scan Network</strong> in the pairing wizard, or check your router's DHCP table. Either way, assign a static IP / DHCP reservation so it never changes.</p>
+      <div class="note"><strong>Matching an IP to the right device</strong> is the harder half. Tuya devices report almost no hostname: older ESP-based ones appear as <code>ESP_</code> plus the last six characters of their MAC, newer ones as <code>wlan0</code>, and the newest as <code>lwip1</code> — so eight devices show up as eight identical <code>wlan0</code> entries. Take the MAC address from the Tuya / Smart Life app under the device's <strong>Device info</strong> and match on that. Assigning the wrong IP produces a device that connects to something and then never responds.</div>
+      <p style="font-size:12px;color:#666">The scan works in two passes: it first listens six seconds for the announcements Tuya devices broadcast by themselves (UDP 6666/6667), then probes every address in your subnet on TCP 6668. On a normal home network that takes around ten seconds. The second pass is skipped on subnets larger than 2046 addresses, where probing every host would take minutes — devices there are only found if they announce themselves.</p>
+
+      <h3>Can this device be controlled locally at all?</h3>
+      <p>Worth two minutes before spending an evening on settings. Local control needs the device to be listening on <strong>TCP 6668</strong> (occasionally 6667). Point any port scanner — <em>Advanced Port Scanner</em>, a phone network-analyser app, <code>nmap</code> — at the device's IP and check those two ports.</p>
+      <p style="font-size:12px;color:#666"><strong>Open</strong> means the device speaks the local protocol and any failure from here is a matter of key, protocol version or DP mapping. <strong>Both closed</strong> means it does not, and nothing in this app can change that — some devices sold as Tuya are Matter or cloud-only under the hood and simply have no local port. Users have chased such a device for weeks before running this check.</p>
+      <div class="note"><strong>Known to be impossible locally,</strong> whatever the settings say:
+        <ul style="margin:6px 0 0;padding-left:18px;line-height:1.6">
+          <li><strong>Battery sensors in deep sleep</strong> — door, motion, smoke, temperature/humidity sensors switch their radio off between reports. There is no window in which to connect, and the cloud sees them only because the device pushes to Tuya itself.</li>
+          <li><strong>Bluetooth devices behind a Tuya gateway</strong> — the gateway proxies them to the cloud, not over the local protocol, and most models accept only one to three connections in total.</li>
+          <li><strong>Cameras and video doorbells</strong> — the video stream is a proprietary peer-to-peer protocol. Ring and motion events over the local connection can work; the picture cannot. For the stream, use an ONVIF app if the device supports it.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="section" id="sec-report">
+      <h2>Reporting device issues</h2>
+      <p>If a device does not work as expected or a DP mapping is incorrect, <strong>three things</strong> make the difference between a guess and a fix — one from each of the other three tabs. The first two belong together and neither replaces the other: one shows what the device does, the other what its data points mean. Send whichever of them you can.</p>
+      <ol style="font-size:12px;line-height:1.8;color:#333">
+        <li><strong>The DP specification — from Cloud Lookup.</strong> <strong>Cloud Lookup</strong> tab → <strong>Fetch Devices</strong> → <strong>Show DPs</strong> on the device's row → <strong>Copy Cloud DP Table</strong>. Gives the manufacturer's own name, the declared type and the allowed range for every data point. This is the only place that information exists — the local connection never transmits it.</li>
+        <li><strong>The live DP data — from DP Debug.</strong> <strong>DP Debug</strong> tab → select the device → <strong>Copy Local DP Table</strong>. This is what the device actually reports over the local connection. Operating the device with its own buttons or remote while watching the table shows which DP belongs to which function.</li>
+        <li><strong>The diagnostic log — from Logs.</strong> <strong>Logs</strong> tab → filter <em>Warnings &amp; Errors</em> → <strong>Copy</strong>. Needed whenever a device disconnects, refuses commands or never connects at all; it distinguishes a network problem from a wrong DP mapping.</li>
+      </ol>
+      <p>Together these give the DP numbers, types and value ranges of your specific model, plus what happened on the wire — enough to correct a mapping without owning the device. Post them on the <a href="#" onclick="openUrl('https://community.homey.app/t/154077'); return false;" class="help-link">community forum</a> or as a <a href="#" onclick="openUrl('https://github.com/andiwirz/com.tuyalocal/issues'); return false;" class="help-link">GitHub issue</a>, and please state the device brand and model plus what you expected to happen instead.</p>
+      <div class="note"><strong>Safe to post publicly:</strong> none of these three copies identifies you. The DP tables carry the device name but no device ID, the log is labelled with device names only, and the Local Key is never included anywhere.</div>
+    </div>
+
+    <div class="section" id="sec-dpmode">
+      <h2>DP Instruction Mode</h2>
+      <p>Tuya devices use the <strong>Standard Instruction Set</strong> by default, which translates commands into readable codes such as <code>"switch_led"</code>. That works well for simple devices, but on more complex models it often gets in the way.</p>
+      <p><strong>DP Instruction Mode</strong> switches to more direct, hardware-level communication. Three things it gives you:</p>
+
+      <h3>Makes every function visible</h3>
+      <p>Many Tuya devices have extra modes, timers, scenes or sensor readings that the standard mode never exposes. DP mode unlocks all available DPs — ideal for Tuya Local, because you can then map every function cleanly.</p>
+
+      <h3>Fixes third-party integrations</h3>
+      <p>When a device is recognised in Homey, Home Assistant or TinyTuya but does not respond to anything, the standard mode is a frequent cause. Switching to DP Instruction Mode regularly resolves it.</p>
+
+      <h3>Direct hardware control</h3>
+      <p>Instead of textual commands, plain DP numbers and values are sent:</p>
+      <pre style="font-size:11px">{"21": "scene"}</pre>
+      <p>That is more robust on devices which do not follow the Tuya standard exactly.</p>
+
+      <h3>🔧 How to enable it</h3>
+      <p>The change is made on the Tuya IoT Developer Platform, not in Homey:</p>
+      <ol style="font-size:12px;line-height:1.8;color:#333">
+        <li>Sign in to the <a href="#" onclick="openUrl('https://iot.tuya.com');return false" class="help-link">Tuya Developer Platform</a></li>
+        <li>Open <strong>Cloud</strong> → <strong>Development</strong> in the left menu and select your project</li>
+        <li>Open the <strong>Devices</strong> tab inside the project</li>
+        <li>Select your device's category</li>
+        <li>Click <strong>Edit</strong> (pencil icon)</li>
+        <li>Change the setting from <strong>Standard Instruction</strong> to <strong>DP Instruction</strong></li>
+      </ol>
+      <div class="note">The setting applies per <strong>device category</strong>, not per device — every device of that category in the project switches with it. It affects what the cloud exposes, so re-run <strong>Fetch Devices</strong> in the Cloud Lookup tab afterwards to see the full DP list.</div>
     </div>
 
     <div class="section" id="sec-plug">
@@ -353,7 +470,7 @@
           <tr><td>dp_pump</td>             <td>0</td>  <td>Water Pump</td>             <td><span class="help-badge badge-rw">R/W</span></td></tr>
         </tbody>
       </table>
-      <p>Set any optional DP to <strong>0</strong> to hide the tile. Use the <strong>DP Debug</strong> and <strong>Raw Data</strong> tabs to find the correct DP numbers for your device.</p>
+      <p>Set any optional DP to <strong>0</strong> to hide the tile. Use the <strong>DP Debug</strong> tab to find the correct DP numbers for your device.</p>
       <div class="note"><strong>Temperature scaling:</strong> Most dehumidifiers send the temperature multiplied by 10 (e.g. 220 = 22.0 °C), which is why <em>temp_divisor</em> defaults to 10. If the reading comes out 10× too low, the device sends whole degrees — set <em>temp_divisor = 1</em>.</div>
       <div class="note"><strong>Numeric mode / fan-speed values:</strong> Some dehumidifiers report modes and fan speeds as plain numbers (<code>"0"</code>, <code>"1"</code>) instead of names like <code>auto</code> or <code>low</code>. Set <em>mode_values = 0,1</em> and <em>fan_speed_values = 0,1</em> to match, otherwise the picker rejects the values and the tiles stay empty.</div>
       <div class="note"><strong>Timer format:</strong> Two settings cover the common deviations. Enable <em>Timer uses plain numbers</em> if the timer DP sends <code>0</code>…<code>24</code> rather than <code>cancel</code> / <code>1h</code> … <code>24h</code>. Enable <em>Timer Remaining DP is in minutes</em> if the remaining-time DP counts minutes (0–1440) rather than hours.</div>
@@ -463,7 +580,7 @@
         </tbody>
       </table>
       <div class="note"><strong>Protocol layout:</strong> Newer Tuya lights use DPs 20–24. Older devices use DPs 1–5. Check the DP Debug tab to identify which layout your device uses and adjust the DP numbers in device settings accordingly.</div>
-      <div class="note"><strong>Color mode strings:</strong> Most devices use <code>white</code> and <code>colour</code>, but some send <code>color</code>, <code>cct</code> or <code>rgb</code>. Check the Raw Data tab while switching modes manually to find the exact strings.</div>
+      <div class="note"><strong>Color mode strings:</strong> Most devices use <code>white</code> and <code>colour</code>, but some send <code>color</code>, <code>cct</code> or <code>rgb</code>. Check the <strong>DP Debug</strong> tab while switching modes manually to find the exact strings.</div>
     </div>
 
     <div class="section" id="sec-pet">
@@ -609,7 +726,7 @@
 
     <div class="section" id="sec-doorbell">
       <h2>Doorbell — DP reference</h2>
-      <p>Event-driven driver for Tuya video doorbells (Marmitek Buzz LO, Bcom Majic IPBox, Cleverio CD-200 and compatible). The device pushes events over LAN — no polling needed (<em>polling_interval = 0</em> by default).</p>
+      <p>Event-driven driver for Tuya video doorbells (Marmitek Buzz LO, Bcom Majic IPBox, Cleverio CD-200 and compatible) as well as wireless chimes and plug-in receivers. The device pushes events over LAN — no polling needed (<em>polling_interval = 0</em> by default).</p>
       <table class="help-table">
         <thead><tr><th>Setting</th><th>Default DP</th><th>Capability / Use</th><th>Notes</th><th>R/W</th></tr></thead>
         <tbody>
@@ -623,12 +740,16 @@
           <tr><td>dp_indicator</td>          <td>101</td> <td>Status LED</td>              <td>boolean. 0 = disabled</td>                                                                                                  <td><span class="help-badge badge-rw">Write</span></td></tr>
           <tr><td>dp_recording</td>          <td>150</td> <td>Recording on/off</td>        <td>boolean. 0 = disabled</td>                                                                                                  <td><span class="help-badge badge-rw">Write</span></td></tr>
           <tr><td>dp_motion_sensitivity</td> <td>106</td> <td>Motion sensitivity</td>      <td>number: <code>0</code>=low, <code>1</code>=medium, <code>2</code>=high. 0 = disabled</td>                                <td><span class="help-badge badge-rw">Write</span></td></tr>
+          <tr><td>dp_night_light</td>        <td>0</td>   <td>onoff.light</td>             <td>Wireless chimes: boolean, typically DP 4. Adds a Night Light tile. 0 = disabled</td>                                       <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_ring_tone</td>          <td>0</td>   <td>Melody selection</td>        <td>Wireless chimes: integer 0–32, typically DP 2. Used by the "Set ring tone" flow action. 0 = disabled</td>                 <td><span class="help-badge badge-rw">Write</span></td></tr>
           <tr><td>motion_reset_seconds</td>  <td>—</td>   <td>Motion alarm auto-clear</td> <td>Seconds after which alarm_motion resets to false automatically (default 30)</td>                                          <td><span class="help-badge badge-rw">Setting</span></td></tr>
         </tbody>
       </table>
-      <div class="note"><strong>Seed protection:</strong> The ring and motion triggers are suppressed for the very first data packet after each (re)connect. This prevents false triggers when the device sends its initial state on connection.</div>
-      <div class="note"><strong>Base64 alarm message (DP 185):</strong> Some cameras encode ring and motion events as a base64 JSON string on DP 185 instead of separate boolean DPs. Set <em>dp_alarm_message = 185</em> and leave <em>dp_doorbell</em> and <em>dp_motion_event</em> at 0 if your device uses this format. Check the Raw Data tab to identify which format your device uses.</div>
-      <div class="note"><strong>Flow actions:</strong> "Enable/Disable motion", "Set night vision", "Set chime volume", and "Set motion sensitivity" all throw an error if the corresponding DP is set to 0. Set the DP number in device settings first.</div>
+      <div class="note"><strong>Wireless chimes / plug-in receivers</strong> are supported too, but they are a different device family: no camera, and their DPs start at 1, so none of the defaults above apply. Typical layout: <em>dp_doorbell = 10</em> (<code>doorbell_call</code>, which button rang, 1–8) or <em>5</em> (<code>alarm_message</code>, the button's name as a raw string), <em>dp_chime_volume = 3</em>, <em>dp_night_light = 4</em>, <em>dp_ring_tone = 2</em>, and everything else 0. With Cloud Lookup credentials saved this is filled in automatically at pairing. Leave <em>dp_alarm_message</em> at 0 on these units — that path expects base64 <em>JSON</em> and silently does nothing with a plain name string.</div>
+      <div class="note"><strong>Motion tile:</strong> Only present when <em>dp_motion_event</em> or <em>dp_alarm_message</em> is set. A chime has neither, so it shows no motion tile rather than one that can never trigger.</div>
+      <div class="note"><strong>Seed protection:</strong> The ring and motion triggers are suppressed for the very first data packet after each (re)connect, so the initial state does not announce a ring. The value is deliberately not remembered from that packet: a chime sends the same payload on every press of a given button, and remembering it would make every later press look like "no change" and be discarded.</div>
+      <div class="note"><strong>Base64 alarm message (DP 185):</strong> Some cameras encode ring and motion events as a base64 JSON string on DP 185 instead of separate boolean DPs. Set <em>dp_alarm_message = 185</em> and leave <em>dp_doorbell</em> and <em>dp_motion_event</em> at 0 if your device uses this format. Check the <strong>DP Debug</strong> tab to identify which format your device uses.</div>
+      <div class="note"><strong>Flow actions:</strong> "Enable/Disable motion", "Set night vision", "Set chime volume", "Set motion sensitivity", "Set night light" and "Set ring tone" all throw an error if the corresponding DP is set to 0. Set the DP number in device settings first.</div>
     </div>
 
     <div class="section" id="sec-presence">
@@ -714,7 +835,10 @@
         <tbody>
           <tr><td>Device stays unavailable</td>                        <td>Wrong IP, Device ID or Local Key — use Repair to update. Check the Logs tab for the exact error.</td></tr>
           <tr><td>Scan finds no devices</td>                           <td>Tuya devices only accept one TCP connection at a time. If the device is already added, the scan cannot reach it. Enter the IP address manually during pairing instead.</td></tr>
-          <tr><td>ECONNRESET on every connect</td>                     <td>Protocol version mismatch — use <em>Auto-detect</em> in the device Repair screen.</td></tr>
+          <tr><td>ECONNRESET on every connect</td>                     <td>Protocol version mismatch — use <em>Auto-detect</em> in the device Repair screen. It tries 3.3, 3.4, 3.1, 3.5 and 3.2 in that order; a few curtain motors are on 3.2, which is why the list does not stop at four.</td></tr>
+          <tr><td>Connects, then never responds to anything</td>        <td>Three causes in order of likelihood: (1) the IP belongs to a different device — Tuya devices show up as <code>wlan0</code> / <code>lwip1</code> in the router, so match by MAC from the Tuya app's <em>Device info</em>; (2) the device is on the Standard Instruction Set, which exposes only part of its data points — see <a href="#" onclick="jumpToSection('sec-dpmode'); return false;" class="help-link">DP Instruction Mode</a>; (3) it has no local port at all — scan TCP 6668 and 6667, and if both are closed no setting will help.</td></tr>
+          <tr><td>Mode or preset command snaps back immediately</td>    <td>The value list does not match the device's own tokens, and matching is case-sensitive: a device using <code>Heat,Cool,Auto</code> rejects <code>heat,cool,auto</code>. Copy the tokens verbatim from the DP specification in Cloud Lookup into <em>mode_values</em>, then restart the app.</td></tr>
+          <tr><td>Battery sensor never connects</td>                    <td>Battery-powered sensors keep their radio off between reports, leaving no window to connect. They cannot be used locally — only through the cloud, where the device pushes by itself.</td></tr>
           <tr><td>Smart Plug values are 10× off</td>                   <td>Incorrect DP numbers or wrong power scale — adjust in device settings.</td></tr>
           <tr><td>Energy (kWh) never updates</td>                      <td>Set dp_energy = 0 — app computes kWh from power readings.</td></tr>
           <tr><td>AC / Heater temperature is 10× too high</td>         <td>Set <em>temp_divisor = 10</em> in device settings.</td></tr>
@@ -722,7 +846,7 @@
           <tr><td>AC swing picker shows wrong options</td>             <td>Update <em>swing_values</em> (e.g. <code>off,on,updown</code>) to match what the device sends. Check DP Debug while toggling swing manually.</td></tr>
           <tr><td>Picker still shows old options after edit</td>       <td>Restart the Tuya Local app to clear Homey's capability cache.</td></tr>
           <tr><td>Fan direction not detected at pairing</td>           <td>Set <em>dp_direction</em> manually in device settings (e.g. DP 63). Values must be <code>forward</code> / <code>reverse</code>.</td></tr>
-          <tr><td>Light color mode not switching</td>                  <td>Check the Raw Data tab while switching modes manually to find the exact strings, then update <em>color_mode_white_val</em> / <em>color_mode_color_val</em> in device settings.</td></tr>
+          <tr><td>Light color mode not switching</td>                  <td>Check the DP Debug tab while switching modes manually to find the exact strings, then update <em>color_mode_white_val</em> / <em>color_mode_color_val</em> in device settings.</td></tr>
           <tr><td>Light brightness or color temp range is wrong</td>   <td>Adjust <em>brightness_max</em> or <em>color_temp_max</em> in device settings (default 1000; some older devices use 255).</td></tr>
           <tr><td>Humidifier water alarm fires on connect</td>         <td>Built-in debounce suppresses transient alarms. If they persist, check the Logs tab for the DP value and timing.</td></tr>
           <tr><td>Spurious water / fault alarm after reconnect</td>    <td>Built-in debounce suppresses these. If they persist, check the Logs tab for the exact DP value and timing.</td></tr>
@@ -735,15 +859,15 @@
           <tr><td>Heat pump temperature is wrong or 10× off</td>        <td>Set <em>temp_divisor = 10</em> if the device sends temperatures ×10 (e.g. 350 for 35 °C). Auto-detected at pairing for most devices.</td></tr>
           <tr><td>Heat pump target temp correct but measured temp is 10× too high</td> <td>Asymmetric DP scaling (e.g. Weau): set <em>current_temp_divisor = 10</em> in device settings and leave <em>temp_divisor = 1</em>. Set to 0 to fall back to temp_divisor.</td></tr>
           <tr><td>Heat pump spurious fault alarm on connect</td>         <td>Built-in 30 s grace period suppresses transient faults after reconnect. If alarms persist longer, check the Logs and DP Debug tabs.</td></tr>
-          <tr><td>Doorbell ring trigger doesn't fire</td>                <td>Check that <em>dp_doorbell</em> matches the DP your device uses (common: 136). Use the Raw Data tab while pressing the bell to identify the correct DP. Some devices use base64 on DP 185 — set <em>dp_alarm_message = 185</em> instead.</td></tr>
-          <tr><td>Doorbell motion trigger fires on connect</td>          <td>Seed protection suppresses the first packet after every (re)connect. If false triggers persist, check the Raw Data tab — the device may be sending motion=true as its idle state.</td></tr>
+          <tr><td>Doorbell ring trigger doesn't fire</td>                <td>Check that <em>dp_doorbell</em> matches the DP your device uses (common: 136). Use the DP Debug tab while pressing the bell to identify the correct DP. Some devices use base64 on DP 185 — set <em>dp_alarm_message = 185</em> instead.</td></tr>
+          <tr><td>Doorbell motion trigger fires on connect</td>          <td>Seed protection suppresses the first packet after every (re)connect. If false triggers persist, check the DP Debug tab — the device may be sending motion=true as its idle state.</td></tr>
           <tr><td>Doorbell flow action throws "DP is set to 0" error</td> <td>The action requires the corresponding DP to be configured. Set <em>dp_motion_switch</em>, <em>dp_nightvision</em>, <em>dp_chime_volume</em>, or <em>dp_motion_sensitivity</em> to the correct DP number in device settings.</td></tr>
           <tr><td>Curtain position slider is inverted (0% = open)</td>   <td>Enable <em>invert_position</em> in device settings to swap the direction.</td></tr>
           <tr><td>Curtain motor doesn't stop at the right position</td>  <td>The motor limit positions are set in the Tuya / Smart Life app (DP 16 border calibration), not in Homey. Run the limit calibration from the original app first.</td></tr>
           <tr><td>Curtain tile shows "moving" but motor has stopped</td> <td>The <em>work_state</em> DP may not be resetting to idle on your device. Set <em>dp_work_state = 0</em> to disable it — the tile state will then follow the <em>control</em> DP echo instead.</td></tr>
-          <tr><td>Device missing DPs or commands rejected</td>           <td>Your device may be using the <strong>Standard Instruction Set</strong> which hides some DPs. Switch to <strong>DP Instruction Set</strong> on iot.tuya.com → Devices → your device → <strong>Instruction Mode</strong>. This exposes all raw DPs with full read/write access.</td></tr>
-          <tr><td>Cloud Lookup shows fewer DPs than expected</td>        <td>Same cause — the Standard Instruction Set limits what the cloud API returns. Switch to DP Instruction mode on iot.tuya.com, then re-fetch in Cloud Lookup.</td></tr>
-          <tr><td>SET command causes disconnect</td>                     <td>1) Refresh Local Key via Cloud Lookup. 2) Enable <em>Fire and Forget</em> in device settings. 3) Try Protocol 3.4. 4) Switch to DP Instruction mode on iot.tuya.com.</td></tr>
+          <tr><td>Device missing DPs or commands rejected</td>           <td>Your device may be using the <strong>Standard Instruction Set</strong>, which hides some DPs. Switching to DP Instruction exposes all raw DPs with full read/write access — see <a href="#" onclick="jumpToSection('sec-dpmode'); return false;" class="help-link">DP Instruction Mode</a> for the click path.</td></tr>
+          <tr><td>Cloud Lookup shows fewer DPs than expected</td>        <td>Same cause — the Standard Instruction Set limits what the cloud API returns. Switch to <a href="#" onclick="jumpToSection('sec-dpmode'); return false;" class="help-link">DP Instruction Mode</a>, then re-fetch in Cloud Lookup.</td></tr>
+          <tr><td>SET command causes disconnect</td>                     <td>1) Refresh Local Key via Cloud Lookup. 2) Enable <em>Fire and Forget</em> in device settings. 3) Try Protocol 3.4. 4) Switch to <a href="#" onclick="jumpToSection('sec-dpmode'); return false;" class="help-link">DP Instruction Mode</a>.</td></tr>
           <tr><td>Device goes offline after a while and never recovers</td> <td>Set <em>Auto-Reconnect Interval</em> back to 0 or a few minutes. It only reconnects while the device is genuinely offline and has no effect on a healthy connection.</td></tr>
           <tr><td>Mode or fan-speed tile stays empty</td>                 <td>The device reports values that are not in the picker's list. Check the raw value in <strong>DP Debug</strong>, then set <em>mode_values</em> / <em>fan_speed_values</em> to match exactly (numeric devices need e.g. <code>0,1</code>) and restart the app.</td></tr>
           <tr><td>Newly enabled tile does not respond to taps</td>       <td>Fixed as of v1.0.129 for the Fan and Dehumidifier drivers — capabilities enabled through device settings are now controllable immediately. On other drivers, restart the Tuya Local app once.</td></tr>
@@ -771,13 +895,11 @@
       <h2>Diagnostic Logs</h2>
       <p>Persistent log buffer — max 500 entries, newest first.</p>
       <div class="note">
-        <strong>Attach this to any bug report.</strong> Set the filter to <em>Warnings &amp; Errors</em>,
-        press <strong>Copy</strong> and paste the result into your post on the
-        <a href="#" onclick="openUrl('https://community.homey.app/t/154077'); return false;" class="help-link">community forum</a>
-        or on <a href="#" onclick="openUrl('https://github.com/andiwirz/com.tuyalocal/issues'); return false;" class="help-link">GitHub</a>.
-        It records connection attempts, protocol switches and rejected values, which is what
-        distinguishes a network problem from a wrong DP mapping. Note that the log contains your
-        device IDs — remove them if you would rather not post them publicly.
+        Records connection attempts, protocol switches and rejected values — what distinguishes a
+        network problem from a wrong DP mapping. Set the filter to <em>Warnings &amp; Errors</em> and
+        press <strong>Copy</strong> to attach it to a bug report:
+        <a href="#" onclick="openHelpSection('sec-report'); return false;" class="help-link">Reporting device issues</a>
+        explains what else to send.
       </div>
       <div class="bar">
         <button id="btnRefresh" class="primary">&#8635; Refresh</button>
@@ -794,43 +916,28 @@
     </div>
   </div>
 
-  <!-- ── DP Debug + Raw Data ───────────────────────────────────────────── -->
+  <!-- ── DP Debug ──────────────────────────────────────────────────────── -->
   <div class="tab-panel" id="tab-dp">
     <div class="section">
       <h2>DP Debug</h2>
       <p>Live data points received from each device. Updated on every data push.</p>
       <div class="note">
-        <strong>This is the single most useful thing to send when a device misbehaves.</strong>
-        It shows what the device actually reports over the local connection — which DP carries which
-        value, and in which type — so a wrong tile, an empty picker or a missing measurement can be
-        traced to a DP number without guesswork. Operate the device with its own buttons or remote
-        while watching this table: the DP that changes is the one the setting needs to point at.
-        <div style="margin-top:7px">
-          Use <strong>Copy DP Table</strong> below, plus <strong>Copy</strong> under <em>Raw Data</em>, and
-          paste both into your report on the
-          <a href="#" onclick="openUrl('https://community.homey.app/t/154077'); return false;" class="help-link">community forum</a>
-          or on <a href="#" onclick="openUrl('https://github.com/andiwirz/com.tuyalocal/issues'); return false;" class="help-link">GitHub</a>.
-          The <strong>Logs</strong> tab and the DP specification from <strong>Cloud Lookup</strong> are worth attaching too — see
-          <em>Reporting device issues</em> in the Help tab.
-        </div>
+        Shows what the device really <em>does</em>: which DP carries which value, in which type, and
+        which DP moves when. Operate the device with its own buttons or remote while watching this
+        table — the DP that changes is the one the setting needs to point at. What it cannot show is
+        what those numbers <em>mean</em>; the local connection never transmits a name, a type or an
+        allowed range. Use <strong>Copy Local DP Table</strong> to attach it to a bug report:
+        <a href="#" onclick="openHelpSection('sec-report'); return false;" class="help-link">Reporting device issues</a>
+        explains what else to send.
       </div>
       <div class="bar">
         <select id="deviceSelect"><option value="">— select device —</option></select>
         <button id="btnDpRefresh" class="primary">&#8635; Refresh</button>
         <button id="autoToggle">Auto-refresh: off</button>
-        <button id="btnCopyDp">&#128203; Copy DP Table</button>
+        <button id="btnCopyDp">&#128203; Copy Local DP Table</button>
       </div>
       <div id="dpContent"><div id="dpPlaceholder">Select a device above to see its DPs.</div></div>
       <div id="dpMeta"></div>
-    </div>
-
-    <div class="section">
-      <h2>Raw Data</h2>
-      <p>Complete unprocessed DPS payload for the selected device.</p>
-      <div class="bar">
-        <button id="btnCopyRaw">&#128203; Copy</button>
-      </div>
-      <pre id="rawOutput">Select a device above to see raw data.</pre>
     </div>
   </div>
 
@@ -838,17 +945,21 @@
   <div class="tab-panel" id="tab-cloud">
     <div class="section">
       <h2>Cloud Lookup</h2>
-      <p>Fetch Device ID and Local Key directly from the Tuya IoT Platform — no CLI tools needed.</p>
-      <div class="note">
-        <strong>One-time setup on <a href="#" onclick="openUrl('https://iot.tuya.com');return false" style="color:#1a73e8">iot.tuya.com</a></strong>
+      <p style="margin-bottom:6px">Fetch Device ID and Local Key directly from the Tuya IoT Platform — no CLI tools needed.</p>
+      <p style="font-size:11px;color:#888;line-height:1.5">Just as important for debugging: press <strong>Show DPs</strong> on a device's row to open its <strong>DP specification</strong> — the manufacturer's own name, declared type and allowed range per data point. This is the only place that information exists; the local connection transmits bare numbers and never says what they mean. <a href="#" onclick="openHelpSection('sec-report'); return false;" class="help-link">Reporting device issues</a> explains what to send with a bug report.</p>
+      <!-- Collapsed once credentials are saved: it is a one-time setup, and after that
+           it is a wall of text above the fields you actually came for. Opened by
+           onHomeyReady when no Access ID is stored, i.e. exactly when it is needed. -->
+      <details class="note" id="cloudSetup">
+        <summary>One-time setup on the Tuya IoT platform</summary>
         <ol style="margin:6px 0 0;padding-left:18px;line-height:1.7">
-          <li>Create a free account, then <strong>Cloud</strong> → <strong>Create Cloud Project</strong>. Trial Edition is enough.</li>
+          <li>On <a href="#" onclick="openUrl('https://iot.tuya.com');return false" style="color:#1a73e8">iot.tuya.com</a>, create a free account, then <strong>Cloud</strong> → <strong>Create Cloud Project</strong>. Trial Edition is enough.</li>
           <li>In the project, open <strong>Service API</strong> → <strong>Authorize</strong> and make sure <strong>IoT Core</strong> and <strong>Authorization</strong> are listed. Without them every request fails with <em>permission deny</em>.</li>
           <li><strong>Devices</strong> → <strong>Link Tuya App Account</strong> → <strong>Add App Account</strong>, then scan the QR code in the Tuya Smart / Smart Life app under <strong>Me</strong> → scan icon, top right.</li>
           <li><strong>Overview</strong>: copy <strong>Access ID / Client ID</strong> and <strong>Access Secret / Client Secret</strong> into the fields below.</li>
         </ol>
         <div style="margin-top:7px">A Trial Edition project expires after about a month and can be extended for free under <strong>Project</strong> → <strong>Extend</strong>. An expired project fails with the same <em>permission deny</em>, so check this first if lookup used to work.</div>
-      </div>
+      </details>
 
       <div style="display:flex;flex-direction:column;gap:8px;margin:12px 0">
         <div style="display:flex;gap:8px;align-items:center">
@@ -870,22 +981,19 @@
             <option value="in">India</option>
           </select>
         </div>
-        <div style="display:flex;gap:8px">
-          <label style="width:100px;flex:0 0 100px"></label>
-          <span style="font-size:11px;color:#888;line-height:1.5">Must match the region your Tuya / Smart Life <em>account</em> is registered in — not where you live. A mismatch returns no devices or a signature error.</span>
-        </div>
+        <!-- Hints and the save option run flush left: the 100 px label column exists
+             to line up the three input fields with each other, and an empty spacer
+             on rows that have no label only pushes their text into the field column
+             for no reason. -->
+        <div style="font-size:11px;color:#888;line-height:1.5">Data center must match the region your Tuya / Smart Life <em>account</em> is registered in — not where you live. A mismatch returns no devices or a signature error.</div>
         <div style="display:flex;gap:8px;align-items:center;margin-top:2px">
-          <label style="width:100px"></label>
           <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#555;cursor:pointer">
             <input type="checkbox" id="cloudSaveCreds" style="width:14px;height:14px">
             Save credentials on Homey (auto-fill next time)
           </label>
           <span id="cloudSavedBadge" style="display:none;font-size:11px;color:#1e6a34;background:#e6f4ea;padding:2px 7px;border-radius:4px">✓ Saved</span>
         </div>
-        <div style="display:flex;gap:8px">
-          <label style="width:100px;flex:0 0 100px"></label>
-          <span style="font-size:11px;color:#888;line-height:1.5">Saved credentials are kept unencrypted in this app's settings on your Homey. They also enable cloud-assisted DP detection while pairing — see the Help tab.</span>
-        </div>
+        <div style="font-size:11px;color:#888;line-height:1.5">Saved credentials are kept unencrypted in this app's settings on your Homey. They also enable cloud-assisted DP detection while pairing — see the Help tab.</div>
       </div>
 
       <div class="bar">
@@ -914,6 +1022,11 @@
 
       <div id="cloudDetail" style="display:none;margin-top:14px">
         <h3 id="cloudDetailTitle" style="margin:0 0 8px;font-size:14px"></h3>
+        <!-- Copy button above the table: these specifications run to 30 rows on some
+             devices, and below it the button was off-screen exactly when it was wanted. -->
+        <div class="bar">
+          <button id="btnCopyDetail" style="font-size:12px">&#128203; Copy Cloud DP Table</button>
+        </div>
         <table class="dp-debug-table" id="cloudDetailTable">
           <thead>
             <tr>
@@ -927,18 +1040,51 @@
           </thead>
           <tbody id="cloudDetailTbody"></tbody>
         </table>
-        <div class="bar" style="margin-top:8px">
-          <button id="btnCopyDetail" style="font-size:12px">📋 Copy DP Table</button>
-        </div>
       </div>
     </div>
   </div>
 
   <script type="text/javascript">
     // ── Help nav — jump-to dropdown ───────────────────────────────────
+    // Two stacked sticky bars sit at the top of the page: the tab row, and the
+    // "Jump to" row in the Help tab. scrollIntoView puts the target at the very top
+    // of the viewport, which is behind both of them — the heading a jump was aimed
+    // at ended up hidden. scroll-padding-top is exactly the property scrollIntoView
+    // honours for this, so it is set to their combined height.
+    //
+    // Measured rather than hardcoded because the row heights follow the host's font
+    // metrics, which are not the same in Homey's settings view as in a browser. The
+    // same measurement positions the second bar directly under the first: it used to
+    // be pinned at a fixed 44 px against a 39 px tall row, and content scrolled
+    // through the 5 px slit in between.
+    function syncStickyOffsets() {
+      var bar = document.querySelector('.tab-bar');
+      var nav = document.querySelector('.help-nav');
+      if (!bar) return;
+      var barH = bar.offsetHeight;
+      document.documentElement.style.setProperty('--tabbar-h', barH + 'px');
+      var navH = nav ? nav.offsetHeight : 0;
+      // +10 so the heading clears the bar instead of touching it.
+      document.documentElement.style.scrollPaddingTop = (barH + navH + 10) + 'px';
+    }
+    syncStickyOffsets();
+    window.addEventListener('resize', syncStickyOffsets);
+
+    // Used by inline links in the help text, so that cross-references land the same
+    // way as the "Jump to" list rather than behind the sticky bars.
+    function jumpToSection(id) {
+      syncStickyOffsets();
+      var el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    window.jumpToSection = jumpToSection;
+
     document.getElementById('helpJump').addEventListener('change', function() {
       var id = this.value;
       if (!id) return;
+      // Re-measure first: a resize while another tab was open leaves stale values,
+      // and the cost of reading two heights is irrelevant next to a smooth scroll.
+      syncStickyOffsets();
       var el = document.getElementById(id);
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
       // reset so the same section can be selected again
@@ -958,14 +1104,27 @@
     });
 
     // ── Tab switching ──────────────────────────────────────────────────
-    document.querySelectorAll('.tab-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
-        document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
-        btn.classList.add('active');
-        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    function showTab(name) {
+      document.querySelectorAll('.tab-btn').forEach(function(b) {
+        b.classList.toggle('active', b.dataset.tab === name);
       });
+      document.querySelectorAll('.tab-panel').forEach(function(p) {
+        p.classList.toggle('active', p.id === 'tab-' + name);
+      });
+    }
+    document.querySelectorAll('.tab-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() { showTab(btn.dataset.tab); });
     });
+
+    // Lets the other tabs link into a help section instead of repeating its content.
+    // The jump has to wait for the panel to become visible: a hidden element has no
+    // layout, so scrollIntoView on it does nothing at all.
+    function openHelpSection(id) {
+      showTab('help');
+      window.scrollTo({ top: 0 });
+      setTimeout(function() { jumpToSection(id); }, 0);
+    }
+    window.openHelpSection = openHelpSection;
 
     function escHtml(s) {
       return String(s)
@@ -1193,26 +1352,6 @@
         if (current && snapshot[current]) sel.value = current;
       }
 
-      function renderRaw(entry) {
-        var raw = document.getElementById('rawOutput');
-        if (!entry) { raw.textContent = 'Select a device above to see raw data.'; return; }
-        var dps    = entry.dps || {};
-        var sorted = {};
-        Object.keys(dps).map(Number).sort(function(a, b) { return a - b; }).forEach(function(k) {
-          sorted[String(k)] = dps[String(k)];
-        });
-        var meta = entry.rawMeta || {};
-        raw.textContent = JSON.stringify({
-          devId:     meta.devId  || null,
-          uid:       meta.uid    || null,
-          t:         meta.t      || null,
-          t_local:   meta.t ? new Date(meta.t * 1000).toLocaleString() : null,
-          cid:       meta.cid    || null,
-          updatedAt: new Date(entry.updatedAt).toLocaleString(),
-          dps:       sorted,
-        }, null, 2);
-      }
-
       function renderDps() {
         var sel      = document.getElementById('deviceSelect');
         var deviceId = sel.value;
@@ -1222,7 +1361,6 @@
         if (!deviceId || !snapshot[deviceId]) {
           content.innerHTML = '<div id="dpPlaceholder">Select a device above to see its DPs.</div>';
           meta.textContent  = '';
-          renderRaw(null);
           return;
         }
 
@@ -1233,7 +1371,6 @@
         if (keys.length === 0) {
           content.innerHTML = '<div id="dpPlaceholder">No data received yet for this device.</div>';
           meta.textContent  = '';
-          renderRaw(entry);
           return;
         }
 
@@ -1258,8 +1395,6 @@
 
         meta.textContent = 'Last update: ' + new Date(entry.updatedAt).toLocaleTimeString()
           + ' · ' + keys.length + ' DPs';
-
-        renderRaw(entry);
       }
 
       function refreshDp() { loadSnapshot(renderDps); }
@@ -1300,12 +1435,6 @@
           lines.push(dp + '\t' + (typeof val === 'string' ? '"' + val + '"' : String(val)) + '\t' + typeof val);
         });
         copyText(lines.join('\n'), this);
-      });
-
-      document.getElementById('btnCopyRaw').addEventListener('click', function() {
-        var text = document.getElementById('rawOutput').textContent;
-        if (!text || text.startsWith('Select')) return;
-        copyText(text, this);
       });
 
       loadSnapshot(renderDps);
@@ -1393,6 +1522,10 @@
           document.getElementById('cloudAccessId').value = val;
           document.getElementById('cloudSaveCreds').checked = true;
           document.getElementById('cloudSavedBadge').style.display = 'inline';
+        } else {
+          // Nothing stored yet, so the setup has not been done — show the steps
+          // rather than making a first-time user find the collapsed block first.
+          document.getElementById('cloudSetup').open = true;
         }
       });
       Homey.get('cloud_access_secret', function(err, val) {
@@ -1506,7 +1639,14 @@
               ((d.product || d.category) ? '<br><span style="font-size:10px;color:#aaa">' + escHtml(d.product || d.category) + '</span>' : '') + '</td>' +
               '<td style="font-family:monospace;font-size:11px">' + escHtml(d.id) + '</td>' +
               '<td class="key-cell" style="font-family:monospace;font-size:11px;' + keyStyle + '">' + keyText + '</td>' +
-              '<td><button class="cloud-copy-btn" style="padding:3px 8px;font-size:11px">Copy</button></td>';
+              // The device name has always opened the DP specification, but nothing
+              // said so and most people never discovered it. An explicit button does.
+              // Stacked rather than side by side: the pane is too narrow for both in
+              // one row, and stacking costs height, which this table has to spare.
+              '<td><div style="display:flex;flex-direction:column;gap:4px;align-items:stretch">' +
+                '<button class="cloud-copy-btn" style="padding:3px 8px;font-size:11px">Copy</button>' +
+                '<button class="cloud-dp-btn" style="padding:3px 8px;font-size:11px;white-space:nowrap">Show DPs</button>' +
+              '</div></td>';
             tbody.appendChild(tr);
 
             tr.querySelector('.cloud-copy-btn').addEventListener('click', function() {
@@ -1523,6 +1663,10 @@
 
             tr.querySelector('.cloud-name-link').addEventListener('click', function(e) {
               e.preventDefault();
+              loadDeviceDetail(d);
+            });
+
+            tr.querySelector('.cloud-dp-btn').addEventListener('click', function() {
               loadDeviceDetail(d);
             });
           });
