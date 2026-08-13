@@ -35,13 +35,6 @@ body:
     validations:
       required: true
 
-  - type: input
-    id: homey_version
-    attributes:
-      label: Homey firmware version
-      placeholder: "e.g. 12.3.1"
-    validations:
-      required: true
 
   - type: input
     id: protocol

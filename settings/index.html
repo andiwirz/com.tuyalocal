@@ -1590,7 +1590,6 @@
             title:         '[Bug] ' + (dev.driver ? DRIVER_LABELS[dev.driver] || dev.driver : '') + ': ',
             driver:        DRIVER_LABELS[dev.driver] || dev.driver || 'App-level',
             app_version:   res.appVersion || '',
-            homey_version: res.homeyVersion || '',
             protocol:      PROTOCOLS.indexOf(String(dev.protocol)) !== -1 ? String(dev.protocol) : 'unknown',
             raw_dps:       dev.dpTable || '',
             context:       'Paste the full support bundle here — it is already in your clipboard.',
