@@ -19,6 +19,13 @@ module.exports = {
     const bundle = await homey.app.buildSupportBundle({
       includeCloud: query?.cloud !== '0',
       onlyDevice:   query?.device || null,
+      // The cloud is queried one device after another, so on a dozen devices this
+      // request takes several seconds. Pushed to the settings page as it goes, so
+      // the page can count up instead of showing one frozen message.
+      // Wrapped: a missing realtime channel must not cost the whole bundle.
+      onProgress: (done, total, name) => {
+        try { homey.api.realtime('bundle_progress', { done, total, name }); } catch (e) {}
+      },
     });
     // Also write it to the app log, so that a Homey diagnostics report created
     // afterwards carries the whole bundle and the user only needs to send its id.

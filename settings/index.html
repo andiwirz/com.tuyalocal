@@ -1499,6 +1499,25 @@
       // obtainable as screenshots.
       var _bundle = null;
 
+      // Progress is pushed from the app as each device is processed, because the
+      // request itself is a single call that only returns once everything is
+      // collected — several seconds on a dozen devices.
+      // Guarded: this runs inside onHomeyReady, so an unavailable listener API would
+      // abort everything after it — logs, DP debug and cloud lookup included — for
+      // the sake of a status line. Without it the message simply does not update.
+      var _progressTargets = [];
+      try {
+        if (typeof Homey.on === 'function') {
+          Homey.on('bundle_progress', function(p) {
+            if (!p || !p.total) return;
+            var msg = p.done >= p.total
+              ? 'assembling…'
+              : 'device ' + (p.done + 1) + ' of ' + p.total + (p.name ? ' — ' + p.name : '');
+            _progressTargets.forEach(function(el) { if (el) el.textContent = msg; });
+          });
+        }
+      } catch (e) { /* no progress channel — the bundle still works */ }
+
       // onlyDevice restricts the cloud lookup to that one device: reporting a single
       // device otherwise costs one cloud request per device in the house.
       function fetchBundle(onlyDevice, cb) {
@@ -1521,9 +1540,11 @@
         // 300 ms, which on a dozen devices is several seconds of apparent silence.
         status.textContent = 'querying devices and the Tuya cloud…';
         status.style.color = '#888';
+        _progressTargets = [status];
         fetchBundle(null, function(err, res) {
           btn.disabled = false;
           btn.textContent = orig;
+          _progressTargets = [];
           if (err) {
             status.textContent = 'Failed: ' + (err.message || String(err));
             status.style.color = '#c5221f';
@@ -1592,7 +1613,6 @@
             app_version:   res.appVersion || '',
             protocol:      PROTOCOLS.indexOf(String(dev.protocol)) !== -1 ? String(dev.protocol) : 'unknown',
             raw_dps:       dev.dpTable || '',
-            context:       'Paste the full support bundle here — it is already in your clipboard.',
           };
           var base = 'https://github.com/andiwirz/com.tuyalocal/issues/new';
 

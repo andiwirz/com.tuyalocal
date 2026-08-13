@@ -58,16 +58,6 @@ body:
     validations:
       required: true
 
-  - type: textarea
-    id: steps
-    attributes:
-      label: Steps to reproduce
-      placeholder: |
-        1. Open device settings
-        2. Set dp_xxx to ...
-        3. ...
-    validations:
-      required: true
 
   - type: textarea
     id: logs
@@ -111,8 +101,3 @@ body:
         dehumidify_set_value  DP 2   Integer   45      25-80 %
         mode                  DP 4   Enum      manual  manual,laundry
 
-  - type: textarea
-    id: context
-    attributes:
-      label: Additional context
-      description: Device model, screenshots, anything else that might help.

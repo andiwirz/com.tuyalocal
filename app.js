@@ -137,11 +137,15 @@ class TuyaLocalApp extends Homey.App {
    *   device in the house — several seconds on a dozen of them — to fetch data that
    *   the report will not use. Every device still appears in the text, just without
    *   a specification unless it is the one being reported.
+   * @param {Function} [onProgress] Called as (done, total, name) before each device
+   *   is processed. The cloud requests run one after another — a dozen devices is
+   *   around four seconds — so without this the settings page would sit on a single
+   *   unchanging message for the whole time.
    * @returns {{text: string, devices: Array}} The text block, plus the same facts
    *   per device in structured form so the settings page can prefill a GitHub
    *   issue from them instead of parsing them back out of the text.
    */
-  async buildSupportBundle({ includeCloud = true, onlyDevice = null } = {}) {
+  async buildSupportBundle({ includeCloud = true, onlyDevice = null, onProgress = null } = {}) {
     const REDACTED = '********';
     const pad = (s, n) => String(s).padEnd(n);
     const out = [];
@@ -162,8 +166,21 @@ class TuyaLocalApp extends Homey.App {
     out.push(`Cloud lookup: ${cloudUsable ? `configured (${region})` : 'not configured'}`);
     out.push('='.repeat(72));
 
+    // Flattened first so the total is known before the loop starts — a progress
+    // report of "3 of ?" is not a progress report.
+    const allDevices = [];
     for (const driver of Object.values(this.homey.drivers.getDrivers())) {
-      for (const device of driver.getDevices()) {
+      for (const device of driver.getDevices()) allDevices.push({ driver, device });
+    }
+
+    let done = 0;
+    for (const { driver, device } of allDevices) {
+      {
+        if (onProgress) {
+          try { onProgress(done, allDevices.length, device.getName()); } catch (e) {}
+        }
+        done++;
+
         let id = '';
         try { id = device.getData().id || ''; } catch (e) {}
         const settings = (() => { try { return device.getSettings() || {}; } catch (e) { return {}; } })();
@@ -266,6 +283,9 @@ class TuyaLocalApp extends Homey.App {
         }
         out.push('-'.repeat(72));
       }
+    }
+    if (onProgress) {
+      try { onProgress(allDevices.length, allDevices.length, null); } catch (e) {}
     }
 
     // Only warnings and errors: the full buffer runs to 500 entries and the
