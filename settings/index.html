@@ -361,7 +361,7 @@
         <li>Switch to the <strong>Cloud Lookup</strong> tab, paste your credentials, select the data center your Tuya account is registered in, and click <strong>Fetch Devices</strong></li>
         <li>Use the <strong>Copy</strong> button to copy Device ID and Local Key</li>
       </ol>
-      <div class="note"><strong>If lookup used to work and now fails:</strong> a Trial Edition project expires after about a month. Extend it for free under <strong>Project</strong> → <strong>Extend</strong>. The symptom is the same <em>permission deny</em> as a missing API authorization. On some accounts the same expiry hides the Local Key column instead of failing outright — check <strong>Service API</strong> → <strong>IoT Core</strong> → <strong>View Details</strong> for the subscription status.</div>
+      <div class="note"><strong>If lookup used to work and now fails,</strong> the free IoT Core trial has probably run out — it lasts about a month. Tuya reports this as <em>No permissions. Your subscription to cloud development plan has expired</em>. Extending is free but is an application, not a button: on iot.tuya.com go to <strong>Cloud</strong> → <strong>Cloud Services</strong>, find <strong>IoT Core</strong> in the list (its status reads <em>Alerting</em> shortly before it lapses) → <strong>View Details</strong> → <strong>My Subscriptions</strong>, then press <strong>Extend Trial Period</strong> next to the expiration date. The form asks for an extension period — <strong>pick 6 months</strong>, the longest offered — plus your developer identity, the estimated number of devices, a short project description and contact details. <strong>Tuya states that applications are approved within one to two working days</strong>, so lookup keeps failing until then. Nothing in Homey needs changing afterwards.</div>
       <div class="note"><strong>The data center trap.</strong> A free Tuya account is locked to <strong>one</strong> data center: whichever you pick for your first project applies to every project on that account, and changing it means deleting all projects and starting over. Worse, the choice is partly made for you — accounts registered in some countries (the UK among them) are assigned Western Europe and cannot select Central Europe at all, however the region is set. If your Smart Life account sits in a region your project cannot reach, no combination of settings here will find your devices. The way out reported by users who hit this: create a fresh Tuya account registered in a region where all data centers are offered, then link Smart Life to a project under that account. If you are starting over anyway, deleting the old empty projects first avoids inheriting the locked choice.</div>
 
       <h3>Cloud-assisted DP detection</h3>
@@ -420,13 +420,15 @@
       <p>The change is made on the Tuya IoT Developer Platform, not in Homey:</p>
       <ol style="font-size:12px;line-height:1.8;color:#333">
         <li>Sign in to the <a href="#" onclick="openUrl('https://iot.tuya.com');return false" class="help-link">Tuya Developer Platform</a></li>
-        <li>Open <strong>Cloud</strong> → <strong>Development</strong> in the left menu and select your project</li>
-        <li>Open the <strong>Devices</strong> tab inside the project</li>
-        <li>Select your device's category</li>
-        <li>Click <strong>Edit</strong> (pencil icon)</li>
-        <li>Change the setting from <strong>Standard Instruction</strong> to <strong>DP Instruction</strong></li>
+        <li><strong>Cloud</strong> → <strong>Development</strong> in the left menu, then open your project</li>
+        <li>Open the project's <strong>Devices</strong> tab and stay on <strong>All Devices</strong></li>
+        <li>Under <em>View Devices by Product</em> find the card for your device's <strong>product</strong> — it shows the device count and the mode currently in force, normally <em>Standard Instruction</em></li>
+        <li>Hover that card and click the <strong>pencil</strong> icon; its tooltip reads <em>Change Control Instruction Mode</em></li>
+        <li>On the <strong>Configure Control Instruction Mode</strong> screen pick the <strong>DP Instruction</strong> card, then press <strong>Save Configuration</strong> — the choice is not applied until you save</li>
       </ol>
-      <div class="note">The setting applies per <strong>device category</strong>, not per device — every device of that category in the project switches with it. It affects what the cloud exposes, so re-run <strong>Fetch Devices</strong> in the Cloud Lookup tab afterwards to see the full DP list.</div>
+      <p style="font-size:12px;color:#666">That screen also carries the <em>Table of Instructions</em>, listing the DP instructions against the standard ones side by side. It is worth a look before saving: the difference in length is exactly what you gain.</p>
+      <div class="note"><strong>The warning Tuya shows is real.</strong> Saving asks you to confirm that the devices under the project “might not be able to be controlled by the original standard instructions”. Anything that drives these devices through standard instructions can stop working — the official Tuya cloud app, or voice assistants wired up that way. Users have switched a curtain motor to DP Instruction and found it dead in the cloud integration while the Smart Life app kept working. Local control through this app is unaffected, and the switch is reversible on the same screen.</div>
+      <div class="note">Scope: the setting applies to one <strong>product</strong> within one <strong>project</strong> — every device of that product in that project switches with it, other products do not. Because it changes what the cloud exposes, re-run <strong>Fetch Devices</strong> in the Cloud Lookup tab afterwards to see the full DP list.</div>
     </div>
 
     <div class="section" id="sec-plug">
@@ -958,7 +960,7 @@
           <li><strong>Devices</strong> → <strong>Link Tuya App Account</strong> → <strong>Add App Account</strong>, then scan the QR code in the Tuya Smart / Smart Life app under <strong>Me</strong> → scan icon, top right.</li>
           <li><strong>Overview</strong>: copy <strong>Access ID / Client ID</strong> and <strong>Access Secret / Client Secret</strong> into the fields below.</li>
         </ol>
-        <div style="margin-top:7px">A Trial Edition project expires after about a month and can be extended for free under <strong>Project</strong> → <strong>Extend</strong>. An expired project fails with the same <em>permission deny</em>, so check this first if lookup used to work.</div>
+        <div style="margin-top:7px">The free IoT Core trial lasts about a month. Extending it is free, but it is an application form under <strong>Cloud</strong> → <strong>Cloud Services</strong> → <strong>IoT Core</strong> → <strong>View Details</strong> → <strong>Extend Trial Period</strong>, and Tuya approves it within one to two working days — so plan ahead rather than waiting for it to lapse. Check this first if lookup used to work and suddenly stopped.</div>
       </details>
 
       <div style="display:flex;flex-direction:column;gap:8px;margin:12px 0">
@@ -1555,8 +1557,14 @@
           h: '<strong>Homey\'s clock is off.</strong> Tuya rejects requests whose timestamp is more than a few minutes out. Check the date and time settings on your Homey.' },
         { m: ['token invalid', 'clientid is invalid', 'client id is invalid', 'project not exist'],
           h: '<strong>Access ID not recognised.</strong> Either it was mistyped, or it belongs to a project in a different data center than the one selected above.' },
-        { m: ['permission deny', 'not subscribed', 'no permissions', 'expire'],
-          h: '<strong>The project is not authorised for this request.</strong> Two causes, in order of likelihood: (1) <strong>IoT Core</strong> and <strong>Authorization</strong> are missing under <strong>Service API</strong> → <strong>Authorize</strong>; (2) the Trial Edition project has expired — extend it for free under <strong>Project</strong> → <strong>Extend</strong>.' },
+        // Listed before the generic permission entry below: Tuya words the expiry as
+        // "No permissions. Your subscription to cloud development plan has expired",
+        // which would otherwise be swallowed by that entry's broader match and get the
+        // wrong advice — the fix is an extension application, not an authorization tick.
+        { m: ['cloud development plan has expired', 'subscription to cloud development plan', 'service has expired', 'trial has expired'],
+          h: '<strong>The free IoT Core trial has run out.</strong> Extending is free but is an application, not a button: <strong>Cloud</strong> → <strong>Cloud Services</strong> → <strong>IoT Core</strong> → <strong>View Details</strong> → <strong>My Subscriptions</strong> → <strong>Extend Trial Period</strong>. Choose 6 months, the longest offered. Tuya approves within one to two working days, and lookup keeps failing until it does.' },
+        { m: ['permission deny', 'not subscribed', 'no permissions'],
+          h: '<strong>The project is not authorised for this request.</strong> <strong>IoT Core</strong> and <strong>Authorization</strong> are most likely missing under <strong>Service API</strong> → <strong>Authorize</strong>. If both are listed, check whether the free trial has lapsed under <strong>Cloud</strong> → <strong>Cloud Services</strong> → <strong>IoT Core</strong> → <strong>View Details</strong>.' },
       ];
 
       function showCloudHint(raw) {
