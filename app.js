@@ -148,7 +148,13 @@ class TuyaLocalApp extends Homey.App {
     const devices = [];
 
     const appVersion = this.homey.manifest?.version ?? '?';
+    // Read defensively: the firmware version is useful in a report but its accessor
+    // is not something to depend on, and an exception here would cost the whole
+    // bundle for the sake of one line.
+    let homeyVersion = '';
+    try { homeyVersion = this.homey.version || ''; } catch (e) {}
     out.push(`Tuya Local v${appVersion} — support bundle`);
+    out.push(`Homey firmware: ${homeyVersion || 'unknown'}`);
     out.push(`Generated: ${new Date().toISOString()}`);
 
     const snapshot = this.homey.settings.get('dp_snapshot') || {};
@@ -283,6 +289,7 @@ class TuyaLocalApp extends Homey.App {
     return {
       text:       out.join('\n'),
       appVersion,
+      homeyVersion,
       devices,
       // Trimmed separately: the issue URL has a length budget the full log blows.
       recentLog:  logLines.slice(0, 25).join('\n'),

@@ -1560,6 +1560,9 @@
         kettle: 'Smart Kettle', smart_plug: 'Smart Plug', thermostat: 'Thermostat',
         wall_switch: 'Wall Switch', generic: 'Generic Tuya Device',
       };
+      // These two fields used to be dropdowns in the issue form. GitHub can only
+      // prefill text fields from a URL, so they were converted — which is why the
+      // values are written out in full here rather than matched to a fixed list.
       var PROTOCOLS = ['3.1', '3.2', '3.3', '3.4', '3.5'];
       // GitHub rejects very long URLs, and the exact limit is undocumented; 6 KB is
       // a deliberately conservative budget for the whole address.
@@ -1585,9 +1588,10 @@
           var params = {
             template:      'bug_report.yml',
             title:         '[Bug] ' + (dev.driver ? DRIVER_LABELS[dev.driver] || dev.driver : '') + ': ',
-            driver:        DRIVER_LABELS[dev.driver] || 'Other / App-level',
+            driver:        DRIVER_LABELS[dev.driver] || dev.driver || 'App-level',
             app_version:   res.appVersion || '',
-            protocol:      PROTOCOLS.indexOf(String(dev.protocol)) !== -1 ? String(dev.protocol) : 'Unknown / auto-detect',
+            homey_version: res.homeyVersion || '',
+            protocol:      PROTOCOLS.indexOf(String(dev.protocol)) !== -1 ? String(dev.protocol) : 'unknown',
             raw_dps:       dev.dpTable || '',
             context:       'Paste the full support bundle here — it is already in your clipboard.',
           };
