@@ -198,6 +198,37 @@
     .help-link { color: #1a73e8; text-decoration: none; }
     .help-link:hover { text-decoration: underline; }
 
+    /* ── Support-bundle modal ─────────────────────────────── */
+    /* box-sizing is stated explicitly on both: this stylesheet has no global
+       border-box rule, and with the default content-box the overlay's padding lands
+       outside its width, so the dialog ends up exactly as wide as the pane and its
+       margin disappears. */
+    .modal-overlay {
+      box-sizing: border-box;
+      position: fixed; inset: 0; z-index: 1500;
+      background: rgba(0,0,0,0.45);
+      display: none; align-items: center; justify-content: center; padding: 12px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      box-sizing: border-box;
+      background: #fff; border-radius: 10px;
+      width: 100%; max-width: min(640px, 100%); max-height: 88vh;
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    .modal-header {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      padding: 10px 12px; border-bottom: 1px solid #e8e8e8;
+    }
+    .modal-header h3 { margin: 0; font-size: 14px; flex: 1; }
+    .modal-body { padding: 10px 12px; overflow: auto; }
+    .modal-body textarea {
+      width: 100%; min-height: 40vh; box-sizing: border-box;
+      font-family: monospace; font-size: 10px; line-height: 1.45;
+      border: 1px solid #e0e0e0; border-radius: 6px; padding: 8px;
+      white-space: pre; overflow-wrap: normal; overflow-x: auto;
+    }
+
     /* Collapsible note. The native marker is replaced because a flex summary hides
        it in WebKit, and the row needs flex to keep the caret next to the text. */
     details.note > summary {
@@ -290,6 +321,22 @@
     </div>
     <div class="boot-status" id="boot-status">Starting…</div>
     <div class="boot-track"><div class="boot-bar" id="boot-bar"></div></div>
+  </div>
+
+  <!-- Support bundle — filled by buildBundle(), never shown until it has content. -->
+  <div class="modal-overlay" id="bundle-modal" onclick="closeBundle(event)">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Support bundle</h3>
+        <span id="bundleHint" style="font-size:11px;color:#1e6a34"></span>
+        <button class="primary" onclick="copyBundle(this)">&#128203; Copy all</button>
+        <button onclick="closeBundle()">Close</button>
+      </div>
+      <div class="modal-body">
+        <p style="margin:0 0 8px">Everything needed to diagnose a device problem: driver, data point mapping, live values, the cloud specification where available, and the warnings and errors from the log. Local keys are removed and device IDs shortened, so this is safe to post publicly.</p>
+        <textarea id="bundleText" readonly spellcheck="false"></textarea>
+      </div>
+    </div>
   </div>
 
   <!-- ── Tab bar ──────────────────────────────────────────────────────── -->
@@ -390,7 +437,13 @@
 
     <div class="section" id="sec-report">
       <h2>Reporting device issues</h2>
-      <p>If a device does not work as expected or a DP mapping is incorrect, <strong>three things</strong> make the difference between a guess and a fix — one from each of the other three tabs. The first two belong together and neither replaces the other: one shows what the device does, the other what its data points mean. Send whichever of them you can.</p>
+      <p>If a device does not work as expected or a DP mapping is incorrect, the fastest route is the button below: it collects everything in one go — for every device the driver, the data point mapping, the live values and, where cloud credentials are stored, the manufacturer's specification, followed by the warnings and errors from the log.</p>
+      <div class="bar">
+        <button class="primary" id="btnBundle">&#128203; Create support bundle</button>
+        <span id="bundleStatus" style="font-size:12px;color:#888"></span>
+      </div>
+      <div class="note">The bundle is also written to the app log. So instead of pasting it you can create a <strong>Homey diagnostics report</strong> right afterwards and send only its ID — the report then contains the whole bundle. Local keys never appear in it and device IDs are shortened to six characters, so either route is safe to share.</div>
+      <p style="font-size:12px;color:#666">Collected by hand, the same information comes from three places — one per tab. Useful to know if you only want to send part of it: the first two belong together and neither replaces the other, since one shows what the device does and the other what its data points mean.</p>
       <ol style="font-size:12px;line-height:1.8;color:#333">
         <li><strong>The DP specification — from Cloud Lookup.</strong> <strong>Cloud Lookup</strong> tab → <strong>Fetch Devices</strong> → <strong>Show DPs</strong> on the device's row → <strong>Copy Cloud DP Table</strong>. Gives the manufacturer's own name, the declared type and the allowed range for every data point. This is the only place that information exists — the local connection never transmits it.</li>
         <li><strong>The live DP data — from DP Debug.</strong> <strong>DP Debug</strong> tab → select the device → <strong>Copy Local DP Table</strong>. This is what the device actually reports over the local connection. Operating the device with its own buttons or remote while watching the table shows which DP belongs to which function.</li>
@@ -937,6 +990,7 @@
         <button id="btnDpRefresh" class="primary">&#8635; Refresh</button>
         <button id="autoToggle">Auto-refresh: off</button>
         <button id="btnCopyDp">&#128203; Copy Local DP Table</button>
+        <button id="btnReportDevice">&#128027; Report this device</button>
       </div>
       <div id="dpContent"><div id="dpPlaceholder">Select a device above to see its DPs.</div></div>
       <div id="dpMeta"></div>
@@ -1437,6 +1491,130 @@
           lines.push(dp + '\t' + (typeof val === 'string' ? '"' + val + '"' : String(val)) + '\t' + typeof val);
         });
         copyText(lines.join('\n'), this);
+      });
+
+      // ── Support bundle ───────────────────────────────────────────────
+      // Assembled by the app, not here: the settings page cannot see devices or
+      // their settings, and the DP mapping is the piece that was previously only
+      // obtainable as screenshots.
+      var _bundle = null;
+
+      // onlyDevice restricts the cloud lookup to that one device: reporting a single
+      // device otherwise costs one cloud request per device in the house.
+      function fetchBundle(onlyDevice, cb) {
+        var url = '/diagnostics';
+        if (onlyDevice) url += '?device=' + encodeURIComponent(onlyDevice);
+        Homey.api('GET', url, function(err, res) {
+          if (err) { cb(err); return; }
+          _bundle = res;
+          cb(null, res);
+        });
+      }
+
+      document.getElementById('btnBundle').addEventListener('click', function() {
+        var btn    = this;
+        var status = document.getElementById('bundleStatus');
+        btn.disabled = true;
+        var orig = btn.textContent;
+        btn.textContent = 'Collecting…';
+        // Wording is honest about the wait: one cloud request per device at roughly
+        // 300 ms, which on a dozen devices is several seconds of apparent silence.
+        status.textContent = 'querying devices and the Tuya cloud…';
+        status.style.color = '#888';
+        fetchBundle(null, function(err, res) {
+          btn.disabled = false;
+          btn.textContent = orig;
+          if (err) {
+            status.textContent = 'Failed: ' + (err.message || String(err));
+            status.style.color = '#c5221f';
+            return;
+          }
+          status.textContent = '';
+          document.getElementById('bundleText').value = res.text;
+          document.getElementById('bundleHint').textContent = '';
+          document.getElementById('bundle-modal').classList.add('open');
+        });
+      });
+
+      window.closeBundle = function(event) {
+        if (event && event.target !== document.getElementById('bundle-modal')) return;
+        document.getElementById('bundle-modal').classList.remove('open');
+      };
+      window.copyBundle = function(btn) {
+        copyText(document.getElementById('bundleText').value, btn);
+        document.getElementById('bundleHint').textContent = 'copied — paste it into your report';
+      };
+
+      // ── Report this device ───────────────────────────────────────────
+      // Opens the repository's issue form with what the app already knows filled
+      // in. Deliberately not posted by the app itself: that would need a token
+      // shipped inside the app, where anyone could extract it, and the issue would
+      // be authored by the developer rather than the person who can answer
+      // questions about the device.
+      var DRIVER_LABELS = {
+        air_conditioner: 'Air Conditioner', curtain_motor: 'Curtain Motor',
+        dehumidifier: 'Dehumidifier', doorbell: 'Doorbell', ev_charger: 'EV Charger',
+        fan: 'Fan', garage_door: 'Garage Door', heat_pump: 'Heat Pump',
+        heater: 'Heater', humidifier: 'Humidifier', light: 'Light',
+        pet_feeder: 'Pet Feeder', presence_sensor: 'Presence Sensor',
+        kettle: 'Smart Kettle', smart_plug: 'Smart Plug', thermostat: 'Thermostat',
+        wall_switch: 'Wall Switch', generic: 'Generic Tuya Device',
+      };
+      var PROTOCOLS = ['3.1', '3.2', '3.3', '3.4', '3.5'];
+      // GitHub rejects very long URLs, and the exact limit is undocumented; 6 KB is
+      // a deliberately conservative budget for the whole address.
+      var URL_BUDGET = 6000;
+
+      document.getElementById('btnReportDevice').addEventListener('click', function() {
+        var btn = this;
+        var sel = document.getElementById('deviceSelect');
+        var name = sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].textContent : '';
+        if (!sel.value) { alert('Select a device above first.'); return; }
+
+        btn.disabled = true;
+        var orig = btn.textContent;
+        btn.textContent = 'Preparing…';
+        // Pass the device name so only its cloud specification is fetched.
+        fetchBundle(name, function(err, res) {
+          btn.disabled = false;
+          btn.textContent = orig;
+          if (err) { alert('Could not collect the details: ' + (err.message || err)); return; }
+
+          var dev = (res.devices || []).filter(function(d) { return d.name === name; })[0]
+                 || (res.devices || [])[0] || {};
+          var params = {
+            template:      'bug_report.yml',
+            title:         '[Bug] ' + (dev.driver ? DRIVER_LABELS[dev.driver] || dev.driver : '') + ': ',
+            driver:        DRIVER_LABELS[dev.driver] || 'Other / App-level',
+            app_version:   res.appVersion || '',
+            protocol:      PROTOCOLS.indexOf(String(dev.protocol)) !== -1 ? String(dev.protocol) : 'Unknown / auto-detect',
+            raw_dps:       dev.dpTable || '',
+            context:       'Paste the full support bundle here — it is already in your clipboard.',
+          };
+          var base = 'https://github.com/andiwirz/com.tuyalocal/issues/new';
+
+          function build(p) {
+            return base + '?' + Object.keys(p).filter(function(k) { return p[k]; })
+              .map(function(k) { return k + '=' + encodeURIComponent(p[k]); }).join('&');
+          }
+          // Fill the fields in order of value, keeping each only while the whole
+          // address stays inside the budget. The cloud specification comes first
+          // because it carries the data point names, types and ranges that nothing
+          // else can supply; the log is the most easily replaced.
+          var url = build(params);
+          [
+            { dp_specifications: dev.cloudSpec || '' },
+            { logs: res.recentLog || '' },
+          ].forEach(function(extra) {
+            var candidate = build(Object.assign({}, params, extra));
+            if (candidate.length <= URL_BUDGET) { Object.assign(params, extra); url = candidate; }
+          });
+
+          // The bundle goes to the clipboard regardless, so nothing is lost to the
+          // budget — the form asks the user to paste it in.
+          copyText(res.text, btn);
+          openUrl(url);
+        });
       });
 
       loadSnapshot(renderDps);

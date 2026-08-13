@@ -114,6 +114,181 @@ class TuyaLocalApp extends Homey.App {
     }
   }
 
+  // ── Support bundle ──────────────────────────────────────────────────────────
+
+  /**
+   * Assembles everything needed to diagnose a device problem into one text block:
+   * per-device driver, DP mapping, live DPs and — where cloud credentials are
+   * stored — the manufacturer's DP specification, followed by the warning/error
+   * log. This exists because the settings page cannot see device settings at all,
+   * so until now the DP mapping could only be obtained as screenshots; one report
+   * in the forum ran to twenty of them.
+   *
+   * Credentials never appear: the local key is replaced outright and the device id
+   * truncated to six characters, which is enough to tell two devices apart in a
+   * report while not publishing the identifier. That way the output is safe to
+   * paste in public, rather than asking the user to censor it — advice that has
+   * demonstrably been ignored.
+   *
+   * @param {boolean} [includeCloud=true] Fetch the cloud DP specification per
+   *   device. Costs roughly 300 ms each and is skipped when no credentials exist.
+   * @param {string} [onlyDevice] Restrict the cloud lookup to the device with this
+   *   name. Reporting a single device otherwise pays for one cloud request per
+   *   device in the house — several seconds on a dozen of them — to fetch data that
+   *   the report will not use. Every device still appears in the text, just without
+   *   a specification unless it is the one being reported.
+   * @returns {{text: string, devices: Array}} The text block, plus the same facts
+   *   per device in structured form so the settings page can prefill a GitHub
+   *   issue from them instead of parsing them back out of the text.
+   */
+  async buildSupportBundle({ includeCloud = true, onlyDevice = null } = {}) {
+    const REDACTED = '********';
+    const pad = (s, n) => String(s).padEnd(n);
+    const out = [];
+    const devices = [];
+
+    const appVersion = this.homey.manifest?.version ?? '?';
+    out.push(`Tuya Local v${appVersion} — support bundle`);
+    out.push(`Generated: ${new Date().toISOString()}`);
+
+    const snapshot = this.homey.settings.get('dp_snapshot') || {};
+
+    // Cloud credentials are read once; their presence decides whether the
+    // specification can be fetched at all.
+    const accessId     = this.homey.settings.get('cloud_access_id');
+    const accessSecret = this.homey.settings.get('cloud_access_secret');
+    const region       = this.homey.settings.get('cloud_region');
+    const cloudUsable  = includeCloud && !!(accessId && accessSecret && region);
+    out.push(`Cloud lookup: ${cloudUsable ? `configured (${region})` : 'not configured'}`);
+    out.push('='.repeat(72));
+
+    for (const driver of Object.values(this.homey.drivers.getDrivers())) {
+      for (const device of driver.getDevices()) {
+        let id = '';
+        try { id = device.getData().id || ''; } catch (e) {}
+        const settings = (() => { try { return device.getSettings() || {}; } catch (e) { return {}; } })();
+
+        out.push('');
+        out.push(`DEVICE  ${device.getName()}`);
+        out.push(`  driver     ${driver.id}`);
+        out.push(`  device id  ${id ? id.slice(0, 6) + '…' : '?'}`);
+        out.push(`  available  ${device.getAvailable() ? 'yes' : 'no'}`);
+
+        // Connection block: the configured protocol version and the one actually
+        // in use differ after a rotation, and that difference is the answer to a
+        // whole class of "it only works sometimes" reports.
+        const conn = device._conn;
+        out.push(`  protocol   configured ${settings.version ?? '?'}`
+          + (conn?._version ? `, connected ${conn._version}` : '')
+          + `  ip ${settings.ip ?? '?'}`);
+        out.push(`  status     ${settings.connection_status ?? '?'} · last seen ${settings.last_seen ?? '?'}`
+          + ` · poll ${settings.polling_interval ?? '?'}s`);
+
+        // DP mapping and the remaining settings, credentials removed.
+        const dpKeys  = Object.keys(settings).filter((k) => k.startsWith('dp_')).sort();
+        const others  = Object.keys(settings).filter((k) =>
+          !k.startsWith('dp_') && !['ip', 'device_id', 'local_key', 'version',
+            'connection_status', 'last_seen', 'polling_interval'].includes(k)).sort();
+        if (dpKeys.length) {
+          out.push('  DP mapping');
+          for (const k of dpKeys) out.push(`    ${pad(k, 26)} ${settings[k]}`);
+        }
+        if (others.length) {
+          out.push('  other settings');
+          for (const k of others) {
+            const v = ['local_key'].includes(k) ? REDACTED : settings[k];
+            out.push(`    ${pad(k, 26)} ${JSON.stringify(v)}`);
+          }
+        }
+
+        // Live DPs as the device last reported them.
+        const entry = snapshot[id];
+        const dpLines = [];
+        if (entry && entry.dps && Object.keys(entry.dps).length) {
+          out.push(`  live DPs   (updated ${new Date(entry.updatedAt).toISOString()})`);
+          for (const dp of Object.keys(entry.dps).map(Number).sort((a, b) => a - b)) {
+            const v = entry.dps[String(dp)];
+            out.push(`    DP ${pad(dp, 5)} ${pad(JSON.stringify(v), 28)} ${typeof v}`);
+            dpLines.push(`DP ${dp}\t${JSON.stringify(v)}\t${typeof v}`);
+          }
+        } else {
+          out.push('  live DPs   none received yet');
+        }
+
+        const record = {
+          name:      device.getName(),
+          driver:    driver.id,
+          protocol:  conn?._version || settings.version || '',
+          available: device.getAvailable(),
+          dpTable:   dpLines.join('\n'),
+          cloudSpec: '',   // filled below when the cloud answers
+        };
+        devices.push(record);
+
+        // The cloud specification is matched on the device id — the same id the
+        // device is paired with — so no guessing is involved. Kept in the record as
+        // well as the text, so a bug report can be prefilled with it rather than
+        // relying on the reporter to paste the bundle.
+        const wantCloud = cloudUsable && (!onlyDevice || device.getName() === onlyDevice);
+        if (!wantCloud && cloudUsable && onlyDevice) {
+          out.push('  cloud spec  skipped (only the reported device is looked up)');
+          record.cloudSpec = '';
+        }
+        if (wantCloud && id) {
+          try {
+            const detail = await this.cloudDeviceDetail({ accessId, accessSecret, region, deviceId: id });
+            const spec = detail?.status;
+            if (Array.isArray(spec) && spec.length) {
+              out.push('  cloud spec  code / dp / type / value / range');
+              const specLines = [];
+              for (const e of spec) {
+                let range = '';
+                try {
+                  const p = typeof e.values === 'string' ? JSON.parse(e.values) : e.values;
+                  if (p?.range) range = p.range.join(',');
+                  else if (p?.min !== undefined) range = `${p.min}-${p.max}${p.unit ? ' ' + p.unit : ''}`;
+                } catch (_) {}
+                out.push(`    ${pad(e.code, 26)} ${pad(e.dp_id, 5)} ${pad(e.type, 9)}`
+                  + ` ${pad(JSON.stringify(e.value ?? null), 16)} ${range}`);
+                specLines.push(`${e.code}\tDP ${e.dp_id}\t${e.type}\t${JSON.stringify(e.value ?? null)}\t${range}`);
+              }
+              record.cloudSpec = specLines.join('\n');
+            } else {
+              out.push('  cloud spec  device not found in the cloud account');
+              record.cloudSpec = '(device not found in the cloud account)';
+            }
+          } catch (err) {
+            out.push(`  cloud spec  lookup failed: ${err.message}`);
+            record.cloudSpec = `(lookup failed: ${err.message})`;
+          }
+        } else if (!cloudUsable) {
+          record.cloudSpec = '(no cloud credentials saved — see the Cloud Lookup tab)';
+        }
+        out.push('-'.repeat(72));
+      }
+    }
+
+    // Only warnings and errors: the full buffer runs to 500 entries and the
+    // informational lines are noise in a report.
+    const logs = this.homey.settings.get('diagnostic_logs');
+    const bad  = (Array.isArray(logs) ? logs : []).filter((e) => e.level === 'warn' || e.level === 'error');
+    out.push('');
+    out.push(`LOG — warnings and errors, newest first (${bad.length} of ${(logs || []).length} entries)`);
+    const logLines = bad.slice().reverse().map((e) => {
+      const t = e.time ? new Date(e.time).toISOString() : '?';
+      return `${t}  [${(e.level || 'info').toUpperCase()}]  [${e.source || '?'}]  ${e.message || ''}`;
+    });
+    for (const l of logLines) out.push('  ' + l);
+
+    return {
+      text:       out.join('\n'),
+      appVersion,
+      devices,
+      // Trimmed separately: the issue URL has a length budget the full log blows.
+      recentLog:  logLines.slice(0, 25).join('\n'),
+    };
+  }
+
   // ── Tuya Cloud API helpers ──────────────────────────────────────────────────
 
   async cloudLookup({ accessId, accessSecret, region }) {

@@ -17,16 +17,23 @@ body:
     attributes:
       label: Affected driver
       options:
-        - Dehumidifier
-        - Smart Plug
         - Air Conditioner
+        - Curtain Motor
+        - Dehumidifier
+        - Doorbell
+        - EV Charger
         - Fan
-        - Humidifier
-        - Heater
-        - Light
-        - Pet Feeder
         - Garage Door
         - Heat Pump
+        - Heater
+        - Humidifier
+        - Light
+        - Pet Feeder
+        - Presence Sensor
+        - Smart Kettle
+        - Smart Plug
+        - Thermostat
+        - Wall Switch
         - Generic Tuya Device
         - Other / App-level
     validations:
@@ -59,7 +66,7 @@ body:
         - "3.4"
         - "3.1"
         - "3.5"
-        - "3.22"
+        - "3.2"
     validations:
       required: true
 
@@ -100,14 +107,32 @@ body:
   - type: textarea
     id: raw_dps
     attributes:
-      label: DP snapshot (optional but helpful)
-      description: Settings → DP Debug → Raw Data — select your device and paste the JSON.
-      render: json
+      label: DP tables (optional but helpful)
+      description: >
+        Settings → DP Debug → select your device → **Copy Local DP Table**.
+        Even better: also add **Copy Cloud DP Table** from the Cloud Lookup tab — it carries the
+        data point names, types and allowed ranges, which the local table cannot show.
+      render: text
       placeholder: |
         {
           "1": true,
           "3": "auto"
         }
+
+  - type: textarea
+    id: dp_specifications
+    attributes:
+      label: Cloud DP specification (data point names, types and ranges)
+      description: >
+        Cloud Lookup tab → **Show DPs** on the device's row → **Copy Cloud DP Table**.
+        This is the only place the manufacturer's own names, declared types and allowed
+        ranges exist — the local connection never transmits them. Filled in automatically
+        when the report is started from **DP Debug → Report this device**.
+      render: text
+      placeholder: |
+        switch                DP 1   Boolean   false
+        dehumidify_set_value  DP 2   Integer   45      25-80 %
+        mode                  DP 4   Enum      manual  manual,laundry
 
   - type: textarea
     id: context

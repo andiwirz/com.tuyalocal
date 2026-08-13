@@ -24,13 +24,12 @@ body:
 
         1. Add your device to Homey as a **Generic Tuya Device** first.
         2. Open **Homey app → More → Apps → Tuya Local → Settings**.
-        3. Go to **DP Debug** — select your device → screenshot the live DP value table.
-        4. Go to **Raw Data** — select your device → copy the full JSON.
+        3. Go to **DP Debug** — select your device → **Copy Local DP Table**.
 
-        Paste the Raw Data JSON into the *"Current DP values"* field below.
-        The DP Debug screenshot goes into the *"Screenshots"* field.
+        Paste that into the *"Current DP values"* field below.
 
-        > **Note:** The DP Debug panel shows current live values but not data types or allowed ranges.
+        > **Note:** The local table shows current live values but not data types or allowed ranges —
+        > for those use Option B, or the **Copy Cloud DP Table** button in the Cloud Lookup tab.
         > If you can also supply the API Explorer data (Option B), that gives us the full picture.
 
         ---
@@ -104,16 +103,16 @@ body:
         - "3.4"
         - "3.1"
         - "3.5"
-        - "3.22"
+        - "3.2"
     validations:
       required: true
 
   - type: textarea
     id: raw_dps
     attributes:
-      label: "Current DP values (Option A: Raw Data JSON — or — Option B: Query Properties response)"
+      label: "Current DP values (Option A: Copy Local DP Table — or — Option B: Query Properties response)"
       description: >
-        Either paste the Raw Data JSON from Homey → Settings → DP Debug → Raw Data,
+        Either paste the output of Homey → Settings → DP Debug → **Copy Local DP Table**,
         or paste the full API response from Cloud → API Explorer → Device Control → Query Properties.
         Include every DP the device reports — even ones whose purpose is unclear.
       render: json
@@ -212,7 +211,6 @@ body:
       description: >
         1. Screenshot of the device **tile / detail view** in Homey (after adding as Generic Tuya Device).
         2. Screenshot of **Settings → DP Debug** — the live DP value table for this device.
-        3. Screenshot of **Settings → DP Debug → Raw Data** — full JSON payload.
 
         **Drag and drop all screenshots directly into this field.**
       placeholder: "Drag & drop screenshots here, or click to attach"

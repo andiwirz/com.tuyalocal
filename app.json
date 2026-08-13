@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.165",
+  "version": "1.0.166",
   "compatibility": ">=12.13.0",
   "sdk": 3,
   "platforms": [
@@ -30,6 +30,10 @@
     "clouddevicedetail": {
       "method": "GET",
       "path": "/cloud-device-detail"
+    },
+    "diagnostics": {
+      "method": "GET",
+      "path": "/diagnostics"
     }
   },
   "author": {
