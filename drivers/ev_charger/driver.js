@@ -80,6 +80,17 @@ class EvChargerDriver extends Homey.Driver {
       .registerRunListener(async (args) => args.device.pollNow());
   }
 
+  // Which scaling setting belongs to which data point — see findScaleMismatch() in
+  // app.js. Note these three offer fewer options than the plug's: a specification
+  // asking for a divisor the dropdown does not list is reported, not written.
+  getScaleMaps() {
+    return {
+      dp_charge_current: 'current_scale',
+      dp_session_energy: 'session_energy_scale',
+      dp_energy_total:   'total_energy_scale',
+    };
+  }
+
   async onPair(session) {
     setupCloudLookup(session, this.homey, this);
     let pendingDevice = null;

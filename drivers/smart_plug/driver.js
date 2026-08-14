@@ -75,6 +75,18 @@ class SmartPlugDriver extends Homey.Driver {
       });
   }
 
+  // Which scaling setting belongs to which data point, for the Fix It check that reads
+  // the divisor Tuya declares for the DP instead of leaving the user to work it out
+  // from "the value is ten times too high". See findScaleMismatch() in app.js.
+  getScaleMaps() {
+    return {
+      dp_voltage: 'voltage_scale',
+      dp_current: 'current_scale',
+      dp_energy:  'kwh_scale',
+      dp_power:   'power_scale',
+    };
+  }
+
   async onPair(session) {
     setupCloudLookup(session, this.homey, this);
     let pendingDevice = null;

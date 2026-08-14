@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.169",
+  "version": "1.0.170",
   "compatibility": ">=12.13.0",
   "sdk": 3,
   "platforms": [
@@ -30,6 +30,26 @@
     "clouddevicedetail": {
       "method": "GET",
       "path": "/cloud-device-detail"
+    },
+    "applycloudvalues": {
+      "method": "GET",
+      "path": "/apply-cloud-values"
+    },
+    "findphantomdps": {
+      "method": "GET",
+      "path": "/find-phantom-dps"
+    },
+    "findstalekeys": {
+      "method": "GET",
+      "path": "/find-stale-keys"
+    },
+    "findprotocolmismatch": {
+      "method": "GET",
+      "path": "/find-protocol-mismatch"
+    },
+    "findscalemismatch": {
+      "method": "GET",
+      "path": "/find-scale-mismatch"
     },
     "diagnostics": {
       "method": "GET",

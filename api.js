@@ -1,9 +1,12 @@
 'use strict';
 
-// Homey resolves Homey.api() from settings pages by stripping the leading '/',
-// removing hyphens, and lowercasing the URL path to produce the object key.
-//   /cloud-lookup       → cloudlookup
-//   /cloud-device-detail → clouddevicedetail
+// Every handler here also needs an entry under "api" in app.json, mapping this
+// object's key to the method and URL path the settings page calls:
+//   "cloudlookup": { "method": "GET", "path": "/cloud-lookup" }
+// Homey routes only what is declared there. A handler added here alone is never
+// reached — the settings page gets a bare "Cannot GET /api/app/<id>/<path>", which
+// looks like a naming problem and is not one. The keys happen to be the hyphen-free
+// spelling of their paths, but nothing derives one from the other.
 module.exports = {
   async cloudlookup({ homey, query }) {
     const { accessId, accessSecret, region } = query;
@@ -15,8 +18,47 @@ module.exports = {
   },
   // Fills the "…_values" pickers of devices that are already paired from the Tuya
   // specification. Writes value lists only — never DP numbers. See app.js.
+  // Dry run unless dryRun=0, the same way round as every other check here. It used to
+  // be the opposite — writing unless asked not to — which made a preview that forgot
+  // the parameter apply its changes instead of showing them. Defaulting to the harmless
+  // direction means a mistake in the settings page cannot save anything.
   async applycloudvalues({ homey, query }) {
-    return homey.app.applyCloudValues({ onlyDevice: query?.device || null });
+    return homey.app.applyCloudValues({
+      onlyDevice: query?.device || null,
+      dryRun:     query?.dryRun !== '0',
+    });
+  },
+  // Finds configured data points the device provably does not have. Defaults to a
+  // dry run: only dryRun=0 actually switches them off.
+  async findphantomdps({ homey, query }) {
+    return homey.app.findPhantomDps({
+      onlyDevice: query?.device || null,
+      dryRun:     query?.dryRun !== '0',
+    });
+  },
+  // Compares each stored local key against the Tuya account. Dry run by default;
+  // the keys themselves are never returned, only a shortened form.
+  async findstalekeys({ homey, query }) {
+    return homey.app.findStaleKeys({
+      onlyDevice: query?.device || null,
+      dryRun:     query?.dryRun !== '0',
+    });
+  },
+  // Devices working on a different protocol version than the one configured. Needs no
+  // cloud credentials.
+  async findprotocolmismatch({ homey, query }) {
+    return homey.app.findProtocolMismatch({
+      onlyDevice: query?.device || null,
+      dryRun:     query?.dryRun !== '0',
+    });
+  },
+  // Reads the divisor Tuya declares per data point and stores it. Dry run unless
+  // dryRun=0, like the others.
+  async findscalemismatch({ homey, query }) {
+    return homey.app.findScaleMismatch({
+      onlyDevice: query?.device || null,
+      dryRun:     query?.dryRun !== '0',
+    });
   },
   // The settings page has no access to devices or their settings — only the app
   // does — so the support bundle has to be assembled here and handed over whole.

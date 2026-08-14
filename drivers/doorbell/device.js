@@ -202,14 +202,54 @@ class DoorbellDevice extends BaseTuyaDevice {
     if (typeof value !== 'string') return String(value);
     try {
       const buf = Buffer.from(value, 'base64');
-      if (buf.length < 2 || buf.length % 2 !== 0) return String(value);
-      const text = Buffer.from(buf).swap16().toString('utf16le');
+      if (buf.length < 4) return String(value);
+
+      const decode = (b) => Buffer.from(b).swap16().toString('utf16le');
       // eslint-disable-next-line no-control-regex
       // Escaped rather than literal: control characters written into the source
       // are invisible in a diff and easy to break on the next edit.
       const unprintable = /[\u0000-\u001f\u007f-\u009f\ufffd]/;
-      if (unprintable.test(text) || !/\S/.test(text)) return String(value);
-      return text;
+      const usable = (t) => t.length > 1 && !unprintable.test(t) && /\S/.test(t);
+
+      // Latin text in UTF-16BE carries a zero high byte in every character, and
+      // that is what makes a name recognisable. The test is on the bytes, not on
+      // the decoded text: the binary header below decodes to characters that are
+      // perfectly printable but meaningless, so checking printability accepts it
+      // and the label comes out as garbage with the real name glued to the end.
+      const pair = (k) => k + 1 < buf.length && buf[k] === 0x00
+        && buf[k + 1] >= 0x20 && buf[k + 1] !== 0x7f;
+
+      // The whole payload is the name - 22 bytes for a label like "Turklinge 1".
+      let allPairs = buf.length % 2 === 0;
+      for (let k = 0; allPairs && k < buf.length; k += 2) allPairs = pair(k);
+      if (allPairs) {
+        const text = decode(buf);
+        if (usable(text)) return text;
+      }
+
+      // Otherwise the firmware has prefixed a binary record. One known sample is
+      // 02 04 02 01 0c 08 5e 00 ff 16 followed by the identical 22-byte name, its
+      // last byte being the name's length. Rather than trust that layout, take the
+      // longest run of character pairs found anywhere, at either alignment.
+      // Longest, because the header itself contains a stray 00 ff pair that would
+      // otherwise be read as the first character.
+      let bestStart = -1;
+      let bestLen   = 0;
+      for (let offset = 0; offset < 2; offset++) {
+        let runStart = -1;
+        for (let k = offset; k < buf.length; k += 2) {
+          if (pair(k)) {
+            if (runStart < 0) runStart = k;
+            if (k + 2 - runStart > bestLen) { bestLen = k + 2 - runStart; bestStart = runStart; }
+          } else {
+            runStart = -1;
+          }
+        }
+      }
+      if (bestLen < 4) return String(value);   // under two characters - not a name
+
+      const text = decode(buf.subarray(bestStart, bestStart + bestLen));
+      return usable(text) ? text : String(value);
     } catch (e) {
       return String(value);
     }
