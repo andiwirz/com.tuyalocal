@@ -330,6 +330,7 @@
         <h3>Support bundle</h3>
         <span id="bundleHint" style="font-size:11px;color:#1e6a34"></span>
         <button class="primary" onclick="copyBundle(this)">&#128203; Copy all</button>
+        <button onclick="copyBundleForum(this)">&#128172; Copy for forum</button>
         <button onclick="closeBundle()">Close</button>
       </div>
       <div class="modal-body">
@@ -443,13 +444,14 @@
         <span id="bundleStatus" style="font-size:12px;color:#888"></span>
       </div>
       <div class="note">The bundle is also written to the app log. So instead of pasting it you can create a <strong>Homey diagnostics report</strong> right afterwards and send only its ID — the report then contains the whole bundle. Local keys never appear in it and device IDs are shortened to six characters, so either route is safe to share.</div>
+      <div class="note"><strong>Which route to use.</strong> In the <strong>DP Debug</strong> tab, with a device selected, two buttons do the work for you. <strong>Report on GitHub</strong> opens a bug report with driver, versions, protocol and both data point tables already filled in — use it for a reproducible fault that needs fixing. <strong>Copy for forum</strong> puts a forum-ready post on the clipboard, folded into a collapsible block so it does not bury the thread, and opens the topic — use it for a question where other users may well know the answer, as several regulars there do. Pick one: the same report in both places splits the conversation.</div>
       <p style="font-size:12px;color:#666">Collected by hand, the same information comes from three places — one per tab. Useful to know if you only want to send part of it: the first two belong together and neither replaces the other, since one shows what the device does and the other what its data points mean.</p>
       <ol style="font-size:12px;line-height:1.8;color:#333">
         <li><strong>The DP specification — from Cloud Lookup.</strong> <strong>Cloud Lookup</strong> tab → <strong>Fetch Devices</strong> → <strong>Show DPs</strong> on the device's row → <strong>Copy Cloud DP Table</strong>. Gives the manufacturer's own name, the declared type and the allowed range for every data point. This is the only place that information exists — the local connection never transmits it.</li>
         <li><strong>The live DP data — from DP Debug.</strong> <strong>DP Debug</strong> tab → select the device → <strong>Copy Local DP Table</strong>. This is what the device actually reports over the local connection. Operating the device with its own buttons or remote while watching the table shows which DP belongs to which function.</li>
         <li><strong>The diagnostic log — from Logs.</strong> <strong>Logs</strong> tab → filter <em>Warnings &amp; Errors</em> → <strong>Copy</strong>. Needed whenever a device disconnects, refuses commands or never connects at all; it distinguishes a network problem from a wrong DP mapping.</li>
       </ol>
-      <p>Together these give the DP numbers, types and value ranges of your specific model, plus what happened on the wire — enough to correct a mapping without owning the device. Post them on the <a href="#" onclick="openUrl('https://community.homey.app/t/154077'); return false;" class="help-link">community forum</a> or as a <a href="#" onclick="openUrl('https://github.com/andiwirz/com.tuyalocal/issues'); return false;" class="help-link">GitHub issue</a>, and please state the device brand and model plus what you expected to happen instead.</p>
+      <p>Together these give the DP numbers, types and value ranges of your specific model, plus what happened on the wire — enough to correct a mapping without owning the device. Post them on the <a href="#" onclick="openUrl('https://community.homey.app/t/app-pro-tuya-local/154077/last'); return false;" class="help-link">community forum</a> or as a <a href="#" onclick="openUrl('https://github.com/andiwirz/com.tuyalocal/issues'); return false;" class="help-link">GitHub issue</a>, and please state the device brand and model plus what you expected to happen instead.</p>
       <div class="note"><strong>Safe to post publicly:</strong> none of these three copies identifies you. The DP tables carry the device name but no device ID, the log is labelled with device names only, and the Local Key is never included anywhere.</div>
     </div>
 
@@ -797,10 +799,13 @@
           <tr><td>dp_motion_sensitivity</td> <td>106</td> <td>Motion sensitivity</td>      <td>number: <code>0</code>=low, <code>1</code>=medium, <code>2</code>=high. 0 = disabled</td>                                <td><span class="help-badge badge-rw">Write</span></td></tr>
           <tr><td>dp_night_light</td>        <td>0</td>   <td>onoff.light</td>             <td>Wireless chimes: boolean, typically DP 4. Adds a Night Light tile. 0 = disabled</td>                                       <td><span class="help-badge badge-rw">R/W</span></td></tr>
           <tr><td>dp_ring_tone</td>          <td>0</td>   <td>Melody selection</td>        <td>Wireless chimes: integer 0–32, typically DP 2. Used by the "Set ring tone" flow action. 0 = disabled</td>                 <td><span class="help-badge badge-rw">Write</span></td></tr>
-          <tr><td>motion_reset_seconds</td>  <td>—</td>   <td>Motion alarm auto-clear</td> <td>Seconds after which alarm_motion resets to false automatically (default 30)</td>                                          <td><span class="help-badge badge-rw">Setting</span></td></tr>
+
+          <tr><td>dp_alarm_push</td>        <td>0</td>   <td>Alarm reporting on/off</td>  <td>Wireless chimes: boolean, typically DP 6. With it off the unit reports nothing at all. 0 = disabled</td>  <td><span class="help-badge badge-rw">R/W</span></td></tr>          <tr><td>motion_reset_seconds</td>  <td>—</td>   <td>Motion alarm auto-clear</td> <td>Seconds after which alarm_motion resets to false automatically (default 30)</td>                                          <td><span class="help-badge badge-rw">Setting</span></td></tr>
         </tbody>
       </table>
-      <div class="note"><strong>Wireless chimes / plug-in receivers</strong> are supported too, but they are a different device family: no camera, and their DPs start at 1, so none of the defaults above apply. Typical layout: <em>dp_doorbell = 10</em> (<code>doorbell_call</code>, which button rang, 1–8) or <em>5</em> (<code>alarm_message</code>, the button's name as a raw string), <em>dp_chime_volume = 3</em>, <em>dp_night_light = 4</em>, <em>dp_ring_tone = 2</em>, and everything else 0. With Cloud Lookup credentials saved this is filled in automatically at pairing. Leave <em>dp_alarm_message</em> at 0 on these units — that path expects base64 <em>JSON</em> and silently does nothing with a plain name string.</div>
+      <div class="note"><strong>Wireless chimes / plug-in receivers</strong> are supported too, but they are a different device family: no camera, and their DPs start at 1, so none of the defaults above apply. Typical layout: <em>dp_doorbell = 10</em> (<code>doorbell_call</code>, which button rang, 1–8) or <em>5</em> (<code>alarm_message</code>, the button's name), <em>dp_chime_volume = 3</em>, <em>dp_night_light = 4</em>, <em>dp_ring_tone = 2</em>, <em>dp_alarm_push = 6</em>, and everything else 0. With Cloud Lookup credentials saved this is filled in automatically at pairing. Leave <em>dp_alarm_message</em> at 0 on these units — that path expects base64 <em>JSON</em> and silently does nothing with a plain name string.</div>
+      <div class="note"><strong>Nothing is reported at all?</strong> Check <em>dp_alarm_push</em> (DP 6, <code>alarm_propel_switch</code>). It decides whether the unit reports anything over the network; with it off the chime rings normally and stays silent, which looks exactly like a wrong DP number. One unit shipped that way. Turn it on with the <em>Set alarm reporting</em> flow action, or in the Tuya app — the log warns when the app sees it switched off.</div>
+      <div class="note"><strong>Which button rang.</strong> The "Doorbell rang" card carries a <strong>Button</strong> flow token. On chimes that report the name (DP 5, UTF-16 encoded) it holds that name, otherwise the button number. One flow with a condition on the token therefore covers all eight buttons instead of one device per button.</div>
       <div class="note"><strong>Motion tile:</strong> Only present when <em>dp_motion_event</em> or <em>dp_alarm_message</em> is set. A chime has neither, so it shows no motion tile rather than one that can never trigger.</div>
       <div class="note"><strong>Seed protection:</strong> The ring and motion triggers are suppressed for the very first data packet after each (re)connect, so the initial state does not announce a ring. The value is deliberately not remembered from that packet: a chime sends the same payload on every press of a given button, and remembering it would make every later press look like "no change" and be discarded.</div>
       <div class="note"><strong>Base64 alarm message (DP 185):</strong> Some cameras encode ring and motion events as a base64 JSON string on DP 185 instead of separate boolean DPs. Set <em>dp_alarm_message = 185</em> and leave <em>dp_doorbell</em> and <em>dp_motion_event</em> at 0 if your device uses this format. Check the <strong>DP Debug</strong> tab to identify which format your device uses.</div>
@@ -990,7 +995,13 @@
         <button id="btnDpRefresh" class="primary">&#8635; Refresh</button>
         <button id="autoToggle">Auto-refresh: off</button>
         <button id="btnCopyDp">&#128203; Copy Local DP Table</button>
-        <button id="btnReportDevice">&#128027; Report this device</button>
+      </div>
+      <!-- Reporting is its own row: five controls in one bar wrapped onto three
+           ragged lines, and these two belong together rather than with the
+           device picker above them. -->
+      <div class="bar" style="margin-top:-4px">
+        <button id="btnReportDevice">&#128027; Report on GitHub</button>
+        <button id="btnForumDevice">&#128172; Copy for forum</button>
       </div>
       <div id="dpContent"><div id="dpPlaceholder">Select a device above to see its DPs.</div></div>
       <div id="dpMeta"></div>
@@ -1060,6 +1071,24 @@
       <!-- Filled by showCloudHint() — plain-language explanation for the raw Tuya
            error text, which on its own ("permission deny") tells users nothing. -->
       <div id="cloudHint" class="note" style="display:none"></div>
+
+      <!-- Acts on devices already added to Homey, not on the listing above. The
+           value lists are otherwise only filled while pairing, so a device added
+           before its vocabulary was known keeps a picker it cannot use. -->
+      <div style="margin-top:18px;padding-top:14px;border-top:1px solid #e3e5e8">
+        <div style="font-size:13px;font-weight:600;color:#1d1d1f;margin-bottom:4px">Update pickers on existing devices</div>
+        <div style="font-size:11px;color:#888;line-height:1.5;margin-bottom:8px">
+          Reads the manufacturer's declared mode, fan speed, preset and status options and writes them
+          into the matching device settings. Useful when a picker shows names your device does not
+          understand, or plain numbers. Only these lists are written — data point numbers are left
+          exactly as they are, and nothing is switched off.
+        </div>
+        <div class="bar">
+          <button id="btnApplyValues">&#8635; Update value lists</button>
+          <span id="applyValuesStatus" style="font-size:12px;color:#888"></span>
+        </div>
+        <div id="applyValuesResult" class="note" style="display:none"></div>
+      </div>
 
       <div id="cloudResults" style="display:none;margin-top:12px">
         <table class="dp-debug-table" id="cloudTable">
@@ -1566,6 +1595,63 @@
         document.getElementById('bundleHint').textContent = 'copied — paste it into your report';
       };
 
+      // ── Forum formatting ─────────────────────────────────────────────
+      // /last jumps to the end of the topic, where the reply box is. Without it the
+      // browser opens at the first post and the user has to scroll past hundreds of
+      // them. The slug is part of the path on purpose: the numeric short form
+      // redirects (301), and a redirect for a link opened in an external browser is
+      // an avoidable round trip.
+      var FORUM_URL = 'https://community.homey.app/t/app-pro-tuya-local/154077/last';
+
+      // Discourse renders a post as Markdown, so pasting the bundle raw mangles it:
+      // lines run together, a leading # becomes a heading and the column alignment
+      // is lost. A fenced block keeps it verbatim, and the details wrapper stops a
+      // bundle of several hundred lines from burying the rest of the thread.
+      function forumFormat(headline, body) {
+        // The fence has to outlast any backtick run inside the text — a device named
+        // with one would otherwise close the block early and spill the rest as prose.
+        var longest = (body.match(/`+/g) || []).reduce(function(m, r) {
+          return Math.max(m, r.length);
+        }, 0);
+        var fence = '`'.repeat(Math.max(3, longest + 1));
+        return '**' + headline + '**\n\n'
+          + '<details>\n<summary>Support bundle</summary>\n\n'
+          + fence + '\n' + body + '\n' + fence + '\n'
+          + '</details>';
+      }
+
+      window.copyBundleForum = function(btn) {
+        var b = _bundle || {};
+        var n = (b.devices || []).length;
+        var headline = 'Tuya Local ' + (b.appVersion || '?') + ' — support bundle'
+          + (n ? ' (' + n + ' device' + (n === 1 ? '' : 's') + ')' : '');
+        copyText(forumFormat(headline, document.getElementById('bundleText').value), btn);
+        document.getElementById('bundleHint').textContent = 'copied as a forum post — paste it into a reply';
+        openUrl(FORUM_URL);
+      };
+
+      document.getElementById('btnForumDevice').addEventListener('click', function() {
+        var btn = this;
+        var sel = document.getElementById('deviceSelect');
+        if (!sel.value) { alert('Select a device above first.'); return; }
+        var name = sel.options[sel.selectedIndex].textContent;
+
+        btn.disabled = true;
+        var orig = btn.textContent;
+        btn.textContent = 'Preparing…';
+        fetchBundle(name, function(err, res) {
+          btn.disabled = false;
+          btn.textContent = orig;
+          if (err) { alert('Could not collect the details: ' + (err.message || err)); return; }
+          var dev = (res.devices || []).filter(function(d) { return d.name === name; })[0] || {};
+          var headline = 'Tuya Local ' + (res.appVersion || '?') + ' — ' + name
+            + (dev.driver ? ' (' + dev.driver + ')' : '')
+            + (dev.protocol ? ', protocol ' + dev.protocol : '');
+          copyText(forumFormat(headline, res.text), btn);
+          openUrl(FORUM_URL);
+        });
+      });
+
       // ── Report this device ───────────────────────────────────────────
       // Opens the repository's issue form with what the app already knows filled
       // in. Deliberately not posted by the app itself: that would need a token
@@ -1781,6 +1867,69 @@
         el.innerHTML = hit.h;
         el.style.display = 'block';
       }
+
+      // Re-applies the manufacturer's value lists to devices already added to Homey.
+      // Uses the credentials stored in the app settings rather than the fields above,
+      // because the app has to do the work — the settings page cannot reach devices.
+      document.getElementById('btnApplyValues').addEventListener('click', function() {
+        var btn    = this;
+        var status = document.getElementById('applyValuesStatus');
+        var out    = document.getElementById('applyValuesResult');
+
+        btn.disabled = true;
+        btn.innerHTML = 'Checking…';
+        status.textContent = '';
+        status.style.color = '#888';
+        out.style.display = 'none';
+
+        Homey.api('GET', '/apply-cloud-values', function(err, res) {
+          btn.disabled = false;
+          btn.innerHTML = '&#8635; Update value lists';
+
+          if (err) {
+            status.textContent = 'Error: ' + (err.message || String(err));
+            status.style.color = '#c5221f';
+            return;
+          }
+
+          var applied = (res && res.applied) || [];
+          var skipped = (res && res.skipped) || [];
+          var html = '';
+
+          if (applied.length === 0) {
+            status.textContent = 'Nothing to change.';
+            status.style.color = '#888';
+          } else {
+            var n = 0;
+            for (var a = 0; a < applied.length; a++) n += applied[a].changes.length;
+            status.textContent = 'Updated ' + n + ' list' + (n === 1 ? '' : 's')
+              + ' on ' + applied.length + ' device' + (applied.length === 1 ? '' : 's') + '.';
+            status.style.color = '#1e6a34';
+            html += '<strong>Updated</strong><ul style="margin:6px 0 0;padding-left:18px">';
+            for (var i = 0; i < applied.length; i++) {
+              for (var j = 0; j < applied[i].changes.length; j++) {
+                var c = applied[i].changes[j];
+                html += '<li>' + escHtml(applied[i].name) + ' — <code>' + escHtml(c.key) + '</code>: '
+                  + escHtml(c.from || '(empty)') + ' → <strong>' + escHtml(c.to) + '</strong></li>';
+              }
+            }
+            html += '</ul>';
+          }
+
+          // Reasons are worth showing: "device not found in the cloud account" is a
+          // different problem from "already up to date", and the difference matters.
+          if (skipped.length > 0) {
+            html += (html ? '<div style="margin-top:8px"></div>' : '')
+              + '<strong>Not changed</strong><ul style="margin:6px 0 0;padding-left:18px">';
+            for (var k = 0; k < skipped.length; k++) {
+              html += '<li>' + escHtml(skipped[k].name) + ' — ' + escHtml(skipped[k].reason) + '</li>';
+            }
+            html += '</ul>';
+          }
+
+          if (html) { out.innerHTML = html; out.style.display = 'block'; }
+        });
+      });
 
       document.getElementById('btnCloudFetch').addEventListener('click', function() {
         var btn    = this;

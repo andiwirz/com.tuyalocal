@@ -5,7 +5,7 @@ const TuyAPI                    = require('tuyapi');
 const { setupCloudLookup } = require('../../lib/pairCloudLookup');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
-const { detectViaCloud }        = require('../../lib/dpCodeMap');
+const { detectViaCloud, guessedDefaults }        = require('../../lib/dpCodeMap');
 
 // Maps this driver's settings keys to the Tuya cloud "code" names that
 // commonly represent them. See lib/dpCodeMap.js. dp_portions and
@@ -25,6 +25,18 @@ const CLOUD_CODE_MAP = {
   dp_battery:          ['battery_percentage', 'battery'],
   dp_battery_status:   ['battery_state', 'charge_state'],
   dp_feed_report:      ['feed_report'],
+  dp_fault:            ['fault'],
+};
+
+// food_empty_values is deliberately absent here. It is not a value range but a
+// subset — which of the reported states count as empty — so writing the declared
+// range into it would make "full" count as empty and fire the food-empty
+// notification constantly. The fault register is a different matter: its bit
+// labels are exactly what the specification declares.
+const CLOUD_ENUM_VALUES_MAP = {
+  // Bitmap DP: the per-bit names live under "label", not "range" — asking for the
+  // wrong one would write enum values in as bit names. See extractEnumValues.
+  dp_fault: { setting: 'fault_bits', from: 'label' },
 };
 
 class PetFeederDriver extends Homey.Driver {
@@ -72,6 +84,13 @@ class PetFeederDriver extends Homey.Driver {
 
     this.homey.flow.getActionCard('feeder_refresh_device')
       .registerRunListener(async (args) => args.device.pollNow());
+  }
+
+  // Lets the settings page re-apply the manufacturer's declared value lists to a
+  // device that is already paired — see applyCloudValues() in app.js. Exposed as a
+  // method because these maps are module-local constants.
+  getCloudMaps() {
+    return { codeMap: CLOUD_CODE_MAP, enumValuesMap: CLOUD_ENUM_VALUES_MAP };
   }
 
   async onPair(session) {
@@ -127,7 +146,7 @@ class PetFeederDriver extends Homey.Driver {
         connected = true;
         if (Object.keys(collectedDps).length > 0) {
           detectedDps = this._detectDps(collectedDps);
-          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m));
+          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m), CLOUD_ENUM_VALUES_MAP, guessedDefaults(detectedDps, collectedDps));
           if (Object.keys(cloudDps).length > 0) Object.assign(detectedDps, cloudDps);
         }
       } catch (err) {

@@ -5,7 +5,7 @@ const TuyAPI                    = require('tuyapi');
 const { setupCloudLookup } = require('../../lib/pairCloudLookup');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
-const { detectViaCloud }        = require('../../lib/dpCodeMap');
+const { detectViaCloud, guessedDefaults }        = require('../../lib/dpCodeMap');
 
 // Maps this driver's settings keys to the Tuya cloud "code" names that
 // commonly represent them. See lib/dpCodeMap.js. dp_power_factor is omitted
@@ -142,7 +142,7 @@ class SmartPlugDriver extends Homey.Driver {
         connected = true;
         if (Object.keys(collectedDps).length > 0) {
           detectedDps = this._detectDps(collectedDps);
-          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m));
+          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m), {}, guessedDefaults(detectedDps, collectedDps));
           if (Object.keys(cloudDps).length > 0) Object.assign(detectedDps, cloudDps);
           this.log('Detected DPs:', JSON.stringify(detectedDps));
         }

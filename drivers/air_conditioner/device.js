@@ -69,46 +69,54 @@ class AirConditionerDevice extends BaseTuyaDevice {
     this._triggerFaultOn            = this.homey.flow.getDeviceTriggerCard('ac_fault_alarm_on');
     this._triggerModeChanged        = this.homey.flow.getDeviceTriggerCard('ac_mode_changed');
 
-    // â”€â”€ Capability listeners â€” DP_PROFILE (simple) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    for (const entry of DP_PROFILE) {
-      if (!entry.settable) continue;
-      if (!this.hasCapability(entry.capability)) continue;
-
-      if (entry.debounce) {
-        let timer = null;
-        this.registerCapabilityListener(entry.capability, (value) => {
-          clearTimeout(timer);
-          return new Promise((resolve) => {
-            timer = setTimeout(() => {
-              this._set(this.getSetting(entry.settingKey), value)
-                .then(resolve).catch(resolve);
-            }, DEBOUNCE_MS);
-          });
-        });
-      } else {
-        this.registerCapabilityListener(entry.capability, async (value) => {
-          await this._set(this.getSetting(entry.settingKey), value);
-        });
-      }
-    }
-
-    // â”€â”€ target_temperature â€” apply temp_divisor when sending â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    let tempDebounceTimer = null;
-    this.registerCapabilityListener('target_temperature', (value) => {
-      clearTimeout(tempDebounceTimer);
-      return new Promise((resolve) => {
-        tempDebounceTimer = setTimeout(async () => {
-          const dp      = this.getSetting('dp_target_temp');
-          const divisor = this.getSetting('temp_divisor') || 1;
-          if (dp > 0) {
-            await this._set(dp, Math.round(value * divisor)).catch(() => {});
-          }
-          resolve();
-        }, DEBOUNCE_MS);
-      });
-    });
+    // Registered through a helper so that a capability switched on later — by
+    // pointing its DP setting at a number — becomes controllable at once. Without
+    // that, the tile appears and taps do nothing until the app is restarted.
+    this._registeredCaps       = new Set();
+    this._debounceTimers       = new Map();
+    this._registerListeners();
 
     await this._connect();
+  }
+
+  /**
+   * Idempotent: safe to call again after _syncOptionalCapabilities has added
+   * capabilities, and skips the ones already wired. Homey rejects registering the
+   * same capability twice, so the guard is not merely an optimisation.
+   */
+  _registerListeners() {
+    const register = (capability, listener) => {
+      if (!this.hasCapability(capability)) return;
+      if (this._registeredCaps.has(capability)) return;
+      this._registeredCaps.add(capability);
+      this.registerCapabilityListener(capability, listener);
+    };
+    // Per-capability timers live in a Map rather than closures: the helper can run
+    // more than once, and a fresh closure per call would leak the pending timer of
+    // the previous registration.
+    const debounced = (key, fn) => (value) => {
+      clearTimeout(this._debounceTimers.get(key));
+      return new Promise((resolve) => {
+        this._debounceTimers.set(key, setTimeout(() => {
+          Promise.resolve(fn(value)).then(resolve).catch(resolve);
+        }, DEBOUNCE_MS));
+      });
+    };
+
+    for (const entry of DP_PROFILE) {
+      if (!entry.settable) continue;
+      const send = (value) => this._set(this.getSetting(entry.settingKey), value);
+      register(entry.capability, entry.debounce
+        ? debounced(entry.capability, send)
+        : async (value) => { await send(value); });
+    }
+
+    // target_temperature — apply temp_divisor when sending
+    register('target_temperature', debounced('target_temperature', async (value) => {
+      const dp      = this.getSetting('dp_target_temp');
+      const divisor = this.getSetting('temp_divisor') || 1;
+      if (dp > 0) await this._set(dp, Math.round(value * divisor)).catch(() => {});
+    }));
   }
 
   // â”€â”€ Hook overrides â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -125,6 +133,7 @@ class AirConditionerDevice extends BaseTuyaDevice {
 
   async _onDeleted() {
     clearTimeout(this._faultAlarmTimer);
+    for (const t of this._debounceTimers.values()) clearTimeout(t);
   }
 
   // â”€â”€ DPS handling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -253,6 +262,7 @@ class AirConditionerDevice extends BaseTuyaDevice {
     if (changedKeys.includes('reconnect_interval')) this._startAutoReconnect();
     if (changedKeys.some((k) => OPTIONAL_CAPABILITIES.map((o) => o.setting).includes(k))) {
       await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
+      this._registerListeners(); // newly added capabilities need listeners immediately
     }
     if (changedKeys.some((k) => ['mode_values', 'fan_speed_values', 'swing_values'].includes(k))) {
       await this._syncEnumOptions('ac_mode',      this.getSetting('mode_values'));

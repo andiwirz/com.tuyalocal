@@ -496,7 +496,12 @@ class EvChargerDevice extends BaseTuyaDevice {
     // source, so a charger with a working energy counter can still display power.
     const showEst  = (this.getSetting('estimate_power') === true || source === 'estimate')
                       && this._hasNoPowerDp();
-    const integrate = source === 'power' || source === 'estimate';
+    // A charger with its own lifetime counter owns meter_power.charged — the DP
+    // writes it directly. Integrating on top of that had both writing the same
+    // capability with different numbers, the later write winning, so the total
+    // jittered between the charger's figure and ours. The hardware counter wins.
+    const integrate = (source === 'power' || source === 'estimate')
+      && this.getSetting('dp_energy_total') <= 0;
     if (!showEst && !integrate) return;
 
     const watts = (source === 'estimate' || showEst)

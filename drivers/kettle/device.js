@@ -49,33 +49,31 @@ class KettleDevice extends BaseTuyaDevice {
     this._triggerBoilDone           = this.homey.flow.getDeviceTriggerCard('kettle_boil_done');
 
     // â”€â”€ Capability listeners â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    this.registerCapabilityListener('onoff', async (value) => {
-      const dp = this.getSetting('dp_onoff');
-      if (dp > 0) await this._set(dp, value);
-    });
-
-    if (this.hasCapability('target_temperature')) {
-      this.registerCapabilityListener('target_temperature', async (value) => {
-        const dp = this.getSetting('dp_target_temp');
-        if (dp > 0) await this._set(dp, Math.round(value));
-      });
-    }
-
-    if (this.hasCapability('kettle_keep_warm')) {
-      this.registerCapabilityListener('kettle_keep_warm', async (value) => {
-        const dp = this.getSetting('dp_keep_warm');
-        if (dp > 0) await this._set(dp, value);
-      });
-    }
-
-    if (this.hasCapability('kettle_mode')) {
-      this.registerCapabilityListener('kettle_mode', async (value) => {
-        const dp = this.getSetting('dp_mode');
-        if (dp > 0) await this._set(dp, value);
-      });
-    }
+    // Registered through a helper so that a capability switched on later — by
+    // pointing its DP setting at a number — becomes controllable at once. Without
+    // that, the tile appears and taps do nothing until the app is restarted.
+    this._registeredCaps = new Set();
+    this._registerListeners();
 
     await this._connect();
+  }
+
+  /** Idempotent: skips capabilities already wired, which Homey would reject. */
+  _registerListeners() {
+    const register = (capability, settingKey, transform = (v) => v) => {
+      if (!this.hasCapability(capability)) return;
+      if (this._registeredCaps.has(capability)) return;
+      this._registeredCaps.add(capability);
+      this.registerCapabilityListener(capability, async (value) => {
+        const dp = this.getSetting(settingKey);
+        if (dp > 0) await this._set(dp, transform(value));
+      });
+    };
+
+    register('onoff',              'dp_onoff');
+    register('target_temperature', 'dp_target_temp', (v) => Math.round(v));
+    register('kettle_keep_warm',   'dp_keep_warm');
+    register('kettle_mode',        'dp_mode');
   }
 
   // â”€â”€ DPS handling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -153,6 +151,7 @@ class KettleDevice extends BaseTuyaDevice {
 
         case 'alarm': {
           const isAlarm = typeof value === 'number' ? value !== 0 : Boolean(value);
+          this._recordFault(value);
           await this.setCapabilityValue('alarm_generic', isAlarm).catch(() => {});
           break;
         }
@@ -182,6 +181,7 @@ class KettleDevice extends BaseTuyaDevice {
     if (changedKeys.includes('reconnect_interval')) this._startAutoReconnect();
     if (changedKeys.some((k) => OPTIONAL_CAPABILITIES.map((o) => o.setting).includes(k))) {
       await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
+      this._registerListeners(); // newly added capabilities need listeners immediately
     }
     if (changedKeys.some((k) => ['temp_min', 'temp_max', 'temp_step'].includes(k))) {
       await this._syncTempRange();

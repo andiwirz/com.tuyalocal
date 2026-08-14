@@ -94,17 +94,34 @@ class PetFeederDevice extends BaseTuyaDevice {
     this._triggerDpChanged           = this.homey.flow.getDeviceTriggerCard('feeder_dp_changed');
 
     // â”€â”€ Capability listeners â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // Registered through a helper so that a capability switched on later — by
+    // pointing its DP setting at a number — becomes controllable at once. Without
+    // that, the tile appears and taps do nothing until the app is restarted.
+    this._registeredCaps = new Set();
+    this._portionsResetTimer = null;
+    this._registerListeners();
+
+    await this._connect();
+  }
+
+  /** Idempotent: skips capabilities already wired, which Homey would reject. */
+  _registerListeners() {
+    const register = (capability, listener) => {
+      if (!this.hasCapability(capability)) return;
+      if (this._registeredCaps.has(capability)) return;
+      this._registeredCaps.add(capability);
+      this.registerCapabilityListener(capability, listener);
+    };
+
     for (const entry of DP_PROFILE) {
       if (!entry.settable) continue;
-      if (!this.hasCapability(entry.capability)) continue;
 
       if (entry.capability === 'feed_portions') {
         // Non-persistent: after a manual feed command is sent, reset the picker
-        // back to portions_min so the UI is ready for the next feed.
-        // The reset is delayed 3 s to allow the device to process the command first.
-        // The capability is an enum â€” values are strings; send as Number to the device.
-        this._portionsResetTimer = null;
-        this.registerCapabilityListener('feed_portions', async (value) => {
+        // back to portions_min so the UI is ready for the next feed. The reset is
+        // delayed 3 s to let the device process the command first. The capability is
+        // an enum — values are strings; send as Number to the device.
+        register('feed_portions', async (value) => {
           await this._set(this.getSetting('dp_portions'), Number(value));
           clearTimeout(this._portionsResetTimer);
           this._portionsResetTimer = setTimeout(() => {
@@ -113,13 +130,11 @@ class PetFeederDevice extends BaseTuyaDevice {
           }, 3000);
         });
       } else {
-        this.registerCapabilityListener(entry.capability, async (value) => {
+        register(entry.capability, async (value) => {
           await this._set(this.getSetting(entry.settingKey), value);
         });
       }
     }
-
-    await this._connect();
   }
 
   async _onDeleted() {
@@ -211,6 +226,8 @@ class PetFeederDevice extends BaseTuyaDevice {
 
       // â”€â”€ Fault (DP 14: bitfield 1=no_food 2=jammed 4=feed_timeout 8=battery_low) â”€â”€
       if (entry.capability === 'alarm_generic') {
+        // Which fault, not just that there is one — see _recordFault.
+        this._recordFault(value);
         await this.setCapabilityValue('alarm_generic', converted).catch(() => {});
         continue;
       }
@@ -316,6 +333,7 @@ class PetFeederDevice extends BaseTuyaDevice {
     if (changedKeys.includes('reconnect_interval')) this._startAutoReconnect();
     if (changedKeys.some((k) => OPTIONAL_CAPABILITIES.map((o) => o.setting).includes(k))) {
       await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
+      this._registerListeners(); // newly added capabilities need listeners immediately
     }
     if (changedKeys.includes('portions_min') || changedKeys.includes('portions_max')) {
       await this._syncPortionsRange();

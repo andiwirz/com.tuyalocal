@@ -6,11 +6,11 @@ const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 // settable: false = read-only, no capability listener registered.
 const DP_PROFILE = [
   { settingKey: 'dp_switch',        capability: 'onoff',           transform: (v)      => Boolean(v),                        settable: true  },
-  { settingKey: 'dp_voltage',       capability: 'measure_voltage', transform: (v)      => Number(v) * 0.1,                   settable: false },
-  { settingKey: 'dp_current',       capability: 'measure_current', transform: (v)      => Number(v) * 0.001,                 settable: false },
-  { settingKey: 'dp_energy',        capability: 'meter_power',     transform: (v)      => Number(v) * 0.001,                 settable: false },
+  { settingKey: 'dp_voltage',       capability: 'measure_voltage', transform: (v, dev) => dev._applyScale(v, 'voltage_scale', 0.1),   settable: false },
+  { settingKey: 'dp_current',       capability: 'measure_current', transform: (v, dev) => dev._applyScale(v, 'current_scale', 0.001), settable: false },
+  { settingKey: 'dp_energy',        capability: 'meter_power',     transform: (v, dev) => dev._applyScale(v, 'kwh_scale', 0.001),  settable: false },
   { settingKey: 'dp_fault',         capability: 'alarm_generic',   transform: (v)      => Number(v) > 0,                     settable: false },
-  { settingKey: 'dp_power',         capability: 'measure_power',   transform: (v, dev) => Number(v) * dev._getPowerScale(),  settable: false },
+  { settingKey: 'dp_power',         capability: 'measure_power',   transform: (v, dev) => dev._applyPowerScale(v),          settable: false },
   // Optional: power factor (DP 21 on most power-monitoring plugs, 0â€“100 %)
   { settingKey: 'dp_power_factor',  capability: 'power_factor',    transform: (v)      => Number(v),                         settable: false },
 ];
@@ -123,10 +123,48 @@ class SmartPlugDevice extends BaseTuyaDevice {
 
   // â”€â”€ Power-scale helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
+  /**
+   * Reads one of the fixed-point scaling dropdowns. Tuya declares a "scale"
+   * exponent per DP in its specification, but the local protocol only ever
+   * carries the raw integer, so the divisor has to be configured. Falls back to
+   * the Tuya-standard value when the setting is missing (devices paired before
+   * these settings existed) or unparseable.
+   */
+  _getScale(key, fallback) {
+    const n = parseFloat(this.getSetting(key));
+    return Number.isFinite(n) && n > 0 ? n : fallback;
+  }
+
+  /**
+   * Applies a scaling divisor to a raw integer DP value, rounded to the number of
+   * decimals that divisor can actually express. Without the rounding, binary
+   * floating point turns raw 2301 x 0.1 into 230.10000000000002, which is what
+   * then gets written to the capability and stored in Insights.
+   */
+  _applyScale(raw, key, fallback) {
+    const scale = this._getScale(key, fallback);
+    return this._roundToScale(Number(raw) * scale, scale);
+  }
+
+  /** Same, for measure_power, whose divisor can also come from auto-detection. */
+  _applyPowerScale(raw) {
+    const scale = this._getPowerScale();
+    return this._roundToScale(Number(raw) * scale, scale);
+  }
+
+  _roundToScale(value, scale) {
+    const digits = Math.round(-Math.log10(scale));
+    // Only round for the powers of ten the dropdowns offer; anything else is
+    // passed through untouched rather than silently losing precision.
+    if (digits < 0 || digits > 6 || Math.abs(10 ** -digits - scale) > 1e-12) return value;
+    return Number(value.toFixed(digits));
+  }
+
   _getPowerScale() {
     const s = this.getSetting('power_scale');
-    if (s === '1')   return 1;
-    if (s === '0.1') return 0.1;
+    if (s === '1')    return 1;
+    if (s === '0.1')  return 0.1;
+    if (s === '0.01') return 0.01;
     // 'auto': detect from last known power value â€” if raw value ever exceeded 2000, scale is 0.1
     return this._detectedPowerScale || 0.1;
   }
@@ -279,6 +317,33 @@ class SmartPlugDevice extends BaseTuyaDevice {
       this._startPolling();
     }
     if (changedKeys.includes('reconnect_interval')) this._startAutoReconnect();
+
+    // A changed scaling divisor has to be applied to the value already on screen.
+    // _handleDps() skips any DP whose raw value is unchanged, so without forgetting
+    // the remembered value first the tile would keep the old, wrongly scaled reading
+    // until the device happens to report a different raw number - on an idle plug
+    // reporting a steady 230.0 V that can be a very long time.
+    const SCALE_KEYS = {
+      power_scale:   'dp_power',
+      voltage_scale: 'dp_voltage',
+      current_scale: 'dp_current',
+      kwh_scale:  'dp_energy',
+    };
+    const changedScales = changedKeys.filter((k) => SCALE_KEYS[k]);
+    if (changedScales.length > 0) {
+      for (const key of changedScales) {
+        const dp = this.getSetting(SCALE_KEYS[key]);
+        if (dp > 0) delete this._lastDps[String(dp)];
+      }
+      // 'auto' power detection must start over rather than keep a scale it locked
+      // in from the previous setting.
+      if (changedScales.includes('power_scale')) {
+        this._powerScaleDetected = false;
+        this._detectedPowerScale = 0.1;
+      }
+      this.refreshDps().catch(() => {});
+    }
+
     if (changedKeys.some((k) => ['dp_fault', 'dp_power_factor'].includes(k))) {
       await this._syncOptionalCapabilities([
         { setting: 'dp_fault',        capability: 'alarm_generic' },

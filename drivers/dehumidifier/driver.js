@@ -5,7 +5,7 @@ const TuyAPI                    = require('tuyapi');
 const { setupCloudLookup } = require('../../lib/pairCloudLookup');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
-const { detectViaCloud }        = require('../../lib/dpCodeMap');
+const { detectViaCloud, guessedDefaults }        = require('../../lib/dpCodeMap');
 
 // Maps this driver's settings keys to the Tuya cloud "code" names that
 // commonly represent them (case-insensitive, non-alphanumeric chars ignored).
@@ -14,10 +14,10 @@ const { detectViaCloud }        = require('../../lib/dpCodeMap');
 // value shape alone (e.g. devices whose enums use plain numbers "0"/"1").
 const CLOUD_CODE_MAP = {
   dp_onoff:            ['switch', 'switch_1', 'power'],
-  dp_mode:             ['mode'],
+  dp_mode:             ['mode', 'work_mode'],
   dp_current_humidity: ['envhumid', 'envhumidity', 'humidity_indoor', 'humidity_current'],
   dp_target_humidity:  ['humidity', 'humidity_set', 'dehumidify_set_value', 'dehumidify_set_enum'],
-  dp_fan_speed:        ['windspeed', 'fan_speed_enum'],
+  dp_fan_speed:        ['windspeed', 'fan_speed_enum', { code: 'fan_speed', type: 'Enum' }],
   dp_child_lock:       ['lock', 'child_lock'],
   dp_oscillate:        ['shake', 'swing'],
   dp_water_full:       ['fault', 'water_full_alarm', 'tank_full'],
@@ -172,6 +172,13 @@ class DehumidifierDriver extends Homey.Driver {
       );
   }
 
+  // Lets the settings page re-apply the manufacturer's declared value lists to a
+  // device that is already paired — see applyCloudValues() in app.js. Exposed as a
+  // method because these maps are module-local constants.
+  getCloudMaps() {
+    return { codeMap: CLOUD_CODE_MAP, enumValuesMap: CLOUD_ENUM_VALUES_MAP };
+  }
+
   async onPair(session) {
     setupCloudLookup(session, this.homey, this);
     let pendingDevice = null;
@@ -247,7 +254,7 @@ class DehumidifierDriver extends Homey.Driver {
           // Best-effort refinement using the device's Tuya cloud specification.
           // Only runs if Cloud Lookup credentials were saved previously (Settings
           // → ☁️ Cloud Lookup) — never blocks pairing if unavailable or it fails.
-          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m), CLOUD_ENUM_VALUES_MAP);
+          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m), CLOUD_ENUM_VALUES_MAP, guessedDefaults(detectedDps, collectedDps));
           if (Object.keys(cloudDps).length > 0) {
             Object.assign(detectedDps, cloudDps);
             this.log('Final detected DPs (cloud-refined):', JSON.stringify(detectedDps));

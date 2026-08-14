@@ -5,7 +5,7 @@ const TuyAPI                    = require('tuyapi');
 const { setupCloudLookup }      = require('../../lib/pairCloudLookup');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
-const { detectViaCloud }        = require('../../lib/dpCodeMap');
+const { detectViaCloud, guessedDefaults }        = require('../../lib/dpCodeMap');
 
 // Maps this driver's settings keys to the Tuya cloud "code" names for the
 // qccdz (EV charger) category. See lib/dpCodeMap.js.
@@ -136,7 +136,7 @@ class EvChargerDriver extends Homey.Driver {
           detectedDps = this._detectDps(collectedDps);
           this.log('Locally detected DPs (value heuristic):', JSON.stringify(detectedDps));
 
-          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m));
+          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m), {}, guessedDefaults(detectedDps, collectedDps));
           if (Object.keys(cloudDps).length > 0) {
             Object.assign(detectedDps, cloudDps);
             this.log('Final detected DPs (cloud-refined):', JSON.stringify(detectedDps));
@@ -214,7 +214,16 @@ class EvChargerDriver extends Homey.Driver {
       current_scale:        '1',
       session_energy_scale: '0.01',
       total_energy_scale:   '0.01',
-      total_energy_source:        'session',
+      // Integrating the live power reading is the more dependable default. The
+      // charger's own session counter is exact when it works, but on several units
+      // it never moves, or is scaled differently from the rest of the DPs, and the
+      // symptom is a total that silently stays at zero or drifts — hard to tell
+      // apart from a mapping mistake. This setting is ignored entirely on chargers
+      // that report a lifetime total themselves, and a charger with no power DP
+      // gets estimate_power switched on below, which the integration then uses.
+      // Set here rather than as the manifest default so that chargers paired
+      // earlier keep whatever they are on today.
+      total_energy_source:        'power',
       // Chargers with no power DP get the estimate switched on, since otherwise
       // the power tile would stay permanently empty. Enabled below.
       estimate_power:       false,

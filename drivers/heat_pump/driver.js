@@ -7,18 +7,29 @@ const net                       = require('net');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
 const { capitalize }            = require('../../lib/utils');
-const { detectViaCloud }        = require('../../lib/dpCodeMap');
+const { detectViaCloud, guessedDefaults }        = require('../../lib/dpCodeMap');
 
 // Maps this driver's settings keys to the Tuya cloud "code" names that
 // commonly represent them. See lib/dpCodeMap.js. dp_power_level and dp_preset
 // are omitted — their code names vary too much between heat pump models to
 // guess confidently.
 const CLOUD_CODE_MAP = {
-  dp_onoff:       ['switch'],
+  dp_onoff:       ['switch', 'switch_1', { code: 'power', type: 'Boolean' }],
   dp_mode:        ['mode', 'work_mode'],
   dp_target_temp: ['temp_set'],
   dp_current_temp: ['temp_current'],
   dp_fault:       ['fault'],
+};
+
+  // Reads the full declared token list, not just the value the device happens to
+  // report. A pool heat pump answering Heat/Cool/Auto with capitals against a
+  // lowercase list rejected every mode change — silently, snapping back.
+const CLOUD_ENUM_VALUES_MAP = {
+  // Bitmap DP: the per-bit names live under "label", not "range" — asking for the
+  // wrong one would write enum values in as bit names. See extractEnumValues.
+  dp_fault:     { setting: 'fault_bits', from: 'label' },
+  dp_mode: 'mode_values',
+  dp_preset: 'preset_values',
 };
 
 // ── Mode strings recognised during auto-detect ────────────────────────────────
@@ -92,6 +103,13 @@ class HeatPumpDriver extends Homey.Driver {
 
   // ── Pairing ──────────────────────────────────────────────────────────────────
 
+  // Lets the settings page re-apply the manufacturer's declared value lists to a
+  // device that is already paired — see applyCloudValues() in app.js. Exposed as a
+  // method because these maps are module-local constants.
+  getCloudMaps() {
+    return { codeMap: CLOUD_CODE_MAP, enumValuesMap: CLOUD_ENUM_VALUES_MAP };
+  }
+
   async onPair(session) {
     setupCloudLookup(session, this.homey, this);
     let pendingDevice = null;
@@ -144,7 +162,7 @@ class HeatPumpDriver extends Homey.Driver {
         connected = true;
         if (Object.keys(collectedDps).length > 0) {
           detectedDps = this._detectDps(collectedDps);
-          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m));
+          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m), CLOUD_ENUM_VALUES_MAP, guessedDefaults(detectedDps, collectedDps));
           if (Object.keys(cloudDps).length > 0) Object.assign(detectedDps, cloudDps);
         }
       } catch (err) {

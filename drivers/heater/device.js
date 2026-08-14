@@ -51,32 +51,48 @@ class HeaterDevice extends BaseTuyaDevice {
     this._triggerStartedHeating     = this.homey.flow.getDeviceTriggerCard('heater_started_heating');
     this._triggerStoppedHeating     = this.homey.flow.getDeviceTriggerCard('heater_stopped_heating');
 
-    // â”€â”€ Capability listeners â€” DP_PROFILE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // Registered through a helper so that a capability switched on later — by
+    // pointing its DP setting at a number — becomes controllable at once. Without
+    // that, the tile appears and taps do nothing until the app is restarted.
+    this._registeredCaps = new Set();
+    this._debounceTimers = new Map();
+    this._registerListeners();
+
+    await this._connect();
+  }
+
+  /** Idempotent: skips capabilities already wired, which Homey would reject. */
+  _registerListeners() {
+    const register = (capability, listener) => {
+      if (!this.hasCapability(capability)) return;
+      if (this._registeredCaps.has(capability)) return;
+      this._registeredCaps.add(capability);
+      this.registerCapabilityListener(capability, listener);
+    };
+
     for (const entry of DP_PROFILE) {
       if (!entry.settable) continue;
-      if (!this.hasCapability(entry.capability)) continue;
-      this.registerCapabilityListener(entry.capability, async (value) => {
+      register(entry.capability, async (value) => {
         await this._set(this.getSetting(entry.settingKey), value);
       });
     }
 
-    // â”€â”€ target_temperature â€” apply temp_divisor when sending â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    let tempDebounceTimer = null;
-    this.registerCapabilityListener('target_temperature', (value) => {
-      clearTimeout(tempDebounceTimer);
+    // target_temperature — apply temp_divisor when sending. The timer lives on the
+    // instance, not in a closure: this helper can run again, and a per-call closure
+    // would orphan the pending timer of the previous registration.
+    register('target_temperature', (value) => {
+      clearTimeout(this._debounceTimers.get('target_temperature'));
       return new Promise((resolve) => {
-        tempDebounceTimer = setTimeout(async () => {
+        this._debounceTimers.set('target_temperature', setTimeout(async () => {
           const dp      = this.getSetting('dp_target_temp');
           const divisor = this.getSetting('temp_divisor') || 1;
           if (dp > 0) {
             await this._set(dp, Math.round(value * divisor)).catch(() => {});
           }
           resolve();
-        }, DEBOUNCE_MS);
+        }, DEBOUNCE_MS));
       });
     });
-
-    await this._connect();
   }
 
   // â”€â”€ Hook overrides â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -90,6 +106,7 @@ class HeaterDevice extends BaseTuyaDevice {
 
   async _onDeleted() {
     clearTimeout(this._faultAlarmTimer);
+    for (const t of this._debounceTimers.values()) clearTimeout(t);
   }
 
   // â”€â”€ DPS handling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -207,6 +224,7 @@ class HeaterDevice extends BaseTuyaDevice {
     if (changedKeys.includes('reconnect_interval')) this._startAutoReconnect();
     if (changedKeys.some((k) => OPTIONAL_CAPABILITIES.map((o) => o.setting).includes(k))) {
       await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
+      this._registerListeners(); // newly added capabilities need listeners immediately
     }
     if (changedKeys.includes('mode_values')) {
       await this._syncEnumOptions('mode', this.getSetting('mode_values'));

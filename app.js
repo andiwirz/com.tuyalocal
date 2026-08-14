@@ -185,9 +185,39 @@ class TuyaLocalApp extends Homey.App {
         try { id = device.getData().id || ''; } catch (e) {}
         const settings = (() => { try { return device.getSettings() || {}; } catch (e) { return {}; } })();
 
+        // Look the device up before printing its block, so the model can appear in
+        // the header rather than further down. The result is reused by the cloud
+        // spec section below — one cloud call per device, as before.
+        const wantCloud = cloudUsable && (!onlyDevice || device.getName() === onlyDevice);
+        let cloudDetail = null;
+        let cloudError  = null;
+        if (wantCloud && id) {
+          try {
+            cloudDetail = await this.cloudDeviceDetail({ accessId, accessSecret, region, deviceId: id });
+          } catch (err) { cloudError = err; }
+        }
+
+        // Remember the model so later bundles still name the device even if the
+        // cloud credentials are removed, or the lookup fails that day. Every store
+        // access is guarded: building a bundle is the one thing that has to work
+        // when a device is in a bad state, so it must not throw here.
+        const readStore = (k) => { try { return device.getStoreValue(k) || ''; } catch (e) { return ''; } };
+        const saveStore = (k, v) => {
+          try { Promise.resolve(device.setStoreValue(k, v)).catch(() => {}); } catch (e) {}
+        };
+
+        let model = readStore('cloudProduct');
+        if (cloudDetail?.product && cloudDetail.product !== model) {
+          model = cloudDetail.product;
+          saveStore('cloudProduct', model);
+        }
+        const productId = cloudDetail?.productId || readStore('cloudProductId');
+        if (cloudDetail?.productId) saveStore('cloudProductId', cloudDetail.productId);
+
         out.push('');
         out.push(`DEVICE  ${device.getName()}`);
         out.push(`  driver     ${driver.id}`);
+        out.push(`  model      ${model || '?'}${productId ? `  (product ${productId})` : ''}`);
         out.push(`  device id  ${id ? id.slice(0, 6) + '…' : '?'}`);
         out.push(`  available  ${device.getAvailable() ? 'yes' : 'no'}`);
 
@@ -246,14 +276,14 @@ class TuyaLocalApp extends Homey.App {
         // device is paired with — so no guessing is involved. Kept in the record as
         // well as the text, so a bug report can be prefilled with it rather than
         // relying on the reporter to paste the bundle.
-        const wantCloud = cloudUsable && (!onlyDevice || device.getName() === onlyDevice);
         if (!wantCloud && cloudUsable && onlyDevice) {
           out.push('  cloud spec  skipped (only the reported device is looked up)');
           record.cloudSpec = '';
         }
         if (wantCloud && id) {
           try {
-            const detail = await this.cloudDeviceDetail({ accessId, accessSecret, region, deviceId: id });
+            if (cloudError) throw cloudError;
+            const detail = cloudDetail;
             const spec = detail?.status;
             if (Array.isArray(spec) && spec.length) {
               out.push('  cloud spec  code / dp / type / value / range');
@@ -484,16 +514,22 @@ class TuyaLocalApp extends Homey.App {
 
     const { token } = await this._tuyaGetToken(host, accessId, accessSecret);
 
-    // Fetch from multiple endpoints to get the most complete picture
-    const [statusRes, specRes, propsRes] = await Promise.all([
+    // Fetch from multiple endpoints to get the most complete picture. The thing
+    // endpoint is only here for the model name: the local protocol never reveals
+    // which product a device actually is, so without it a report says "a plug"
+    // where it could say which plug. It runs in the same batch, so it costs no
+    // extra wall time, and a failure just leaves the model blank.
+    const [statusRes, specRes, propsRes, thingRes] = await Promise.all([
       this._tuyaRequest(host, `/v1.0/iot-03/devices/${deviceId}/status`, accessId, accessSecret, token).catch(() => ({})),
       this._tuyaRequest(host, `/v1.0/iot-03/devices/${deviceId}/specification`, accessId, accessSecret, token).catch(() => ({})),
       this._tuyaRequest(host, `/v2.0/cloud/thing/${deviceId}/shadow/properties`, accessId, accessSecret, token).catch(() => ({})),
+      this._tuyaRequest(host, `/v2.0/cloud/thing/${deviceId}`, accessId, accessSecret, token).catch(() => ({})),
     ]);
 
     const status = statusRes.success ? (statusRes.result || []) : [];
     const spec   = specRes.success ? (specRes.result || {}) : {};
     const props  = propsRes.success ? (propsRes.result?.properties || []) : [];
+    const thing  = thingRes.success ? (thingRes.result || {}) : {};
 
     // Build a map: code → { dp_id, value, type, range/values }
     const dps = {};
@@ -537,9 +573,106 @@ class TuyaLocalApp extends Homey.App {
     }
 
     return {
-      status: Object.values(dps),
-      category: spec.category || '',
+      status:    Object.values(dps),
+      category:  spec.category || thing.category || '',
+      product:   thing.product_name || thing.model || '',
+      productId: thing.product_id || '',
     };
+  }
+
+  /**
+   * Re-reads the manufacturer's declared enum ranges for devices that are already
+   * paired, and writes them into the companion "…_values" settings.
+   *
+   * Those lists are otherwise only filled during pairing, so a device added before
+   * its vocabulary was known — a unit whose modes are "0"/"1"/"2", say — keeps a
+   * picker full of names it does not understand until it is deleted and added
+   * again. This is the same lookup pairing performs, made available afterwards.
+   *
+   * Deliberately narrow: only the value lists are written. DP numbers are left
+   * exactly as they are, and nothing is ever switched off. During pairing the
+   * live DP snapshot protects a real DP from being cleared by an incomplete
+   * specification; here there is no snapshot, so that protection is unavailable
+   * and remapping would risk breaking a device the user has already tuned by hand.
+   *
+   * @returns {Promise<{applied: Array, skipped: Array}>}
+   */
+  async applyCloudValues({ onlyDevice = null } = {}) {
+    const accessId     = this.homey.settings.get('cloud_access_id');
+    const accessSecret = this.homey.settings.get('cloud_access_secret');
+    const region       = this.homey.settings.get('cloud_region');
+    if (!accessId || !accessSecret || !region) {
+      throw new Error('Cloud Lookup is not configured. Enter your Tuya API credentials first.');
+    }
+
+    const { detectViaCloud } = require('./lib/dpCodeMap');
+    const applied = [];
+    const skipped = [];
+
+    for (const driver of Object.values(this.homey.drivers.getDrivers())) {
+      const maps = typeof driver.getCloudMaps === 'function' ? driver.getCloudMaps() : null;
+      for (const device of driver.getDevices()) {
+        const name = device.getName();
+        if (onlyDevice && name !== onlyDevice) continue;
+
+        if (!maps || !maps.enumValuesMap || Object.keys(maps.enumValuesMap).length === 0) {
+          skipped.push({ name, driver: driver.id, reason: 'this driver has no value lists to fill' });
+          continue;
+        }
+
+        let id = '';
+        try { id = device.getData().id || ''; } catch (e) {}
+        if (!id) {
+          skipped.push({ name, driver: driver.id, reason: 'no device id' });
+          continue;
+        }
+
+        let cloudDps = {};
+        try {
+          cloudDps = await detectViaCloud(this.homey, id, maps.codeMap,
+            (m) => this.log(`[${name}] ${m}`), maps.enumValuesMap);
+        } catch (err) {
+          skipped.push({ name, driver: driver.id, reason: `lookup failed: ${err.message}` });
+          continue;
+        }
+
+        // Only the companion value-list keys are allowed through — never a dp_*.
+        // An entry is either the setting name or { setting, from } — see
+        // extractEnumValues in lib/dpCodeMap.js.
+        const allowed = new Set(Object.values(maps.enumValuesMap)
+          .map((t) => (typeof t === 'string' ? t : t?.setting))
+          .filter(Boolean));
+        const changes = [];
+        for (const [key, value] of Object.entries(cloudDps)) {
+          if (!allowed.has(key)) continue;
+          if (typeof value !== 'string' || !value.trim()) continue;
+          let current = null;
+          try { current = device.getSetting(key); } catch (e) {}
+          if (current === value) continue;
+          changes.push({ key, from: current ?? '', to: value });
+        }
+
+        if (changes.length === 0) {
+          const found = Object.keys(cloudDps).length > 0;
+          skipped.push({ name, driver: driver.id,
+            reason: found ? 'already up to date' : 'device not found in the cloud account' });
+          continue;
+        }
+
+        try {
+          const patch = {};
+          for (const c of changes) patch[c.key] = c.to;
+          await device.setSettings(patch);
+          applied.push({ name, driver: driver.id, changes });
+          this.log(`[${name}] cloud value lists applied: `
+            + changes.map((c) => `${c.key} = ${c.to}`).join('; '));
+        } catch (err) {
+          skipped.push({ name, driver: driver.id, reason: `could not save: ${err.message}` });
+        }
+      }
+    }
+
+    return { applied, skipped };
   }
 
   async _tuyaGetToken(host, clientId, secret) {

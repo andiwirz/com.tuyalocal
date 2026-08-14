@@ -5,20 +5,28 @@ const TuyAPI                    = require('tuyapi');
 const { setupCloudLookup } = require('../../lib/pairCloudLookup');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
-const { detectViaCloud }        = require('../../lib/dpCodeMap');
+const { detectViaCloud, guessedDefaults }        = require('../../lib/dpCodeMap');
 
 // Maps this driver's settings keys to the Tuya cloud "code" names that
 // commonly represent them. See lib/dpCodeMap.js.
 // Verified against the standard code list for Tuya category "bh" (kettle).
 const CLOUD_CODE_MAP = {
   // Some kettles expose the boil command as "start" rather than a plain switch.
-  dp_onoff:        ['switch', 'start'],
-  dp_mode:         ['mode', 'work_type'],
+  dp_onoff:        ['switch', 'start', 'switch_1', { code: 'power', type: 'Boolean' }],
+  dp_mode:         ['mode', 'work_type', 'work_mode'],
   dp_target_temp:  ['temp_set'],
   dp_current_temp: ['temp_current'],
   dp_status:       ['status', 'work_state'],
   dp_keep_warm:    ['keep_warm', 'warm'],
   dp_fault:        ['fault'],
+};
+
+const CLOUD_ENUM_VALUES_MAP = {
+  // Bitmap DP: the per-bit names live under "label", not "range" — asking for the
+  // wrong one would write enum values in as bit names. See extractEnumValues.
+  dp_fault:     { setting: 'fault_bits', from: 'label' },
+  dp_mode: 'mode_values',
+  dp_status: 'status_values',
 };
 
 class KettleDriver extends Homey.Driver {
@@ -65,6 +73,13 @@ class KettleDriver extends Homey.Driver {
         }
         await args.device.triggerCapabilityListener('kettle_keep_warm', args.state === 'on');
       });
+  }
+
+  // Lets the settings page re-apply the manufacturer's declared value lists to a
+  // device that is already paired — see applyCloudValues() in app.js. Exposed as a
+  // method because these maps are module-local constants.
+  getCloudMaps() {
+    return { codeMap: CLOUD_CODE_MAP, enumValuesMap: CLOUD_ENUM_VALUES_MAP };
   }
 
   async onPair(session) {
@@ -125,7 +140,7 @@ class KettleDriver extends Homey.Driver {
         connected = true;
         if (Object.keys(collectedDps).length > 0) {
           detectedDps = this._detectDps(collectedDps);
-          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m));
+          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m), CLOUD_ENUM_VALUES_MAP, guessedDefaults(detectedDps, collectedDps));
           if (Object.keys(cloudDps).length > 0) Object.assign(detectedDps, cloudDps);
         }
       } catch (err) {

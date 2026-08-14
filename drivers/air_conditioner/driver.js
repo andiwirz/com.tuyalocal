@@ -5,15 +5,15 @@ const TuyAPI                    = require('tuyapi');
 const { setupCloudLookup } = require('../../lib/pairCloudLookup');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
-const { detectViaCloud }        = require('../../lib/dpCodeMap');
+const { detectViaCloud, guessedDefaults }        = require('../../lib/dpCodeMap');
 
 // Maps this driver's settings keys to the Tuya cloud "code" names that
 // commonly represent them. See lib/dpCodeMap.js.
 const CLOUD_CODE_MAP = {
-  dp_onoff:           ['switch'],
-  dp_mode:            ['mode'],
+  dp_onoff:           ['switch', 'switch_1', { code: 'power', type: 'Boolean' }],
+  dp_mode:            ['mode', 'work_mode'],
   dp_target_temp:     ['temp_set'],
-  dp_fan_speed:       ['fan_speed_enum', 'windspeed'],
+  dp_fan_speed:       ['fan_speed_enum', 'windspeed', { code: 'fan_speed', type: 'Enum' }],
   dp_swing:           ['switch_vertical', 'shake'],
   dp_swing_h:         ['switch_horizontal'],
   dp_sleep:           ['sleep'],
@@ -154,6 +154,13 @@ class AirConditionerDriver extends Homey.Driver {
       .registerRunListener(async (args) => args.device.pollNow());
   }
 
+  // Lets the settings page re-apply the manufacturer's declared value lists to a
+  // device that is already paired — see applyCloudValues() in app.js. Exposed as a
+  // method because these maps are module-local constants.
+  getCloudMaps() {
+    return { codeMap: CLOUD_CODE_MAP, enumValuesMap: CLOUD_ENUM_VALUES_MAP };
+  }
+
   async onPair(session) {
     setupCloudLookup(session, this.homey, this);
     let pendingDevice = null;
@@ -220,7 +227,7 @@ class AirConditionerDriver extends Homey.Driver {
 
         if (Object.keys(collectedDps).length > 0) {
           const detected = this._detectDps(collectedDps);
-          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m), CLOUD_ENUM_VALUES_MAP);
+          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m), CLOUD_ENUM_VALUES_MAP, guessedDefaults(detected, collectedDps));
           if (Object.keys(cloudDps).length > 0) Object.assign(detected, cloudDps);
           this.log('Detected DPs:', JSON.stringify(detected));
           // Merge detected settings into pendingDevice later

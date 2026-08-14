@@ -5,7 +5,7 @@ const TuyAPI                    = require('tuyapi');
 const { setupCloudLookup }      = require('../../lib/pairCloudLookup');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
-const { detectViaCloud }        = require('../../lib/dpCodeMap');
+const { detectViaCloud, guessedDefaults } = require('../../lib/dpCodeMap');
 
 // Maps this driver's settings keys to the Tuya cloud "code" names that
 // commonly represent them. See lib/dpCodeMap.js. The hardcoded defaults in
@@ -30,6 +30,10 @@ const CLOUD_CODE_MAP = {
   dp_device_volume:      ['basic_device_volume'],
   dp_night_light:        ['switch_night_light'],
   dp_ring_tone:          ['doorbell_ring_value'],
+  // On chimes this switch decides whether the unit reports anything at all. One
+  // was shipped with it off: the bell rang, nothing reached the network, and the
+  // ring trigger could not fire however the DPs were configured.
+  dp_alarm_push:         ['alarm_propel_switch'],
 };
 
 // Fallback DP numbers for a camera doorbell, used when nothing better is known.
@@ -50,6 +54,7 @@ const DEFAULT_DPS = {
   // names fill them in for the units that have them.
   dp_night_light:        0,
   dp_ring_tone:          0,
+  dp_alarm_push:         0,
 };
 
 class DoorbellDriver extends Homey.Driver {
@@ -123,6 +128,13 @@ class DoorbellDriver extends Homey.Driver {
 
     this.homey.flow.getConditionCard('doorbell_night_light_is_on')
       .registerRunListener(async (args) => args.device.getCapabilityValue('onoff.light') === true);
+
+    this.homey.flow.getActionCard('doorbell_set_alarm_push')
+      .registerRunListener(async (args) => {
+        const dp = args.device.getSetting('dp_alarm_push');
+        if (!dp) throw new Error('Alarm Push DP is set to 0 (disabled) in device settings');
+        await args.device._set(dp, args.state === 'true');
+      });
 
     this.homey.flow.getActionCard('doorbell_set_ring_tone')
       .registerRunListener(async (args) => {
@@ -204,7 +216,7 @@ class DoorbellDriver extends Homey.Driver {
       // Best-effort: refine the hardcoded defaults using the device's Tuya
       // cloud specification — matters for camera/doorbell models whose DP
       // layout differs. Never blocks pairing if unavailable or it fails.
-      const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m), {}, DEFAULT_DPS);
+      const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m), {}, guessedDefaults(DEFAULT_DPS, collectedDps));
 
       pendingDevice = this._buildPendingDevice({
         ip, deviceId, localKey, version: actualVersion, detectedDps: cloudDps,

@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.167",
+  "version": "1.0.168",
   "compatibility": ">=12.13.0",
   "sdk": 3,
   "platforms": [
@@ -3866,6 +3866,20 @@
             "name": "device",
             "type": "device",
             "filter": "driver_id=doorbell"
+          }
+        ],
+        "tokens": [
+          {
+            "name": "button",
+            "type": "string",
+            "title": {
+              "en": "Button",
+              "de": "Knopf"
+            },
+            "example": {
+              "en": "Front door",
+              "de": "Haustür"
+            }
           }
         ]
       },
@@ -7909,6 +7923,48 @@
         ]
       },
       {
+        "id": "doorbell_set_alarm_push",
+        "title": {
+          "en": "Set alarm reporting",
+          "de": "Türklingel: Melden setzen"
+        },
+        "titleFormatted": {
+          "en": "Turn alarm reporting [[state]]",
+          "de": "Melden [[state]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=doorbell"
+          },
+          {
+            "name": "state",
+            "type": "dropdown",
+            "title": {
+              "en": "State",
+              "de": "Zustand"
+            },
+            "values": [
+              {
+                "id": "true",
+                "label": {
+                  "en": "On",
+                  "de": "Ein"
+                }
+              },
+              {
+                "id": "false",
+                "label": {
+                  "en": "Off",
+                  "de": "Aus"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
         "id": "doorbell_set_ring_tone",
         "title": {
           "en": "Set ring tone",
@@ -8838,6 +8894,19 @@
               "min": 0,
               "max": 255,
               "step": 1
+            },
+            {
+              "id": "fault_bits",
+              "type": "text",
+              "label": {
+                "en": "Fault bit names",
+                "de": "Fehler-Bit-Namen"
+              },
+              "value": "",
+              "hint": {
+                "en": "Names for the bits of the fault data point, lowest bit first, comma separated (e.g. no_food,jammed,feed_timeout,battery_low). Filled in automatically from the manufacturer's specification when Cloud Lookup is set up. Leave an entry empty for a bit the manufacturer does not name. With no names the fault is shown as a code.",
+                "de": "Namen für die Bits des Fehler-Datenpunkts, niedrigstes Bit zuerst, mit Komma getrennt (z. B. no_food,jammed,feed_timeout,battery_low). Wird bei eingerichtetem Cloud Lookup automatisch aus der Herstellerspezifikation gefüllt. Für ein vom Hersteller nicht benanntes Bit den Eintrag leer lassen. Ohne Namen wird der Fehler als Code angezeigt."
+              }
             }
           ]
         },
@@ -8955,6 +9024,19 @@
                 "de": "Zuletzt Daten empfangen"
               },
               "value": "—"
+            },
+            {
+              "id": "fault_status",
+              "type": "text",
+              "label": {
+                "en": "Last fault",
+                "de": "Letzte Störung"
+              },
+              "value": "—",
+              "hint": {
+                "en": "Updated automatically by the app. Do not edit.",
+                "de": "Wird automatisch aktualisiert. Nicht bearbeiten."
+              }
             }
           ]
         }
@@ -9185,6 +9267,19 @@
               "min": 0,
               "max": 255,
               "step": 1
+            },
+            {
+              "id": "fault_bits",
+              "type": "text",
+              "label": {
+                "en": "Fault bit names",
+                "de": "Fehler-Bit-Namen"
+              },
+              "value": "",
+              "hint": {
+                "en": "Names for the bits of the fault data point, lowest bit first, comma separated (e.g. no_food,jammed,feed_timeout,battery_low). Filled in automatically from the manufacturer's specification when Cloud Lookup is set up. Leave an entry empty for a bit the manufacturer does not name. With no names the fault is shown as a code.",
+                "de": "Namen für die Bits des Fehler-Datenpunkts, niedrigstes Bit zuerst, mit Komma getrennt (z. B. no_food,jammed,feed_timeout,battery_low). Wird bei eingerichtetem Cloud Lookup automatisch aus der Herstellerspezifikation gefüllt. Für ein vom Hersteller nicht benanntes Bit den Eintrag leer lassen. Ohne Namen wird der Fehler als Code angezeigt."
+              }
             }
           ]
         },
@@ -9292,6 +9387,19 @@
                 "de": "Zuletzt Daten empfangen"
               },
               "value": "—"
+            },
+            {
+              "id": "fault_status",
+              "type": "text",
+              "label": {
+                "en": "Last fault",
+                "de": "Letzte Störung"
+              },
+              "value": "—",
+              "hint": {
+                "en": "Updated automatically by the app. Do not edit.",
+                "de": "Wird automatisch aktualisiert. Nicht bearbeiten."
+              }
             }
           ]
         }
@@ -10256,10 +10364,139 @@
                   }
                 },
                 {
+                  "id": "0.01",
+                  "label": {
+                    "en": "×0.01 (raw 44200 = 442 W)",
+                    "de": "×0.01 (Rohwert 44200 = 442 W)"
+                  }
+                },
+                {
                   "id": "auto",
                   "label": {
                     "en": "Auto-detect (raw > 2000 → ×0.1)",
                     "de": "Automatisch (Rohwert > 2000 → ×0.1)"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "voltage_scale",
+              "type": "dropdown",
+              "label": {
+                "en": "Voltage Scale",
+                "de": "Spannungs-Skalierung"
+              },
+              "value": "0.1",
+              "hint": {
+                "en": "Tuya standard (cur_voltage, scale=1) defines raw ÷ 10 = V, so ×0.1 is correct for almost all devices. Change only if the voltage tile reads ten times too high or too low.",
+                "de": "Der Tuya-Standard (cur_voltage, scale=1) definiert Rohwert ÷ 10 = V, daher ist ×0.1 für fast alle Geräte korrekt. Nur ändern, wenn die Spannung zehnmal zu hoch oder zu tief angezeigt wird."
+              },
+              "values": [
+                {
+                  "id": "0.1",
+                  "label": {
+                    "en": "×0.1  (standard — raw 2301 = 230.1 V)",
+                    "de": "×0.1  (Standard — Rohwert 2301 = 230.1 V)"
+                  }
+                },
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "×1    (raw 230 = 230 V)",
+                    "de": "×1    (Rohwert 230 = 230 V)"
+                  }
+                },
+                {
+                  "id": "0.01",
+                  "label": {
+                    "en": "×0.01 (raw 23010 = 230.1 V)",
+                    "de": "×0.01 (Rohwert 23010 = 230.1 V)"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "current_scale",
+              "type": "dropdown",
+              "label": {
+                "en": "Current Scale",
+                "de": "Strom-Skalierung"
+              },
+              "value": "0.001",
+              "hint": {
+                "en": "Tuya standard (cur_current, scale=3) reports milliamps, so ×0.001 is correct for most plugs. Devices that report centiamps need ×0.01 — check whether the current tile matches watts ÷ volts.",
+                "de": "Der Tuya-Standard (cur_current, scale=3) meldet Milliampere, daher ist ×0.001 für die meisten Steckdosen korrekt. Geräte in Zentiampere brauchen ×0.01 — prüfe, ob der Stromwert zu Watt ÷ Volt passt."
+              },
+              "values": [
+                {
+                  "id": "0.001",
+                  "label": {
+                    "en": "×0.001 (standard — raw 1920 = 1.92 A)",
+                    "de": "×0.001 (Standard — Rohwert 1920 = 1.92 A)"
+                  }
+                },
+                {
+                  "id": "0.01",
+                  "label": {
+                    "en": "×0.01  (raw 192 = 1.92 A)",
+                    "de": "×0.01  (Rohwert 192 = 1.92 A)"
+                  }
+                },
+                {
+                  "id": "0.1",
+                  "label": {
+                    "en": "×0.1   (raw 19 = 1.9 A)",
+                    "de": "×0.1   (Rohwert 19 = 1.9 A)"
+                  }
+                },
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "×1     (raw 2 = 2 A)",
+                    "de": "×1     (Rohwert 2 = 2 A)"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "kwh_scale",
+              "type": "dropdown",
+              "label": {
+                "en": "Energy Meter Scale",
+                "de": "Energiezähler-Skalierung"
+              },
+              "value": "0.001",
+              "hint": {
+                "en": "Only applies when Energy DP is set (hardware kWh counter). Tuya's add_ele reports watt-hours, so ×0.001 gives kWh. Use ×0.01 if the total climbs ten times too slowly.",
+                "de": "Gilt nur, wenn ein Energie-DP gesetzt ist (Hardware-kWh-Zähler). Tuyas add_ele meldet Wattstunden, daher ergibt ×0.001 kWh. ×0.01 verwenden, wenn der Zählerstand zehnmal zu langsam steigt."
+              },
+              "values": [
+                {
+                  "id": "0.001",
+                  "label": {
+                    "en": "×0.001 (standard — raw 1500 = 1.5 kWh)",
+                    "de": "×0.001 (Standard — Rohwert 1500 = 1.5 kWh)"
+                  }
+                },
+                {
+                  "id": "0.01",
+                  "label": {
+                    "en": "×0.01  (raw 150 = 1.5 kWh)",
+                    "de": "×0.01  (Rohwert 150 = 1.5 kWh)"
+                  }
+                },
+                {
+                  "id": "0.1",
+                  "label": {
+                    "en": "×0.1   (raw 15 = 1.5 kWh)",
+                    "de": "×0.1   (Rohwert 15 = 1.5 kWh)"
+                  }
+                },
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "×1     (raw 2 = 2 kWh)",
+                    "de": "×1     (Rohwert 2 = 2 kWh)"
                   }
                 }
               ]
@@ -12939,6 +13176,19 @@
                 "en": "How many portions the physical button on the feeder dispenses per press. Sent to the device when changed. Only effective if Manual Button Portions DP is configured.",
                 "de": "Wie viele Portionen beim Drücken der Gerätetaste ausgegeben werden. Wird bei Änderung ans Gerät gesendet. Nur wirksam wenn Manual Button Portions DP konfiguriert."
               }
+            },
+            {
+              "id": "fault_bits",
+              "type": "text",
+              "label": {
+                "en": "Fault bit names",
+                "de": "Fehler-Bit-Namen"
+              },
+              "value": "no_food,jammed,feed_timeout,battery_low",
+              "hint": {
+                "en": "Names for the bits of the fault data point, lowest bit first, comma separated (e.g. no_food,jammed,feed_timeout,battery_low). Filled in automatically from the manufacturer's specification when Cloud Lookup is set up. Leave an entry empty for a bit the manufacturer does not name. With no names the fault is shown as a code.",
+                "de": "Namen für die Bits des Fehler-Datenpunkts, niedrigstes Bit zuerst, mit Komma getrennt (z. B. no_food,jammed,feed_timeout,battery_low). Wird bei eingerichtetem Cloud Lookup automatisch aus der Herstellerspezifikation gefüllt. Für ein vom Hersteller nicht benanntes Bit den Eintrag leer lassen. Ohne Namen wird der Fehler als Code angezeigt."
+              }
             }
           ]
         },
@@ -12990,6 +13240,19 @@
               "label": {
                 "en": "Last data received",
                 "de": "Zuletzt Daten empfangen"
+              },
+              "value": "—",
+              "hint": {
+                "en": "Updated automatically by the app. Do not edit.",
+                "de": "Wird automatisch aktualisiert. Nicht bearbeiten."
+              }
+            },
+            {
+              "id": "fault_status",
+              "type": "text",
+              "label": {
+                "en": "Last fault",
+                "de": "Letzte Störung"
               },
               "value": "—",
               "hint": {
@@ -13649,6 +13912,19 @@
                 "en": "Inverter power level 0–100 %. Phalén DP 104, Waterco DP 109, Madimack DP 20. 0 = disabled.",
                 "de": "Inverter-Leistungsstufe 0–100 %. Phalén DP 104, Waterco DP 109, Madimack DP 20. 0 = deaktiviert."
               }
+            },
+            {
+              "id": "fault_bits",
+              "type": "text",
+              "label": {
+                "en": "Fault bit names",
+                "de": "Fehler-Bit-Namen"
+              },
+              "value": "",
+              "hint": {
+                "en": "Names for the bits of the fault data point, lowest bit first, comma separated (e.g. no_food,jammed,feed_timeout,battery_low). Filled in automatically from the manufacturer's specification when Cloud Lookup is set up. Leave an entry empty for a bit the manufacturer does not name. With no names the fault is shown as a code.",
+                "de": "Namen für die Bits des Fehler-Datenpunkts, niedrigstes Bit zuerst, mit Komma getrennt (z. B. no_food,jammed,feed_timeout,battery_low). Wird bei eingerichtetem Cloud Lookup automatisch aus der Herstellerspezifikation gefüllt. Für ein vom Hersteller nicht benanntes Bit den Eintrag leer lassen. Ohne Namen wird der Fehler als Code angezeigt."
+              }
             }
           ]
         },
@@ -13824,6 +14100,19 @@
               "hint": {
                 "en": "Updated automatically.",
                 "de": "Wird automatisch aktualisiert."
+              }
+            },
+            {
+              "id": "fault_status",
+              "type": "text",
+              "label": {
+                "en": "Last fault",
+                "de": "Letzte Störung"
+              },
+              "value": "—",
+              "hint": {
+                "en": "Updated automatically by the app. Do not edit.",
+                "de": "Wird automatisch aktualisiert. Nicht bearbeiten."
               }
             }
           ]
@@ -14567,6 +14856,21 @@
               "hint": {
                 "en": "Boolean DP for the night light on wireless chimes (typically DP 4). Adds a light tile to the device. Set to 0 to disable.",
                 "de": "Boolescher DP für das Nachtlicht bei Funk-Gongs (meist DP 4). Fügt dem Gerät eine Licht-Kachel hinzu. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_alarm_push",
+              "type": "number",
+              "label": {
+                "en": "Alarm Push DP",
+                "de": "Melde-Schalter DP"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "Boolean DP that controls whether the unit reports at all (typically DP 6 on wireless chimes). With it off the chime rings but sends nothing, so no flow can trigger. 0 = disabled.",
+                "de": "Boolescher DP, der steuert, ob das Gerät überhaupt meldet (bei Funk-Gongs meist DP 6). Ist er aus, klingelt der Gong, sendet aber nichts — kein Flow kann auslösen. 0 = deaktiviert."
               }
             },
             {

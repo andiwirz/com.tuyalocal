@@ -13,6 +13,11 @@ module.exports = {
     const { accessId, accessSecret, region, deviceId } = query;
     return homey.app.cloudDeviceDetail({ accessId, accessSecret, region, deviceId });
   },
+  // Fills the "…_values" pickers of devices that are already paired from the Tuya
+  // specification. Writes value lists only — never DP numbers. See app.js.
+  async applycloudvalues({ homey, query }) {
+    return homey.app.applyCloudValues({ onlyDevice: query?.device || null });
+  },
   // The settings page has no access to devices or their settings — only the app
   // does — so the support bundle has to be assembled here and handed over whole.
   async diagnostics({ homey, query }) {

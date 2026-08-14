@@ -252,6 +252,10 @@ class HeatPumpDevice extends BaseTuyaDevice {
         // immediately after reconnect that self-corrects within seconds.  Suppress the
         // notification until the alarm has persisted for the full debounce window.
         case 'alarm': {
+          // Recorded straight away, unlike the notification below: knowing which
+          // fault the register named is useful even while the debounce decides
+          // whether it is worth telling the user about.
+          this._recordFault(value);
           let isAlarm;
           if (typeof value === 'boolean') {
             isAlarm = value;

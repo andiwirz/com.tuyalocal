@@ -93,6 +93,7 @@ class DoorbellDevice extends BaseTuyaDevice {
     const dpMotionEvent  = settings.dp_motion_event  || 115;
     const dpAlarmMsg     = settings.dp_alarm_message || 0;
     const dpNightLight   = settings.dp_night_light   || 0;
+    const dpAlarmPush    = settings.dp_alarm_push    || 0;
 
     let changed = false;
 
@@ -116,6 +117,21 @@ class DoorbellDevice extends BaseTuyaDevice {
         await this.setCapabilityValue('onoff.light', Boolean(value)).catch(() => {});
       }
 
+      // Alarm reporting switch. Worth a warning rather than silence: with it off the
+      // chime rings and reports nothing, which looks exactly like a wrong DP number
+      // or a broken driver. One device shipped that way and cost several rounds of
+      // guessing before the DP list showed the switch sitting at false.
+      if (dpAlarmPush > 0 && dp === dpAlarmPush) {
+        if (!value) {
+          this._appLog('Alarm reporting (DP ' + dpAlarmPush + ') is off — this device will not '
+            + 'report ring events. Turn it on with the "Set alarm reporting" flow action, or in '
+            + 'the Tuya / Smart Life app.', 'warn');
+        } else if (this._alarmPushWasOff) {
+          this._appLog('Alarm reporting is on again', 'info');
+        }
+        this._alarmPushWasOff = !value;
+      }
+
       // Skip triggering events on the initial seed (first data packet after connect).
       // Bypass seed protection for event DPs that were intentionally cleared after
       // firing — those have been seen before and must be allowed to re-trigger.
@@ -136,8 +152,9 @@ class DoorbellDevice extends BaseTuyaDevice {
 
       // Doorbell ring event
       if (dp === dpDoorbell && value) {
-        this.log('Doorbell rang (DP', dpDoorbell, ')');
-        this._triggerRang.trigger(this).catch(() => {});
+        const button = this._buttonLabel(value);
+        this.log('Doorbell rang (DP', dpDoorbell, ')', button ? `button: ${button}` : '');
+        this._triggerRang.trigger(this, { button }).catch(() => {});
         this._onDoorbellRang();
         // persist:false — clear so the same timestamp re-triggers on the next ring
         this._eventDpsCleared.add(dpStr);
@@ -167,6 +184,37 @@ class DoorbellDevice extends BaseTuyaDevice {
     }
   }
 
+  /**
+   * Best-effort label for the button that rang, used as a flow token.
+   *
+   * Wireless chimes put the button's name in the ring DP as a base64 UTF-16BE
+   * string — 22 bytes for "Türklinge 1", no header and no terminator — which is
+   * how a flow can tell the front door from the garden gate without a separate
+   * device per button. Others report a number (1–8) or a timestamp, and those are
+   * simply passed through as text.
+   *
+   * The decode only applies when the payload really looks like UTF-16: an odd byte
+   * count, or anything unprintable, means it is not a name. A camera doorbell's
+   * timestamp string would otherwise be turned into mojibake, because base64
+   * decoding accepts it without complaint.
+   */
+  _buttonLabel(value) {
+    if (typeof value !== 'string') return String(value);
+    try {
+      const buf = Buffer.from(value, 'base64');
+      if (buf.length < 2 || buf.length % 2 !== 0) return String(value);
+      const text = Buffer.from(buf).swap16().toString('utf16le');
+      // eslint-disable-next-line no-control-regex
+      // Escaped rather than literal: control characters written into the source
+      // are invisible in a diff and easy to break on the next edit.
+      const unprintable = /[\u0000-\u001f\u007f-\u009f\ufffd]/;
+      if (unprintable.test(text) || !/\S/.test(text)) return String(value);
+      return text;
+    } catch (e) {
+      return String(value);
+    }
+  }
+
   _handleAlarmMessage(rawValue, dpDoorbell, dpMotionEvent) {
     try {
       const json = JSON.parse(Buffer.from(String(rawValue), 'base64').toString('utf8'));
@@ -175,7 +223,7 @@ class DoorbellDevice extends BaseTuyaDevice {
       if (cmd === 'ipc_doorbell') {
         // Only trigger from alarm_message if dp_doorbell is disabled (0) to avoid duplicates
         if (!dpDoorbell) {
-          this._triggerRang.trigger(this).catch(() => {});
+          this._triggerRang.trigger(this, { button: '' }).catch(() => {});
           this._onDoorbellRang();
         }
       } else if (cmd === 'ipc_motion' || cmd === 'ipc_motion_detect') {

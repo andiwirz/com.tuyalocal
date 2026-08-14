@@ -48,13 +48,30 @@ class HumidifierDevice extends BaseTuyaDevice {
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('humidifier_dp_changed');
 
     // â”€â”€ Capability listeners â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // Registered through a helper so that a capability switched on later — by
+    // pointing its DP setting at a number — becomes controllable at once. Without
+    // that, the tile appears and taps do nothing until the app is restarted.
+    this._registeredCaps = new Set();
     this._debounceTimers = {};
+    this._registerListeners();
+
+    await this._connect();
+  }
+
+  /** Idempotent: skips capabilities already wired, which Homey would reject. */
+  _registerListeners() {
+    const register = (capability, listener) => {
+      if (!this.hasCapability(capability)) return;
+      if (this._registeredCaps.has(capability)) return;
+      this._registeredCaps.add(capability);
+      this.registerCapabilityListener(capability, listener);
+    };
+
     for (const entry of DP_PROFILE) {
       if (!entry.settable) continue;
-      if (!this.hasCapability(entry.capability)) continue;
       if (entry.debounce) {
         const cap = entry.capability;
-        this.registerCapabilityListener(cap, (value) => {
+        register(cap, (value) => {
           clearTimeout(this._debounceTimers[cap]);
           return new Promise((resolve) => {
             this._debounceTimers[cap] = setTimeout(() => {
@@ -64,13 +81,11 @@ class HumidifierDevice extends BaseTuyaDevice {
           });
         });
       } else {
-        this.registerCapabilityListener(entry.capability, async (value) => {
+        register(entry.capability, async (value) => {
           await this._set(this.getSetting(entry.settingKey), value);
         });
       }
     }
-
-    await this._connect();
   }
 
   async _onDeleted() {
@@ -160,6 +175,7 @@ class HumidifierDevice extends BaseTuyaDevice {
     if (changedKeys.includes('reconnect_interval')) this._startAutoReconnect();
     if (changedKeys.some((k) => OPTIONAL_CAPABILITIES.map((o) => o.setting).includes(k))) {
       await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
+      this._registerListeners(); // newly added capabilities need listeners immediately
     }
     if (changedKeys.some((k) => ['mode_values', 'fan_speed_values'].includes(k))) {
       await this._syncEnumOptions('mode',      this.getSetting('mode_values'));
