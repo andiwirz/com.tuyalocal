@@ -38,12 +38,19 @@ class SmartPlugDevice extends BaseTuyaDevice {
       this.log('Migrated: relay_status capability removed (now a device setting)');
     }
 
-    // Restore accumulated energy so meter_power survives app restarts.
+    // Restore accumulated energy so meter_power survives app restarts. Only shown
+    // when this plug has no hardware energy counter: with one, that DP owns
+    // meter_power, and writing our integrated figure here first would put a stale
+    // number on the tile — and a wrong point in Insights — until the DP arrives.
+    // The accumulator itself is still restored, so switching the DP back off later
+    // continues from the right total rather than from zero.
     try {
       const storedEnergy = this.getStoreValue('energyAccum');
       if (typeof storedEnergy === 'number' && storedEnergy > 0) {
         this._energyAccum = storedEnergy;
-        this.setCapabilityValue('meter_power', Math.round(this._energyAccum * 1000) / 1000).catch(() => {});
+        if (this.getSetting('dp_energy') <= 0) {
+          this.setCapabilityValue('meter_power', Math.round(this._energyAccum * 1000) / 1000).catch(() => {});
+        }
       }
     } catch (e) {}
 
