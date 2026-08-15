@@ -33,7 +33,7 @@ class WallSwitchDevice extends BaseTuyaDevice {
       if (val !== null) this._lastGangState[gang.gang] = val;
     }
 
-    await this._syncGangCapabilities();
+    await this._syncGangCapabilities(this.getSettings());
 
     // â”€â”€ Flow trigger cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     this._triggerDeviceConnected    = this.homey.flow.getDeviceTriggerCard('switch_device_connected');
@@ -42,16 +42,16 @@ class WallSwitchDevice extends BaseTuyaDevice {
     this._triggerSwitchChanged      = this.homey.flow.getDeviceTriggerCard('switch_gang_changed');
 
     // â”€â”€ Capability listeners â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    this._registerGangListeners();
+    this._registerGangListeners(this.getSettings());
 
     await this._connect();
   }
 
   // â”€â”€ Gang capability sync â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  async _syncGangCapabilities() {
+  async _syncGangCapabilities(settings) {
     for (const gang of GANG_CAPS) {
-      const dp = this.getSetting(gang.settingKey) || 0;
+      const dp = settings[gang.settingKey] || 0;
 
       if (dp > 0 && !this.hasCapability(gang.capability)) {
         await this.addCapability(gang.capability);
@@ -61,13 +61,13 @@ class WallSwitchDevice extends BaseTuyaDevice {
       }
 
       if (dp > 0 && this.hasCapability(gang.capability)) {
-        await this._setGangTitle(gang);
+        await this._setGangTitle(gang, settings);
       }
     }
   }
 
-  async _setGangTitle(gang) {
-    const customName = (this.getSetting(gang.nameSetting) || '').trim();
+  async _setGangTitle(gang, settings) {
+    const customName = (settings[gang.nameSetting] || '').trim();
     const defaultEn  = gang.gang === 1 ? 'Power' : `Switch ${gang.gang}`;
     const defaultDe  = gang.gang === 1 ? 'Ein/Aus' : `Schalter ${gang.gang}`;
     const title = customName
@@ -76,9 +76,9 @@ class WallSwitchDevice extends BaseTuyaDevice {
     await this._setCapabilityOptionsIfChanged(gang.capability, { title }).catch(() => {});
   }
 
-  _registerGangListeners() {
+  _registerGangListeners(settings) {
     for (const gang of GANG_CAPS) {
-      const dp = this.getSetting(gang.settingKey) || 0;
+      const dp = settings[gang.settingKey] || 0;
       if (dp > 0 && this.hasCapability(gang.capability)) {
         this.registerCapabilityListener(gang.capability, async (value) => {
           await this._set(dp, value);
@@ -154,7 +154,7 @@ class WallSwitchDevice extends BaseTuyaDevice {
 
   // â”€â”€ Homey lifecycle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  async onSettings({ changedKeys }) {
+  async onSettings({ newSettings, changedKeys }) {
     const connectionKeys = ['ip', 'device_id', 'local_key', 'version'];
     if (changedKeys.some((k) => connectionKeys.includes(k))) {
       this.log('Connection settings changed, reconnecting');
@@ -171,14 +171,14 @@ class WallSwitchDevice extends BaseTuyaDevice {
     const gangKeys = GANG_CAPS.map((g) => g.settingKey);
     const nameKeys = GANG_CAPS.map((g) => g.nameSetting);
     if (changedKeys.some((k) => gangKeys.includes(k) || nameKeys.includes(k))) {
-      await this._syncGangCapabilities();
-      this._registerGangListeners();
+      await this._syncGangCapabilities(newSettings);
+      this._registerGangListeners(newSettings);
     }
 
     if (changedKeys.includes('relay_status')) {
-      const dp = this.getSetting('dp_relay_status');
+      const dp = newSettings.dp_relay_status;
       if (dp > 0) {
-        await this._set(dp, this.getSetting('relay_status'))
+        await this._set(dp, newSettings.relay_status)
           .catch((err) => this._appLog(`relay_status set failed: ${err.message}`, 'warn'));
       }
     }
