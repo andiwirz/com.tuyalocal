@@ -589,15 +589,21 @@ class TuyaLocalApp extends Homey.App {
    * picker full of names it does not understand until it is deleted and added
    * again. This is the same lookup pairing performs, made available afterwards.
    *
+   * Dry run by default, like every other check: the same work is done but nothing is
+   * saved, so the settings page can show what would change and let the user decide.
+   * Writing device settings without showing them first is hard to undo by hand, so the
+   * harmless direction is the one that needs no argument.
+   *
    * Deliberately narrow: only the value lists are written. DP numbers are left
    * exactly as they are, and nothing is ever switched off. During pairing the
    * live DP snapshot protects a real DP from being cleared by an incomplete
    * specification; here there is no snapshot, so that protection is unavailable
    * and remapping would risk breaking a device the user has already tuned by hand.
    *
-   * @returns {Promise<{applied: Array, skipped: Array}>}
+   * @returns {Promise<{devices: Array, skipped: Array, dryRun: boolean}>}
+   *   `devices` holds what was changed, or what would change when dryRun is set.
    */
-  async applyCloudValues({ onlyDevice = null } = {}) {
+  async applyCloudValues({ onlyDevice = null, dryRun = true } = {}) {
     const accessId     = this.homey.settings.get('cloud_access_id');
     const accessSecret = this.homey.settings.get('cloud_access_secret');
     const region       = this.homey.settings.get('cloud_region');
@@ -606,7 +612,7 @@ class TuyaLocalApp extends Homey.App {
     }
 
     const { detectViaCloud } = require('./lib/dpCodeMap');
-    const applied = [];
+    const devices = [];
     const skipped = [];
 
     for (const driver of Object.values(this.homey.drivers.getDrivers())) {
@@ -659,11 +665,16 @@ class TuyaLocalApp extends Homey.App {
           continue;
         }
 
+        if (dryRun) {
+          devices.push({ name, driver: driver.id, changes });
+          continue;
+        }
+
         try {
           const patch = {};
           for (const c of changes) patch[c.key] = c.to;
           await device.setSettings(patch);
-          applied.push({ name, driver: driver.id, changes });
+          devices.push({ name, driver: driver.id, changes });
           this.log(`[${name}] cloud value lists applied: `
             + changes.map((c) => `${c.key} = ${c.to}`).join('; '));
         } catch (err) {
@@ -672,7 +683,387 @@ class TuyaLocalApp extends Homey.App {
       }
     }
 
-    return { applied, skipped };
+    return { devices, skipped, dryRun };
+  }
+
+  /**
+   * Finds configured data points that the device provably does not have, for devices
+   * that are already paired.
+   *
+   * Pairing already does this: a default whose number is absent from the
+   * manufacturer's specification is switched off there. What it cannot do is help a
+   * device paired before that existed, or one whose driver defaults were written for
+   * a different device family. A wireless chime carrying a camera doorbell's defaults
+   * shows a motion tile, a night-vision switch and an SD-recording switch that can
+   * never do anything, and every one of those numbers points into thin air.
+   *
+   * Two independent signals are required, and the specification is the only one that
+   * can prove absence:
+   *
+   *   - the specification lists the device's data points and this number is not
+   *     among them, and
+   *   - the device has never reported that number in all the time we have been
+   *     watching it.
+   *
+   * The second condition alone would be badly wrong. Plenty of real data points only
+   * ever appear when something happens — a fault register on a healthy device, a
+   * doorbell's ring, an alarm — so "never seen" on its own means nothing. It is kept
+   * as corroboration because Tuya specifications are occasionally incomplete: if the
+   * device has ever mentioned the number itself, that outranks a specification that
+   * fails to list it, exactly as during pairing.
+   *
+   * @returns {Promise<{devices: Array, skipped: Array, dryRun: boolean}>}
+   */
+  async findPhantomDps({ onlyDevice = null, dryRun = true } = {}) {
+    const accessId     = this.homey.settings.get('cloud_access_id');
+    const accessSecret = this.homey.settings.get('cloud_access_secret');
+    const region       = this.homey.settings.get('cloud_region');
+    if (!accessId || !accessSecret || !region) {
+      throw new Error('Cloud Lookup is not configured. Enter your Tuya API credentials first.');
+    }
+
+    const devices = [];
+    const skipped = [];
+
+    for (const driver of Object.values(this.homey.drivers.getDrivers())) {
+      for (const device of driver.getDevices()) {
+        const name = device.getName();
+        if (onlyDevice && name !== onlyDevice) continue;
+
+        const note = (reason) => skipped.push({ name, driver: driver.id, reason });
+        const read = (k) => { try { return device.getStoreValue(k); } catch (e) { return null; } };
+
+        let id = '';
+        try { id = device.getData().id || ''; } catch (e) {}
+        if (!id) { note('no device id'); continue; }
+
+        const settings = (() => { try { return device.getSettings() || {}; } catch (e) { return {}; } })();
+        const configured = Object.entries(settings)
+          .filter(([k, v]) => k.startsWith('dp_') && Number.isInteger(v) && v > 0);
+        if (configured.length === 0) { note('no data points configured'); continue; }
+
+        // Without a single reported data point we know nothing about this device, and
+        // a specification on its own is not enough to start switching things off.
+        const seen = new Set((read('seenDps') || []).map(Number));
+        if (seen.size === 0) { note('device has not reported anything yet'); continue; }
+
+        let spec = null;
+        try {
+          const detail = await this.cloudDeviceDetail({ accessId, accessSecret, region, deviceId: id });
+          spec = detail?.status;
+        } catch (err) { note(`lookup failed: ${err.message}`); continue; }
+
+        const present = new Set((Array.isArray(spec) ? spec : []).map((e) => e && e.dp_id).filter(Boolean));
+        if (present.size === 0) { note('device not found in the cloud account'); continue; }
+
+        const changes = [];
+        for (const [key, dp] of configured) {
+          if (present.has(dp)) continue;   // the manufacturer says it exists
+          if (seen.has(dp)) continue;      // we have seen it ourselves — trust that
+          changes.push({ key, from: dp, to: 0 });
+        }
+
+        if (changes.length === 0) { note('nothing points at a missing data point'); continue; }
+
+        const since = read('seenSince');
+        const entry = {
+          name,
+          driver:   driver.id,
+          changes,
+          watchedSince: since || null,
+          seenCount: seen.size,
+        };
+
+        if (dryRun) { devices.push(entry); continue; }
+
+        try {
+          const patch = {};
+          for (const c of changes) patch[c.key] = 0;
+          await device.setSettings(patch);
+          devices.push(entry);
+          this.log(`[${name}] switched off data points the device does not have: `
+            + changes.map((c) => `${c.key} (was ${c.from})`).join(', '));
+        } catch (err) {
+          note(`could not save: ${err.message}`);
+        }
+      }
+    }
+
+    return { devices, skipped, dryRun };
+  }
+
+  /**
+   * Compares each device's stored local key against the one the Tuya account now
+   * holds, and offers to update the ones that no longer match.
+   *
+   * This is the most common way a working device stops working: the key changes every
+   * time the device is reset or re-paired in the Tuya app, and the symptom is a device
+   * that simply never connects again. The cloud is authoritative here, so unlike the
+   * other checks there is no guesswork — the comparison is exact.
+   *
+   * The keys never leave this method in full. Only a shortened form goes back to the
+   * settings page, because that page ends up in screenshots on the community forum —
+   * it happened this week — and a local key is the credential for the device.
+   *
+   * @returns {Promise<{devices: Array, skipped: Array, dryRun: boolean}>}
+   */
+  async findStaleKeys({ onlyDevice = null, dryRun = true } = {}) {
+    const accessId     = this.homey.settings.get('cloud_access_id');
+    const accessSecret = this.homey.settings.get('cloud_access_secret');
+    const region       = this.homey.settings.get('cloud_region');
+    if (!accessId || !accessSecret || !region) {
+      throw new Error('Cloud Lookup is not configured. Enter your Tuya API credentials first.');
+    }
+
+    // One request for the whole account rather than one per device: the lookup already
+    // returns every device with its key, and Tuya rate-limits per second.
+    let cloudDevices = [];
+    try {
+      cloudDevices = await this.cloudLookup({ accessId, accessSecret, region }) || [];
+    } catch (err) {
+      throw new Error(`Cloud Lookup failed: ${err.message}`);
+    }
+    const byId = new Map(cloudDevices.filter((d) => d && d.id).map((d) => [String(d.id), d]));
+
+    const short = (k) => {
+      const str = String(k || '');
+      return str.length > 4 ? `${str.slice(0, 4)}\u2026 (${str.length} chars)` : '(empty)';
+    };
+
+    const devices = [];
+    const skipped = [];
+
+    for (const driver of Object.values(this.homey.drivers.getDrivers())) {
+      for (const device of driver.getDevices()) {
+        const name = device.getName();
+        if (onlyDevice && name !== onlyDevice) continue;
+        const note = (reason) => skipped.push({ name, driver: driver.id, reason });
+
+        let id = '';
+        try { id = device.getData().id || ''; } catch (e) {}
+        if (!id) { note('no device id'); continue; }
+
+        const entry = byId.get(String(id));
+        if (!entry) { note('device not found in the cloud account'); continue; }
+        if (!entry.local_key) { note('the cloud account holds no key for it'); continue; }
+
+        let stored = '';
+        try { stored = device.getSetting('local_key') || ''; } catch (e) {}
+        if (stored === entry.local_key) { note('key is up to date'); continue; }
+
+        const change = { key: 'local_key', from: short(stored), to: short(entry.local_key) };
+
+        if (dryRun) { devices.push({ name, driver: driver.id, changes: [change] }); continue; }
+
+        try {
+          // Writing this reconnects the device, which is the point: onSettings treats
+          // local_key as a connection setting.
+          await device.setSettings({ local_key: entry.local_key });
+          devices.push({ name, driver: driver.id, changes: [change] });
+          this.log(`[${name}] local key updated from the Tuya account`);
+        } catch (err) {
+          note(`could not save: ${err.message}`);
+        }
+      }
+    }
+
+    return { devices, skipped, dryRun };
+  }
+
+  /**
+   * Finds devices talking a different protocol version than the one configured, and
+   * offers to store the version actually in use.
+   *
+   * The connection rotates through the versions when the configured one keeps failing,
+   * so a device can end up working on 3.3 while its settings still say 3.4. It works,
+   * but every reconnect pays the rotation delay first — five failed attempts before it
+   * tries again. The app already notices and asks the user to correct it by hand; this
+   * turns that request into one press.
+   *
+   * Needs no cloud credentials: both values are known locally. Only devices with an
+   * application-level confirmed connection are judged: a raw TCP socket can open on
+   * the wrong protocol and close as soon as the first Tuya request is sent.
+   *
+   * @returns {Promise<{devices: Array, skipped: Array, dryRun: boolean}>}
+   */
+  async findProtocolMismatch({ onlyDevice = null, dryRun = true } = {}) {
+    const devices = [];
+    const skipped = [];
+
+    for (const driver of Object.values(this.homey.drivers.getDrivers())) {
+      for (const device of driver.getDevices()) {
+        const name = device.getName();
+        if (onlyDevice && name !== onlyDevice) continue;
+        const note = (reason) => skipped.push({ name, driver: driver.id, reason });
+
+        const conn = device._conn;
+        if (!conn || !conn.connected || !conn.protocolConfirmed) {
+          note('protocol not confirmed — cannot tell');
+          continue;
+        }
+
+        const inUse = String(conn._version || '');
+        if (!inUse) { note('connection reports no version'); continue; }
+
+        let configured = '';
+        try { configured = String(device.getSetting('version') || ''); } catch (e) {}
+        if (configured === inUse) { note('protocol version is correct'); continue; }
+
+        const change = {
+          key: 'version',
+          from: configured || '(not set)',
+          to:   inUse,
+        };
+
+        if (dryRun) { devices.push({ name, driver: driver.id, changes: [change] }); continue; }
+
+        try {
+          await device.setSettings({ version: inUse });
+          devices.push({ name, driver: driver.id, changes: [change] });
+          this.log(`[${name}] protocol version corrected to ${inUse} (was ${change.from})`);
+        } catch (err) {
+          note(`could not save: ${err.message}`);
+        }
+      }
+    }
+
+    return { devices, skipped, dryRun };
+  }
+
+  /**
+   * Reads the divisor Tuya declares for a data point and offers to store it, for the
+   * settings that currently have to be worked out by hand.
+   *
+   * A power-monitoring plug reports whole numbers and the specification says how to
+   * scale them: cur_voltage carries scale 1, so raw 2301 is 230.1 V. Get it wrong and
+   * the tile reads ten or a hundred times off, which is a recurring report — and the
+   * only way to fix it today is to notice the factor and pick it from a dropdown. The
+   * manufacturer states it outright, so this reads it instead.
+   *
+   * Two things it deliberately does not do. It will not invent a value the dropdown
+   * does not offer: the charger's current divisor lists only 1 and 0.1, so a
+   * specification asking for 0.01 is reported rather than written, because storing an
+   * option that is not in the list leaves the setting unselectable. And it takes the
+   * allowed values from the manifest rather than a copy kept here, so the two cannot
+   * drift apart — if the manifest cannot be read, the device is skipped instead.
+   *
+   * @returns {Promise<{devices: Array, skipped: Array, dryRun: boolean}>}
+   */
+  async findScaleMismatch({ onlyDevice = null, dryRun = true } = {}) {
+    const accessId     = this.homey.settings.get('cloud_access_id');
+    const accessSecret = this.homey.settings.get('cloud_access_secret');
+    const region       = this.homey.settings.get('cloud_region');
+    if (!accessId || !accessSecret || !region) {
+      throw new Error('Cloud Lookup is not configured. Enter your Tuya API credentials first.');
+    }
+
+    // Tuya states an exponent: the reading is raw / 10^scale. Built as a string rather
+    // than from 10 ** -scale so it matches the dropdown's own spelling exactly.
+    const factorOf = (scale) => (scale === 0 ? '1' : `0.${'0'.repeat(scale - 1)}1`);
+
+    // Allowed values per setting, straight from the manifest.
+    const optionsFor = (driverId) => {
+      const out = {};
+      try {
+        const manifest = this.homey.manifest?.drivers?.find((d) => d.id === driverId);
+        const walk = (items) => {
+          for (const item of items || []) {
+            if (item.type === 'group') walk(item.children);
+            else if (Array.isArray(item.values)) out[item.id] = item.values.map((v) => String(v.id));
+          }
+        };
+        walk(manifest?.settings);
+      } catch (e) {}
+      return out;
+    };
+
+    const devices = [];
+    const skipped = [];
+
+    for (const driver of Object.values(this.homey.drivers.getDrivers())) {
+      const maps = typeof driver.getScaleMaps === 'function' ? driver.getScaleMaps() : null;
+      const allowed = maps ? optionsFor(driver.id) : {};
+
+      for (const device of driver.getDevices()) {
+        const name = device.getName();
+        if (onlyDevice && name !== onlyDevice) continue;
+        const note = (reason) => skipped.push({ name, driver: driver.id, reason });
+
+        if (!maps || Object.keys(maps).length === 0) {
+          note('this driver has no scaling settings');
+          continue;
+        }
+        if (Object.keys(allowed).length === 0) {
+          note('could not read the allowed values from the app manifest');
+          continue;
+        }
+
+        let id = '';
+        try { id = device.getData().id || ''; } catch (e) {}
+        if (!id) { note('no device id'); continue; }
+
+        const settings = (() => { try { return device.getSettings() || {}; } catch (e) { return {}; } })();
+
+        let spec = null;
+        try {
+          const detail = await this.cloudDeviceDetail({ accessId, accessSecret, region, deviceId: id });
+          spec = detail?.status;
+        } catch (err) { note(`lookup failed: ${err.message}`); continue; }
+        if (!Array.isArray(spec) || spec.length === 0) {
+          note('device not found in the cloud account');
+          continue;
+        }
+
+        const changes = [];
+        const notes   = [];
+        for (const [dpKey, scaleKey] of Object.entries(maps)) {
+          const dp = settings[dpKey];
+          if (!Number.isInteger(dp) || dp <= 0) continue;   // data point switched off
+
+          const entry = spec.find((e) => e && e.dp_id === dp);
+          if (!entry || !entry.values) continue;
+
+          let declared = null;
+          try {
+            const parsed = typeof entry.values === 'string' ? JSON.parse(entry.values) : entry.values;
+            if (Number.isInteger(parsed?.scale)) declared = parsed.scale;
+          } catch (e) { /* not JSON — nothing to read */ }
+          if (declared === null || declared < 0 || declared > 6) continue;
+
+          const wanted  = factorOf(declared);
+          const current = String(settings[scaleKey] ?? '');
+          if (current === wanted) continue;
+
+          if (!(allowed[scaleKey] || []).includes(wanted)) {
+            notes.push(`${scaleKey}: the specification says \u00d7${wanted}, which this setting does not offer`);
+            continue;
+          }
+          changes.push({ key: scaleKey, from: current ? `\u00d7${current}` : '(not set)', to: `\u00d7${wanted}` });
+        }
+
+        for (const n of notes) note(n);
+
+        if (changes.length === 0) {
+          if (notes.length === 0) note('every scaling factor already matches');
+          continue;
+        }
+
+        if (dryRun) { devices.push({ name, driver: driver.id, changes }); continue; }
+
+        try {
+          const patch = {};
+          for (const c of changes) patch[c.key] = c.to.replace('\u00d7', '');
+          await device.setSettings(patch);
+          devices.push({ name, driver: driver.id, changes });
+          this.log(`[${name}] scaling factors set from the specification: `
+            + changes.map((c) => `${c.key} = ${c.to}`).join(', '));
+        } catch (err) {
+          note(`could not save: ${err.message}`);
+        }
+      }
+    }
+
+    return { devices, skipped, dryRun };
   }
 
   async _tuyaGetToken(host, clientId, secret) {

@@ -7,39 +7,57 @@
     body { font-family: -apple-system, sans-serif; font-size: 13px; background: #f5f6f7; margin: 0; }
 
     /* ── Tabs ── */
-    /* The settings pane is roughly 455 px wide once the vertical scrollbar is
-       subtracted, and the four tabs used to exceed that, which gave the whole page a
-       horizontal scrollbar. Dropping the emoji from the labels took the row down to
-       about 320 px, enough headroom for a wider-rendering system font; overflow-x is
-       the backstop, so a narrower pane scrolls the bar alone and never the page.
-       overflow-y is hidden because the auto value would otherwise also apply
-       vertically and add a second scrollbar inside the bar.
-       Consequence for the active marker: nothing may overhang the bar's edges, or
-       overflow would clip it — which is exactly what happened to the earlier
-       underline built from border-bottom plus a negative margin. The marker is
-       therefore drawn *inside* the button with an inset shadow, and backed up by a
-       filled background and a heavier weight so that a host stylesheet overriding
-       any single one of the three still leaves the active tab obvious. */
+    /* Width has been the recurring problem here: emoji in the labels, then a fifth tab,
+       then a phone rendering the type larger than the CSS specifies. Each fix was a
+       narrower guess at a pane whose real width is not knowable from here, so the row
+       now wraps instead — see .tab-bar. Whatever the width and whatever the font does,
+       it fits, and the labels stay spelled out.
+       The active marker is drawn *inside* the button with an inset shadow rather than
+       an overhanging border, and backed up by a filled background and a heavier weight,
+       so a host stylesheet overriding any one of the three still leaves the active tab
+       obvious. That also means nothing overhangs the bar's edges — which is why the
+       overflow properties this rule used to need could be dropped. */
     .tab-bar {
       display: flex;
+      /* Wraps instead of scrolling. Trimming padding and type got the row down from
+         355px to 267px by desktop measurement and it still overhung an iPhone, because
+         this page carries no viewport meta tag and iOS renders the labels larger than
+         the CSS asks for. Chasing that with ever-smaller padding was guesswork; letting
+         the row take a second line always fits, whatever the font does, and keeps all
+         five labels spelled out — which matters because the help text refers to the
+         tabs by name in some 25 places. On a wide pane nothing wraps and it looks
+         exactly as before.
+         No overflow properties here on purpose: overflow-y: hidden used to be needed
+         against a stray scrollbar, but it would now clip the second row. Nothing
+         overhangs the bar anyway — the active marker is drawn inside the button. */
+      flex-wrap: wrap;
       gap: 0;
       background: #fff;
       border-bottom: 2px solid #e0e0e0;
       position: sticky;
       top: 0;
       z-index: 10;
-      overflow-x: auto;
-      overflow-y: hidden;
-      scrollbar-width: none;          /* Firefox */
     }
-    .tab-bar::-webkit-scrollbar { display: none; }
     .tab-btn {
-      padding: 11px 16px;
+      /* Horizontally tight, vertically 15px so the tap target reaches 44px, Apple's
+         minimum — narrow tabs are harder to hit, and the height costs no width. The
+         sticky offsets are measured at runtime, so one row or two needs no other
+         change. */
+      padding: 15px 6px;
+      /* Labels never break mid-word; the row wraps between buttons instead. */
       white-space: nowrap;
+      /* This page has no viewport meta tag, so iOS is free to apply its own text
+         inflation, and on an iPhone it renders the labels noticeably larger than the
+         CSS asks for. Switched off for the tabs only, so their size is predictable
+         while the body copy keeps the larger size it has always had on a phone. It did
+         not fix the width on its own — this webview appears to ignore it — so the row
+         wraps as well; the two together are belt and braces. */
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
       flex: 0 0 auto;
       border: none;
       background: transparent;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 500;
       color: #5f6368;
       cursor: pointer;
@@ -348,6 +366,7 @@
     <button class="tab-btn"        data-tab="logs">Logs</button>
     <button class="tab-btn"        data-tab="dp">DP Debug</button>
     <button class="tab-btn"        data-tab="cloud">Cloud Lookup</button>
+    <button class="tab-btn"        data-tab="fix">Fix It</button>
   </div>
 
   <!-- ── Help ─────────────────────────────────────────────────────────── -->
@@ -1072,23 +1091,6 @@
            error text, which on its own ("permission deny") tells users nothing. -->
       <div id="cloudHint" class="note" style="display:none"></div>
 
-      <!-- Acts on devices already added to Homey, not on the listing above. The
-           value lists are otherwise only filled while pairing, so a device added
-           before its vocabulary was known keeps a picker it cannot use. -->
-      <div style="margin-top:18px;padding-top:14px;border-top:1px solid #e3e5e8">
-        <div style="font-size:13px;font-weight:600;color:#1d1d1f;margin-bottom:4px">Update pickers on existing devices</div>
-        <div style="font-size:11px;color:#888;line-height:1.5;margin-bottom:8px">
-          Reads the manufacturer's declared mode, fan speed, preset and status options and writes them
-          into the matching device settings. Useful when a picker shows names your device does not
-          understand, or plain numbers. Only these lists are written — data point numbers are left
-          exactly as they are, and nothing is switched off.
-        </div>
-        <div class="bar">
-          <button id="btnApplyValues">&#8635; Update value lists</button>
-          <span id="applyValuesStatus" style="font-size:12px;color:#888"></span>
-        </div>
-        <div id="applyValuesResult" class="note" style="display:none"></div>
-      </div>
 
       <div id="cloudResults" style="display:none;margin-top:12px">
         <table class="dp-debug-table" id="cloudTable">
@@ -1125,6 +1127,124 @@
           </thead>
           <tbody id="cloudDetailTbody"></tbody>
         </table>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="tab-panel" id="tab-fix">
+    <div class="section">
+      <h2>Fix It</h2>
+      <p style="margin-bottom:6px">Checks your paired devices against the manufacturer's own specification and offers to correct what does not match.</p>
+      <p style="font-size:11px;color:#888;line-height:1.5">Nothing here saves anything until you confirm: each check shows exactly what it would change, per device, and says why a device was left alone. All except <strong>protocol versions</strong> need Cloud Lookup credentials — enter them under <strong>Cloud Lookup</strong> first.</p>
+
+      <!-- First on this tab: a wrong key is the one fault that stops a device working
+           entirely, and the comparison against the account is exact rather than
+           inferred like the checks below it. -->
+      <div>
+        <div style="font-size:13px;font-weight:600;color:#1d1d1f;margin-bottom:4px">Check local keys</div>
+        <div style="font-size:11px;color:#888;line-height:1.5;margin-bottom:8px">
+          A device's local key changes every time it is reset or re-paired in the Tuya app, and the
+          symptom is a device that never connects again. This compares the stored key with the one
+          your Tuya account holds now. The account is the authority here, so there is no guesswork.
+          Keys are shown shortened, never in full — a local key is the credential for the device,
+          and this page ends up in screenshots.
+        </div>
+        <div class="bar">
+          <button id="btnStaleKeys">&#128269; Check local keys</button>
+          <span id="staleKeysStatus" style="font-size:12px;color:#888"></span>
+        </div>
+        <div id="staleKeysResult" class="note" style="display:none"></div>
+        <div class="bar" id="staleKeysConfirm" style="display:none">
+          <button class="primary" id="btnStaleKeysConfirm">&#10003; Update these keys</button>
+          <button id="btnStaleKeysCancel">Cancel</button>
+        </div>
+      </div>
+
+      <!-- No cloud credentials needed: both values are known locally. -->
+      <div style="margin-top:22px;padding-top:16px;border-top:1px solid #e3e5e8">
+        <div style="font-size:13px;font-weight:600;color:#1d1d1f;margin-bottom:4px">Check protocol versions</div>
+        <div style="font-size:11px;color:#888;line-height:1.5;margin-bottom:8px">
+          When the configured protocol version keeps failing, the app tries the others and carries on
+          with whichever works — so a device can run fine on 3.3 while its settings still say 3.4.
+          It costs the retry delay on every reconnect: five failed attempts before the working version
+          is reached again. This stores the version actually in use. Only devices connected right now
+          can be judged, and no Cloud Lookup credentials are needed.
+        </div>
+        <div class="bar">
+          <button id="btnProtocol">&#128269; Check protocol versions</button>
+          <span id="protocolStatus" style="font-size:12px;color:#888"></span>
+        </div>
+        <div id="protocolResult" class="note" style="display:none"></div>
+        <div class="bar" id="protocolConfirm" style="display:none">
+          <button class="primary" id="btnProtocolConfirm">&#10003; Store these versions</button>
+          <button id="btnProtocolCancel">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Sits with the connection checks rather than the picker ones: a wrong divisor
+           makes a working device report nonsense, which reads as a broken device. -->
+      <div style="margin-top:22px;padding-top:16px;border-top:1px solid #e3e5e8">
+        <div style="font-size:13px;font-weight:600;color:#1d1d1f;margin-bottom:4px">Check measurement scaling</div>
+        <div style="font-size:11px;color:#888;line-height:1.5;margin-bottom:8px">
+          Devices report whole numbers, and the manufacturer states how to scale them — raw 2301
+          means 230.1 V. Pick the wrong factor and voltage, current, power or the energy meter read
+          ten or a hundred times off. This reads the declared factor instead of leaving you to work
+          it out. A factor this app does not offer as a choice is reported, not written.
+        </div>
+        <div class="bar">
+          <button id="btnScale">&#128269; Check scaling</button>
+          <span id="scaleStatus" style="font-size:12px;color:#888"></span>
+        </div>
+        <div id="scaleResult" class="note" style="display:none"></div>
+        <div class="bar" id="scaleConfirm" style="display:none">
+          <button class="primary" id="btnScaleConfirm">&#10003; Store these factors</button>
+          <button id="btnScaleCancel">Cancel</button>
+        </div>
+      </div>
+
+      <!-- The value lists are otherwise only filled while pairing, so a device added
+           before its vocabulary was known keeps a picker it cannot use. -->
+      <div style="margin-top:22px;padding-top:16px;border-top:1px solid #e3e5e8">
+        <div style="font-size:13px;font-weight:600;color:#1d1d1f;margin-bottom:4px">Update pickers on existing devices</div>
+        <div style="font-size:11px;color:#888;line-height:1.5;margin-bottom:8px">
+          Reads the manufacturer's declared mode, fan speed, preset and status options for your paired
+          devices. Useful when a picker shows names your device does not understand, or plain numbers.
+          Nothing is saved until you confirm: the preview lists every change first. Only these lists
+          are ever written — data point numbers are left exactly as they are, and nothing is
+          switched off.
+        </div>
+        <div class="bar">
+          <button id="btnApplyValues">&#128269; Preview changes</button>
+          <span id="applyValuesStatus" style="font-size:12px;color:#888"></span>
+        </div>
+        <div id="applyValuesResult" class="note" style="display:none"></div>
+        <div class="bar" id="applyValuesConfirm" style="display:none">
+          <button class="primary" id="btnApplyValuesConfirm">&#10003; Apply these changes</button>
+          <button id="btnApplyValuesCancel">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Separate from the block above on purpose: that one promises it never
+           touches data point numbers, and this one does nothing else. -->
+      <div style="margin-top:22px;padding-top:16px;border-top:1px solid #e3e5e8">
+        <div style="font-size:13px;font-weight:600;color:#1d1d1f;margin-bottom:4px">Find data points your device does not have</div>
+        <div style="font-size:11px;color:#888;line-height:1.5;margin-bottom:8px">
+          Driver defaults are written for one device family and can point at nothing on another — a
+          wireless chime carrying a camera doorbell's defaults shows a motion tile and a night-vision
+          switch that can never work. A number is only reported here when the manufacturer's
+          specification does not list it <em>and</em> your device has never once reported it. Nothing
+          is saved until you confirm.
+        </div>
+        <div class="bar">
+          <button id="btnPhantom">&#128269; Check data points</button>
+          <span id="phantomStatus" style="font-size:12px;color:#888"></span>
+        </div>
+        <div id="phantomResult" class="note" style="display:none"></div>
+        <div class="bar" id="phantomConfirm" style="display:none">
+          <button class="primary" id="btnPhantomConfirm">&#10003; Switch these off</button>
+          <button id="btnPhantomCancel">Cancel</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1216,6 +1336,22 @@
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
+    }
+
+    // A failed app-API call can come back as a whole HTML error page rather than a
+    // sentence, and printing that verbatim filled the settings screen with doctype
+    // and head tags. Keep the part a person can act on.
+    function apiError(err) {
+      var raw = (err && err.message) || String(err || 'unknown error');
+      if (!/<\s*html|<!DOCTYPE/i.test(raw)) return raw;
+      // Express answers a missing route with "Cannot GET <path>" inside a <pre>.
+      var route = raw.match(/Cannot\s+(GET|POST)\s+([^<\s]+)/i);
+      if (route) {
+        return 'the app did not answer at ' + route[2]
+          + ' — restart Tuya Local, and check that it is up to date.';
+      }
+      var text = raw.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+      return text.length > 200 ? text.slice(0, 200) + '…' : text;
     }
 
     function copyText(text, btn) {
@@ -1575,7 +1711,7 @@
           btn.textContent = orig;
           _progressTargets = [];
           if (err) {
-            status.textContent = 'Failed: ' + (err.message || String(err));
+            status.textContent = 'Failed: ' + apiError(err);
             status.style.color = '#c5221f';
             return;
           }
@@ -1749,7 +1885,7 @@
           '&deviceId=' + encodeURIComponent(d.id), function(err, result) {
 
           if (err) {
-            title.textContent = d.name + ' — Error: ' + (err.message || String(err));
+            title.textContent = d.name + ' — Error: ' + apiError(err);
             return;
           }
 
@@ -1868,67 +2004,236 @@
         el.style.display = 'block';
       }
 
-      // Re-applies the manufacturer's value lists to devices already added to Homey.
-      // Uses the credentials stored in the app settings rather than the fields above,
-      // because the app has to do the work — the settings page cannot reach devices.
-      document.getElementById('btnApplyValues').addEventListener('click', function() {
-        var btn    = this;
-        var status = document.getElementById('applyValuesStatus');
-        var out    = document.getElementById('applyValuesResult');
+      /**
+       * Wires up one Fix It check: a preview that saves nothing, then an explicit
+       * confirmation. Every check has the same shape, so this exists once rather than
+       * four times — the differences are the endpoint, the wording and how a single
+       * change is rendered.
+       *
+       * The app decides what a check does; this only asks and reports. dryRun is the
+       * default on the wire, so a mistake here cannot write anything.
+       */
+      function makeFixCheck(o) {
+        var btn     = document.getElementById(o.button);
+        var confirm = document.getElementById(o.confirmBar);
+        var apply   = document.getElementById(o.applyButton);
+        var cancel  = document.getElementById(o.cancelButton);
+        var status  = document.getElementById(o.status);
+        var out     = document.getElementById(o.result);
+        if (!btn) return;
 
-        btn.disabled = true;
-        btn.innerHTML = 'Checking…';
-        status.textContent = '';
-        status.style.color = '#888';
-        out.style.display = 'none';
-
-        Homey.api('GET', '/apply-cloud-values', function(err, res) {
+        function reset() {
           btn.disabled = false;
-          btn.innerHTML = '&#8635; Update value lists';
+          btn.innerHTML = o.label;
+          confirm.style.display = 'none';
+          apply.disabled = false;
+          apply.innerHTML = o.applyLabel;
+        }
 
-          if (err) {
-            status.textContent = 'Error: ' + (err.message || String(err));
-            status.style.color = '#c5221f';
-            return;
-          }
+        // Cleared as well as hidden: a stale list left in the DOM would reappear the
+        // moment anything showed this box again.
+        function show(html) {
+          out.innerHTML = html || '';
+          out.style.display = html ? 'block' : 'none';
+        }
 
-          var applied = (res && res.applied) || [];
-          var skipped = (res && res.skipped) || [];
+        function count(devices) {
+          var n = 0;
+          for (var i = 0; i < devices.length; i++) n += devices[i].changes.length;
+          return n;
+        }
+
+        function render(devices, skipped, heading) {
           var html = '';
-
-          if (applied.length === 0) {
-            status.textContent = 'Nothing to change.';
-            status.style.color = '#888';
-          } else {
-            var n = 0;
-            for (var a = 0; a < applied.length; a++) n += applied[a].changes.length;
-            status.textContent = 'Updated ' + n + ' list' + (n === 1 ? '' : 's')
-              + ' on ' + applied.length + ' device' + (applied.length === 1 ? '' : 's') + '.';
-            status.style.color = '#1e6a34';
-            html += '<strong>Updated</strong><ul style="margin:6px 0 0;padding-left:18px">';
-            for (var i = 0; i < applied.length; i++) {
-              for (var j = 0; j < applied[i].changes.length; j++) {
-                var c = applied[i].changes[j];
-                html += '<li>' + escHtml(applied[i].name) + ' — <code>' + escHtml(c.key) + '</code>: '
-                  + escHtml(c.from || '(empty)') + ' → <strong>' + escHtml(c.to) + '</strong></li>';
+          if (devices.length > 0) {
+            html += '<strong>' + heading + '</strong><ul style="margin:6px 0 0;padding-left:18px">';
+            for (var i = 0; i < devices.length; i++) {
+              for (var j = 0; j < devices[i].changes.length; j++) {
+                html += '<li>' + escHtml(devices[i].name) + ' \u2014 '
+                  + o.renderChange(devices[i].changes[j], devices[i]) + '</li>';
               }
             }
             html += '</ul>';
           }
-
           // Reasons are worth showing: "device not found in the cloud account" is a
           // different problem from "already up to date", and the difference matters.
           if (skipped.length > 0) {
             html += (html ? '<div style="margin-top:8px"></div>' : '')
-              + '<strong>Not changed</strong><ul style="margin:6px 0 0;padding-left:18px">';
+              + '<strong>' + o.skippedHeading + '</strong><ul style="margin:6px 0 0;padding-left:18px">';
             for (var k = 0; k < skipped.length; k++) {
-              html += '<li>' + escHtml(skipped[k].name) + ' — ' + escHtml(skipped[k].reason) + '</li>';
+              html += '<li>' + escHtml(skipped[k].name) + ' \u2014 ' + escHtml(skipped[k].reason) + '</li>';
             }
             html += '</ul>';
           }
+          return html;
+        }
 
-          if (html) { out.innerHTML = html; out.style.display = 'block'; }
+        function fail(err) {
+          status.textContent = 'Error: ' + apiError(err);
+          status.style.color = '#c5221f';
+          reset();
+        }
+
+        function run(url, busyLabel, onResult) {
+          Homey.api('GET', url, function(err, res) {
+            if (err) return fail(err);
+            reset();
+            onResult((res && res.devices) || [], (res && res.skipped) || []);
+          });
+        }
+
+        btn.addEventListener('click', function() {
+          btn.disabled = true;
+          btn.innerHTML = 'Checking\u2026';
+          status.textContent = '';
+          status.style.color = '#888';
+          show('');
+          confirm.style.display = 'none';
+
+          run(o.url, 'Checking\u2026', function(devices, skipped) {
+            if (devices.length === 0) {
+              status.textContent = o.nothingFound;
+              status.style.color = '#888';
+              show(render(devices, skipped, ''));
+              return;
+            }
+            status.textContent = o.summary(count(devices), devices.length) + ' Nothing saved yet.';
+            status.style.color = '#b45309';
+            show(render(devices, skipped, o.headingPreview));
+            confirm.style.display = 'flex';
+          });
         });
+
+        cancel.addEventListener('click', function() {
+          status.textContent = 'Nothing was changed.';
+          status.style.color = '#888';
+          show('');
+          reset();
+        });
+
+        apply.addEventListener('click', function() {
+          apply.disabled = true;
+          apply.innerHTML = 'Applying\u2026';
+          btn.disabled = true;
+
+          run(o.url + (o.url.indexOf('?') === -1 ? '?' : '&') + 'dryRun=0', 'Applying\u2026',
+            function(devices, skipped) {
+              var n = count(devices);
+              if (n === 0) {
+                // The preview found something and the real run did not: the device or
+                // the specification changed in between. Say so rather than claim success.
+                status.textContent = 'Nothing was changed \u2014 run the check again.';
+                status.style.color = '#b45309';
+                show(render(devices, skipped, ''));
+                return;
+              }
+              status.textContent = o.applied(n, devices.length);
+              status.style.color = '#1e6a34';
+              show(render(devices, skipped, o.headingApplied));
+            });
+        });
+      }
+
+      var plural = function(n, word) { return n + ' ' + word + (n === 1 ? '' : 's'); };
+      // Damit das Verb zum Subjekt passt: "2 factors differ", nicht "differs".
+      var verb   = function(n, singular, pluralForm) { return n === 1 ? singular : pluralForm; };
+      var code   = function(c) { return '<code>' + escHtml(c.key) + '</code>'; };
+
+      makeFixCheck({
+        button: 'btnScale', confirmBar: 'scaleConfirm',
+        applyButton: 'btnScaleConfirm', cancelButton: 'btnScaleCancel',
+        status: 'scaleStatus', result: 'scaleResult',
+        label: '&#128269; Check scaling', applyLabel: '&#10003; Store these factors',
+        url: '/find-scale-mismatch',
+        headingPreview: 'Would be corrected', headingApplied: 'Corrected',
+        skippedHeading: 'Not changed',
+        nothingFound: 'Every scaling factor matches the specification.',
+        summary: function(n, d) {
+          return plural(n, 'factor') + ' on ' + plural(d, 'device') + ' '
+            + verb(n, 'differs', 'differ') + ' from the specification.';
+        },
+        applied: function(n, d) { return 'Stored ' + plural(n, 'factor') + ' on ' + plural(d, 'device') + '.'; },
+        renderChange: function(c) {
+          return code(c) + ': ' + escHtml(c.from) + ' \u2192 <strong>' + escHtml(c.to) + '</strong>';
+        },
+      });
+
+      makeFixCheck({
+        button: 'btnApplyValues', confirmBar: 'applyValuesConfirm',
+        applyButton: 'btnApplyValuesConfirm', cancelButton: 'btnApplyValuesCancel',
+        status: 'applyValuesStatus', result: 'applyValuesResult',
+        label: '&#128269; Preview changes', applyLabel: '&#10003; Apply these changes',
+        url: '/apply-cloud-values',
+        headingPreview: 'Would change', headingApplied: 'Updated', skippedHeading: 'Not changed',
+        nothingFound: 'Nothing to change.',
+        summary: function(n, d) { return plural(n, 'list') + ' on ' + plural(d, 'device') + ' would change.'; },
+        applied: function(n, d) { return 'Updated ' + plural(n, 'list') + ' on ' + plural(d, 'device') + '.'; },
+        renderChange: function(c) {
+          return code(c) + ': ' + escHtml(c.from || '(empty)') + ' \u2192 <strong>' + escHtml(c.to) + '</strong>';
+        },
+      });
+
+      makeFixCheck({
+        button: 'btnPhantom', confirmBar: 'phantomConfirm',
+        applyButton: 'btnPhantomConfirm', cancelButton: 'btnPhantomCancel',
+        status: 'phantomStatus', result: 'phantomResult',
+        label: '&#128269; Check data points', applyLabel: '&#10003; Switch these off',
+        url: '/find-phantom-dps',
+        headingPreview: 'Would be switched off', headingApplied: 'Switched off',
+        skippedHeading: 'Not flagged',
+        nothingFound: 'Nothing to switch off.',
+        summary: function(n, d) {
+          return plural(n, 'data point') + ' on ' + plural(d, 'device') + ' '
+            + verb(n, 'points', 'point') + ' at nothing.';
+        },
+        applied: function(n, d) { return 'Switched off ' + plural(n, 'data point') + ' on ' + plural(d, 'device') + '.'; },
+        renderChange: function(c, dev) {
+          var age = '';
+          if (dev.watchedSince) {
+            var days = Math.floor((Date.now() - dev.watchedSince) / 86400000);
+            age = ', watched ' + (days < 1 ? 'since today' : 'for ' + plural(days, 'day'));
+          }
+          return code(c) + ': ' + escHtml(c.from) + ' \u2192 <strong>off</strong>'
+            + '<span style="color:#888;font-size:11px">' + escHtml(age) + '</span>';
+        },
+      });
+
+      makeFixCheck({
+        button: 'btnStaleKeys', confirmBar: 'staleKeysConfirm',
+        applyButton: 'btnStaleKeysConfirm', cancelButton: 'btnStaleKeysCancel',
+        status: 'staleKeysStatus', result: 'staleKeysResult',
+        label: '&#128269; Check local keys', applyLabel: '&#10003; Update these keys',
+        url: '/find-stale-keys',
+        headingPreview: 'Would be updated', headingApplied: 'Updated',
+        skippedHeading: 'Not changed',
+        nothingFound: 'All local keys are up to date.',
+        summary: function(n, d) {
+          return plural(d, 'device') + ' ' + verb(d, 'has', 'have') + ' an outdated key.';
+        },
+        applied: function(n, d) { return 'Updated the key on ' + plural(d, 'device') + '.'; },
+        // Keys arrive shortened from the app and are never held here in full.
+        renderChange: function(c) {
+          return 'stored ' + escHtml(c.from) + ' \u2192 <strong>' + escHtml(c.to) + '</strong>';
+        },
+      });
+
+      makeFixCheck({
+        button: 'btnProtocol', confirmBar: 'protocolConfirm',
+        applyButton: 'btnProtocolConfirm', cancelButton: 'btnProtocolCancel',
+        status: 'protocolStatus', result: 'protocolResult',
+        label: '&#128269; Check protocol versions', applyLabel: '&#10003; Store these versions',
+        url: '/find-protocol-mismatch',
+        headingPreview: 'Would be corrected', headingApplied: 'Corrected',
+        skippedHeading: 'Not changed',
+        nothingFound: 'Every connected device is on the version it has stored.',
+        summary: function(n, d) {
+          return plural(d, 'device') + ' ' + verb(d, 'is', 'are')
+            + ' on a different version than stored.';
+        },
+        applied: function(n, d) { return 'Stored the working version on ' + plural(d, 'device') + '.'; },
+        renderChange: function(c) {
+          return 'protocol ' + escHtml(c.from) + ' \u2192 <strong>' + escHtml(c.to) + '</strong>';
+        },
       });
 
       document.getElementById('btnCloudFetch').addEventListener('click', function() {
@@ -1959,7 +2264,7 @@
           btn.textContent = 'Fetch Devices';
 
           if (err) {
-            var raw = err.message || String(err);
+            var raw = apiError(err);
             status.textContent = 'Error: ' + raw;
             status.style.color = '#c5221f';
             showCloudHint(raw);
