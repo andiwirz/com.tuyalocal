@@ -20,6 +20,31 @@ const CLOUD_CODE_MAP = {
   dp_relay_status: ['relay_status'],
 };
 
+// Mirrors the default titles in drivers/wall_switch/device.js's _setGangTitle().
+const GANG_DEFAULTS = [
+  { gang: 1, en: 'Power',    de: 'Ein/Aus'    },
+  { gang: 2, en: 'Switch 2', de: 'Schalter 2' },
+  { gang: 3, en: 'Switch 3', de: 'Schalter 3' },
+  { gang: 4, en: 'Switch 4', de: 'Schalter 4' },
+];
+
+// Builds the flow card "gang" picker from the selected device's own settings,
+// so a custom name (e.g. "Ensuite Gang 1") shows up instead of the default.
+async function gangAutocomplete(query, args) {
+  const device = args.device;
+  const lang   = device.homey.i18n.getLanguage() === 'de' ? 'de' : 'en';
+
+  const results = GANG_DEFAULTS
+    .filter((g) => device.hasCapability(g.gang === 1 ? 'onoff' : `onoff.${g.gang}`))
+    .map((g) => {
+      const custom = (device.getSetting(`name_switch_${g.gang}`) || '').trim();
+      return { id: String(g.gang), name: custom || g[lang] };
+    });
+
+  const q = query.toLowerCase();
+  return results.filter((r) => r.name.toLowerCase().includes(q));
+}
+
 class WallSwitchDriver extends Homey.Driver {
   async onInit() {
     this.log('Wall Switch driver initialized');
@@ -29,14 +54,16 @@ class WallSwitchDriver extends Homey.Driver {
       .registerRunListener(async (args) => args.device._conn?.connected === true);
 
     this.homey.flow.getConditionCard('switch_gang_is_on')
+      .registerArgumentAutocompleteListener('gang', gangAutocomplete)
       .registerRunListener(async (args) => {
-        const cap = args.gang === '1' ? 'onoff' : `onoff.${args.gang}`;
+        const cap = args.gang.id === '1' ? 'onoff' : `onoff.${args.gang.id}`;
         return args.device.getCapabilityValue(cap) === true;
       });
 
     // ── Trigger run-listeners ────────────────────────────────────────────────
     this.homey.flow.getDeviceTriggerCard('switch_gang_changed')
-      .registerRunListener(async (args, state) => String(state.gang) === args.gang);
+      .registerArgumentAutocompleteListener('gang', gangAutocomplete)
+      .registerRunListener(async (args, state) => String(state.gang) === args.gang.id);
 
     // ── Actions ─────────────────────────────────────────────────────────────
     this.homey.flow.getActionCard('switch_force_reconnect')
@@ -46,20 +73,22 @@ class WallSwitchDriver extends Homey.Driver {
       .registerRunListener(async (args) => args.device.pollNow());
 
     this.homey.flow.getActionCard('switch_set_gang')
+      .registerArgumentAutocompleteListener('gang', gangAutocomplete)
       .registerRunListener(async (args) => {
-        const cap = args.gang === '1' ? 'onoff' : `onoff.${args.gang}`;
+        const cap = args.gang.id === '1' ? 'onoff' : `onoff.${args.gang.id}`;
         if (!args.device.hasCapability(cap)) {
-          throw new Error(`Switch ${args.gang} is not configured on this device`);
+          throw new Error(`Switch ${args.gang.id} is not configured on this device`);
         }
         const value = args.state === 'on';
         await args.device.triggerCapabilityListener(cap, value);
       });
 
     this.homey.flow.getActionCard('switch_toggle_gang')
+      .registerArgumentAutocompleteListener('gang', gangAutocomplete)
       .registerRunListener(async (args) => {
-        const cap = args.gang === '1' ? 'onoff' : `onoff.${args.gang}`;
+        const cap = args.gang.id === '1' ? 'onoff' : `onoff.${args.gang.id}`;
         if (!args.device.hasCapability(cap)) {
-          throw new Error(`Switch ${args.gang} is not configured on this device`);
+          throw new Error(`Switch ${args.gang.id} is not configured on this device`);
         }
         const current = args.device.getCapabilityValue(cap) ?? false;
         await args.device.triggerCapabilityListener(cap, !current);
