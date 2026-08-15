@@ -2546,41 +2546,11 @@
           },
           {
             "name": "gang",
-            "type": "dropdown",
-            "title": {
+            "type": "autocomplete",
+            "placeholder": {
               "en": "Gang",
               "de": "Kanal"
-            },
-            "values": [
-              {
-                "id": "1",
-                "label": {
-                  "en": "Switch 1",
-                  "de": "Schalter 1"
-                }
-              },
-              {
-                "id": "2",
-                "label": {
-                  "en": "Switch 2",
-                  "de": "Schalter 2"
-                }
-              },
-              {
-                "id": "3",
-                "label": {
-                  "en": "Switch 3",
-                  "de": "Schalter 3"
-                }
-              },
-              {
-                "id": "4",
-                "label": {
-                  "en": "Switch 4",
-                  "de": "Schalter 4"
-                }
-              }
-            ]
+            }
           }
         ],
         "tokens": [
@@ -4476,41 +4446,11 @@
           },
           {
             "name": "gang",
-            "type": "dropdown",
-            "title": {
+            "type": "autocomplete",
+            "placeholder": {
               "en": "Gang",
               "de": "Kanal"
-            },
-            "values": [
-              {
-                "id": "1",
-                "label": {
-                  "en": "Switch 1",
-                  "de": "Schalter 1"
-                }
-              },
-              {
-                "id": "2",
-                "label": {
-                  "en": "Switch 2",
-                  "de": "Schalter 2"
-                }
-              },
-              {
-                "id": "3",
-                "label": {
-                  "en": "Switch 3",
-                  "de": "Schalter 3"
-                }
-              },
-              {
-                "id": "4",
-                "label": {
-                  "en": "Switch 4",
-                  "de": "Schalter 4"
-                }
-              }
-            ]
+            }
           }
         ]
       },
@@ -6154,41 +6094,11 @@
           },
           {
             "name": "gang",
-            "type": "dropdown",
-            "title": {
+            "type": "autocomplete",
+            "placeholder": {
               "en": "Gang",
               "de": "Kanal"
-            },
-            "values": [
-              {
-                "id": "1",
-                "label": {
-                  "en": "Switch 1",
-                  "de": "Schalter 1"
-                }
-              },
-              {
-                "id": "2",
-                "label": {
-                  "en": "Switch 2",
-                  "de": "Schalter 2"
-                }
-              },
-              {
-                "id": "3",
-                "label": {
-                  "en": "Switch 3",
-                  "de": "Schalter 3"
-                }
-              },
-              {
-                "id": "4",
-                "label": {
-                  "en": "Switch 4",
-                  "de": "Schalter 4"
-                }
-              }
-            ]
+            }
           },
           {
             "name": "state",
@@ -6234,41 +6144,11 @@
           },
           {
             "name": "gang",
-            "type": "dropdown",
-            "title": {
+            "type": "autocomplete",
+            "placeholder": {
               "en": "Gang",
               "de": "Kanal"
-            },
-            "values": [
-              {
-                "id": "1",
-                "label": {
-                  "en": "Switch 1",
-                  "de": "Schalter 1"
-                }
-              },
-              {
-                "id": "2",
-                "label": {
-                  "en": "Switch 2",
-                  "de": "Schalter 2"
-                }
-              },
-              {
-                "id": "3",
-                "label": {
-                  "en": "Switch 3",
-                  "de": "Schalter 3"
-                }
-              },
-              {
-                "id": "4",
-                "label": {
-                  "en": "Switch 4",
-                  "de": "Schalter 4"
-                }
-              }
-            ]
+            }
           }
         ]
       },
