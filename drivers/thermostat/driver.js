@@ -233,19 +233,24 @@ class ThermostatDriver extends Homey.Driver {
       result.dp_current_temp = tempCandidates[0].dp;
     }
 
-    // Battery: numeric DP in 0–100 range, DP ≥ 14 (not temp or onoff)
-    const batteryEntry = numDps.find((d) =>
-      d.dp >= 14 && d.val >= 0 && d.val <= 100 &&
-      d.dp !== result.dp_target_temp && d.dp !== result.dp_current_temp
-    );
-    if (batteryEntry) result.dp_battery = batteryEntry.dp;
-
-    // Fault: DP 45 (BHT-002 pattern) or any DP with value 0 that looks like a bitfield
-    const faultEntry = numDps.find((d) =>
-      d.dp >= 40 && d.val === 0 &&
-      d.dp !== result.dp_target_temp && d.dp !== result.dp_current_temp &&
-      d.dp !== result.dp_battery
-    );
+    // Battery and fault are deliberately not guessed from the values.
+    //
+    // The old rule for battery was "any numeric DP from 14 up whose value is 0–100".
+    // On a thermostat that describes almost every configuration data point: an
+    // XH-CTW offered six candidates — holiday days, holiday setpoint, temperature
+    // zone, the low-temperature limit and both setpoint bounds — and the rule picked
+    // the lowest, so the tile reported 1 % battery from a "holiday lasts 1 day"
+    // setting. A percentage-shaped number says nothing about what it measures, and a
+    // wrong battery reading is worse than none: it looks like a device about to die.
+    //
+    // The fault rule was the same shape, "any DP from 40 up whose value is 0", which
+    // is every disabled option on the device.
+    //
+    // Both are named in CLOUD_CODE_MAP, so a device whose specification declares
+    // battery_percentage or fault gets them set during pairing, and the Fix It tab can
+    // fill them in afterwards. What stays here is the one layout that is documented
+    // rather than inferred: the BHT-002 family reports its fault bitmap on DP 45.
+    const faultEntry = numDps.find((d) => d.dp === 45 && d.val === 0);
     if (faultEntry) result.dp_fault = faultEntry.dp;
 
     return result;
