@@ -110,6 +110,15 @@ class HeatPumpDriver extends Homey.Driver {
     return { codeMap: CLOUD_CODE_MAP, enumValuesMap: CLOUD_ENUM_VALUES_MAP };
   }
 
+  // The only driver with a separate divisor for the measured temperature, so target and
+  // current can differ without a conflict.
+  getScaleMaps() {
+    return {
+      dp_target_temp:  { setting: 'temp_divisor', kind: 'divisor' },
+      dp_current_temp: { setting: 'current_temp_divisor', kind: 'divisor' },
+    };
+  }
+
   async onPair(session) {
     setupCloudLookup(session, this.homey, this);
     let pendingDevice = null;

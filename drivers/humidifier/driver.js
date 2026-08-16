@@ -106,6 +106,11 @@ class HumidifierDriver extends Homey.Driver {
     return { codeMap: CLOUD_CODE_MAP, enumValuesMap: CLOUD_ENUM_VALUES_MAP };
   }
 
+  // Temperature is the only scaled reading on this driver.
+  getScaleMaps() {
+    return { dp_temperature: { setting: 'temp_divisor', kind: 'divisor' } };
+  }
+
   async onPair(session) {
     setupCloudLookup(session, this.homey, this);
     let pendingDevice = null;

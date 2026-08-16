@@ -70,6 +70,12 @@ class ThermostatDriver extends Homey.Driver {
     return { codeMap: CLOUD_CODE_MAP, enumValuesMap: CLOUD_ENUM_VALUES_MAP };
   }
 
+  // One divisor serves both temperatures here. If a device declares different scales for
+  // the two, findScaleMismatch reports the conflict rather than picking a side.
+  getScaleMaps() {
+    return { dp_target_temp: { setting: 'temp_divisor', kind: 'divisor' }, dp_current_temp: { setting: 'temp_divisor', kind: 'divisor' } };
+  }
+
   async onPair(session) {
     setupCloudLookup(session, this.homey, this);
     let pendingDevice = null;

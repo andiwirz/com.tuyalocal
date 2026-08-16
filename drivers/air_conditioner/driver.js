@@ -161,6 +161,12 @@ class AirConditionerDriver extends Homey.Driver {
     return { codeMap: CLOUD_CODE_MAP, enumValuesMap: CLOUD_ENUM_VALUES_MAP };
   }
 
+  // One divisor serves both temperatures — see the note in findScaleMismatch about a
+  // specification that declares different scales for target and measured.
+  getScaleMaps() {
+    return { dp_target_temp: { setting: 'temp_divisor', kind: 'divisor' }, dp_current_temp: { setting: 'temp_divisor', kind: 'divisor' } };
+  }
+
   async onPair(session) {
     setupCloudLookup(session, this.homey, this);
     let pendingDevice = null;

@@ -927,21 +927,28 @@ class TuyaLocalApp extends Homey.App {
   }
 
   /**
-   * Reads the divisor Tuya declares for a data point and offers to store it, for the
+   * Reads the scaling Tuya declares for a data point and offers to store it, for the
    * settings that currently have to be worked out by hand.
    *
    * A power-monitoring plug reports whole numbers and the specification says how to
-   * scale them: cur_voltage carries scale 1, so raw 2301 is 230.1 V. Get it wrong and
-   * the tile reads ten or a hundred times off, which is a recurring report — and the
-   * only way to fix it today is to notice the factor and pick it from a dropdown. The
-   * manufacturer states it outright, so this reads it instead.
+   * scale them: cur_voltage carries scale 1, so raw 2301 is 230.1 V. A thermostat
+   * reporting 2750 for 27.50 C carries scale 2. Get it wrong and the tile reads ten or
+   * a hundred times off, which is a recurring report — and the only way to fix it today
+   * is to notice the factor and pick it from a dropdown.
    *
-   * Two things it deliberately does not do. It will not invent a value the dropdown
-   * does not offer: the charger's current divisor lists only 1 and 0.1, so a
-   * specification asking for 0.01 is reported rather than written, because storing an
-   * option that is not in the list leaves the setting unselectable. And it takes the
-   * allowed values from the manifest rather than a copy kept here, so the two cannot
-   * drift apart — if the manifest cannot be read, the device is skipped instead.
+   * Two spellings are in use across the drivers and both are supported, because the
+   * settings were written that way and renaming them would reset every device that has
+   * one. A plain string names a multiplier setting (0.1); { setting, kind: 'divisor' }
+   * names a divisor setting (10). Which one a setting is cannot be guessed from its
+   * value — 1 means the same in both — so the driver has to say.
+   *
+   * What it will not do:
+   *   - invent a value the setting does not accept. Dropdowns are checked against their
+   *     option list, number fields against min and max, both read from the manifest so
+   *     there is no second copy to drift.
+   *   - resolve a contradiction. Several drivers use one divisor for both the target and
+   *     the measured temperature; if the specification declares different scales for the
+   *     two, no single value satisfies both and the conflict is reported instead.
    *
    * @returns {Promise<{devices: Array, skipped: Array, dryRun: boolean}>}
    */
@@ -953,32 +960,42 @@ class TuyaLocalApp extends Homey.App {
       throw new Error('Cloud Lookup is not configured. Enter your Tuya API credentials first.');
     }
 
-    // Tuya states an exponent: the reading is raw / 10^scale. Built as a string rather
-    // than from 10 ** -scale so it matches the dropdown's own spelling exactly.
-    const factorOf = (scale) => (scale === 0 ? '1' : `0.${'0'.repeat(scale - 1)}1`);
+    // Tuya states an exponent: the reading is raw / 10^scale. Built as strings rather
+    // than from arithmetic so they match the dropdowns' own spelling exactly.
+    const asMultiplier = (scale) => (scale === 0 ? '1' : `0.${'0'.repeat(scale - 1)}1`);
+    const asDivisor    = (scale) => (scale === 0 ? '1' : `1${'0'.repeat(scale)}`);
 
-    // Allowed values per setting, straight from the manifest.
-    const optionsFor = (driverId) => {
+    // What each setting will accept, from the manifest: a list for a dropdown, a range
+    // for a number field.
+    const rulesFor = (driverId) => {
       const out = {};
       try {
         const manifest = this.homey.manifest?.drivers?.find((d) => d.id === driverId);
         const walk = (items) => {
           for (const item of items || []) {
-            if (item.type === 'group') walk(item.children);
-            else if (Array.isArray(item.values)) out[item.id] = item.values.map((v) => String(v.id));
+            if (item.type === 'group') { walk(item.children); continue; }
+            if (Array.isArray(item.values)) out[item.id] = { list: item.values.map((v) => String(v.id)) };
+            else if (item.type === 'number') out[item.id] = { min: item.min, max: item.max };
           }
         };
         walk(manifest?.settings);
       } catch (e) {}
       return out;
     };
+    const accepts = (rule, value) => {
+      if (!rule) return false;
+      if (rule.list) return rule.list.includes(value);
+      const n = Number(value);
+      if (!Number.isFinite(n)) return false;
+      return (rule.min === undefined || n >= rule.min) && (rule.max === undefined || n <= rule.max);
+    };
 
     const devices = [];
     const skipped = [];
 
     for (const driver of Object.values(this.homey.drivers.getDrivers())) {
-      const maps = typeof driver.getScaleMaps === 'function' ? driver.getScaleMaps() : null;
-      const allowed = maps ? optionsFor(driver.id) : {};
+      const maps  = typeof driver.getScaleMaps === 'function' ? driver.getScaleMaps() : null;
+      const rules = maps ? rulesFor(driver.id) : {};
 
       for (const device of driver.getDevices()) {
         const name = device.getName();
@@ -989,7 +1006,7 @@ class TuyaLocalApp extends Homey.App {
           note('this driver has no scaling settings');
           continue;
         }
-        if (Object.keys(allowed).length === 0) {
+        if (Object.keys(rules).length === 0) {
           note('could not read the allowed values from the app manifest');
           continue;
         }
@@ -1010,11 +1027,16 @@ class TuyaLocalApp extends Homey.App {
           continue;
         }
 
-        const changes = [];
-        const notes   = [];
-        for (const [dpKey, scaleKey] of Object.entries(maps)) {
+        // Collect one proposal per data point first, then reconcile: several data points
+        // can share a single setting.
+        const wishes = {};   // settingKey -> [{ dpKey, wanted }]
+        for (const [dpKey, target] of Object.entries(maps)) {
           const dp = settings[dpKey];
           if (!Number.isInteger(dp) || dp <= 0) continue;   // data point switched off
+
+          const scaleKey = typeof target === 'string' ? target : target?.setting;
+          const kind     = typeof target === 'string' ? 'multiplier' : (target?.kind || 'multiplier');
+          if (!scaleKey) continue;
 
           const entry = spec.find((e) => e && e.dp_id === dp);
           if (!entry || !entry.values) continue;
@@ -1026,15 +1048,29 @@ class TuyaLocalApp extends Homey.App {
           } catch (e) { /* not JSON — nothing to read */ }
           if (declared === null || declared < 0 || declared > 6) continue;
 
-          const wanted  = factorOf(declared);
+          const wanted = kind === 'divisor' ? asDivisor(declared) : asMultiplier(declared);
+          (wishes[scaleKey] = wishes[scaleKey] || []).push({ dpKey, wanted });
+        }
+
+        const changes = [];
+        const notes   = [];
+        for (const [scaleKey, list] of Object.entries(wishes)) {
+          const distinct = [...new Set(list.map((w) => w.wanted))];
+          if (distinct.length > 1) {
+            notes.push(`${scaleKey}: the specification asks for ${distinct.join(' and ')} on `
+              + `${list.map((w) => w.dpKey).join(' and ')}, and one setting cannot be both`);
+            continue;
+          }
+
+          const wanted  = distinct[0];
           const current = String(settings[scaleKey] ?? '');
           if (current === wanted) continue;
 
-          if (!(allowed[scaleKey] || []).includes(wanted)) {
-            notes.push(`${scaleKey}: the specification says \u00d7${wanted}, which this setting does not offer`);
+          if (!accepts(rules[scaleKey], wanted)) {
+            notes.push(`${scaleKey}: the specification says ${wanted}, which this setting does not accept`);
             continue;
           }
-          changes.push({ key: scaleKey, from: current ? `\u00d7${current}` : '(not set)', to: `\u00d7${wanted}` });
+          changes.push({ key: scaleKey, from: current || '(not set)', to: wanted });
         }
 
         for (const n of notes) note(n);
@@ -1048,10 +1084,13 @@ class TuyaLocalApp extends Homey.App {
 
         try {
           const patch = {};
-          for (const c of changes) patch[c.key] = c.to.replace('\u00d7', '');
+          for (const c of changes) {
+            // Number fields must be written as numbers, dropdowns as their option string.
+            patch[c.key] = rules[c.key] && rules[c.key].list ? c.to : Number(c.to);
+          }
           await device.setSettings(patch);
           devices.push({ name, driver: driver.id, changes });
-          this.log(`[${name}] scaling factors set from the specification: `
+          this.log(`[${name}] scaling set from the specification: `
             + changes.map((c) => `${c.key} = ${c.to}`).join(', '));
         } catch (err) {
           note(`could not save: ${err.message}`);
@@ -1061,7 +1100,6 @@ class TuyaLocalApp extends Homey.App {
 
     return { devices, skipped, dryRun };
   }
-
   async _tuyaGetToken(host, clientId, secret) {
     const path = '/v1.0/token?grant_type=1';
     const res  = await this._tuyaRequest(host, path, clientId, secret, null);

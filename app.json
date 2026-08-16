@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.170",
+  "version": "1.0.171",
   "compatibility": ">=12.13.0",
   "sdk": 3,
   "platforms": [
@@ -8547,8 +8547,8 @@
                 "de": "Temperatur-Divisor"
               },
               "hint": {
-                "en": "Most dehumidifiers report temperatures ×10 (e.g. 220 = 22.0 °C). Set to 1 if yours reports whole degrees.",
-                "de": "Die meisten Luftentfeuchter melden Temperaturen ×10 (z.B. 220 = 22,0 °C). Auf 1 setzen, wenn das Gerät ganze Grad meldet."
+                "en": "Most dehumidifiers report temperatures ×10 (e.g. 220 = 22.0 °C). Set to 1 if yours reports whole degrees. Set to 100 for two decimal places (e.g. 2750 = 27.50 °C), as some thermostats report.",
+                "de": "Die meisten Luftentfeuchter melden Temperaturen ×10 (z.B. 220 = 22,0 °C). Auf 1 setzen, wenn das Gerät ganze Grad meldet. Auf 100 setzen bei zwei Dezimalstellen (z. B. 2750 = 27,50 °C), wie manche Thermostate melden."
               },
               "value": "10",
               "values": [
@@ -8559,6 +8559,10 @@
                 {
                   "id": "10",
                   "label": "10 (value ÷ 10)"
+                },
+                {
+                  "id": "100",
+                  "label": "100 (value ÷ 100)"
                 }
               ]
             },
@@ -8958,8 +8962,8 @@
                 "de": "Temperatur-Divisor"
               },
               "hint": {
-                "en": "Set to 10 if your device reports temperatures ×10 (e.g. 220 = 22.0°C).",
-                "de": "Auf 10 setzen wenn das Gerät Temperaturen ×10 meldet (z.B. 220 = 22,0°C)."
+                "en": "Set to 10 if your device reports temperatures ×10 (e.g. 220 = 22.0°C), or 100 for two decimal places (e.g. 2750 = 27.50°C).",
+                "de": "Auf 10 setzen, wenn das Gerät Temperaturen ×10 meldet (z. B. 220 = 22,0 °C), auf 100 bei zwei Dezimalstellen (z. B. 2750 = 27,50 °C)."
               },
               "value": "1",
               "values": [
@@ -8970,6 +8974,10 @@
                 {
                   "id": "10",
                   "label": "10 (value ÷ 10)"
+                },
+                {
+                  "id": "100",
+                  "label": "100 (value ÷ 100)"
                 }
               ]
             },
@@ -12043,8 +12051,8 @@
                 "de": "Temperatur-Divisor"
               },
               "hint": {
-                "en": "Most humidifiers report temperatures ×10 (e.g. 220 = 22.0 °C). Set to 1 if yours reports whole degrees.",
-                "de": "Die meisten Luftbefeuchter melden Temperaturen ×10 (z.B. 220 = 22,0 °C). Auf 1 setzen, wenn das Gerät ganze Grad meldet."
+                "en": "Most humidifiers report temperatures ×10 (e.g. 220 = 22.0 °C). Set to 1 if yours reports whole degrees. Set to 100 for two decimal places (e.g. 2750 = 27.50 °C), as some thermostats report.",
+                "de": "Die meisten Luftbefeuchter melden Temperaturen ×10 (z.B. 220 = 22,0 °C). Auf 1 setzen, wenn das Gerät ganze Grad meldet. Auf 100 setzen bei zwei Dezimalstellen (z. B. 2750 = 27,50 °C), wie manche Thermostate melden."
               },
               "value": "10",
               "values": [
@@ -12055,6 +12063,10 @@
                 {
                   "id": "10",
                   "label": "10 (value ÷ 10)"
+                },
+                {
+                  "id": "100",
+                  "label": "100 (value ÷ 100)"
                 }
               ]
             },
