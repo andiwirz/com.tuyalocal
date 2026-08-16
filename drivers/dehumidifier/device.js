@@ -244,12 +244,19 @@ class DehumidifierDevice extends BaseTuyaDevice {
           clearTimeout(this._waterAlarmTimer);
           this._waterAlarmConfirmed = false;
           this._waterAlarmTimer = setTimeout(() => {
+            // Both outcomes are logged. Without this the log showed the wait starting
+            // and then nothing at all, so a real tank alarm could not be told from a
+            // spurious pulse the debounce had swallowed — three of them over eight days
+            // left no trace either way.
             if (this.getCapabilityValue('alarm_water') === true) {
               this._waterAlarmConfirmed = true;
+              this._appLog('alarm_water: still true after the wait — tank full, notifying', 'warn');
               this._triggerWaterFull.trigger(this).catch(() => {});
               this.homey.notifications.createNotification({
                 excerpt: `${this.getName()}: ${this.homey.__('notifications.waterFull')}`,
               }).catch(() => {});
+            } else {
+              this._appLog('alarm_water: cleared during the wait — spurious pulse, not reported', 'info');
             }
           }, debounceMs);
         }

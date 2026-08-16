@@ -472,7 +472,7 @@
         <li><strong>The diagnostic log — from Logs.</strong> <strong>Logs</strong> tab → filter <em>Warnings &amp; Errors</em> → <strong>Copy</strong>. Needed whenever a device disconnects, refuses commands or never connects at all; it distinguishes a network problem from a wrong DP mapping.</li>
       </ol>
       <p>Together these give the DP numbers, types and value ranges of your specific model, plus what happened on the wire — enough to correct a mapping without owning the device. Post them on the <a href="#" onclick="openUrl('https://community.homey.app/t/app-pro-tuya-local/154077/last'); return false;" class="help-link">community forum</a> or as a <a href="#" onclick="openUrl('https://github.com/andiwirz/com.tuyalocal/issues'); return false;" class="help-link">GitHub issue</a>, and please state the device brand and model plus what you expected to happen instead.</p>
-      <div class="note"><strong>Safe to post publicly:</strong> none of these three copies identifies you. The DP tables carry the device name but no device ID, the log is labelled with device names only, and the Local Key is never included anywhere.</div>
+      <div class="note"><strong>Safe to post publicly:</strong> none of these three copies identifies you. The DP tables carry the device name but no device ID, the log is labelled with device names only, and none of the three ever contains the Local Key. The support bundle is safe the same way: it shortens the device ID to six characters and replaces the key with asterisks.<br><br><strong>One clipboard that is not safe:</strong> the <strong>Copy</strong> button on a row in <strong>Cloud Lookup</strong> deliberately copies the device ID and the Local Key, because that is what you need when adding a device by hand. Never paste that one into a forum post or a bug report — the key is the credential for the device.</div>
     </div>
 
       <div class="note"><strong>Three settings every device has.</strong>
@@ -1099,7 +1099,11 @@
   <div class="tab-panel" id="tab-dp">
     <div class="section">
       <h2>DP Debug</h2>
-      <p>Live data points received from each device. Updated on every data push.</p>
+      <p>Data points received from each device. The app records every push as it arrives, but
+      this table does not follow along on its own — it is re-read when you press
+      <strong>Refresh</strong>, or every 5 seconds with auto-refresh switched on. Turn
+      auto-refresh on before operating the device, otherwise a data point can change and
+      change back between two looks.</p>
       <div class="note">
         Shows what the device really <em>does</em>: which DP carries which value, in which type, and
         which DP moves when. Operate the device with its own buttons or remote while watching this
