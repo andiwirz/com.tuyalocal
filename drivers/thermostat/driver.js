@@ -174,7 +174,10 @@ class ThermostatDriver extends Homey.Driver {
       dp_child_lock:   0,
       dp_battery:      0,
       dp_fault:        0,
-      temp_divisor:    1,
+      // A string, not the number 1: this is a dropdown in app.json, and Homey rejects
+      // the whole device with invalid_setting_type when the types disagree. Writing a
+      // number here made every thermostat fail at the last step of pairing.
+      temp_divisor:    '1',
     };
 
     const MODE_VALUES = new Set([
@@ -219,14 +222,14 @@ class ThermostatDriver extends Homey.Driver {
       // Check for ×10 pattern: both values > 50 suggest ×10 encoding
       const maxVal = Math.max(...tempCandidates.slice(0, 2).map((d) => d.val));
       if (maxVal > 50 && maxVal <= 600) {
-        result.temp_divisor = 10;
+        result.temp_divisor = '10';
       }
       result.dp_target_temp  = tempCandidates[0].dp;
       result.dp_current_temp = tempCandidates[1].dp;
     } else if (tempCandidates.length === 1) {
       // Single temp DP — assume it's current temperature
       const v = tempCandidates[0].val;
-      if (v > 50 && v <= 600) result.temp_divisor = 10;
+      if (v > 50 && v <= 600) result.temp_divisor = '10';
       result.dp_current_temp = tempCandidates[0].dp;
     }
 
