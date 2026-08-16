@@ -379,6 +379,7 @@
         <option value="">— select section —</option>
         <option value="sec-start">Getting started</option>
         <option value="sec-report">Reporting device issues</option>
+        <option value="sec-fixit">Fix It — automatic checks</option>
         <option value="sec-dpmode">DP Instruction Mode</option>
         <option value="sec-plug">Smart Plug</option>
         <option value="sec-dehumidifier">Dehumidifier</option>
@@ -474,6 +475,81 @@
       <div class="note"><strong>Safe to post publicly:</strong> none of these three copies identifies you. The DP tables carry the device name but no device ID, the log is labelled with device names only, and the Local Key is never included anywhere.</div>
     </div>
 
+      <div class="note"><strong>Three settings every device has.</strong>
+      <em>Auto-Reconnect Interval</em> retries a device that is offline every N minutes
+      (0 = off; the app reconnects on its own anyway, this is the safety net).
+      <em>Offline Grace</em> is how long a device may be gone before the "disconnected" flow
+      card fires — 60 seconds by default, because many of these devices drop the connection
+      briefly and come back unprompted. <em>Fire and forget</em> sends commands without waiting
+      for the device to acknowledge them; it is on by default where it has always been offered
+      and off on thermostats, kettles, wall switches, doorbells and presence sensors, which
+      never had the switch. Turn it on there if commands do not arrive, or if the device drops
+      the connection immediately after one.</div>
+
+    <div class="section" id="sec-fixit">
+      <h2>Fix It — automatic checks</h2>
+      <p>Most of what goes wrong with these devices is not a fault in the app but a setting
+      that no longer matches the device: a local key that changed, a data point number written
+      for a different model, a reading that is a hundred times off. Tuya publishes what each
+      device actually has, so the
+      <a href="#" onclick="showTab('fix'); return false;" class="help-link">Fix It</a> tab
+      compares your paired devices against that and offers to correct the differences.</p>
+
+      <div class="note"><strong>Nothing is saved until you confirm.</strong> Every check runs
+      as a preview first and lists exactly what it would change, device by device, old value to
+      new value — and tells you why it left a device alone. Only then does a second button
+      write anything.</div>
+
+      <table class="help-table">
+        <thead><tr><th>Check</th><th>What it does</th><th>Needs Cloud Lookup</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Check local keys</strong></td>
+              <td>A device’s local key changes every time it is reset or re-paired in the
+              Tuya app, and the symptom is a device that never connects again. Compares the
+              stored key with the one your account holds now. Keys are shown shortened, never
+              in full.</td>
+              <td>yes</td></tr>
+          <tr><td><strong>Check protocol versions</strong></td>
+              <td>When the configured version keeps failing the app carries on with whichever
+              works, so a device can run fine on 3.3 while its settings say 3.4 — paying the
+              retry delay on every reconnect. Stores the version actually in use. Only devices
+              connected right now can be judged.</td>
+              <td>no</td></tr>
+          <tr><td><strong>Check measurement scaling</strong></td>
+              <td>Devices report whole numbers and the manufacturer states how to scale them:
+              raw 2301 is 230.1 V, raw 2750 is 27.50 °C. Reads the declared factor instead of
+              leaving you to work it out from “this reads ten times too high”. A factor the
+              setting does not accept is reported rather than written.</td>
+              <td>yes</td></tr>
+          <tr><td><strong>Update pickers on existing devices</strong></td>
+              <td>Fills the mode, fan speed, preset and status lists from what the manufacturer
+              declares — for a picker showing names your device does not understand, or plain
+              numbers like 0/1/2. Writes only those lists; data point numbers are untouched.</td>
+              <td>yes</td></tr>
+          <tr><td><strong>Find data points your device does not have</strong></td>
+              <td>Driver defaults are written for one device family and can point at nothing on
+              another, which is how a wireless chime ends up with a motion tile that can never
+              fire. A number is flagged only when the specification does not list it
+              <em>and</em> your device has never once reported it.</td>
+              <td>yes</td></tr>
+        </tbody>
+      </table>
+
+      <div class="note"><strong>Two things it will not do.</strong> It never invents a value a
+      setting does not accept — a divisor outside the offered range is named, not stored. And
+      it leaves a data point alone when the specification omits it but your device has reported
+      it: Tuya specifications are occasionally incomplete, and a value seen on the network
+      outranks a specification that fails to mention it.</div>
+
+      <p style="font-size:11px;color:#888;line-height:1.5">Four of the five need Cloud Lookup
+      credentials — set them up under <strong>Cloud Lookup</strong> first, which is a one-time
+      job on iot.tuya.com described in
+      <a href="#" onclick="jumpToSection('sec-start'); return false;" class="help-link">Getting
+      started</a>. If a check proposes something that looks wrong, do not apply it: copy the
+      preview text into a forum post instead. It names the device, the setting and both values,
+      which is everything needed to judge it.</p>
+    </div>
+
     <div class="section" id="sec-dpmode">
       <h2>DP Instruction Mode</h2>
       <p>Tuya devices use the <strong>Standard Instruction Set</strong> by default, which translates commands into readable codes such as <code>"switch_led"</code>. That works well for simple devices, but on more complex models it often gets in the way.</p>
@@ -519,7 +595,10 @@
           <tr><td>dp_fault</td>        <td>0</td>  <td>Fault Alarm</td>             <td>raw &gt; 0 = alarm</td>    <td><span class="help-badge badge-ro">Read</span></td></tr>
           <tr><td>dp_power_factor</td> <td>0</td>  <td>Power Factor (%)</td>        <td>raw as-is</td>             <td><span class="help-badge badge-ro">Read</span></td></tr>
           <tr><td>dp_countdown</td>    <td>0</td>  <td>Flow action only</td>        <td>seconds</td>               <td><span class="help-badge badge-rw">Write</span></td></tr>
-        </tbody>
+                    <tr><td>voltage_scale</td> <td>×0.1</td> <td>Voltage scaling</td> <td>Raw 2301 → 230.1 V. Tuya’s standard is ×0.1; change it only if the tile reads ten or a hundred times off</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+            <tr><td>current_scale</td> <td>×0.001</td> <td>Current scaling</td> <td>Raw 1920 → 1.92 A. Plugs reporting centiamps need ×0.01 — check whether the current matches watts ÷ volts</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+            <tr><td>kwh_scale</td> <td>×0.001</td> <td>Energy meter scaling</td> <td>Applies only when <em>dp_energy</em> is set. Tuya’s add_ele reports watt-hours, so ×0.001 gives kWh</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          </tbody>
       </table>
       <div class="note"><strong>Energy metering:</strong> Most Tuya plugs send DP 17 as a resetting delta that appears frozen locally. Leave <em>dp_energy = 0</em> (default) — the app computes kWh from power readings instead and persists the total across restarts. Use the <em>Reset energy meter</em> flow action to zero it.</div>
     </div>
@@ -544,7 +623,9 @@
           <tr><td>dp_oscillate</td>        <td>0</td>  <td>Oscillate / swing</td>      <td><span class="help-badge badge-rw">R/W</span></td></tr>
           <tr><td>dp_self_clean</td>       <td>0</td>  <td>Self-Clean (internal drying)</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
           <tr><td>dp_pump</td>             <td>0</td>  <td>Water Pump</td>             <td><span class="help-badge badge-rw">R/W</span></td></tr>
-        </tbody>
+                    <tr><td>dp_countdown_left_minutes</td> <td>off</td> <td>Timer unit</td> <td>Checkbox, not a DP. Enable when the remaining-timer DP reports minutes (0–1440) rather than hours; the value is divided by 60 for display</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+            <tr><td>dp_countdown_timer_numeric</td> <td>off</td> <td>Timer format</td> <td>Checkbox, not a DP. Enable when the timer DP sends plain numbers (0, 1, 2 … 24) instead of <code>cancel</code> / <code>1h</code> … <code>24h</code></td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          </tbody>
       </table>
       <p>Set any optional DP to <strong>0</strong> to hide the tile. Use the <strong>DP Debug</strong> tab to find the correct DP numbers for your device.</p>
       <div class="note"><strong>Temperature scaling:</strong> Most dehumidifiers send the temperature multiplied by 10 (e.g. 220 = 22.0 °C), which is why <em>temp_divisor</em> defaults to 10. If the reading comes out 10× too low, the device sends whole degrees — set <em>temp_divisor = 1</em>.</div>
@@ -574,7 +655,7 @@
           <tr><td>dp_fault</td>           <td>20</td> <td>Fault Alarm</td>           <td>raw &gt; 0 = alarm active; 0 = disabled</td>                                    <td><span class="help-badge badge-ro">Read</span></td></tr>
         </tbody>
       </table>
-      <div class="note"><strong>Temperature scaling:</strong> Some AC units send temperatures multiplied by 10 (e.g. 220 = 22.0 °C). If your displayed temperature is 10× too high, set <em>temp_divisor = 10</em> in device settings. Auto-detection recognises this during pairing.</div>
+      <div class="note"><strong>Temperature scaling:</strong> Some AC units send temperatures multiplied by 10 (e.g. 220 = 22.0 °C), a few by 100 (2750 = 27.50 °C). Set <em>temp_divisor</em> to 10 or 100 accordingly in device settings, or let <a href="#" onclick="showTab('fix'); return false;" class="help-link">Fix It</a> → <strong>Check measurement scaling</strong> read the factor the manufacturer declares. Auto-detection recognises this during pairing.</div>
       <div class="note"><strong>Mode, fan &amp; swing values:</strong> The allowed strings vary by manufacturer. Check the DP Debug tab while operating the device manually, then update <em>mode_values</em>, <em>fan_speed_values</em> and <em>swing_values</em> in device settings. After saving, restart the app to apply the new picker options.</div>
       <div class="note"><strong>Auto-detect at pairing:</strong> The pairing wizard automatically detects DP 1 (power), DP 2/3 (temperatures), DP 4 (mode), DP 5 (fan speed), DP 11 (ioniser), DP 15 (swing), DP 20 (fault), DP 103 (sleep) and DP 110 (horizontal swing). Only <em>mode_values</em> and <em>fan_speed_values</em> need to be adjusted manually after pairing.</div>
     </div>
@@ -596,7 +677,10 @@
           <tr><td>dp_light_onoff</td>      <td>0</td> <td>Light On / Off</td>        <td>0 = disabled. For ceiling fans with an integrated light (e.g. DP 15)</td>              <td><span class="help-badge badge-rw">R/W</span></td></tr>
           <tr><td>dp_light_dim</td>        <td>0</td> <td>Light Brightness</td>      <td>0 = disabled. Scaled using <em>dp_light_dim_min</em> / <em>dp_light_dim_max</em> (default 0–100)</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
           <tr><td>dp_light_color_temp</td> <td>0</td> <td>Light Color Temp</td>      <td>0 = disabled. Device range 0–100. Enable <em>dp_light_color_temp_invert</em> if warm and cold are swapped</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
-        </tbody>
+                    <tr><td>dp_light_dim_min</td> <td>0</td> <td>Light brightness floor</td> <td>Range limit, not a DP. Raise it for lights that flicker or cut out at the bottom of the scale</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+            <tr><td>dp_light_dim_max</td> <td>100</td> <td>Light brightness ceiling</td> <td>Range limit, not a DP</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+            <tr><td>dp_light_color_temp_invert</td> <td>off</td> <td>Color temperature direction</td> <td>Checkbox, not a DP. Enable when 0 = warm and 100 = cool on your device</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          </tbody>
       </table>
       <div class="note"><strong>Speed slider vs. enum:</strong> Both can be active simultaneously. The slider (<em>dim</em>) maps the numeric DP range <em>speed_min … speed_max</em> to 0–100 %. The enum picker (<em>fan_speed</em>) uses named levels like <code>low / medium / high</code>. Set <em>dp_speed = 0</em> to disable the slider, or <em>dp_fan_speed = 0</em> to disable the picker.</div>
       <div class="note"><strong>Fan direction:</strong> Detected automatically at pairing if the device reports <code>forward</code> or <code>reverse</code>. Set <em>dp_direction</em> manually (e.g. DP 63) if the device uses a different DP number.</div>
@@ -638,7 +722,8 @@
           <tr><td>dp_fault</td>           <td>0</td> <td>Fault Alarm</td>          <td>0 = disabled. raw &gt; 0 = alarm active</td>                                           <td><span class="help-badge badge-ro">Read</span></td></tr>
           <tr><td>dp_countdown_timer</td> <td>0</td> <td>Timer</td>                <td>0 = disabled</td>                                                                       <td><span class="help-badge badge-rw">R/W</span></td></tr>
           <tr><td>dp_countdown_left</td>  <td>0</td> <td>Timer Remaining</td>      <td>0 = disabled</td>                                                                       <td><span class="help-badge badge-ro">Read</span></td></tr>
-        </tbody>
+                    <tr><td>dp_work_state</td> <td>0</td> <td>Heating / idle state</td> <td>Read-only DP reporting whether the element is actually heating, e.g. DP 11 with <code>heating</code> / <code>no_heating</code>. 0 = disabled</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          </tbody>
       </table>
       <div class="note"><strong>Temperature range:</strong> Use <em>temp_min</em>, <em>temp_max</em> and <em>temp_step</em> to configure the target temperature slider (defaults: 5–35 °C, step 1).</div>
     </div>
@@ -672,10 +757,14 @@
           <tr><td>dp_food_level</td>    <td>0</td>  <td>Food Status</td>              <td>Non-standard enum: full / high / half / low / less / lack / empty. 0 = disabled</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
           <tr><td>dp_child_lock</td>    <td>0</td>  <td>Child Lock</td>               <td>0 = disabled</td>                                                                 <td><span class="help-badge badge-rw">R/W</span></td></tr>
           <tr><td>dp_battery</td>       <td>0</td>  <td>Battery Level (%)</td>        <td>0 = disabled. DP 11 on Arlec / battery feeders</td>                               <td><span class="help-badge badge-ro">Read</span></td></tr>
-          <tr><td>dp_indicator_light</td> <td>0</td> <td>Indicator Light</td>         <td>0 = disabled. DP 19 typical</td>                                                  <td><span class="help-badge badge-rw">R/W</span></td></tr>
-          <tr><td>dp_voice_playback</td> <td>0</td> <td>Voice Playback</td>           <td>0 = disabled. DP 103 typical</td>                                                  <td><span class="help-badge badge-rw">R/W</span></td></tr>
-          <tr><td>dp_battery_status</td> <td>0</td> <td>Battery Status</td>           <td>Enum: high / medium / low. DP 101 typical. 0 = disabled</td>                      <td><span class="help-badge badge-ro">Read</span></td></tr>
-        </tbody>
+          <tr><td>dp_indicator_light</td> <td>0</td> <td>Indicator Light</td>         <td>Set only when pairing detects it, otherwise 0 = disabled. DP 19 typical</td>                                                  <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_voice_playback</td> <td>103</td> <td>Voice Playback</td>         <td>Enabled by default. Set to 0 to hide the tile</td>                                                  <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_battery_status</td> <td>101</td> <td>Battery Status</td>         <td>Enum: high / medium / low. Enabled by default; 0 to hide</td>                      <td><span class="help-badge badge-ro">Read</span></td></tr>
+                    <tr><td>dp_voice_times</td> <td>18</td> <td>Voice repeat count</td> <td>How many times the mealtime recording plays. 0 = disabled</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+            <tr><td>dp_manual_button_portions</td> <td>106</td> <td>Portions from the physical button</td> <td>Portions dispensed when the button on the feeder is pressed. 0 = disabled</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+            <tr><td>fault_bits</td> <td>—</td> <td>Names for the fault bits</td> <td>The fault data point is a bitmap: one bit per condition, so value 5 means two things at once. This is the list of names, lowest bit first. Filled from the manufacturer’s specification when Cloud Lookup is set up; leave an entry empty for a bit the manufacturer does not name</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+            <tr><td>fault_status</td> <td>—</td> <td>Last fault, decoded</td> <td>Read-only, written by the app. Shows the decoded fault — <code>no_food, feed_timeout</code> rather than just “fault” — and appears in the support bundle. With no bit names it shows the raw register as a code</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          </tbody>
       </table>
       <div class="note"><strong>Portions picker:</strong> The picker shows <em>portions_min</em> – <em>portions_max</em> (default 1–12). Change these settings to match your device's supported range. After dispensing, the picker resets to <em>portions_min</em> automatically.</div>
       <div class="note"><strong>"Feeding completed" flow card:</strong> Fires on two independent signals, so it works on both firmware families. Devices that follow the Tuya spec announce it on <em>dp_motor_state</em> (<code>done</code>, or a return from <code>feeding</code> to <code>standby</code>). Many devices never leave <code>standby</code> and instead push the servings dispensed on <em>dp_feed_report</em> — that push fires the card as well, including for two identical feeds in a row (2 → 2), which no value comparison could detect. It requires <em>dp_feed_report</em> to be set (default 15); if that DP was not present when the device was paired it is left at 0 and has to be entered by hand. Only unsolicited reports count, never poll replies, and reports arriving within 15 s of connecting are ignored because they restate the last stored feed. The card carries the number of servings as a flow token, 0 on devices that do not report it.</div>
@@ -717,7 +806,9 @@
           <tr><td>dp_preset</td>        <td>0</td>   <td>Preset (picker)</td>           <td>0 = disabled. Bool DPs supported (e.g. Phalén DP 117: false=sleep, true=boost). Set <em>preset_values</em></td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
           <tr><td>dp_fault</td>         <td>0</td>   <td>Fault Alarm</td>               <td>0 = disabled. Bitfield or bool. DP 115/116 on Phalén, DP 107 on Waterco</td>                              <td><span class="help-badge badge-ro">Read</span></td></tr>
           <tr><td>dp_power_level</td>   <td>0</td>   <td>Power Level (%)</td>           <td>0 = disabled. Inverter power output %. DP 104 on Phalén, DP 109 on Waterco, DP 20 on Madimack</td>       <td><span class="help-badge badge-ro">Read</span></td></tr>
-        </tbody>
+                    <tr><td>fault_bits</td> <td>—</td> <td>Names for the fault bits</td> <td>The fault data point is a bitmap: one bit per condition, so value 5 means two things at once. This is the list of names, lowest bit first. Filled from the manufacturer’s specification when Cloud Lookup is set up; leave an entry empty for a bit the manufacturer does not name</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+            <tr><td>fault_status</td> <td>—</td> <td>Last fault, decoded</td> <td>Read-only, written by the app. Shows the decoded fault — <code>no_food, feed_timeout</code> rather than just “fault” — and appears in the support bundle. With no bit names it shows the raw register as a code</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          </tbody>
       </table>
       <div class="note"><strong>Temperature divisor:</strong> Devices that send temperatures ×10 (e.g. 350 for 35 °C) are auto-detected at pairing. If the displayed temperature is 10× too high, set <em>temp_divisor = 10</em> in device settings. If only the <em>measured</em> temperature is wrong but the target temperature is correct (e.g. Weau), set <em>current_temp_divisor = 10</em> and leave <em>temp_divisor = 1</em>. Set <em>current_temp_divisor = 0</em> to fall back to <em>temp_divisor</em>.</div>
       <div class="note"><strong>Mode / preset values:</strong> Check the DP Debug tab while switching modes manually to find the exact strings your device sends, then update <em>mode_values</em> and/or <em>preset_values</em> in device settings. For bool preset DPs (e.g. Phalén DP 117) set <em>preset_values = sleep,boost</em> — the first value maps to <em>false</em>, the second to <em>true</em>.</div>
@@ -757,7 +848,10 @@
           <tr><td>dp_child_lock</td>   <td>0</td> <td>child_lock</td>            <td>boolean. 0 = disabled. Common DPs: 6, 7, 28.</td>                <td><span class="help-badge badge-rw">R/W</span></td></tr>
           <tr><td>dp_battery</td>      <td>0</td> <td>Battery %</td>             <td>integer 0–100. For battery-powered TRVs only. 0 = disabled.</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
           <tr><td>dp_fault</td>        <td>0</td> <td>Fault Alarm</td>           <td>Bitfield. 0 = disabled.</td>                                     <td><span class="help-badge badge-ro">Read</span></td></tr>
-        </tbody>
+                    <tr><td>dp_hvac_action</td> <td>0</td> <td>Heating indicator</td> <td>DP reporting that the boiler is actively heating — <code>1</code> / <code>heating</code> against <code>0</code> / <code>idle</code>. Drives the Heating indicator on the tile. 0 = disabled</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+            <tr><td>fault_bits</td> <td>—</td> <td>Names for the fault bits</td> <td>The fault data point is a bitmap: one bit per condition, so value 5 means two things at once. This is the list of names, lowest bit first. Filled from the manufacturer’s specification when Cloud Lookup is set up; leave an entry empty for a bit the manufacturer does not name</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+            <tr><td>fault_status</td> <td>—</td> <td>Last fault, decoded</td> <td>Read-only, written by the app. Shows the decoded fault — <code>no_food, feed_timeout</code> rather than just “fault” — and appears in the support bundle. With no bit names it shows the raw register as a code</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          </tbody>
       </table>
       <div class="note"><strong>temp_divisor:</strong> Set to <strong>10</strong> if your thermostat sends temperatures multiplied by 10 (e.g. 220 = 22.0 °C). This is common on BHT-002, Moes and Beok floor heating thermostats. The driver auto-detects this during pairing.</div>
       <div class="note"><strong>mode_values:</strong> Default is <code>manual,auto,program</code>. For HVAC thermostats use <code>heat,cool,off</code>. For TRVs try <code>auto,manual,holiday</code>. Check the DP Debug panel for the exact strings your device sends.</div>
@@ -776,7 +870,9 @@
           <tr><td>dp_status</td>       <td>15</td> <td>kettle_status</td>        <td>Enum: <code>standby</code>, <code>heating</code>, <code>cooling</code>, <code>warm</code>, <code>done</code>. 0 = disabled.</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
           <tr><td>dp_mode</td>         <td>16</td> <td>kettle_mode</td>          <td>Enum: <code>boil</code>, <code>heat</code>, <code>keep_warm</code>. 0 = disabled.</td>   <td><span class="help-badge badge-rw">R/W</span></td></tr>
           <tr><td>dp_fault</td>        <td>0</td>  <td>Fault Alarm</td>          <td>Bitfield. 0 = disabled.</td>                                         <td><span class="help-badge badge-ro">Read</span></td></tr>
-        </tbody>
+                    <tr><td>fault_bits</td> <td>—</td> <td>Names for the fault bits</td> <td>The fault data point is a bitmap: one bit per condition, so value 5 means two things at once. This is the list of names, lowest bit first. Filled from the manufacturer’s specification when Cloud Lookup is set up; leave an entry empty for a bit the manufacturer does not name</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+            <tr><td>fault_status</td> <td>—</td> <td>Last fault, decoded</td> <td>Read-only, written by the app. Shows the decoded fault — <code>no_food, feed_timeout</code> rather than just “fault” — and appears in the support bundle. With no bit names it shows the raw register as a code</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          </tbody>
       </table>
       <div class="note"><strong>mode_values:</strong> Default is <code>boil,heat,keep_warm</code>. Some kettles use different strings — Aeno EK7S: <code>boiling_quick,setting_quick,temp_boiling,temp_setting</code>. Aeno EK1S: <code>mzj_black,mzj_green,mzj_water,mzj_oolong,mzj_warm</code>. Check the DP Debug panel.</div>
       <div class="note"><strong>Boil done trigger:</strong> The "Kettle finished boiling" flow trigger fires when the status changes from <code>heating</code> to a done state (<code>boiling</code>, <code>done</code>, <code>pause</code>, or <code>cooling</code>).</div>
@@ -794,7 +890,11 @@
           <tr><td>dp_switch_4</td>    <td>0</td> <td>onoff.4 (Switch 4)</td>    <td>boolean. 0 = disabled.</td>                  <td><span class="help-badge badge-rw">R/W</span></td></tr>
           <tr><td>dp_countdown_1–4</td> <td>0</td> <td>Settings only</td>       <td>integer seconds. 0 = disabled.</td>          <td><span class="help-badge badge-ro">Read</span></td></tr>
           <tr><td>dp_relay_status</td>  <td>0</td> <td>Turn On Behavior</td>    <td>Enum: <code>off</code> / <code>on</code> / <code>last</code>. 0 = disabled.</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
-        </tbody>
+                    <tr><td>dp_countdown_1</td> <td>0</td> <td>Auto-off countdown, gang 1</td> <td>Seconds until the gang switches itself off; used by the countdown flow action. 0 = disabled</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+            <tr><td>dp_countdown_2</td> <td>0</td> <td>Auto-off countdown, gang 2</td> <td>0 = disabled</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+            <tr><td>dp_countdown_3</td> <td>0</td> <td>Auto-off countdown, gang 3</td> <td>0 = disabled</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+            <tr><td>dp_countdown_4</td> <td>0</td> <td>Auto-off countdown, gang 4</td> <td>0 = disabled</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          </tbody>
       </table>
       <div class="note"><strong>Switch names:</strong> Each switch tile can be renamed in Settings → Switch Names. Leave empty for the default name. Restart the app for name changes to take effect.</div>
       <div class="note"><strong>Flow triggers:</strong> Use the <strong>"A switch gang changed"</strong> trigger card (not Homey's built-in "Turned on/off") for reliable triggers on all switches including gang 2/3/4.</div>
@@ -864,7 +964,7 @@
           <tr><td>dp_phase_b</td>          <td>0</td>  <td>Voltage / Current / Power L2</td> <td>Three-phase only, typically 7. 0 = single phase</td>                                                                       <td><span class="help-badge badge-ro">Read</span></td></tr>
           <tr><td>dp_phase_c</td>          <td>0</td>  <td>Voltage / Current / Power L3</td> <td>Three-phase only, typically 8. 0 = single phase</td>                                                                       <td><span class="help-badge badge-ro">Read</span></td></tr>
           <tr><td>dp_power_total</td>      <td>0</td>  <td>measure_power</td>            <td>Plain integer in watts, typically 9 (or 5 on some single-phase units). Takes priority over the power decoded from Phase&nbsp;A</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
-          <tr><td>dp_session_energy</td>   <td>25</td> <td>charge_session_energy</td>    <td>Energy of the current / last session, ×0.01 kWh</td>                                                                          <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_session_energy</td>   <td>1</td> <td>charge_session_energy</td>    <td>Energy of the current / last session, ×0.01 kWh. DP 1 on most chargers; pairing falls back to DP 25 when DP 1 is absent</td>                                                                          <td><span class="help-badge badge-ro">Read</span></td></tr>
           <tr><td>dp_energy_total</td>     <td>0</td>  <td>meter_power.charged</td>      <td>Charger's own lifetime counter, typically 1. Left at 0 on purpose — see note below</td>                                       <td><span class="help-badge badge-ro">Read</span></td></tr>
           <tr><td>dp_fault</td>            <td>10</td> <td>alarm_generic + Fault Code</td> <td>16-bit bitmap. Raw value is exposed as a sensor so it can be matched against the manufacturer's fault table</td>            <td><span class="help-badge badge-ro">Read</span></td></tr>
           <tr><td>dp_connection_state</td> <td>13</td> <td>Connection State</td>         <td>Control-pilot state (<code>controlpi_*</code>). 0 = disabled</td>                                                             <td><span class="help-badge badge-ro">Read</span></td></tr>
@@ -912,9 +1012,9 @@
       <table class="help-table">
         <thead><tr><th>Symptom</th><th>Fix</th></tr></thead>
         <tbody>
-          <tr><td>Device stays unavailable</td>                        <td>Wrong IP, Device ID or Local Key — use Repair to update. Check the Logs tab for the exact error.</td></tr>
+          <tr><td>Device stays unavailable</td>                        <td>Wrong IP, Device ID or Local Key — correct them in the device’s advanced settings; there is no separate repair screen. If only the key is stale, <a href="#" onclick="showTab('fix'); return false;" class="help-link">Fix It</a> → <strong>Check local keys</strong> compares every device against your Tuya account and updates the ones that no longer match. Check the Logs tab for the exact error.</td></tr>
           <tr><td>Scan finds no devices</td>                           <td>Tuya devices only accept one TCP connection at a time. If the device is already added, the scan cannot reach it. Enter the IP address manually during pairing instead.</td></tr>
-          <tr><td>ECONNRESET on every connect</td>                     <td>Protocol version mismatch — use <em>Auto-detect</em> in the device Repair screen. It tries 3.3, 3.4, 3.1, 3.5 and 3.2 in that order; a few curtain motors are on 3.2, which is why the list does not stop at four.</td></tr>
+          <tr><td>ECONNRESET on every connect</td>                     <td>Protocol version mismatch. The app retries the other versions by itself after five failed attempts — 3.3, 3.4, 3.1, 3.5 and 3.2 in that order; a few curtain motors are on 3.2, which is why the list does not stop at four. Once it is connected, <a href="#" onclick="showTab('fix'); return false;" class="help-link">Fix It</a> → <strong>Check protocol versions</strong> stores the one that actually works, so the retry delay is not paid again on every reconnect. There is no "Auto-detect" choice in the device settings — that is offered only while pairing.</td></tr>
           <tr><td>Connects, then never responds to anything</td>        <td>Three causes in order of likelihood: (1) the IP belongs to a different device — Tuya devices show up as <code>wlan0</code> / <code>lwip1</code> in the router, so match by MAC from the Tuya app's <em>Device info</em>; (2) the device is on the Standard Instruction Set, which exposes only part of its data points — see <a href="#" onclick="jumpToSection('sec-dpmode'); return false;" class="help-link">DP Instruction Mode</a>; (3) it has no local port at all — scan TCP 6668 and 6667, and if both are closed no setting will help.</td></tr>
           <tr><td>Mode or preset command snaps back immediately</td>    <td>The value list does not match the device's own tokens, and matching is case-sensitive: a device using <code>Heat,Cool,Auto</code> rejects <code>heat,cool,auto</code>. Copy the tokens verbatim from the DP specification in Cloud Lookup into <em>mode_values</em>, then restart the app.</td></tr>
           <tr><td>Battery sensor never connects</td>                    <td>Battery-powered sensors keep their radio off between reports, leaving no window to connect. They cannot be used locally — only through the cloud, where the device pushes by itself.</td></tr>
@@ -935,7 +1035,7 @@
           <tr><td>Garage door alarm never fires (BoboYun)</td>           <td>BoboYun alarm DP 141 is not auto-detected. Set <em>dp_door_state = 141</em> manually in device settings after pairing.</td></tr>
           <tr><td>AOSD light not controllable</td>                       <td>Set <em>dp_light = 105</em> in device settings (auto-detected at pairing, but verify in DP Debug tab).</td></tr>
           <tr><td>Heat pump mode picker does nothing after enabling dp_mode</td> <td>Restart the Tuya Local app — the capability listener is registered at startup. Future changes re-register automatically without a restart.</td></tr>
-          <tr><td>Heat pump temperature is wrong or 10× off</td>        <td>Set <em>temp_divisor = 10</em> if the device sends temperatures ×10 (e.g. 350 for 35 °C). Auto-detected at pairing for most devices.</td></tr>
+          <tr><td>Heat pump temperature is wrong or 10× off</td>        <td>Set <em>temp_divisor</em> to 10 if the device sends temperatures ×10 (e.g. 350 for 35 °C), or to 100 for two decimal places (2750 = 27.50 °C). Auto-detected at pairing for most devices, and <a href="#" onclick="showTab('fix'); return false;" class="help-link">Fix It</a> → <strong>Check measurement scaling</strong> can read it from the specification. Heat pumps have a second divisor, <em>current_temp_divisor</em>, for when the measured temperature is scaled differently from the target.</td></tr>
           <tr><td>Heat pump target temp correct but measured temp is 10× too high</td> <td>Asymmetric DP scaling (e.g. Weau): set <em>current_temp_divisor = 10</em> in device settings and leave <em>temp_divisor = 1</em>. Set to 0 to fall back to temp_divisor.</td></tr>
           <tr><td>Heat pump spurious fault alarm on connect</td>         <td>Built-in 30 s grace period suppresses transient faults after reconnect. If alarms persist longer, check the Logs and DP Debug tabs.</td></tr>
           <tr><td>Doorbell ring trigger doesn't fire</td>                <td>Check that <em>dp_doorbell</em> matches the DP your device uses (common: 136). Use the DP Debug tab while pressing the bell to identify the correct DP. Some devices use base64 on DP 185 — set <em>dp_alarm_message = 185</em> instead.</td></tr>

@@ -10428,7 +10428,7 @@
                 "en": "Countdown DP",
                 "de": "Countdown DP"
               },
-              "value": 9,
+              "value": 0,
               "hint": {
                 "en": "DP for auto-off countdown timer in seconds (default: 9). Used by the 'Set countdown' flow action. Set to 0 to disable.",
                 "de": "DP für den Auto-Aus-Countdown in Sekunden (Standard: 9). Wird von der Flow-Aktion 'Countdown setzen' verwendet. 0 = deaktiviert."
@@ -13284,7 +13284,7 @@
                 "en": "Indicator Light DP",
                 "de": "Kontrollleuchte DP"
               },
-              "value": 19,
+              "value": 0,
               "hint": {
                 "en": "DP for the LED indicator light (default: 19). Set to 0 to disable.",
                 "de": "DP für die Kontrollleuchte (Standard: 19). 0 = deaktiviert."
@@ -16122,7 +16122,7 @@
                 "en": "Connection State DP",
                 "de": "Verbindungsstatus DP"
               },
-              "value": 0,
+              "value": 13,
               "hint": {
                 "en": "DP for the control-pilot connection state (typically 13). Set to 0 to disable.",
                 "de": "DP für den Control-Pilot-Verbindungsstatus (typisch 13). 0 = deaktiviert."
