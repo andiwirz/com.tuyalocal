@@ -880,8 +880,9 @@ class TuyaLocalApp extends Homey.App {
    * tries again. The app already notices and asks the user to correct it by hand; this
    * turns that request into one press.
    *
-   * Needs no cloud credentials: both values are known locally. Only devices with a live
-   * connection are judged, because the version in use is not knowable otherwise.
+   * Needs no cloud credentials: both values are known locally. Only devices with an
+   * application-level confirmed connection are judged: a raw TCP socket can open on
+   * the wrong protocol and close as soon as the first Tuya request is sent.
    *
    * @returns {Promise<{devices: Array, skipped: Array, dryRun: boolean}>}
    */
@@ -896,7 +897,10 @@ class TuyaLocalApp extends Homey.App {
         const note = (reason) => skipped.push({ name, driver: driver.id, reason });
 
         const conn = device._conn;
-        if (!conn || !conn.connected) { note('not connected — cannot tell'); continue; }
+        if (!conn || !conn.connected || !conn.protocolConfirmed) {
+          note('protocol not confirmed — cannot tell');
+          continue;
+        }
 
         const inUse = String(conn._version || '');
         if (!inUse) { note('connection reports no version'); continue; }
