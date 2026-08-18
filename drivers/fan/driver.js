@@ -12,7 +12,13 @@ const { detectViaCloud, guessedDefaults }        = require('../../lib/dpCodeMap'
 // local value-heuristic DP detection during pairing.
 // Verified against the standard code list for Tuya category "fs" (fan).
 const CLOUD_CODE_MAP = {
-  dp_onoff:            ['switch', 'switch_1', 'power'],
+  // "fan_switch" comes first: on combo fan+light fixtures (categories "fsd"/
+  // "xdd") there is no bare "switch" at all, and the value-heuristic's fallback
+  // — the lowest-numbered boolean DP — lands on the light's switch_led instead,
+  // since that is invariably numbered below the fan's own controls. Verified
+  // against a real fixture's specification (switch_led DP 20, fan_switch DP 60):
+  // without this, dp_onoff silently drives the light, not the fan.
+  dp_onoff:            ['fan_switch', 'switch', 'switch_1', 'power'],
   // "fan_speed" is used by Tuya for both an integer percentage and an enum step
   // switch, so both settings claim the code and the declared type decides which
   // one gets it. Without that check an enum step switch lands on the numeric
@@ -24,7 +30,11 @@ const CLOUD_CODE_MAP = {
   // category; shake / swing appear on rebadged units.
   dp_oscillate:        ['fan_horizontal', 'fan_vertical', 'shake', 'swing'],
   dp_direction:        ['fan_direction', 'direction'],
-  dp_mode:             ['mode', 'work_mode'],
+  // Same reasoning as dp_onoff: on a fan+light combo, "work_mode" is the
+  // light's colour-mode selector (white/colour/scene/music), and "fan_mode"
+  // — fresh/nature — is the fan's own. "fan_mode" has to win when both exist,
+  // which the alias order (not the order DPs happen to arrive in) decides.
+  dp_mode:             ['fan_mode', 'mode', 'work_mode'],
   dp_child_lock:       ['child_lock', 'lock'],
   dp_countdown_timer:  ['countdown', 'countdown_set'],
   dp_countdown_left:   ['countdown_left'],
@@ -39,6 +49,17 @@ const CLOUD_CODE_MAP = {
 const CLOUD_ENUM_VALUES_MAP = {
   dp_mode:      'fan_mode_values',
   dp_fan_speed: 'fan_speed_values',
+};
+
+// When the cloud spec declares an Integer DP's own min/max, that range replaces
+// the 0–100 pairing assumes. bright_value and temp_value commonly span 10–1000
+// and 0–1000 rather than 0–100, and fan_speed commonly spans 1–100 rather than
+// the 1–6 pairing falls back to when no numeric speed was found locally — see
+// extractIntegerRange in lib/dpCodeMap.js.
+const CLOUD_RANGE_MAP = {
+  dp_speed:            { min: 'speed_min',               max: 'speed_max' },
+  dp_light_dim:        { min: 'dp_light_dim_min',        max: 'dp_light_dim_max' },
+  dp_light_color_temp: { min: 'dp_light_color_temp_min', max: 'dp_light_color_temp_max' },
 };
 
 class FanDriver extends Homey.Driver {
@@ -154,7 +175,7 @@ class FanDriver extends Homey.Driver {
   // device that is already paired — see applyCloudValues() in app.js. Exposed as a
   // method because these maps are module-local constants.
   getCloudMaps() {
-    return { codeMap: CLOUD_CODE_MAP, enumValuesMap: CLOUD_ENUM_VALUES_MAP };
+    return { codeMap: CLOUD_CODE_MAP, enumValuesMap: CLOUD_ENUM_VALUES_MAP, rangeMap: CLOUD_RANGE_MAP };
   }
 
   async onPair(session) {
@@ -216,7 +237,7 @@ class FanDriver extends Homey.Driver {
           // Best-effort refinement using the device's Tuya cloud specification.
           // Only runs if Cloud Lookup credentials were saved previously (Settings
           // → ☁️ Cloud Lookup) — never blocks pairing if unavailable or it fails.
-          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m), CLOUD_ENUM_VALUES_MAP, guessedDefaults(detectedDps, collectedDps));
+          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m), CLOUD_ENUM_VALUES_MAP, guessedDefaults(detectedDps, collectedDps), CLOUD_RANGE_MAP);
           if (Object.keys(cloudDps).length > 0) {
             Object.assign(detectedDps, cloudDps);
             this.log('Final detected DPs (cloud-refined):', JSON.stringify(detectedDps));
@@ -345,6 +366,11 @@ class FanDriver extends Homey.Driver {
       fan_speed_values,
       fan_mode_values:  'normal,sleep,nature,breeze,smart',
       dp_light_onoff, dp_light_dim, dp_light_dim_min, dp_light_dim_max, dp_light_color_temp,
+      // Same 0–100 assumption as dp_light_dim_min/max, and the same caveat: the
+      // cloud path (CLOUD_RANGE_MAP) overwrites this with the declared span when
+      // available, but pairing alone has no way to know a device's temp_value
+      // actually runs 0–1000.
+      dp_light_color_temp_min: 0, dp_light_color_temp_max: 100,
     };
   }
 

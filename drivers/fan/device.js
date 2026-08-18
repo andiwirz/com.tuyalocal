@@ -119,15 +119,17 @@ class FanDevice extends BaseTuyaDevice {
       });
     });
 
-    // ── light_temperature (Homey 0=cold, 1=warm → device 0–100) ─────────────
+    // ── light_temperature (Homey 0=cold, 1=warm → device min–max) ───────────
     // dp_light_color_temp_invert flips the direction for devices where the raw
-    // DP is 0=warm/100=cold instead of the assumed 0=cold/100=warm.
+    // DP is min=warm/max=cold instead of the assumed min=cold/max=warm.
     register('light_temperature', async (value) => {
       const dp = this.getSetting('dp_light_color_temp');
       if (dp > 0) {
         const invert = this.getSetting('dp_light_color_temp_invert') || false;
+        const min     = this.getSetting('dp_light_color_temp_min') ?? 0;
+        const max     = this.getSetting('dp_light_color_temp_max') ?? 100;
         const clamped = Math.max(0, Math.min(1, value));
-        const raw = Math.round((invert ? 1 - clamped : clamped) * 100);
+        const raw     = Math.round(min + (max - min) * (invert ? 1 - clamped : clamped));
         await this._set(dp, raw).catch(() => {});
       }
     });
@@ -180,11 +182,15 @@ class FanDevice extends BaseTuyaDevice {
         continue;
       }
 
-      // ── Light color temp (0–100) → light_temperature (0–1) ──────────────
+      // ── Light color temp (min–max) → light_temperature (0–1) ────────────
       if (settings.dp_light_color_temp > 0 && dp === settings.dp_light_color_temp) {
         if (this.hasCapability('light_temperature')) {
           const invert = settings.dp_light_color_temp_invert || false;
-          const raw    = Math.max(0, Math.min(1, Number(value) / 100));
+          const min    = settings.dp_light_color_temp_min ?? 0;
+          const max    = settings.dp_light_color_temp_max ?? 100;
+          const raw    = max > min
+            ? Math.max(0, Math.min(1, (Number(value) - min) / (max - min)))
+            : 0;
           const temp   = invert ? 1 - raw : raw;
           await this.setCapabilityValue('light_temperature', temp).catch(() => {});
         }

@@ -524,7 +524,9 @@
           <tr><td><strong>Update pickers on existing devices</strong></td>
               <td>Fills the mode, fan speed, preset and status lists from what the manufacturer
               declares — for a picker showing names your device does not understand, or plain
-              numbers like 0/1/2. Writes only those lists; data point numbers are untouched.</td>
+              numbers like 0/1/2. Also corrects a brightness or colour-temperature scale still
+              assuming 0–100 when the specification declares a different span. Writes only
+              these; data point numbers are untouched.</td>
               <td>yes</td></tr>
           <tr><td><strong>Find data points your device does not have</strong></td>
               <td>Driver defaults are written for one device family and can point at nothing on
@@ -676,9 +678,11 @@
           <tr><td>dp_countdown_left</td>  <td>0</td> <td>Timer Remaining</td>       <td>0 = disabled</td>                                                                       <td><span class="help-badge badge-ro">Read</span></td></tr>
           <tr><td>dp_light_onoff</td>      <td>0</td> <td>Light On / Off</td>        <td>0 = disabled. For ceiling fans with an integrated light (e.g. DP 15)</td>              <td><span class="help-badge badge-rw">R/W</span></td></tr>
           <tr><td>dp_light_dim</td>        <td>0</td> <td>Light Brightness</td>      <td>0 = disabled. Scaled using <em>dp_light_dim_min</em> / <em>dp_light_dim_max</em> (default 0–100)</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
-          <tr><td>dp_light_color_temp</td> <td>0</td> <td>Light Color Temp</td>      <td>0 = disabled. Device range 0–100. Enable <em>dp_light_color_temp_invert</em> if warm and cold are swapped</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_light_color_temp</td> <td>0</td> <td>Light Color Temp</td>      <td>0 = disabled. Scaled using <em>dp_light_color_temp_min</em> / <em>dp_light_color_temp_max</em> (default 0–100). Enable <em>dp_light_color_temp_invert</em> if warm and cold are swapped</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
                     <tr><td>dp_light_dim_min</td> <td>0</td> <td>Light brightness floor</td> <td>Range limit, not a DP. Raise it for lights that flicker or cut out at the bottom of the scale</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
             <tr><td>dp_light_dim_max</td> <td>100</td> <td>Light brightness ceiling</td> <td>Range limit, not a DP</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+            <tr><td>dp_light_color_temp_min</td> <td>0</td> <td>Color temperature floor</td> <td>Range limit, not a DP. Some fixtures report this on a 0–1000 scale rather than 0–100</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+            <tr><td>dp_light_color_temp_max</td> <td>100</td> <td>Color temperature ceiling</td> <td>Range limit, not a DP</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
             <tr><td>dp_light_color_temp_invert</td> <td>off</td> <td>Color temperature direction</td> <td>Checkbox, not a DP. Enable when 0 = warm and 100 = cool on your device</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
           </tbody>
       </table>
@@ -1314,9 +1318,10 @@
         <div style="font-size:11px;color:#888;line-height:1.5;margin-bottom:8px">
           Reads the manufacturer's declared mode, fan speed, preset and status options for your paired
           devices. Useful when a picker shows names your device does not understand, or plain numbers.
-          Nothing is saved until you confirm: the preview lists every change first. Only these lists
-          are ever written — data point numbers are left exactly as they are, and nothing is
-          switched off.
+          Where a data point's own numeric span is declared, this also corrects a brightness or
+          colour-temperature setting still assuming a 0–100 scale it does not use. Nothing is saved
+          until you confirm: the preview lists every change first. Data point numbers are left exactly
+          as they are, and nothing is ever switched off.
         </div>
         <div class="bar">
           <button id="btnApplyValues">&#128269; Preview changes</button>
@@ -2270,10 +2275,13 @@
         url: '/apply-cloud-values',
         headingPreview: 'Would change', headingApplied: 'Updated', skippedHeading: 'Not changed',
         nothingFound: 'Nothing to change.',
-        summary: function(n, d) { return plural(n, 'list') + ' on ' + plural(d, 'device') + ' would change.'; },
-        applied: function(n, d) { return 'Updated ' + plural(n, 'list') + ' on ' + plural(d, 'device') + '.'; },
+        summary: function(n, d) { return plural(n, 'setting') + ' on ' + plural(d, 'device') + ' would change.'; },
+        applied: function(n, d) { return 'Updated ' + plural(n, 'setting') + ' on ' + plural(d, 'device') + '.'; },
         renderChange: function(c) {
-          return code(c) + ': ' + escHtml(c.from || '(empty)') + ' \u2192 <strong>' + escHtml(c.to) + '</strong>';
+          // c.from can legitimately be the number 0 (an unset scale bound) \u2014 "|| '(empty)'"
+          // would treat that as falsy and print "(empty)" for a real value.
+          var from = (c.from === '' || c.from === null || c.from === undefined) ? '(empty)' : String(c.from);
+          return code(c) + ': ' + escHtml(from) + ' \u2192 <strong>' + escHtml(c.to) + '</strong>';
         },
       });
 

@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.174",
+  "version": "1.0.175",
   "compatibility": ">=12.13.0",
   "sdk": 3,
   "platforms": [
@@ -11627,9 +11627,31 @@
               },
               "value": 0,
               "hint": {
-                "en": "DP for light color temperature (device range 0–100). Set to 0 to disable.",
-                "de": "DP für Licht Farbtemperatur (Gerätewert 0–100). 0 = deaktiviert."
+                "en": "DP for light color temperature (integer). Set to 0 to disable.",
+                "de": "DP für Licht Farbtemperatur (Integer). 0 = deaktiviert."
               }
+            },
+            {
+              "id": "dp_light_color_temp_min",
+              "type": "number",
+              "label": {
+                "en": "Light Color Temp Min",
+                "de": "Licht Farbtemperatur Min"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 1000
+            },
+            {
+              "id": "dp_light_color_temp_max",
+              "type": "number",
+              "label": {
+                "en": "Light Color Temp Max",
+                "de": "Licht Farbtemperatur Max"
+              },
+              "value": 100,
+              "min": 1,
+              "max": 1000
             },
             {
               "id": "dp_light_color_temp_invert",

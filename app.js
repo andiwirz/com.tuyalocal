@@ -594,11 +594,13 @@ class TuyaLocalApp extends Homey.App {
    * Writing device settings without showing them first is hard to undo by hand, so the
    * harmless direction is the one that needs no argument.
    *
-   * Deliberately narrow: only the value lists are written. DP numbers are left
-   * exactly as they are, and nothing is ever switched off. During pairing the
-   * live DP snapshot protects a real DP from being cleared by an incomplete
-   * specification; here there is no snapshot, so that protection is unavailable
-   * and remapping would risk breaking a device the user has already tuned by hand.
+   * Deliberately narrow: only companion settings are written — value lists, and,
+   * where the specification states a data point's own numeric span, the min/max
+   * pair a slider is scaled against. DP numbers themselves are left exactly as
+   * they are, and nothing is ever switched off. During pairing the live DP
+   * snapshot protects a real DP from being cleared by an incomplete specification;
+   * here there is no snapshot, so that protection is unavailable and remapping
+   * would risk breaking a device the user has already tuned by hand.
    *
    * @returns {Promise<{devices: Array, skipped: Array, dryRun: boolean}>}
    *   `devices` holds what was changed, or what would change when dryRun is set.
@@ -617,11 +619,13 @@ class TuyaLocalApp extends Homey.App {
 
     for (const driver of Object.values(this.homey.drivers.getDrivers())) {
       const maps = typeof driver.getCloudMaps === 'function' ? driver.getCloudMaps() : null;
+      const hasEnumMap  = !!maps?.enumValuesMap && Object.keys(maps.enumValuesMap).length > 0;
+      const hasRangeMap = !!maps?.rangeMap && Object.keys(maps.rangeMap).length > 0;
       for (const device of driver.getDevices()) {
         const name = device.getName();
         if (onlyDevice && name !== onlyDevice) continue;
 
-        if (!maps || !maps.enumValuesMap || Object.keys(maps.enumValuesMap).length === 0) {
+        if (!hasEnumMap && !hasRangeMap) {
           skipped.push({ name, driver: driver.id, reason: 'this driver has no value lists to fill' });
           continue;
         }
@@ -636,22 +640,26 @@ class TuyaLocalApp extends Homey.App {
         let cloudDps = {};
         try {
           cloudDps = await detectViaCloud(this.homey, id, maps.codeMap,
-            (m) => this.log(`[${name}] ${m}`), maps.enumValuesMap);
+            (m) => this.log(`[${name}] ${m}`), maps.enumValuesMap || {}, null, maps.rangeMap || {});
         } catch (err) {
           skipped.push({ name, driver: driver.id, reason: `lookup failed: ${err.message}` });
           continue;
         }
 
-        // Only the companion value-list keys are allowed through — never a dp_*.
-        // An entry is either the setting name or { setting, from } — see
-        // extractEnumValues in lib/dpCodeMap.js.
-        const allowed = new Set(Object.values(maps.enumValuesMap)
-          .map((t) => (typeof t === 'string' ? t : t?.setting))
-          .filter(Boolean));
+        // Only the companion keys are allowed through — never a dp_* DP number.
+        // A value-list entry is either the setting name or { setting, from } —
+        // see extractEnumValues in lib/dpCodeMap.js. A range entry is the pair of
+        // settings its min/max are written to — see extractIntegerRange there.
+        const allowed = new Set([
+          ...Object.values(maps.enumValuesMap || {}).map((t) => (typeof t === 'string' ? t : t?.setting)),
+          ...Object.values(maps.rangeMap || {}).flatMap((r) => [r?.min, r?.max]),
+        ].filter(Boolean));
         const changes = [];
         for (const [key, value] of Object.entries(cloudDps)) {
           if (!allowed.has(key)) continue;
-          if (typeof value !== 'string' || !value.trim()) continue;
+          const isText   = typeof value === 'string' && value.trim();
+          const isNumber = typeof value === 'number' && Number.isFinite(value);
+          if (!isText && !isNumber) continue;
           let current = null;
           try { current = device.getSetting(key); } catch (e) {}
           if (current === value) continue;
