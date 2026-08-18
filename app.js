@@ -54,6 +54,50 @@ class TuyaLocalApp extends Homey.App {
       this.error('Unhandled rejection (app kept alive):', msg);
       this.addLog('App', `Unhandled rejection: ${msg}${hint}`, 'error');
     });
+
+    // The only flow card in this app that is not tied to a single device. Every
+    // driver already has its own "force reconnect" action, but a household with
+    // forty devices needed forty flows to say one thing, so the answer to "reconnect
+    // everything after the router came back" was no answer at all.
+    this.homey.flow.getActionCard('reconnect_all_devices')
+      .registerRunListener(async (args) => this.reconnectAll(args?.scope === 'all'));
+  }
+
+  /**
+   * Rebuilds the local connection of every paired device.
+   *
+   * Returns as soon as the reconnects are dispatched rather than awaiting them:
+   * a single attempt can take up to its connection timeout, and a flow card that
+   * blocks for minutes on a large installation would be reported as a broken card.
+   *
+   * The attempts are staggered rather than fired together — forty simultaneous TCP
+   * connections is a burst worth spreading out, and nothing here is time-critical.
+   *
+   * @param {boolean} includeConnected  Reconnect healthy devices too. Off by
+   *   default: rebuilding a working connection costs a short outage for no gain,
+   *   and this card is meant to be safe to run on a schedule.
+   * @returns {Promise<{reconnected: number, skipped: number}>}
+   */
+  async reconnectAll(includeConnected = false) {
+    const targets = [];
+    for (const driver of Object.values(this.homey.drivers.getDrivers())) {
+      for (const device of driver.getDevices()) {
+        if (typeof device.forceReconnect !== 'function') continue;
+        // Reading the connection directly, the same way the support bundle does.
+        if (!includeConnected && device._conn?.connected === true) continue;
+        targets.push(device);
+      }
+    }
+
+    targets.forEach((device, i) => {
+      this.homey.setTimeout(() => {
+        device.forceReconnect().catch(() => {});
+      }, i * 200);
+    });
+
+    const scope = includeConnected ? 'all devices' : 'offline devices';
+    this.addLog('App', `Reconnect requested for ${scope}: ${targets.length} device(s)`, 'info');
+    return { reconnected: targets.length, skipped: 0 };
   }
 
   /** Return a user-friendly hint for well-known TuyAPI error messages. */

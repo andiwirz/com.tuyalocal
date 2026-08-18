@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.176",
+  "version": "1.0.177",
   "compatibility": ">=12.13.0",
   "sdk": 3,
   "platforms": [
@@ -5293,6 +5293,47 @@
       }
     ],
     "actions": [
+      {
+        "id": "reconnect_all_devices",
+        "title": {
+          "en": "Reconnect devices",
+          "de": "Geräte neu verbinden"
+        },
+        "titleFormatted": {
+          "en": "Reconnect [[scope]]",
+          "de": "[[scope]] neu verbinden"
+        },
+        "hint": {
+          "en": "Rebuilds the local connection for every Tuya Local device at once, so one flow covers the whole installation instead of one per device. Useful on a schedule after a router restart. \"Offline devices only\" leaves working devices untouched and is safe to run repeatedly.",
+          "de": "Baut die lokale Verbindung aller Tuya-Local-Geräte neu auf — ein Flow für die ganze Installation statt einer je Gerät. Sinnvoll zeitgesteuert nach einem Router-Neustart. „Nur getrennte Geräte“ lässt funktionierende Geräte in Ruhe und kann gefahrlos wiederholt laufen."
+        },
+        "args": [
+          {
+            "name": "scope",
+            "type": "dropdown",
+            "title": {
+              "en": "Which devices",
+              "de": "Welche Geräte"
+            },
+            "values": [
+              {
+                "id": "offline",
+                "label": {
+                  "en": "Offline devices only",
+                  "de": "Nur getrennte Geräte"
+                }
+              },
+              {
+                "id": "all",
+                "label": {
+                  "en": "All devices",
+                  "de": "Alle Geräte"
+                }
+              }
+            ]
+          }
+        ]
+      },
       {
         "id": "dehumidifier_set_target_humidity",
         "title": {
