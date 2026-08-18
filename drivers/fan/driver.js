@@ -354,19 +354,34 @@ class FanDriver extends Homey.Driver {
     let   dp_fan_speed     = fanEntry?.dp ?? 0;
     let   fan_speed_values = 'low,medium,high,auto,turbo';
 
-    // "fresh" is the combo fixtures' fan-mode token (fresh/nature) — without it
-    // their mode DP was invisible to local pairing.
-    const KNOWN_MODES  = ['normal', 'sleep', 'nature', 'breeze', 'smart', 'natural', 'fresh'];
+    // Locally only a DP's *current* value is ever visible, never the list of values
+    // it accepts — so the token list has to come from somewhere. It used to be one
+    // fixed list of five, with the observed token appended when it was not already
+    // in it. On a fan+light combo, which accepts nothing but fresh and nature, that
+    // produced a picker offering Normal, Sleep, Breeze and Smart as well: four
+    // buttons that do nothing, reported by a user as "Breeze does not respond".
+    //
+    // The list is now the family the observed token belongs to, so nothing is
+    // offered that the token contradicts. A token from no known family yields a
+    // one-entry list — useless as a picker, but honest, and it still satisfies the
+    // guard in _syncEnumOptions that rejects a list missing the live value.
+    // Cloud Lookup replaces all of this with the declared range where the
+    // specification carries it; the xdd combos keep their fan DPs outside it,
+    // which is exactly the case this has to get right on its own.
+    const MODE_FAMILIES = [
+      // Listed first, so a token both families share ("nature") keeps resolving the
+      // way it always has and no existing fan's picker shrinks under it.
+      ['normal', 'sleep', 'nature', 'breeze', 'smart'],  // standalone fans
+      ['fresh', 'nature'],                               // fan+light combos (fsd/xdd)
+    ];
+    const KNOWN_MODES  = [...new Set([...MODE_FAMILIES.flat(), 'natural'])];
     const modeEntry    = enumDps.find((d) => KNOWN_MODES.includes(String(d.val).toLowerCase()));
     const dp_mode      = modeEntry?.dp ?? 0;
 
-    // The observed token must end up selectable: a device reporting a mode the
-    // default list does not contain would otherwise trip the picker's guard in
-    // _syncEnumOptions ("current value is not in that list") on first contact.
-    let fan_mode_values = 'normal,sleep,nature,breeze,smart';
-    if (modeEntry && !fan_mode_values.split(',').includes(String(modeEntry.val).toLowerCase())) {
-      fan_mode_values += ',' + String(modeEntry.val).toLowerCase();
-    }
+    const modeToken = modeEntry ? String(modeEntry.val).toLowerCase() : null;
+    const fan_mode_values = (modeToken
+      ? (MODE_FAMILIES.find((f) => f.includes(modeToken)) || [modeToken])
+      : MODE_FAMILIES[0]).join(',');
 
     // The light's own mode selector on combo fixtures. Detected before the
     // numeric fan-speed fallback so its DP cannot be mistaken for a step switch.

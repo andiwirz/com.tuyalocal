@@ -5,6 +5,16 @@ const { parseColorHex, buildColorHex } = require('../../lib/tuyaColor');
 
 const DEBOUNCE_MS = 300;
 
+// Floor for the brightness component of a packed colour value. In that encoding V
+// runs 0–1000 and 0 means off, while dim.light legitimately reaches 0 — at the
+// bottom of Homey's slider, and on a lamp whose own lowest step scales to it. A
+// colour change carrying V=0 therefore switched the light off, and since the app
+// still believed it was on and lit in that colour, choosing the same colour again
+// did nothing: a user had to reach for the lamp's own remote to get back. Choosing
+// a colour must never be a way to switch the light off. 10 is 1 %, the lowest step
+// these fixtures declare for their white brightness.
+const MIN_COLOUR_V = 10;
+
 // Maps settings keys → Homey capabilities.
 // dp_speed (numeric speed integer) is handled separately because it needs
 // min/max scaling to the Homey dim range (0–1).
@@ -205,8 +215,25 @@ class FanDevice extends BaseTuyaDevice {
     const curDim = this.getCapabilityValue('dim.light')        ?? 1;
     const h = Math.round((hNew !== undefined ? hNew : curHue) * 360);
     const s = Math.round((sNew !== undefined ? sNew : curSat) * 1000);
-    const v = Math.round((vNew !== undefined ? vNew : curDim) * 1000);
+    const v = Math.max(MIN_COLOUR_V, Math.round((vNew !== undefined ? vNew : curDim) * 1000));
+    // The lamp ignores a colour it is not currently in the mode to show, and Homey
+    // presents the colour controls of a fan-class device on their own — there is no
+    // light tile bundling the mode switch with them, so nothing else puts the lamp
+    // into colour mode. Sent first, and only when it is not already there.
+    await this._ensureColourMode();
     await this._set(dp, buildColorHex(h, s, v));
+  }
+
+  /** Puts the lamp into colour mode, unless it is there already. */
+  async _ensureColourMode() {
+    const dp = this.getSetting('dp_light_mode');
+    if (!(dp > 0)) return;
+    const token = this._lightModeTokens().colour;
+    if (this._lastDps[String(dp)] === token) return;
+    await this._set(dp, token).catch(() => {});
+    if (this.hasCapability('light_mode')) {
+      await this.setCapabilityValue('light_mode', 'color').catch(() => {});
+    }
   }
 
   // For the "Set light mode (advanced)" flow action: sends any token the device
