@@ -27,28 +27,31 @@ const CLOUD_CODE_MAP = {
   dp_fan_speed:        ['fan_speed_enum', 'level', 'windspeed',
                         { code: 'fan_speed', type: 'Enum' }, { code: 'speed', type: 'Enum' }],
   // fan_horizontal / fan_vertical are the standard swing codes for this
-  // category; shake / swing appear on rebadged units.
-  dp_oscillate:        ['fan_horizontal', 'fan_vertical', 'shake', 'swing'],
+  // category; shake / swing appear on rebadged units, fan_shake on combos.
+  dp_oscillate:        ['fan_horizontal', 'fan_vertical', 'shake', 'swing', 'fan_shake'],
   dp_direction:        ['fan_direction', 'direction'],
-  // Same reasoning as dp_onoff: on a fan+light combo, "work_mode" is the
-  // light's colour-mode selector (white/colour/scene/music), and "fan_mode"
-  // — fresh/nature — is the fan's own. "fan_mode" has to win when both exist,
-  // which the alias order (not the order DPs happen to arrive in) decides.
-  dp_mode:             ['fan_mode', 'mode', 'work_mode'],
+  // "work_mode" is claimed by dp_light_mode below, not listed here: on a combo
+  // it is the light's colour-mode selector (white/colour/scene/music), and the
+  // fan's own selector is "fan_mode". A device that has work_mode but no light
+  // at all is handed back to dp_mode by _reconcileCloud after the lookup.
+  dp_mode:             ['fan_mode', 'mode'],
   dp_child_lock:       ['child_lock', 'lock'],
   dp_countdown_timer:  ['countdown', 'countdown_set'],
-  dp_countdown_left:   ['countdown_left'],
+  dp_countdown_left:   ['countdown_left', 'fan_countdown_left'],
   dp_light_onoff:      ['light', 'switch_led'],
   dp_light_dim:        ['bright_value', 'bright_value_v2', 'bright_value_1'],
   dp_light_color_temp: ['temp_value', 'temp_value_v2'],
+  dp_light_colour:     ['colour_data', 'colour_data_v2'],
+  dp_light_mode:       ['work_mode'],
 };
 
 // When the cloud spec confirms a DP maps to one of these settings, the DP's
 // full declared enum token list is written to the companion setting. Note:
 // this driver's mode capability uses "fan_mode_values" (not "mode_values").
 const CLOUD_ENUM_VALUES_MAP = {
-  dp_mode:      'fan_mode_values',
-  dp_fan_speed: 'fan_speed_values',
+  dp_mode:       'fan_mode_values',
+  dp_fan_speed:  'fan_speed_values',
+  dp_light_mode: 'light_mode_values',
 };
 
 // When the cloud spec declares an Integer DP's own min/max, that range replaces
@@ -164,6 +167,20 @@ class FanDriver extends Homey.Driver {
         return args.device.triggerCapabilityListener('dim.light', value);
       });
 
+    // Sends the raw token, so scene/music are reachable even though Homey's
+    // light_mode capability can only express white ↔ colour. Deliberately
+    // throws when the DP is not configured instead of returning silently: a
+    // flow that reports success while doing nothing reads as a broken device.
+    const lightModeAC = async (query, args) => {
+      const values = (args.device.getSetting('light_mode_values') || 'white,colour,scene,music')
+        .split(',').map((s) => s.trim()).filter(Boolean);
+      const q = query.toLowerCase();
+      return values.filter((v) => v.toLowerCase().includes(q)).map((v) => ({ id: v, name: cap(v) }));
+    };
+    this.homey.flow.getActionCard('fan_set_light_mode')
+      .registerArgumentAutocompleteListener('mode', lightModeAC)
+      .registerRunListener(async (args) => args.device.setLightMode(args.mode.id));
+
     this.homey.flow.getActionCard('fan_force_reconnect')
       .registerRunListener(async (args) => args.device.forceReconnect());
 
@@ -239,6 +256,7 @@ class FanDriver extends Homey.Driver {
           // → ☁️ Cloud Lookup) — never blocks pairing if unavailable or it fails.
           const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m), CLOUD_ENUM_VALUES_MAP, guessedDefaults(detectedDps, collectedDps), CLOUD_RANGE_MAP);
           if (Object.keys(cloudDps).length > 0) {
+            this._reconcileCloud(cloudDps, detectedDps);
             Object.assign(detectedDps, cloudDps);
             this.log('Final detected DPs (cloud-refined):', JSON.stringify(detectedDps));
           }
@@ -268,6 +286,47 @@ class FanDriver extends Homey.Driver {
     });
   }
 
+  /**
+   * Cleans up the two ways the cloud lookup and the local value heuristic can
+   * contradict each other on this driver. Mutates both arguments; call before
+   * merging cloudDps over detectedDps.
+   *
+   * 1. "work_mode" resolves to dp_light_mode (the combo fixtures' light-mode
+   *    selector), but a plain fan that declares work_mode with no light around
+   *    it is using the code for its own mode — hand it back to dp_mode, along
+   *    with the token list, and drop the phantom light setting. "No light" is
+   *    judged by the same lookup: no switch_led/light code resolved.
+   *
+   * 2. The heuristic can assign a DP number that the cloud has just proven to
+   *    mean something else — on the reported combos it read fan_switch (60) as
+   *    the oscillation toggle, so "oscillate" would have cut the fan's power.
+   *    A number cannot serve two settings; the guessed one is cleared.
+   */
+  _reconcileCloud(cloudDps, detectedDps) {
+    if (cloudDps.dp_light_mode > 0 && !(cloudDps.dp_light_onoff > 0)) {
+      if (!(cloudDps.dp_mode > 0)) {
+        cloudDps.dp_mode = cloudDps.dp_light_mode;
+        if (cloudDps.light_mode_values) cloudDps.fan_mode_values = cloudDps.light_mode_values;
+      }
+      cloudDps.dp_light_mode = 0;
+      delete cloudDps.light_mode_values;
+    }
+
+    const isScaleKey = (k) => /_(?:min|max|invert)$/.test(k);
+    const owner = new Map(); // dp number -> the setting the cloud resolved it to
+    for (const [k, v] of Object.entries(cloudDps)) {
+      if (k.startsWith('dp_') && !isScaleKey(k) && Number.isInteger(v) && v > 0) owner.set(v, k);
+    }
+    for (const [k, v] of Object.entries(detectedDps || {})) {
+      if (!k.startsWith('dp_') || isScaleKey(k)) continue;
+      if (cloudDps[k] !== undefined) continue; // the cloud value wins anyway
+      if (Number.isInteger(v) && v > 0 && owner.has(v) && owner.get(v) !== k) {
+        this.log(`Cloud reconcile: ${k} guessed DP ${v}, which is ${owner.get(v)} — cleared`);
+        detectedDps[k] = 0;
+      }
+    }
+  }
+
   _detectDps(dps) {
     const boolDps = [];
     const intDps  = [];
@@ -295,9 +354,31 @@ class FanDriver extends Homey.Driver {
     let   dp_fan_speed     = fanEntry?.dp ?? 0;
     let   fan_speed_values = 'low,medium,high,auto,turbo';
 
-    const KNOWN_MODES  = ['normal', 'sleep', 'nature', 'breeze', 'smart', 'natural'];
+    // "fresh" is the combo fixtures' fan-mode token (fresh/nature) — without it
+    // their mode DP was invisible to local pairing.
+    const KNOWN_MODES  = ['normal', 'sleep', 'nature', 'breeze', 'smart', 'natural', 'fresh'];
     const modeEntry    = enumDps.find((d) => KNOWN_MODES.includes(String(d.val).toLowerCase()));
     const dp_mode      = modeEntry?.dp ?? 0;
+
+    // The observed token must end up selectable: a device reporting a mode the
+    // default list does not contain would otherwise trip the picker's guard in
+    // _syncEnumOptions ("current value is not in that list") on first contact.
+    let fan_mode_values = 'normal,sleep,nature,breeze,smart';
+    if (modeEntry && !fan_mode_values.split(',').includes(String(modeEntry.val).toLowerCase())) {
+      fan_mode_values += ',' + String(modeEntry.val).toLowerCase();
+    }
+
+    // The light's own mode selector on combo fixtures. Detected before the
+    // numeric fan-speed fallback so its DP cannot be mistaken for a step switch.
+    const KNOWN_LIGHT_MODES = ['white', 'colour', 'color', 'scene', 'music'];
+    const lightModeEntry = enumDps.find((d) => KNOWN_LIGHT_MODES.includes(String(d.val).toLowerCase()));
+    const dp_light_mode  = lightModeEntry?.dp ?? 0;
+
+    // Packed HSV colour: exactly 12 hex characters. Checked here rather than in
+    // the numeric fallback below because a colour whose hex digits happen to be
+    // all decimal ("001203000300") would otherwise read as a speed step token.
+    const colourEntry     = enumDps.find((d) => d.dp !== dp_light_mode && /^[0-9a-fA-F]{12}$/.test(String(d.val)));
+    const dp_light_colour = colourEntry?.dp ?? 0;
 
     // Direction: enum DP whose value is 'forward' or 'reverse'
     const KNOWN_DIR    = ['forward', 'reverse'];
@@ -320,6 +401,7 @@ class FanDriver extends Homey.Driver {
     if (dp_fan_speed === 0) {
       const numericFan = enumDps.find((d) =>
         d.dp !== dp_mode && d.dp !== dp_direction && d.dp !== dp_countdown_timer
+        && d.dp !== dp_light_mode && d.dp !== dp_light_colour
         && /^\d+$/.test(String(d.val)));
       if (numericFan) {
         dp_fan_speed = numericFan.dp;
@@ -364,13 +446,15 @@ class FanDriver extends Homey.Driver {
       dp_child_lock: 0, dp_countdown_timer, dp_countdown_left: 0,
       speed_min, speed_max,
       fan_speed_values,
-      fan_mode_values:  'normal,sleep,nature,breeze,smart',
+      fan_mode_values,
       dp_light_onoff, dp_light_dim, dp_light_dim_min, dp_light_dim_max, dp_light_color_temp,
       // Same 0–100 assumption as dp_light_dim_min/max, and the same caveat: the
       // cloud path (CLOUD_RANGE_MAP) overwrites this with the declared span when
       // available, but pairing alone has no way to know a device's temp_value
       // actually runs 0–1000.
       dp_light_color_temp_min: 0, dp_light_color_temp_max: 100,
+      dp_light_colour, dp_light_mode,
+      light_mode_values: 'white,colour,scene,music',
     };
   }
 

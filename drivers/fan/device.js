@@ -1,6 +1,7 @@
 'use strict';
 
 const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
+const { parseColorHex, buildColorHex } = require('../../lib/tuyaColor');
 
 const DEBOUNCE_MS = 300;
 
@@ -32,6 +33,13 @@ const OPTIONAL_CAPABILITIES = [
   { setting: 'dp_light_onoff',      capability: 'onoff.light'       },
   { setting: 'dp_light_dim',        capability: 'dim.light'         },
   { setting: 'dp_light_color_temp', capability: 'light_temperature' },
+  // Fan+light combo fixtures ("fsd"/"xdd") carry a full RGB light: a packed
+  // HSV data point and a mode selector (white/colour/scene/music). Homey's
+  // light_mode only expresses white ↔ colour; scene and music are reachable
+  // through the "Set light mode (advanced)" flow action instead.
+  { setting: 'dp_light_colour',     capability: 'light_hue'         },
+  { setting: 'dp_light_colour',     capability: 'light_saturation'  },
+  { setting: 'dp_light_mode',       capability: 'light_mode'        },
 ];
 
 class FanDevice extends BaseTuyaDevice {
@@ -59,6 +67,8 @@ class FanDevice extends BaseTuyaDevice {
     this._registeredCaps        = new Set();
     this._dimDebounceTimer      = null;
     this._lightDimDebounceTimer = null;
+    this._hueDebounceTimer      = null;
+    this._satDebounceTimer      = null;
     this._registerListeners();
 
     await this._connect();
@@ -103,10 +113,18 @@ class FanDevice extends BaseTuyaDevice {
     });
 
     // ── dim.light (light brightness 0–1) ────────────────────────────────────
+    // In colour mode the brightness lives inside the packed HSV data point, not
+    // on the white-light brightness DP — writing the latter while the light is
+    // showing a colour does nothing visible on the reported fixtures.
     register('dim.light', (value) => {
       clearTimeout(this._lightDimDebounceTimer);
       return new Promise((resolve) => {
         this._lightDimDebounceTimer = setTimeout(async () => {
+          if (this.getCapabilityValue('light_mode') === 'color' && this.hasCapability('light_hue')) {
+            await this._sendLightColor({ v: value }).catch(() => {});
+            resolve();
+            return;
+          }
           const dp = this.getSetting('dp_light_dim');
           if (dp > 0) {
             const min = this.getSetting('dp_light_dim_min') ?? 0;
@@ -133,11 +151,83 @@ class FanDevice extends BaseTuyaDevice {
         await this._set(dp, raw).catch(() => {});
       }
     });
+
+    // ── light_hue / light_saturation → packed HSV colour ────────────────────
+    register('light_hue', (value) => {
+      clearTimeout(this._hueDebounceTimer);
+      return new Promise((resolve) => {
+        this._hueDebounceTimer = setTimeout(async () => {
+          await this._sendLightColor({ h: value }).catch(() => {});
+          resolve();
+        }, DEBOUNCE_MS);
+      });
+    });
+
+    register('light_saturation', (value) => {
+      clearTimeout(this._satDebounceTimer);
+      return new Promise((resolve) => {
+        this._satDebounceTimer = setTimeout(async () => {
+          await this._sendLightColor({ s: value }).catch(() => {});
+          resolve();
+        }, DEBOUNCE_MS);
+      });
+    });
+
+    // ── light_mode (Homey: color | temperature) ─────────────────────────────
+    register('light_mode', async (value) => {
+      const dp = this.getSetting('dp_light_mode');
+      if (dp > 0) {
+        const t = this._lightModeTokens();
+        await this._set(dp, value === 'color' ? t.colour : t.white).catch(() => {});
+      }
+    });
+  }
+
+  // The device's own tokens for the two modes Homey's light_mode can express.
+  // Read from light_mode_values so a fixture declaring unusual tokens can be
+  // corrected in settings; the fallbacks are the Tuya standard names.
+  _lightModeTokens() {
+    const csv = (this.getSetting('light_mode_values') || 'white,colour,scene,music')
+      .split(',').map((s) => s.trim()).filter(Boolean);
+    const white  = csv.find((v) => v.toLowerCase() === 'white') || csv[0] || 'white';
+    const colour = csv.find((v) => ['colour', 'color'].includes(v.toLowerCase()))
+      || csv.find((v) => v !== white) || 'colour';
+    return { white, colour };
+  }
+
+  // Merges current capability values with any overrides and sends the packed
+  // HSV hex — same format and approach as drivers/light/device.js.
+  async _sendLightColor({ h: hNew, s: sNew, v: vNew } = {}) {
+    const dp = this.getSetting('dp_light_colour');
+    if (!(dp > 0)) return;
+    const curHue = this.getCapabilityValue('light_hue')        ?? 0;
+    const curSat = this.getCapabilityValue('light_saturation') ?? 1;
+    const curDim = this.getCapabilityValue('dim.light')        ?? 1;
+    const h = Math.round((hNew !== undefined ? hNew : curHue) * 360);
+    const s = Math.round((sNew !== undefined ? sNew : curSat) * 1000);
+    const v = Math.round((vNew !== undefined ? vNew : curDim) * 1000);
+    await this._set(dp, buildColorHex(h, s, v));
+  }
+
+  // For the "Set light mode (advanced)" flow action: sends any token the device
+  // declares — including scene/music, which Homey's light_mode cannot express.
+  async setLightMode(token) {
+    const dp = this.getSetting('dp_light_mode');
+    if (!(dp > 0)) {
+      throw new Error('The Light Mode DP is not configured for this device — set it under Device settings → Light (optional).');
+    }
+    await this._set(dp, token);
+    if (this.hasCapability('light_mode')) {
+      const homeyMode = token === this._lightModeTokens().white ? 'temperature' : 'color';
+      await this.setCapabilityValue('light_mode', homeyMode).catch(() => {});
+    }
   }
 
   async _onDeleted() {
     clearTimeout(this._dimDebounceTimer);
     clearTimeout(this._lightDimDebounceTimer);
+    clearTimeout(this._hueDebounceTimer);
+    clearTimeout(this._satDebounceTimer);
   }
 
   // ── DPS handling ───────────────────────────────────────────────────────────
@@ -193,6 +283,35 @@ class FanDevice extends BaseTuyaDevice {
             : 0;
           const temp   = invert ? 1 - raw : raw;
           await this.setCapabilityValue('light_temperature', temp).catch(() => {});
+        }
+        continue;
+      }
+
+      // ── Light mode (white/colour/scene/music) → light_mode ──────────────
+      // Homey's light_mode knows only color and temperature; scene/music read
+      // as "color" here, which is at least the right half of the picker.
+      if (settings.dp_light_mode > 0 && dp === settings.dp_light_mode) {
+        if (this.hasCapability('light_mode')) {
+          const homeyMode = String(value) === this._lightModeTokens().white ? 'temperature' : 'color';
+          await this.setCapabilityValue('light_mode', homeyMode).catch(() => {});
+        }
+        continue;
+      }
+
+      // ── Packed HSV colour → light_hue / light_saturation ────────────────
+      if (settings.dp_light_colour > 0 && dp === settings.dp_light_colour) {
+        const parsed = parseColorHex(String(value));
+        if (parsed) {
+          if (this.hasCapability('light_hue')) {
+            await this.setCapabilityValue('light_hue', parsed.h / 360).catch(() => {});
+          }
+          if (this.hasCapability('light_saturation')) {
+            await this.setCapabilityValue('light_saturation', parsed.s / 1000).catch(() => {});
+          }
+          // V doubles as the brightness while the light is in colour mode.
+          if (this.hasCapability('dim.light') && this.getCapabilityValue('light_mode') === 'color') {
+            await this.setCapabilityValue('dim.light', parsed.v / 1000).catch(() => {});
+          }
         }
         continue;
       }

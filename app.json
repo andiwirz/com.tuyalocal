@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.175",
+  "version": "1.0.176",
   "compatibility": ">=12.13.0",
   "sdk": 3,
   "platforms": [
@@ -7429,6 +7429,36 @@
         ]
       },
       {
+        "id": "fan_set_light_mode",
+        "title": {
+          "en": "Set light mode (advanced)",
+          "de": "Licht-Modus setzen (erweitert)"
+        },
+        "titleFormatted": {
+          "en": "Set light mode to [[mode]]",
+          "de": "Licht-Modus auf [[mode]] setzen"
+        },
+        "hint": {
+          "en": "Sends a mode token to the light's own mode data point — including scene and music, which the standard light controls cannot express. Requires the Light Mode DP in device settings.",
+          "de": "Sendet einen Modus-Wert an den Modus-Datenpunkt des Lichts — auch scene und music, die sich über die Standard-Lichtbedienung nicht ausdrücken lassen. Benötigt den Licht-Modus DP in den Geräteeinstellungen."
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=fan"
+          },
+          {
+            "name": "mode",
+            "type": "autocomplete",
+            "placeholder": {
+              "en": "Mode",
+              "de": "Modus"
+            }
+          }
+        ]
+      },
+      {
         "id": "feeder_feed_now",
         "title": {
           "en": "Feed now",
@@ -11664,6 +11694,45 @@
               "hint": {
                 "en": "Enable if 0 = warm and 100 = cool (reverse direction).",
                 "de": "Aktivieren wenn 0 = warm und 100 = kalt (umgekehrte Richtung)."
+              }
+            },
+            {
+              "id": "dp_light_colour",
+              "type": "number",
+              "label": {
+                "en": "Light Colour (HSV) DP",
+                "de": "Licht Farbe (HSV) DP"
+              },
+              "value": 0,
+              "hint": {
+                "en": "DP for packed colour data (12 hex characters: hue 0000–0168, saturation and brightness 0000–03e8). Set to 0 to disable.",
+                "de": "DP für gepackte Farbdaten (12 Hex-Zeichen: Farbton 0000–0168, Sättigung und Helligkeit 0000–03e8). 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_light_mode",
+              "type": "number",
+              "label": {
+                "en": "Light Mode DP",
+                "de": "Licht-Modus DP"
+              },
+              "value": 0,
+              "hint": {
+                "en": "DP for the light's own mode (white/colour/scene/music) — separate from the fan's Mode DP above. Controls the white ↔ colour capability; scene and music are only reachable via the \"Set light mode (advanced)\" flow action. Set to 0 to disable.",
+                "de": "DP für den Modus des Lichts (white/colour/scene/music) — getrennt vom Modus-DP des Lüfters oben. Steuert nur Weiß ↔ Farbe; Szene und Musik sind ausschließlich über die Flow-Aktion „Licht-Modus setzen (erweitert)“ erreichbar. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "light_mode_values",
+              "type": "text",
+              "label": {
+                "en": "Light mode values (comma-separated)",
+                "de": "Licht-Modus-Werte (kommagetrennt)"
+              },
+              "value": "white,colour,scene,music",
+              "hint": {
+                "en": "Supported light mode values, for the advanced flow action.",
+                "de": "Unterstützte Licht-Modus-Werte, für die erweiterte Flow-Aktion."
               }
             }
           ]
