@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.178",
+  "version": "1.0.179",
   "compatibility": ">=12.13.0",
   "sdk": 3,
   "platforms": [
@@ -11731,10 +11731,10 @@
                 "en": "Invert Color Temp",
                 "de": "Farbtemperatur invertieren"
               },
-              "value": false,
+              "value": true,
               "hint": {
-                "en": "Enable if 0 = warm and 100 = cool (reverse direction).",
-                "de": "Aktivieren wenn 0 = warm und 100 = kalt (umgekehrte Richtung)."
+                "en": "On by default, because the two scales run in opposite directions: Homey treats a higher value as warmer, while these devices count up towards cool white. Turn it off only if warm and cool come out swapped on your device.",
+                "de": "Standardmäßig an, weil beide Skalen gegenläufig sind: Homey versteht einen höheren Wert als wärmer, das Gerät zählt dagegen zu Kaltweiß hin hoch. Nur abschalten, wenn warm und kalt bei Ihrem Gerät vertauscht herauskommen."
               }
             },
             {
@@ -12978,10 +12978,10 @@
                 "en": "Invert Color Temp",
                 "de": "Farbtemperatur invertieren"
               },
-              "value": false,
+              "value": true,
               "hint": {
-                "en": "Enable if 0 = warm and max = cool (reverse direction).",
-                "de": "Aktivieren wenn 0 = warm und max = kalt (umgekehrte Richtung)."
+                "en": "On by default, because the two scales run in opposite directions: Homey treats a higher value as warmer, while these devices count up towards cool white. Turn it off only if warm and cool come out swapped on your device. Devices added before this became the default keep their own setting.",
+                "de": "Standardmäßig an, weil beide Skalen gegenläufig sind: Homey versteht einen höheren Wert als wärmer, das Gerät zählt dagegen zu Kaltweiß hin hoch. Nur abschalten, wenn warm und kalt bei Ihrem Gerät vertauscht herauskommen. Früher hinzugefügte Geräte behalten ihre eigene Einstellung."
               }
             },
             {

@@ -341,13 +341,28 @@ class FanDriver extends Homey.Driver {
 
     const dp_onoff = (boolDps.find((d) => d.dp === 1) || boolDps[0])?.dp ?? 1;
 
-    // Numeric speed: look for a small integer (1–100) on DPs 2–10.
-    // Deliberately no fallback: DP 3 carries an integer speed on many fans and an
-    // enum step switch on others, and writing an integer to an enum DP is rejected
-    // by the device. An empty field the user can fill in beats a guess that looks
-    // configured and silently fails.
-    const speedEntry = intDps.find((d) => d.dp !== dp_onoff && d.val >= 1 && d.val <= 100 && d.dp <= 10);
-    const dp_speed = speedEntry?.dp ?? 0;
+    // Numeric speed: a small integer (1–100). The low range is searched first,
+    // because that is where standalone fans put it and the assignment there is
+    // long-established. Within it there is deliberately no further fallback: DP 3
+    // carries an integer speed on many fans and an enum step switch on others, and
+    // writing an integer to an enum DP is rejected by the device.
+    //
+    // Combo fan+light fixtures put it far higher — DP 62 on one reported brand,
+    // DP 105 on the other — so a search that stopped at DP 10 found neither and the
+    // speed control did nothing at all. One brand is rescued by Cloud Lookup, which
+    // resolves "fan_speed" by name; the other keeps its fan data points out of the
+    // published specification, so this heuristic is the only thing that can find them.
+    //
+    // The widened pass runs only when the low range yielded nothing, and it skips
+    // zeros — which is what keeps it off the countdown and dream-strip data points on
+    // the reported devices. It remains a guess: a fixture whose lamp happens to sit in
+    // the 1–100 band at pairing time can have its brightness taken for the speed.
+    // Cloud Lookup settles that, and both fields stay editable in device settings.
+    const speedIn = (lo, hi) => intDps.find((d) =>
+      d.dp !== dp_onoff && d.val >= 1 && d.val <= 100 && d.dp >= lo && d.dp <= hi);
+    const lowSpeed   = speedIn(0, 10);
+    const speedEntry = lowSpeed || speedIn(11, 255);
+    const dp_speed   = speedEntry?.dp ?? 0;
 
     const KNOWN_FAN        = ['low', 'medium', 'middle', 'high', 'auto', 'turbo'];
     const fanEntry         = enumDps.find((d) => KNOWN_FAN.includes(String(d.val).toLowerCase()));
@@ -430,14 +445,19 @@ class FanDriver extends Homey.Driver {
       }
     }
 
-    // Oscillation: a boolean DP that is not on/off, not light on/off
-    // We detect light on/off first so we can exclude it
     // Light on/off heuristic: boolean DP with dp >= 10 (common Tuya light DPs: 15, 20, etc.)
     const lightOnoffEntry = boolDps.find((d) => d.dp !== dp_onoff && d.dp >= 10);
     const dp_light_onoff  = lightOnoffEntry?.dp ?? 0;
 
-    const oscillateEntry = boolDps.find((d) => d.dp !== dp_onoff && d.dp !== dp_light_onoff && d.dp > 1);
-    const dp_oscillate   = oscillateEntry?.dp ?? 0;
+    // Oscillation is deliberately not guessed. The old rule took the first spare
+    // boolean, and true/false says nothing about what it controls: on the reported
+    // combo fixtures it landed on the lamp's colour_switch on one brand and on the
+    // fan's own power switch on the other, so an "Oscillate" toggle either cut the
+    // fan or silently disabled colour — and its owner wrote in to ask what the
+    // control was even for. Cloud Lookup still resolves fan_horizontal /
+    // fan_vertical / shake / swing by name, which is the only evidence that
+    // actually identifies the function, and the field stays editable by hand.
+    const dp_oscillate = 0;
 
     // Light brightness: int DP in range 0–100, not speed, dp >= 10
     const lightDimEntry = intDps.find((d) => d.dp !== dp_speed && d.dp >= 10 && d.val >= 0 && d.val <= 100);
@@ -447,10 +467,17 @@ class FanDriver extends Homey.Driver {
     const lightTempEntry     = intDps.find((d) => d.dp !== dp_speed && d.dp !== dp_light_dim && d.dp >= 10 && d.val >= 0 && d.val <= 100);
     const dp_light_color_temp = lightTempEntry?.dp ?? 0;
 
-    // Detect speed range
-    const rawSpeed = speedEntry?.val ?? 1;
+    // Detect speed range. Where the DP was found matters as much as the value on it:
+    // a low-numbered DP on a standalone fan is a step switch, so a live value of 3
+    // means three of about six steps, while the high-numbered DP of a combo fixture
+    // is a percentage — both reported brands declare 1–100 there. Reading a 3 on one
+    // of those as "step 3 of 6" would cap the slider at six percent of the fan's
+    // actual range, which is worse than the dead control this replaces.
+    const rawSpeed  = speedEntry?.val ?? 1;
     const speed_min = 1;
-    const speed_max = rawSpeed <= 6 ? 6 : rawSpeed <= 12 ? 12 : 100;
+    const speed_max = (speedEntry && !lowSpeed)
+      ? 100
+      : (rawSpeed <= 6 ? 6 : rawSpeed <= 12 ? 12 : 100);
 
     // Light dim range defaults
     const dp_light_dim_min = 0;
