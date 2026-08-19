@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.179",
+  "version": "1.0.180",
   "compatibility": ">=12.13.0",
   "sdk": 3,
   "platforms": [
@@ -62,6 +62,75 @@
   },
   "homeyCommunityTopicId": 154077,
   "capabilities": {
+    "liquid_level": {
+      "type": "number",
+      "title": {
+        "en": "Liquid Level",
+        "de": "Füllstand"
+      },
+      "units": {
+        "en": "%",
+        "de": "%"
+      },
+      "min": 0,
+      "max": 100,
+      "decimals": 0,
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "uiQuickAction": false,
+      "insights": true,
+      "icon": "/assets/capabilities/liquid_level.svg"
+    },
+    "liquid_state": {
+      "type": "enum",
+      "title": {
+        "en": "Level State",
+        "de": "Füllstandszustand"
+      },
+      "values": [
+        {
+          "id": "normal",
+          "title": {
+            "en": "Normal",
+            "de": "Normal"
+          }
+        },
+        {
+          "id": "lower_alarm",
+          "title": {
+            "en": "Below minimum",
+            "de": "Unter Minimum"
+          }
+        },
+        {
+          "id": "upper_alarm",
+          "title": {
+            "en": "Above maximum",
+            "de": "Über Maximum"
+          }
+        }
+      ],
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "uiQuickAction": false,
+      "insights": true,
+      "icon": "/assets/capabilities/liquid_state.svg"
+    },
+    "alarm_tank_full": {
+      "type": "boolean",
+      "title": {
+        "en": "Tank Full Alarm",
+        "de": "Alarm Behälter voll"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "uiQuickAction": false,
+      "insights": true,
+      "icon": "/assets/capabilities/alarm_tank_full.svg"
+    },
     "mode": {
       "type": "enum",
       "title": {
@@ -1946,6 +2015,114 @@
   },
   "flow": {
     "triggers": [
+      {
+        "id": "level_sensor_state_changed",
+        "title": {
+          "en": "Level state changed",
+          "de": "Füllstandszustand geändert"
+        },
+        "tokens": [
+          {
+            "name": "state",
+            "type": "string",
+            "title": {
+              "en": "State",
+              "de": "Zustand"
+            },
+            "example": {
+              "en": "lower_alarm",
+              "de": "lower_alarm"
+            }
+          },
+          {
+            "name": "previous_state",
+            "type": "string",
+            "title": {
+              "en": "Previous state",
+              "de": "Vorheriger Zustand"
+            },
+            "example": {
+              "en": "normal",
+              "de": "normal"
+            }
+          }
+        ],
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=level_sensor"
+          }
+        ]
+      },
+      {
+        "id": "level_sensor_device_connected",
+        "title": {
+          "en": "Level sensor connected",
+          "de": "Füllstandsensor verbunden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=level_sensor"
+          }
+        ]
+      },
+      {
+        "id": "level_sensor_device_disconnected",
+        "title": {
+          "en": "Level sensor disconnected",
+          "de": "Füllstandsensor getrennt"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=level_sensor"
+          }
+        ]
+      },
+      {
+        "id": "level_sensor_dp_changed",
+        "title": {
+          "en": "Level sensor data point changed",
+          "de": "Datenpunkt des Füllstandsensors geändert"
+        },
+        "tokens": [
+          {
+            "name": "dp",
+            "type": "string",
+            "title": {
+              "en": "DP",
+              "de": "DP"
+            },
+            "example": {
+              "en": "22",
+              "de": "22"
+            }
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "title": {
+              "en": "Value",
+              "de": "Wert"
+            },
+            "example": {
+              "en": "67",
+              "de": "67"
+            }
+          }
+        ],
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=level_sensor"
+          }
+        ]
+      },
       {
         "id": "dehumidifier_humidity_above",
         "title": {
@@ -4226,6 +4403,75 @@
     ],
     "conditions": [
       {
+        "id": "level_sensor_state_is",
+        "title": {
+          "en": "Level state !{{is|is not}}",
+          "de": "Füllstandszustand !{{ist|ist nicht}}"
+        },
+        "titleFormatted": {
+          "en": "Level state !{{is|is not}} [[state]]",
+          "de": "Füllstandszustand !{{ist|ist nicht}} [[state]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=level_sensor"
+          },
+          {
+            "name": "state",
+            "type": "autocomplete",
+            "placeholder": {
+              "en": "State",
+              "de": "Zustand"
+            }
+          }
+        ]
+      },
+      {
+        "id": "level_sensor_level_above",
+        "title": {
+          "en": "Liquid level !{{is|is not}} above",
+          "de": "Füllstand !{{ist|ist nicht}} über"
+        },
+        "titleFormatted": {
+          "en": "Liquid level !{{is|is not}} above [[level]]%",
+          "de": "Füllstand !{{ist|ist nicht}} über [[level]]%"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=level_sensor"
+          },
+          {
+            "name": "level",
+            "type": "number",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "placeholder": {
+              "en": "Level (%)",
+              "de": "Füllstand (%)"
+            }
+          }
+        ]
+      },
+      {
+        "id": "level_sensor_device_is_connected",
+        "title": {
+          "en": "Level sensor !{{is|is not}} connected",
+          "de": "Füllstandsensor !{{ist|ist nicht}} verbunden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=level_sensor"
+          }
+        ]
+      },
+      {
         "id": "dehumidifier_humidity_is_above",
         "title": {
           "en": "Humidity !{{is|is not}} above",
@@ -5293,6 +5539,166 @@
       }
     ],
     "actions": [
+      {
+        "id": "level_sensor_set_max_level",
+        "title": {
+          "en": "Set high threshold",
+          "de": "Obergrenze setzen"
+        },
+        "titleFormatted": {
+          "en": "Set high threshold to [[level]]%",
+          "de": "Obergrenze auf [[level]]% setzen"
+        },
+        "hint": {
+          "en": "Writes the level above which the device raises its high alarm.",
+          "de": "Schreibt den Füllstand, ab dem das Gerät den oberen Alarm auslöst."
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=level_sensor"
+          },
+          {
+            "name": "level",
+            "type": "number",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "placeholder": {
+              "en": "Level (%)",
+              "de": "Füllstand (%)"
+            }
+          }
+        ]
+      },
+      {
+        "id": "level_sensor_set_min_level",
+        "title": {
+          "en": "Set low threshold",
+          "de": "Untergrenze setzen"
+        },
+        "titleFormatted": {
+          "en": "Set low threshold to [[level]]%",
+          "de": "Untergrenze auf [[level]]% setzen"
+        },
+        "hint": {
+          "en": "Writes the level below which the device raises its low alarm.",
+          "de": "Schreibt den Füllstand, unter dem das Gerät den unteren Alarm auslöst."
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=level_sensor"
+          },
+          {
+            "name": "level",
+            "type": "number",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "placeholder": {
+              "en": "Level (%)",
+              "de": "Füllstand (%)"
+            }
+          }
+        ]
+      },
+      {
+        "id": "level_sensor_set_alarm_enabled",
+        "title": {
+          "en": "Enable or disable a level alarm",
+          "de": "Füllstandsalarm ein- oder ausschalten"
+        },
+        "titleFormatted": {
+          "en": "Turn the [[which]] level alarm [[enabled]]",
+          "de": "Alarm [[which]] [[enabled]] schalten"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=level_sensor"
+          },
+          {
+            "name": "which",
+            "type": "dropdown",
+            "title": {
+              "en": "Which alarm",
+              "de": "Welcher Alarm"
+            },
+            "values": [
+              {
+                "id": "upper",
+                "label": {
+                  "en": "High",
+                  "de": "oben"
+                }
+              },
+              {
+                "id": "lower",
+                "label": {
+                  "en": "Low",
+                  "de": "unten"
+                }
+              }
+            ]
+          },
+          {
+            "name": "enabled",
+            "type": "dropdown",
+            "title": {
+              "en": "State",
+              "de": "Zustand"
+            },
+            "values": [
+              {
+                "id": "true",
+                "label": {
+                  "en": "On",
+                  "de": "ein"
+                }
+              },
+              {
+                "id": "false",
+                "label": {
+                  "en": "Off",
+                  "de": "aus"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "level_sensor_force_reconnect",
+        "title": {
+          "en": "Force level sensor reconnect",
+          "de": "Füllstandsensor neu verbinden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=level_sensor"
+          }
+        ]
+      },
+      {
+        "id": "level_sensor_refresh_device",
+        "title": {
+          "en": "Refresh level sensor values",
+          "de": "Werte des Füllstandsensors aktualisieren"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=level_sensor"
+          }
+        ]
+      },
       {
         "id": "reconnect_all_devices",
         "title": {
@@ -8239,6 +8645,389 @@
     ]
   },
   "drivers": [
+    {
+      "id": "level_sensor",
+      "name": {
+        "en": "Ultrasonic Level Sensor",
+        "de": "Ultraschall-Füllstandsensor"
+      },
+      "class": "sensor",
+      "capabilities": [
+        "liquid_level"
+      ],
+      "capabilitiesOptions": {
+        "measure_distance": {
+          "title": {
+            "en": "Liquid Depth",
+            "de": "Füllhöhe"
+          }
+        }
+      },
+      "energy": {
+        "batteries": [
+          "INTERNAL"
+        ]
+      },
+      "platforms": [
+        "local"
+      ],
+      "connectivity": [
+        "lan"
+      ],
+      "images": {
+        "small": "/drivers/level_sensor/assets/images/small.png",
+        "large": "/drivers/level_sensor/assets/images/large.png",
+        "xlarge": "/drivers/level_sensor/assets/images/xlarge.png"
+      },
+      "pair": [
+        {
+          "id": "credentials",
+          "navigation": {
+            "next": "list_devices"
+          }
+        },
+        {
+          "id": "list_devices"
+        }
+      ],
+      "settings": [
+        {
+          "type": "group",
+          "label": {
+            "en": "Connection",
+            "de": "Verbindung"
+          },
+          "children": [
+            {
+              "id": "ip",
+              "type": "text",
+              "label": {
+                "en": "IP Address",
+                "de": "IP-Adresse"
+              },
+              "value": ""
+            },
+            {
+              "id": "device_id",
+              "type": "text",
+              "label": {
+                "en": "Device ID",
+                "de": "Geräte-ID"
+              },
+              "value": ""
+            },
+            {
+              "id": "local_key",
+              "type": "text",
+              "label": {
+                "en": "Local Key",
+                "de": "Local Key"
+              },
+              "value": ""
+            },
+            {
+              "id": "version",
+              "type": "dropdown",
+              "label": {
+                "en": "Protocol Version",
+                "de": "Protokollversion"
+              },
+              "value": "3.3",
+              "values": [
+                {
+                  "id": "3.1",
+                  "label": {
+                    "en": "3.1",
+                    "de": "3.1"
+                  }
+                },
+                {
+                  "id": "3.2",
+                  "label": {
+                    "en": "3.2",
+                    "de": "3.2"
+                  }
+                },
+                {
+                  "id": "3.3",
+                  "label": {
+                    "en": "3.3",
+                    "de": "3.3"
+                  }
+                },
+                {
+                  "id": "3.4",
+                  "label": {
+                    "en": "3.4",
+                    "de": "3.4"
+                  }
+                },
+                {
+                  "id": "3.5",
+                  "label": {
+                    "en": "3.5",
+                    "de": "3.5"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "polling_interval",
+              "type": "number",
+              "label": {
+                "en": "Polling Interval (seconds)",
+                "de": "Abfrageintervall (Sekunden)"
+              },
+              "value": 60,
+              "min": 0,
+              "max": 3600,
+              "hint": {
+                "en": "A level changes slowly, so there is nothing to gain from asking often. 0 disables polling and relies on the device reporting by itself.",
+                "de": "Ein Füllstand ändert sich langsam, häufiges Abfragen bringt also nichts. 0 schaltet die Abfrage ab und verlässt sich darauf, dass das Gerät von selbst meldet."
+              }
+            },
+            {
+              "id": "reconnect_interval",
+              "type": "number",
+              "label": {
+                "en": "Auto-Reconnect Interval (minutes)",
+                "de": "Auto-Reconnect-Intervall (Minuten)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 1440,
+              "hint": {
+                "en": "0 = off. Rebuilds the connection periodically while the device is offline.",
+                "de": "0 = aus. Baut die Verbindung regelmäßig neu auf, solange das Gerät offline ist."
+              }
+            },
+            {
+              "id": "offline_grace_seconds",
+              "type": "number",
+              "label": {
+                "en": "Offline Grace Period (seconds)",
+                "de": "Offline-Karenzzeit (Sekunden)"
+              },
+              "value": 60,
+              "min": 0,
+              "max": 3600
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Data Points (DPs)",
+            "de": "Datenpunkte (DPs)"
+          },
+          "children": [
+            {
+              "id": "dp_level_percent",
+              "type": "number",
+              "label": {
+                "en": "Liquid Level DP (%)",
+                "de": "Füllstand-DP (%)"
+              },
+              "value": 22,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "DP reporting the fill level as a percentage. Set to 0 to disable.",
+                "de": "DP, der den Füllstand in Prozent meldet. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_depth",
+              "type": "number",
+              "label": {
+                "en": "Liquid Depth DP",
+                "de": "Füllhöhen-DP"
+              },
+              "value": 2,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "DP reporting the measured depth. Scaled by the divisor below. Set to 0 to disable.",
+                "de": "DP, der die gemessene Höhe meldet. Wird mit dem Teiler unten umgerechnet. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "depth_divisor",
+              "type": "dropdown",
+              "label": {
+                "en": "Depth Divisor",
+                "de": "Höhen-Teiler"
+              },
+              "value": "1000",
+              "values": [
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "1 — value is already in metres",
+                    "de": "1 — Wert ist bereits in Metern"
+                  }
+                },
+                {
+                  "id": "10",
+                  "label": {
+                    "en": "10 — decimetres",
+                    "de": "10 — Dezimeter"
+                  }
+                },
+                {
+                  "id": "100",
+                  "label": {
+                    "en": "100 — centimetres",
+                    "de": "100 — Zentimeter"
+                  }
+                },
+                {
+                  "id": "1000",
+                  "label": {
+                    "en": "1000 — millimetres",
+                    "de": "1000 — Millimeter"
+                  }
+                }
+              ],
+              "hint": {
+                "en": "Homey shows the depth in metres, the device counts in whole units. Manufacturers declare the unit as \"m\" even where the range makes that impossible, so pick the one that matches your tank: if a full tank reads 100× too high, the divisor is too small.",
+                "de": "Homey zeigt die Höhe in Metern, das Gerät zählt in ganzen Einheiten. Hersteller geben als Einheit „m“ an, auch wo der Wertebereich das ausschließt — also den Teiler wählen, der zum eigenen Behälter passt: Zeigt ein voller Behälter das Hundertfache, ist der Teiler zu klein."
+              }
+            },
+            {
+              "id": "dp_state",
+              "type": "number",
+              "label": {
+                "en": "Level State DP",
+                "de": "Zustands-DP"
+              },
+              "value": 1,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "DP reporting normal / below minimum / above maximum. Drives both alarms. Set to 0 to disable.",
+                "de": "DP, der normal / unter Minimum / über Maximum meldet. Steuert beide Alarme. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "state_values",
+              "type": "text",
+              "label": {
+                "en": "Level state values (comma-separated)",
+                "de": "Zustandswerte (kommagetrennt)"
+              },
+              "value": "normal,lower_alarm,upper_alarm",
+              "hint": {
+                "en": "The tokens this device sends, in its own spelling. The alarms are matched against this list, so it has to be right — Cloud Lookup fills it in from the manufacturer's specification.",
+                "de": "Die Werte, die dieses Gerät sendet, in seiner eigenen Schreibweise. Die Alarme werden dagegen abgeglichen, die Liste muss also stimmen — Cloud Lookup trägt sie aus der Herstellerspezifikation ein."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Thresholds and installation (written by flow actions)",
+            "de": "Grenzwerte und Einbau (werden per Flow gesetzt)"
+          },
+          "children": [
+            {
+              "id": "dp_max_set",
+              "type": "number",
+              "label": {
+                "en": "High Threshold DP (%)",
+                "de": "Obergrenze-DP (%)"
+              },
+              "value": 7,
+              "min": 0,
+              "max": 255
+            },
+            {
+              "id": "dp_mini_set",
+              "type": "number",
+              "label": {
+                "en": "Low Threshold DP (%)",
+                "de": "Untergrenze-DP (%)"
+              },
+              "value": 8,
+              "min": 0,
+              "max": 255
+            },
+            {
+              "id": "dp_upper_switch",
+              "type": "number",
+              "label": {
+                "en": "High Alarm Enable DP",
+                "de": "DP für Alarm oben ein/aus"
+              },
+              "value": 14,
+              "min": 0,
+              "max": 255
+            },
+            {
+              "id": "dp_lower_switch",
+              "type": "number",
+              "label": {
+                "en": "Low Alarm Enable DP",
+                "de": "DP für Alarm unten ein/aus"
+              },
+              "value": 15,
+              "min": 0,
+              "max": 255
+            },
+            {
+              "id": "dp_install_height",
+              "type": "number",
+              "label": {
+                "en": "Installation Height DP",
+                "de": "DP für Einbauhöhe"
+              },
+              "value": 19,
+              "min": 0,
+              "max": 255
+            },
+            {
+              "id": "dp_depth_full",
+              "type": "number",
+              "label": {
+                "en": "Depth at 100 % DP",
+                "de": "DP für Höhe bei 100 %"
+              },
+              "value": 21,
+              "min": 0,
+              "max": 255
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Status",
+            "de": "Status"
+          },
+          "children": [
+            {
+              "id": "connection_status",
+              "type": "text",
+              "label": {
+                "en": "Connection",
+                "de": "Verbindung"
+              },
+              "value": "—"
+            },
+            {
+              "id": "last_seen",
+              "type": "text",
+              "label": {
+                "en": "Last data received",
+                "de": "Letzte Daten empfangen"
+              },
+              "value": "—"
+            }
+          ]
+        }
+      ]
+    },
     {
       "id": "dehumidifier",
       "name": {
