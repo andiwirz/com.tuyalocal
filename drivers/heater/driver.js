@@ -75,6 +75,24 @@ class HeaterDriver extends Homey.Driver {
         return args.device.triggerCapabilityListener('child_lock', enabled);
       });
 
+    // "oscillate" is one of this app's own capabilities, so Homey generates no
+    // flow cards for it — the app has to bring them. The fan, dehumidifier and
+    // air conditioner all did; this driver did not, which left a heater whose
+    // oscillation works on the tile with no way to reach it from a flow.
+    //
+    // Reports an error rather than returning quietly when the capability is off,
+    // unlike the two cards above: a flow that says it succeeded while doing
+    // nothing is how the user finds out about a missing DP number far too late.
+    this.homey.flow.getActionCard('heater_set_oscillate')
+      .registerRunListener(async (args) => {
+        if (!args.device.hasCapability('oscillate')) {
+          throw new Error(this.homey.__('errors.dpNotConfigured', { setting: 'dp_oscillate' }));
+        }
+        const enabled = args.enabled === 'true';
+        await args.device.setCapabilityValue('oscillate', enabled);
+        return args.device.triggerCapabilityListener('oscillate', enabled);
+      });
+
     this.homey.flow.getConditionCard('heater_is_heating')
       .registerRunListener(async (args) =>
         args.device.getCapabilityValue('heater_active') === true

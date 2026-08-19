@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.180",
+  "version": "1.0.181",
   "compatibility": ">=12.13.0",
   "sdk": 3,
   "platforms": [
@@ -7462,6 +7462,48 @@
               "en": "Temperature (°C)",
               "de": "Temperatur (°C)"
             }
+          }
+        ]
+      },
+      {
+        "id": "heater_set_oscillate",
+        "title": {
+          "en": "Set heater oscillation",
+          "de": "Heizgerät-Schwenkung setzen"
+        },
+        "titleFormatted": {
+          "en": "Set heater oscillation [[enabled]]",
+          "de": "Heizgerät-Schwenkung [[enabled]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=heater"
+          },
+          {
+            "name": "enabled",
+            "type": "dropdown",
+            "title": {
+              "en": "Oscillate",
+              "de": "Schwenken"
+            },
+            "values": [
+              {
+                "id": "true",
+                "label": {
+                  "en": "On",
+                  "de": "Ein"
+                }
+              },
+              {
+                "id": "false",
+                "label": {
+                  "en": "Off",
+                  "de": "Aus"
+                }
+              }
+            ]
           }
         ]
       },
