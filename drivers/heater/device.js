@@ -18,6 +18,13 @@ const DP_PROFILE = [
   { settingKey: 'dp_work_state',      capability: 'heater_active',   transform: (v) => String(v).toLowerCase() === 'heating', settable: false },
 ];
 
+// Welche Enum-Capability ihre erlaubten Werte aus welcher Einstellung bezieht.
+// Gebraucht, um eine Liste zu korrigieren, der das Geraet widerspricht.
+const ENUM_VALUE_SETTINGS = {
+  heat_level: 'level_values',
+  mode:       'mode_values',
+};
+
 const OPTIONAL_CAPABILITIES = [
   { setting: 'dp_mode',            capability: 'mode'            },
   { setting: 'dp_level',           capability: 'heat_level'      },
@@ -187,6 +194,12 @@ class HeaterDevice extends BaseTuyaDevice {
       }
 
       const converted = entry.transform(value);
+
+      // Bevor der Wert gesetzt wird: Meldet das Geraet ein Token, das nicht in der
+      // Begleitliste steht, ist die Liste falsch - und Befehle mit einem Wert
+      // daraus verpuffen kommentarlos. Siehe _reconcileEnumToken.
+      const valuesKey = ENUM_VALUE_SETTINGS[entry.capability];
+      if (valuesKey) await this._reconcileEnumToken(entry.capability, valuesKey, converted);
 
       // Fire started/stopped heating triggers on state change
       if (entry.capability === 'heater_active') {
