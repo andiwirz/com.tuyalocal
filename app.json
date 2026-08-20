@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.184",
+  "version": "1.0.185",
   "compatibility": ">=12.13.0",
   "sdk": 3,
   "platforms": [
@@ -10002,12 +10002,6 @@
           }
         }
       },
-      "energy": {
-        "batteries": [
-          "AA",
-          "AA"
-        ]
-      },
       "platforms": [
         "local"
       ],
@@ -10628,11 +10622,6 @@
             "de": "Füllhöhe"
           }
         }
-      },
-      "energy": {
-        "batteries": [
-          "INTERNAL"
-        ]
       },
       "platforms": [
         "local"

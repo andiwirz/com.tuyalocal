@@ -179,6 +179,15 @@ class AccessPanelDevice extends BaseTuyaDevice {
         continue;
       }
 
+      // The two timing values are written by flow actions and carry no capability,
+      // so an incoming value only has to be remembered — which the assignment at
+      // the top of the loop already did. Naming them here keeps them out of the
+      // log: a panel reports both on every full query, and two lines of noise per
+      // minute is how a genuinely unknown data point stops being noticed.
+      const known = ['dp_auto_lock_time', 'dp_alarm_time']
+        .some((k) => settings[k] > 0 && dp === settings[k]);
+      if (known) continue;
+
       // Everything else on this panel is a Raw data point — enrolment, temporary
       // passwords, and the unlock records that would say who opened the door. The
       // format is not published, so they are logged and left alone rather than
