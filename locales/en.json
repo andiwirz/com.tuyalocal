@@ -181,7 +181,8 @@
     "device_disconnected": "Device disconnected",
     "dp_changed": "A data point changed",
     "device_is_connected": "Device is connected",
-    "force_reconnect": "Force reconnect"
+    "force_reconnect": "Force reconnect",
+    "levelName": "Level {{n}}"
   },
   "errors": {
     "missing_settings": "Device settings incomplete — check IP address, Device ID and Local Key.",

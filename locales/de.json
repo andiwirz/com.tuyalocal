@@ -181,7 +181,8 @@
     "device_disconnected": "Gerät getrennt",
     "dp_changed": "Ein Datenpunkt hat sich geändert",
     "device_is_connected": "Gerät ist verbunden",
-    "force_reconnect": "Verbindung neu aufbauen"
+    "force_reconnect": "Verbindung neu aufbauen",
+    "levelName": "Stufe {{n}}"
   },
   "errors": {
     "missing_settings": "Geräteeinstellungen unvollständig — IP-Adresse, Geräte-ID und Local Key prüfen.",

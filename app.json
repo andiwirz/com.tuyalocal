@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.187",
+  "version": "1.0.188",
   "compatibility": ">=12.13.0",
   "sdk": 3,
   "platforms": [
@@ -175,21 +175,21 @@
       },
       "values": [
         {
-          "id": "level_1",
+          "id": "1",
           "title": {
             "en": "Level 1",
             "de": "Stufe 1"
           }
         },
         {
-          "id": "level_2",
+          "id": "2",
           "title": {
             "en": "Level 2",
             "de": "Stufe 2"
           }
         },
         {
-          "id": "level_3",
+          "id": "3",
           "title": {
             "en": "Level 3",
             "de": "Stufe 3"
@@ -15362,10 +15362,10 @@
                 "en": "Heating level values (comma-separated)",
                 "de": "Heizstufen-Werte (kommagetrennt)"
               },
-              "value": "level_1,level_2,level_3",
+              "value": "1,2,3",
               "hint": {
-                "en": "The steps this heater accepts, in its own spelling and matched exactly. Cloud Lookup fills this in from the manufacturer's specification; correct it by hand if the picker shows steps your heater does not have, or rejects the one it is on.",
-                "de": "Die Stufen, die dieses Heizgerät annimmt, in seiner eigenen Schreibweise und exakt verglichen. Cloud Lookup trägt sie aus der Herstellerspezifikation ein; von Hand korrigieren, wenn die Auswahl Stufen zeigt, die es nicht gibt, oder die aktuelle ablehnt."
+                "en": "The steps this heater accepts, in the spelling it uses on the local connection and matched exactly. Watch out for one trap: the Tuya app and the cloud may show these as level_1, level_2, level_3 while the heater itself speaks 1, 2, 3. The DP Debug tab shows the local value, which is the one that counts here — and the app corrects this list by itself once the heater reports a step.",
+                "de": "Die Stufen, die dieses Heizgerät annimmt — in der Schreibweise der lokalen Verbindung und exakt verglichen. Eine Falle: Die Tuya-App und die Cloud zeigen sie mitunter als level_1, level_2, level_3, während das Gerät selbst 1, 2, 3 spricht. Der Reiter DP Debug zeigt den lokalen Wert, und der zählt hier — die App korrigiert diese Liste zudem selbst, sobald das Heizgerät eine Stufe meldet."
               }
             },
             {

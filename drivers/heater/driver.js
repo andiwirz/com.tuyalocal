@@ -102,12 +102,21 @@ class HeaterDriver extends Homey.Driver {
     // "level_2" is simply rejected, so this is an enum with its own card and the
     // choices come from what the device declares.
     const levelAutocomplete = async (query, args) => {
-      const values = (args.device.getSetting('level_values') || 'level_1,level_2,level_3')
+      const values = (args.device.getSetting('level_values') || '1,2,3')
         .split(',').map((s) => s.trim()).filter(Boolean);
       const q = String(query || '').toLowerCase();
       return values
         .filter((v) => v.toLowerCase().includes(q))
-        .map((v) => ({ id: v, name: v.charAt(0).toUpperCase() + v.slice(1).replace(/_/g, ' ') }));
+        // The id is what goes to the heater and is never touched. The name is only
+        // what the card reads as, and a bare "1" says nothing in a sentence like
+        // "Set heating level to 1" — so a plain number is shown as "Level 1" while
+        // still being sent as "1".
+        .map((v) => ({
+          id: v,
+          name: /^\d+$/.test(v)
+            ? this.homey.__('flow.levelName', { n: v })
+            : v.charAt(0).toUpperCase() + v.slice(1).replace(/_/g, ' '),
+        }));
     };
 
     this.homey.flow.getConditionCard('heater_level_is')
