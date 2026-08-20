@@ -19,7 +19,8 @@
       "doorbell": "Türklingel",
       "presence_sensor": "Präsenzsensor",
       "ev_charger": "Wallbox",
-      "level_sensor": "Ultraschall-Füllstandsensor"
+      "level_sensor": "Ultraschall-Füllstandsensor",
+      "weather_station": "Wetterstation"
     }
   },
   "notifications": {

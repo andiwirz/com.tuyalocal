@@ -399,6 +399,8 @@
         <option value="sec-presence">Presence Sensor</option>
         <option value="sec-evcharger">EV Charger</option>
         <option value="sec-generic">Generic</option>
+        <option value="sec-level">Ultrasonic Level Sensor</option>
+        <option value="sec-weather">Weather Station</option>
         <option value="sec-trouble">Troubleshooting</option>
       </select>
     </div>
@@ -1013,6 +1015,82 @@
       </table>
       <div class="note"><strong>Numeric enums:</strong> <code>readMap</code> works on numeric DPs too, so a device that reports <code>0</code> / <code>1</code> instead of descriptive strings can still drive a picker with readable labels. Keys are matched as text — write <code>{"0":"Auto","1":"Continuous"}</code>, not <code>{0:"Auto"}</code>.</div>
       <div class="note"><strong>Flow cards:</strong> "Send DP command" writes any DP by number, with the value auto-parsed (<code>true</code>/<code>false</code> → boolean, digits → number, anything else → text). "DP value is" checks a DP's last known value, and "A specific data point changed" fires only for one chosen DP and carries the new and previous value as tokens.</div>
+    </div>
+
+    <div class="section" id="sec-level">
+      <h2>Ultrasonic Level Sensor &mdash; DP reference</h2>
+      <p>Driver for ultrasonic tank and cistern level sensors (EPTTECH TLC2326P and
+      compatible). The sensor sits above the liquid and measures the distance down to it;
+      what Homey shows is the fill level in percent, the measured depth, and the device's
+      own high/low alarm.</p>
+      <table class="help-table">
+        <thead><tr><th>Setting</th><th>Default DP</th><th>Capability / Use</th><th>Notes</th><th>R/W</th></tr></thead>
+        <tbody>
+          <tr><td>dp_level_percent</td>  <td>22</td> <td>liquid_level</td>       <td>Fill level in percent &mdash; the headline reading</td>                          <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_depth</td>          <td>2</td>  <td>measure_distance</td>   <td>Measured depth, divided into metres by <em>depth_divisor</em></td>               <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_state</td>          <td>1</td>  <td>liquid_state, alarm_tank_empty, alarm_tank_full</td> <td>Enum <code>normal</code> / <code>lower_alarm</code> / <code>upper_alarm</code>. Drives both alarms, matched against <em>state_values</em></td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>state_values</td>      <td>&mdash;</td> <td>State tokens</td>  <td>In the device's own spelling. Which one means "too low" is read from this list, not written into the app</td> <td><span class="help-badge badge-rw">Setting</span></td></tr>
+          <tr><td>depth_divisor</td>     <td>1000</td> <td>Scale</td>            <td>Homey shows metres, the device counts whole units. Manufacturers declare the unit as "m" even where the range makes that impossible &mdash; if a full tank reads a hundred times too high, the divisor is too small</td> <td><span class="help-badge badge-rw">Setting</span></td></tr>
+          <tr><td>dp_max_set</td>        <td>7</td>  <td>High threshold (%)</td> <td>Written by the flow action, not shown as a tile</td>                             <td><span class="help-badge badge-rw">Setting</span></td></tr>
+          <tr><td>dp_mini_set</td>       <td>8</td>  <td>Low threshold (%)</td>  <td>Written by the flow action</td>                                                  <td><span class="help-badge badge-rw">Setting</span></td></tr>
+          <tr><td>dp_upper_switch</td>   <td>14</td> <td>High alarm on/off</td>  <td>Written by the flow action</td>                                                  <td><span class="help-badge badge-rw">Setting</span></td></tr>
+          <tr><td>dp_lower_switch</td>   <td>15</td> <td>Low alarm on/off</td>   <td>Written by the flow action</td>                                                  <td><span class="help-badge badge-rw">Setting</span></td></tr>
+          <tr><td>dp_install_height</td> <td>19</td> <td>Installation height</td> <td>How far the sensor sits above the bottom of the tank</td>                        <td><span class="help-badge badge-rw">Setting</span></td></tr>
+          <tr><td>dp_depth_full</td>     <td>21</td> <td>Depth at 100&nbsp;%</td> <td>The depth the device counts as a full tank</td>                                 <td><span class="help-badge badge-rw">Setting</span></td></tr>
+        </tbody>
+      </table>
+      <div class="note"><strong>Why four of these are flow actions rather than tiles.</strong>
+      The thresholds, the two alarm switches and the installation height are things you write,
+      not things the device reports: the sensor this driver was built for lists nine data points
+      in the cloud but sends only six over the local connection. A tile for the other three
+      could never show anything, so they are flow actions and settings instead. Both write
+      actions report an error when their data point is not configured, rather than reporting
+      success and doing nothing.</div>
+    </div>
+
+    <div class="section" id="sec-weather">
+      <h2>Weather Station &mdash; DP reference</h2>
+      <p>Driver for Tuya WiFi weather stations with an outdoor sensor (WIFIWEST500WT and
+      compatible). Everything it reports is a whole number scaled by a divisor, and every
+      data point is matched by the manufacturer's own code name rather than guessed &mdash;
+      set up <a href="#" onclick="showTab('cloud'); return false;" class="help-link">Cloud
+      Lookup</a> before pairing and the whole table below fills itself in.</p>
+      <table class="help-table">
+        <thead><tr><th>Setting</th><th>Default DP</th><th>Capability / Use</th><th>Notes</th><th>R/W</th></tr></thead>
+        <tbody>
+          <tr><td>dp_temp_in</td>    <td>101</td> <td>measure_temperature</td>          <td>Indoor temperature</td>                                                     <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_hum_in</td>     <td>102</td> <td>measure_humidity</td>             <td>Indoor humidity</td>                                                        <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_temp_out</td>   <td>103</td> <td>measure_temperature.outdoor</td>  <td>The outdoor probe, which Tuya numbers as channel 1 (<code>ch1temp</code>)</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_hum_out</td>    <td>104</td> <td>measure_humidity.outdoor</td>     <td><code>ch1hum</code></td>                                                     <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_temp_extra</td> <td>0</td>   <td>measure_temperature.extra</td>    <td>A second temperature under the generic code <code>temp_current</code>. Off by default: on the reported station it sits at the bottom of its range with no probe attached</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_pressure</td>   <td>109</td> <td>measure_pressure</td>             <td>hPa &mdash; raw 10040 is 1004.0</td>                                        <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_wind</td>       <td>110</td> <td>measure_wind_strength</td>        <td>km/h. <strong>Not</strong> a UV index &mdash; see the note below</td>        <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_gust</td>       <td>111</td> <td>measure_gust_strength</td>        <td>km/h</td>                                                                   <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_wind_dir</td>   <td>112</td> <td>measure_wind_angle</td>           <td>A compass point such as <code>SW</code>, converted to degrees using <em>wd_values</em></td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_rain_1h</td>    <td>113</td> <td>measure_rain_intensity</td>       <td>mm in the last hour, which is mm/h</td>                                     <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_rain_24h</td>   <td>114</td> <td>measure_rain</td>                 <td>mm in the last 24 hours</td>                                                <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_rain_total</td> <td>134</td> <td>measure_rain.total</td>           <td>A third rain value the manufacturer names only <code>rain</code> &mdash; check it against your own station</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_comfort</td>    <td>126</td> <td>comfort_level</td>                <td>Enum <code>moist</code> / <code>dry</code> / <code>comfortable</code> / <code>na</code></td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>wd_values</td>     <td>&mdash;</td> <td>Compass points</td>           <td>Starting at north, clockwise. The angle of each follows from its position, so an eight-point station works by removing the ones it does not send</td> <td><span class="help-badge badge-rw">Setting</span></td></tr>
+          <tr><td>comfort_values</td><td>&mdash;</td> <td>Comfort tokens</td>           <td>In the station's own spelling</td>                                          <td><span class="help-badge badge-rw">Setting</span></td></tr>
+          <tr><td>temp_divisor</td>  <td>10</td>  <td>Scale</td>                        <td>Raw 244 is 24.4 &deg;C</td>                                                 <td><span class="help-badge badge-rw">Setting</span></td></tr>
+          <tr><td>humidity_divisor</td><td>10</td><td>Scale</td>                        <td>Raw 560 is 56.0 %</td>                                                     <td><span class="help-badge badge-rw">Setting</span></td></tr>
+          <tr><td>pressure_divisor</td><td>10</td><td>Scale</td>                        <td>Raw 10040 is 1004.0 hPa</td>                                                <td><span class="help-badge badge-rw">Setting</span></td></tr>
+          <tr><td>wind_divisor</td>  <td>10</td>  <td>Scale</td>                        <td>Raw 4 is 0.4 km/h</td>                                                      <td><span class="help-badge badge-rw">Setting</span></td></tr>
+          <tr><td>rain_divisor</td>  <td>10</td>  <td>Scale</td>                        <td>Raw 310 is 31.0 mm</td>                                                     <td><span class="help-badge badge-rw">Setting</span></td></tr>
+        </tbody>
+      </table>
+      <div class="note"><strong>Do not map these by hand if you can avoid it.</strong> A weather
+      station is a row of adjacent whole numbers, and nothing in a value says which quantity it
+      is. The owner of the station this driver was built for first mapped it by eye and had
+      data point 110 down as a UV index and 114 as a wind gust; they are wind speed and
+      24-hour rainfall. That is how 31 mm of rain came to be displayed as a 91&nbsp;km/h gust.
+      Cloud Lookup reads the names from the manufacturer instead.</div>
+      <div class="note"><strong>Not supported:</strong> data points 127 to 133 &mdash; alarm
+      thresholds, alert history, unit selection, per-channel battery states, display layout
+      &mdash; are proprietary binary blobs with no published format. They appear in the
+      <a href="#" onclick="showTab('debug'); return false;" class="help-link">DP Debug</a> tab
+      and are otherwise ignored. This model has no UV or light sensor at all.</div>
     </div>
 
     <div class="section" id="sec-trouble">

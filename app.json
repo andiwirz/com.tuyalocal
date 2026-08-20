@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.182",
+  "version": "1.0.183",
   "compatibility": ">=12.13.0",
   "sdk": 3,
   "platforms": [
@@ -62,6 +62,49 @@
   },
   "homeyCommunityTopicId": 154077,
   "capabilities": {
+    "comfort_level": {
+      "type": "enum",
+      "title": {
+        "en": "Comfort",
+        "de": "Behaglichkeit"
+      },
+      "values": [
+        {
+          "id": "comfortable",
+          "title": {
+            "en": "Comfortable",
+            "de": "Behaglich"
+          }
+        },
+        {
+          "id": "dry",
+          "title": {
+            "en": "Dry",
+            "de": "Trocken"
+          }
+        },
+        {
+          "id": "moist",
+          "title": {
+            "en": "Humid",
+            "de": "Feucht"
+          }
+        },
+        {
+          "id": "na",
+          "title": {
+            "en": "Not available",
+            "de": "Nicht verfügbar"
+          }
+        }
+      ],
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "uiQuickAction": false,
+      "insights": true,
+      "icon": "/assets/capabilities/comfort_level.svg"
+    },
     "heat_level": {
       "type": "enum",
       "title": {
@@ -2051,6 +2094,114 @@
   },
   "flow": {
     "triggers": [
+      {
+        "id": "weather_station_comfort_changed",
+        "title": {
+          "en": "Comfort level changed",
+          "de": "Behaglichkeit geändert"
+        },
+        "tokens": [
+          {
+            "name": "comfort",
+            "type": "string",
+            "title": {
+              "en": "Comfort",
+              "de": "Behaglichkeit"
+            },
+            "example": {
+              "en": "comfortable",
+              "de": "comfortable"
+            }
+          },
+          {
+            "name": "previous_comfort",
+            "type": "string",
+            "title": {
+              "en": "Previous comfort",
+              "de": "Vorherige Behaglichkeit"
+            },
+            "example": {
+              "en": "dry",
+              "de": "dry"
+            }
+          }
+        ],
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=weather_station"
+          }
+        ]
+      },
+      {
+        "id": "weather_station_device_connected",
+        "title": {
+          "en": "Weather station connected",
+          "de": "Wetterstation verbunden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=weather_station"
+          }
+        ]
+      },
+      {
+        "id": "weather_station_device_disconnected",
+        "title": {
+          "en": "Weather station disconnected",
+          "de": "Wetterstation getrennt"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=weather_station"
+          }
+        ]
+      },
+      {
+        "id": "weather_station_dp_changed",
+        "title": {
+          "en": "Weather station data point changed",
+          "de": "Datenpunkt der Wetterstation geändert"
+        },
+        "tokens": [
+          {
+            "name": "dp",
+            "type": "string",
+            "title": {
+              "en": "DP",
+              "de": "DP"
+            },
+            "example": {
+              "en": "110",
+              "de": "110"
+            }
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "title": {
+              "en": "Value",
+              "de": "Wert"
+            },
+            "example": {
+              "en": "4",
+              "de": "4"
+            }
+          }
+        ],
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=weather_station"
+          }
+        ]
+      },
       {
         "id": "level_sensor_state_changed",
         "title": {
@@ -4439,6 +4590,135 @@
     ],
     "conditions": [
       {
+        "id": "weather_station_comfort_is",
+        "title": {
+          "en": "Comfort level !{{is|is not}}",
+          "de": "Behaglichkeit !{{ist|ist nicht}}"
+        },
+        "titleFormatted": {
+          "en": "Comfort level !{{is|is not}} [[comfort]]",
+          "de": "Behaglichkeit !{{ist|ist nicht}} [[comfort]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=weather_station"
+          },
+          {
+            "name": "comfort",
+            "type": "autocomplete",
+            "placeholder": {
+              "en": "Comfort",
+              "de": "Behaglichkeit"
+            }
+          }
+        ]
+      },
+      {
+        "id": "weather_station_wind_above",
+        "title": {
+          "en": "Wind speed !{{is|is not}} above",
+          "de": "Windgeschwindigkeit !{{ist|ist nicht}} über"
+        },
+        "titleFormatted": {
+          "en": "Wind speed !{{is|is not}} above [[speed]] km/h",
+          "de": "Windgeschwindigkeit !{{ist|ist nicht}} über [[speed]] km/h"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=weather_station"
+          },
+          {
+            "name": "speed",
+            "type": "number",
+            "min": 0,
+            "max": 250,
+            "step": 1,
+            "placeholder": {
+              "en": "km/h",
+              "de": "km/h"
+            }
+          }
+        ]
+      },
+      {
+        "id": "weather_station_wind_from",
+        "title": {
+          "en": "Wind !{{is|is not}} from",
+          "de": "Wind !{{kommt|kommt nicht}} aus"
+        },
+        "titleFormatted": {
+          "en": "Wind !{{is|is not}} from the [[sector]]",
+          "de": "Wind !{{kommt|kommt nicht}} aus [[sector]]"
+        },
+        "hint": {
+          "en": "Each direction covers a 90° sector, so “north” means anything from north-west round to north-east.",
+          "de": "Jede Richtung deckt einen 90°-Sektor ab: „Norden“ meint also alles von Nordwest bis Nordost."
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=weather_station"
+          },
+          {
+            "name": "sector",
+            "type": "dropdown",
+            "title": {
+              "en": "Direction",
+              "de": "Richtung"
+            },
+            "values": [
+              {
+                "id": "n",
+                "label": {
+                  "en": "North",
+                  "de": "Norden"
+                }
+              },
+              {
+                "id": "e",
+                "label": {
+                  "en": "East",
+                  "de": "Osten"
+                }
+              },
+              {
+                "id": "s",
+                "label": {
+                  "en": "South",
+                  "de": "Süden"
+                }
+              },
+              {
+                "id": "w",
+                "label": {
+                  "en": "West",
+                  "de": "Westen"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "weather_station_device_is_connected",
+        "title": {
+          "en": "Weather station !{{is|is not}} connected",
+          "de": "Wetterstation !{{ist|ist nicht}} verbunden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=weather_station"
+          }
+        ]
+      },
+      {
         "id": "level_sensor_state_is",
         "title": {
           "en": "Level state !{{is|is not}}",
@@ -5601,6 +5881,34 @@
       }
     ],
     "actions": [
+      {
+        "id": "weather_station_force_reconnect",
+        "title": {
+          "en": "Force weather station reconnect",
+          "de": "Wetterstation neu verbinden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=weather_station"
+          }
+        ]
+      },
+      {
+        "id": "weather_station_refresh_device",
+        "title": {
+          "en": "Refresh weather station values",
+          "de": "Werte der Wetterstation aktualisieren"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=weather_station"
+          }
+        ]
+      },
       {
         "id": "level_sensor_set_max_level",
         "title": {
@@ -8779,6 +9087,675 @@
     ]
   },
   "drivers": [
+    {
+      "id": "weather_station",
+      "name": {
+        "en": "Weather Station",
+        "de": "Wetterstation"
+      },
+      "class": "sensor",
+      "capabilities": [
+        "measure_temperature"
+      ],
+      "capabilitiesOptions": {
+        "measure_temperature": {
+          "title": {
+            "en": "Indoor Temperature",
+            "de": "Innentemperatur"
+          }
+        },
+        "measure_temperature.outdoor": {
+          "title": {
+            "en": "Outdoor Temperature",
+            "de": "Außentemperatur"
+          }
+        },
+        "measure_temperature.extra": {
+          "title": {
+            "en": "Extra Temperature",
+            "de": "Zusatz-Temperatur"
+          }
+        },
+        "measure_humidity": {
+          "title": {
+            "en": "Indoor Humidity",
+            "de": "Luftfeuchte innen"
+          }
+        },
+        "measure_humidity.outdoor": {
+          "title": {
+            "en": "Outdoor Humidity",
+            "de": "Luftfeuchte außen"
+          }
+        },
+        "measure_rain": {
+          "title": {
+            "en": "Rain (24 h)",
+            "de": "Regen (24 h)"
+          }
+        },
+        "measure_rain.total": {
+          "title": {
+            "en": "Rain (total)",
+            "de": "Regen (gesamt)"
+          }
+        },
+        "measure_rain_intensity": {
+          "title": {
+            "en": "Rain (last hour)",
+            "de": "Regen (letzte Stunde)"
+          }
+        }
+      },
+      "energy": {
+        "batteries": [
+          "AA",
+          "AA"
+        ]
+      },
+      "platforms": [
+        "local"
+      ],
+      "connectivity": [
+        "lan"
+      ],
+      "images": {
+        "small": "/drivers/weather_station/assets/images/small.png",
+        "large": "/drivers/weather_station/assets/images/large.png",
+        "xlarge": "/drivers/weather_station/assets/images/xlarge.png"
+      },
+      "pair": [
+        {
+          "id": "credentials",
+          "navigation": {
+            "next": "list_devices"
+          }
+        },
+        {
+          "id": "list_devices"
+        }
+      ],
+      "settings": [
+        {
+          "type": "group",
+          "label": {
+            "en": "Connection",
+            "de": "Verbindung"
+          },
+          "children": [
+            {
+              "id": "ip",
+              "type": "text",
+              "label": {
+                "en": "IP Address",
+                "de": "IP-Adresse"
+              },
+              "value": ""
+            },
+            {
+              "id": "device_id",
+              "type": "text",
+              "label": {
+                "en": "Device ID",
+                "de": "Geräte-ID"
+              },
+              "value": ""
+            },
+            {
+              "id": "local_key",
+              "type": "text",
+              "label": {
+                "en": "Local Key",
+                "de": "Local Key"
+              },
+              "value": ""
+            },
+            {
+              "id": "version",
+              "type": "dropdown",
+              "label": {
+                "en": "Protocol Version",
+                "de": "Protokollversion"
+              },
+              "value": "3.3",
+              "values": [
+                {
+                  "id": "3.1",
+                  "label": {
+                    "en": "3.1",
+                    "de": "3.1"
+                  }
+                },
+                {
+                  "id": "3.2",
+                  "label": {
+                    "en": "3.2",
+                    "de": "3.2"
+                  }
+                },
+                {
+                  "id": "3.3",
+                  "label": {
+                    "en": "3.3",
+                    "de": "3.3"
+                  }
+                },
+                {
+                  "id": "3.4",
+                  "label": {
+                    "en": "3.4",
+                    "de": "3.4"
+                  }
+                },
+                {
+                  "id": "3.5",
+                  "label": {
+                    "en": "3.5",
+                    "de": "3.5"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "polling_interval",
+              "type": "number",
+              "label": {
+                "en": "Polling Interval (seconds)",
+                "de": "Abfrageintervall (Sekunden)"
+              },
+              "value": 300,
+              "min": 0,
+              "max": 3600,
+              "hint": {
+                "en": "Weather changes slowly and these stations report by themselves, so a long interval costs nothing. 0 disables polling entirely.",
+                "de": "Das Wetter ändert sich langsam und diese Stationen melden von selbst — ein langes Intervall kostet also nichts. 0 schaltet die Abfrage ganz ab."
+              }
+            },
+            {
+              "id": "reconnect_interval",
+              "type": "number",
+              "label": {
+                "en": "Auto-Reconnect Interval (minutes)",
+                "de": "Auto-Reconnect-Intervall (Minuten)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 1440,
+              "hint": {
+                "en": "0 = off. Rebuilds the connection periodically while the device is offline.",
+                "de": "0 = aus. Baut die Verbindung regelmäßig neu auf, solange das Gerät offline ist."
+              }
+            },
+            {
+              "id": "offline_grace_seconds",
+              "type": "number",
+              "label": {
+                "en": "Offline Grace Period (seconds)",
+                "de": "Offline-Karenzzeit (Sekunden)"
+              },
+              "value": 60,
+              "min": 0,
+              "max": 3600
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Temperature and humidity",
+            "de": "Temperatur und Luftfeuchte"
+          },
+          "children": [
+            {
+              "id": "dp_temp_in",
+              "type": "number",
+              "label": {
+                "en": "Indoor Temperature DP",
+                "de": "DP Innentemperatur"
+              },
+              "value": 101,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "0 = disabled.",
+                "de": "0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_hum_in",
+              "type": "number",
+              "label": {
+                "en": "Indoor Humidity DP",
+                "de": "DP Luftfeuchte innen"
+              },
+              "value": 102,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "0 = disabled.",
+                "de": "0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_temp_out",
+              "type": "number",
+              "label": {
+                "en": "Outdoor Temperature DP",
+                "de": "DP Außentemperatur"
+              },
+              "value": 103,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "The outdoor probe, which Tuya numbers as channel 1. 0 = disabled.",
+                "de": "Der Außenfühler, den Tuya als Kanal 1 führt. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_hum_out",
+              "type": "number",
+              "label": {
+                "en": "Outdoor Humidity DP",
+                "de": "DP Luftfeuchte außen"
+              },
+              "value": 104,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "0 = disabled.",
+                "de": "0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_temp_extra",
+              "type": "number",
+              "label": {
+                "en": "Extra Temperature DP",
+                "de": "DP Zusatz-Temperatur"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "A second temperature some stations expose under the generic code “temp_current”. On the model this driver was built for it sits at the bottom of its range with no probe attached, so it is off by default. 0 = disabled.",
+                "de": "Eine zweite Temperatur, die manche Stationen unter dem allgemeinen Code „temp_current“ führen. Beim Modell, für das dieser Treiber gebaut wurde, steht sie ohne angeschlossenen Fühler am unteren Anschlag und ist deshalb ab Werk aus. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "temp_divisor",
+              "type": "dropdown",
+              "label": {
+                "en": "Temperature Divisor",
+                "de": "Teiler Temperatur"
+              },
+              "value": "10",
+              "values": [
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "1",
+                    "de": "1"
+                  }
+                },
+                {
+                  "id": "10",
+                  "label": {
+                    "en": "10",
+                    "de": "10"
+                  }
+                },
+                {
+                  "id": "100",
+                  "label": {
+                    "en": "100",
+                    "de": "100"
+                  }
+                }
+              ],
+              "hint": {
+                "en": "These stations send whole numbers: 244 means 24.4 °C, so the divisor is 10.",
+                "de": "Diese Stationen senden ganze Zahlen: 244 bedeutet 24,4 °C, der Teiler ist also 10."
+              }
+            },
+            {
+              "id": "humidity_divisor",
+              "type": "dropdown",
+              "label": {
+                "en": "Humidity Divisor",
+                "de": "Teiler Luftfeuchte"
+              },
+              "value": "10",
+              "values": [
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "1",
+                    "de": "1"
+                  }
+                },
+                {
+                  "id": "10",
+                  "label": {
+                    "en": "10",
+                    "de": "10"
+                  }
+                },
+                {
+                  "id": "100",
+                  "label": {
+                    "en": "100",
+                    "de": "100"
+                  }
+                }
+              ],
+              "hint": {
+                "en": "560 means 56.0 %, so the divisor is 10.",
+                "de": "560 bedeutet 56,0 %, der Teiler ist also 10."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Pressure, wind and rain",
+            "de": "Luftdruck, Wind und Regen"
+          },
+          "children": [
+            {
+              "id": "dp_pressure",
+              "type": "number",
+              "label": {
+                "en": "Pressure DP",
+                "de": "DP Luftdruck"
+              },
+              "value": 109,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "0 = disabled.",
+                "de": "0 = deaktiviert."
+              }
+            },
+            {
+              "id": "pressure_divisor",
+              "type": "dropdown",
+              "label": {
+                "en": "Pressure Divisor",
+                "de": "Teiler Luftdruck"
+              },
+              "value": "10",
+              "values": [
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "1",
+                    "de": "1"
+                  }
+                },
+                {
+                  "id": "10",
+                  "label": {
+                    "en": "10",
+                    "de": "10"
+                  }
+                },
+                {
+                  "id": "100",
+                  "label": {
+                    "en": "100",
+                    "de": "100"
+                  }
+                }
+              ],
+              "hint": {
+                "en": "10040 means 1004.0 hPa, so the divisor is 10.",
+                "de": "10040 bedeutet 1004,0 hPa, der Teiler ist also 10."
+              }
+            },
+            {
+              "id": "dp_wind",
+              "type": "number",
+              "label": {
+                "en": "Wind Speed DP",
+                "de": "DP Windgeschwindigkeit"
+              },
+              "value": 110,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "0 = disabled.",
+                "de": "0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_gust",
+              "type": "number",
+              "label": {
+                "en": "Wind Gust DP",
+                "de": "DP Windböe"
+              },
+              "value": 111,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "0 = disabled.",
+                "de": "0 = deaktiviert."
+              }
+            },
+            {
+              "id": "wind_divisor",
+              "type": "dropdown",
+              "label": {
+                "en": "Wind Divisor",
+                "de": "Teiler Wind"
+              },
+              "value": "10",
+              "values": [
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "1",
+                    "de": "1"
+                  }
+                },
+                {
+                  "id": "10",
+                  "label": {
+                    "en": "10",
+                    "de": "10"
+                  }
+                },
+                {
+                  "id": "100",
+                  "label": {
+                    "en": "100",
+                    "de": "100"
+                  }
+                }
+              ],
+              "hint": {
+                "en": "Homey shows wind in km/h; a station sending tenths needs a divisor of 10.",
+                "de": "Homey zeigt Wind in km/h; eine Station, die Zehntel sendet, braucht den Teiler 10."
+              }
+            },
+            {
+              "id": "dp_wind_dir",
+              "type": "number",
+              "label": {
+                "en": "Wind Direction DP",
+                "de": "DP Windrichtung"
+              },
+              "value": 112,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "A compass point such as SW, converted to degrees using the list below. 0 = disabled.",
+                "de": "Eine Himmelsrichtung wie SW, die anhand der Liste unten in Grad umgerechnet wird. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "wd_values",
+              "type": "text",
+              "label": {
+                "en": "Wind direction values (comma-separated)",
+                "de": "Windrichtungs-Werte (kommagetrennt)"
+              },
+              "value": "N,NNE,NE,ENE,E,ESE,SE,SSE,S,SSW,SW,WSW,W,WNW,NW,NNW",
+              "hint": {
+                "en": "The compass points this station sends, starting at north and going clockwise. The angle of each one follows from its position, so a station with eight points works just as well — remove the ones it does not send.",
+                "de": "Die Himmelsrichtungen, die diese Station sendet, beginnend im Norden und im Uhrzeigersinn. Der Winkel ergibt sich aus der Position, eine Station mit acht Richtungen funktioniert also genauso — die nicht gesendeten einfach entfernen."
+              }
+            },
+            {
+              "id": "dp_rain_1h",
+              "type": "number",
+              "label": {
+                "en": "Rain DP (last hour)",
+                "de": "DP Regen (letzte Stunde)"
+              },
+              "value": 113,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "0 = disabled.",
+                "de": "0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_rain_24h",
+              "type": "number",
+              "label": {
+                "en": "Rain DP (24 h)",
+                "de": "DP Regen (24 h)"
+              },
+              "value": 114,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "0 = disabled.",
+                "de": "0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_rain_total",
+              "type": "number",
+              "label": {
+                "en": "Rain DP (total)",
+                "de": "DP Regen (gesamt)"
+              },
+              "value": 134,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "A third rain value, which the manufacturer names only “rain”. Check it against your own station before relying on it. 0 = disabled.",
+                "de": "Ein dritter Regenwert, den der Hersteller nur „rain“ nennt. Vor der Verwendung mit der eigenen Station abgleichen. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "rain_divisor",
+              "type": "dropdown",
+              "label": {
+                "en": "Rain Divisor",
+                "de": "Teiler Regen"
+              },
+              "value": "10",
+              "values": [
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "1",
+                    "de": "1"
+                  }
+                },
+                {
+                  "id": "10",
+                  "label": {
+                    "en": "10",
+                    "de": "10"
+                  }
+                },
+                {
+                  "id": "100",
+                  "label": {
+                    "en": "100",
+                    "de": "100"
+                  }
+                }
+              ],
+              "hint": {
+                "en": "310 means 31.0 mm, so the divisor is 10.",
+                "de": "310 bedeutet 31,0 mm, der Teiler ist also 10."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Comfort",
+            "de": "Behaglichkeit"
+          },
+          "children": [
+            {
+              "id": "dp_comfort",
+              "type": "number",
+              "label": {
+                "en": "Comfort DP",
+                "de": "DP Behaglichkeit"
+              },
+              "value": 126,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "0 = disabled.",
+                "de": "0 = deaktiviert."
+              }
+            },
+            {
+              "id": "comfort_values",
+              "type": "text",
+              "label": {
+                "en": "Comfort values (comma-separated)",
+                "de": "Behaglichkeits-Werte (kommagetrennt)"
+              },
+              "value": "moist,dry,comfortable,na",
+              "hint": {
+                "en": "The tokens this station sends, in its own spelling. Cloud Lookup fills this in from the manufacturer's specification.",
+                "de": "Die Werte, die diese Station sendet, in ihrer eigenen Schreibweise. Cloud Lookup trägt sie aus der Herstellerspezifikation ein."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Status",
+            "de": "Status"
+          },
+          "children": [
+            {
+              "id": "connection_status",
+              "type": "text",
+              "label": {
+                "en": "Connection",
+                "de": "Verbindung"
+              },
+              "value": "—"
+            },
+            {
+              "id": "last_seen",
+              "type": "text",
+              "label": {
+                "en": "Last data received",
+                "de": "Letzte Daten empfangen"
+              },
+              "value": "—"
+            }
+          ]
+        }
+      ]
+    },
     {
       "id": "level_sensor",
       "name": {

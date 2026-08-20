@@ -19,7 +19,8 @@
       "doorbell": "Doorbell",
       "presence_sensor": "Presence Sensor",
       "ev_charger": "EV Charger",
-      "level_sensor": "Ultrasonic Level Sensor"
+      "level_sensor": "Ultrasonic Level Sensor",
+      "weather_station": "Weather Station"
     }
   },
   "notifications": {
