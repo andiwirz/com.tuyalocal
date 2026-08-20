@@ -113,7 +113,7 @@ class HeaterDriver extends Homey.Driver {
     this.homey.flow.getConditionCard('heater_level_is')
       .registerArgumentAutocompleteListener('level', levelAutocomplete)
       .registerRunListener(async (args) =>
-        args.device.getCapabilityValue('heat_level') === args.level.id
+        args.device.getCapabilityValue('heat_level') === args.level?.id
       );
 
     this.homey.flow.getActionCard('heater_set_level')
@@ -122,8 +122,19 @@ class HeaterDriver extends Homey.Driver {
         if (!args.device.hasCapability('heat_level')) {
           throw new Error(this.homey.__('errors.dpNotConfigured', { setting: 'dp_level' }));
         }
-        await args.device.setCapabilityValue('heat_level', args.level.id);
-        return args.device.triggerCapabilityListener('heat_level', args.level.id);
+        // A stored autocomplete choice can outlive the list it came from — the list
+        // is corrected from what the device reports, and a flow saved before that
+        // still holds the old spelling. Reading .id off nothing would surface as an
+        // unreadable type error, so say what is actually wrong.
+        const step = args.level?.id;
+        if (!step) throw new Error(this.homey.__('errors.pickAgain'));
+
+        // Sent to the device first. triggerCapabilityListener writes the value and
+        // updates the capability itself, so the setCapabilityValue that used to run
+        // ahead of it was not only redundant: Homey rejects a value outside the
+        // capability's current options, and that rejection happened before anything
+        // reached the heater — a card that failed without having tried.
+        return args.device.triggerCapabilityListener('heat_level', step);
       });
 
     this.homey.flow.getConditionCard('heater_is_heating')

@@ -186,7 +186,8 @@
   "errors": {
     "missing_settings": "Device settings incomplete — check IP address, Device ID and Local Key.",
     "dpNotConfigured": "This data point is not configured on this device ({{setting}}) — set its DP number in the device settings first.",
-    "lockControlDisabled": "Locking and unlocking from Homey is switched off for this device. Turn on \"Allow locking and unlocking from Homey\" in the device settings after checking that the lock state reads correctly."
+    "lockControlDisabled": "Locking and unlocking from Homey is switched off for this device. Turn on \"Allow locking and unlocking from Homey\" in the device settings after checking that the lock state reads correctly.",
+    "pickAgain": "That step is no longer one this heater offers — open the flow and pick the level again."
   },
   "settings": {
     "logs": {
