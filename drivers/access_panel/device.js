@@ -35,6 +35,7 @@ class AccessPanelDevice extends BaseTuyaDevice {
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('access_panel_dp_changed');
     this._triggerDoorbell           = this.homey.flow.getDeviceTriggerCard('access_panel_doorbell_pressed');
     this._triggerLockChanged        = this.homey.flow.getDeviceTriggerCard('access_panel_lock_changed');
+    this._triggerDpValue            = this.homey.flow.getDeviceTriggerCard('access_panel_dp_value_changed');
 
     this._registerListeners();
     await this._connect();
@@ -71,6 +72,26 @@ class AccessPanelDevice extends BaseTuyaDevice {
     register('hold_open', async (value) => this.setBooleanDp('dp_hold_open', 'hold_open', value));
     register('auto_lock', async (value) => this.setBooleanDp('dp_auto_lock', 'auto_lock', value));
     register('doorbell_volume', async (value) => this.setDoorbellVolume(value));
+  }
+
+  /**
+   * The data point numbers this panel has actually sent, for the flow card's list.
+   *
+   * Taken from what the device reported rather than from a table of numbers,
+   * because a list of every possible data point would mostly be entries this model
+   * does not have — and the ones it does have are the point.
+   */
+  reportedDps() {
+    const seen = [...(this._seenDps || [])];
+    if (seen.length > 0) return seen.sort((a, b) => a - b);
+    // Nothing recorded yet — a device added moments ago. Fall back to the numbers
+    // the driver is configured for, so the card is not empty on the first day.
+    return this._configuredDps();
+  }
+
+  /** dp number -> the manufacturer's code name, for labels only. */
+  dpCodes() {
+    try { return this.getStoreValue('dpCodes') || {}; } catch (e) { return {}; }
   }
 
   // ── Public, called by the flow actions in driver.js ─────────────────────────
@@ -131,8 +152,21 @@ class AccessPanelDevice extends BaseTuyaDevice {
 
       const dp = parseInt(dpStr, 10);
 
+      const previous = this._lastRaw ? this._lastRaw[dpStr] : undefined;
+      this._lastRaw = this._lastRaw || {};
+      this._lastRaw[dpStr] = value;
+
       this._triggerDpChanged
         .trigger(this, { dp: dpStr, value: String(value) })
+        .catch(() => {});
+
+      // The per-data-point trigger, filtered in the driver by the dp in this state.
+      this._triggerDpValue
+        .trigger(this, {
+          value:          String(value),
+          previous_value: previous === undefined ? '' : String(previous),
+          code:           this.dpCodes()[dp] || '',
+        }, { dp })
         .catch(() => {});
 
       // ── Doorbell ──────────────────────────────────────────────────────────

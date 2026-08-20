@@ -1124,6 +1124,15 @@
           <tr><td>dp_alarm_time</td>      <td>34</td>  <td>Flow action</td>         <td>How long the alarm sounds, 0&ndash;180 s</td>                                    <td><span class="help-badge badge-rw">Setting</span></td></tr>
         </tbody>
       </table>
+      <div class="note"><strong>The undecodable data points are still usable.</strong> The
+      flow trigger <em>A specific data point changed</em> fires for one data point of your
+      choosing and hands you its raw value, so the parts this app cannot interpret become
+      something you can build on. The unlock records are the useful case: each enrolled person
+      produces a different value, so unlock the door yourself once, read the value off the
+      trigger, and from then on a comparison against it tells you who is at the door. The list
+      offers the data points your panel has actually reported, named where Cloud Lookup could
+      supply a name.</div>
+
       <div class="note"><strong>Locking from Homey is off until you switch it on.</strong> Two
       reasons, and both are about a door rather than a lamp. The specification lists the lock
       data point as writable, but on many of these panels a remote unlock actually travels

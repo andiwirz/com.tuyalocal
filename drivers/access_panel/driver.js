@@ -64,6 +64,30 @@ class AccessPanelDriver extends Homey.Driver {
       this.homey.flow.getDeviceTriggerCard(id).registerRunListener(async () => true);
     }
 
+    // The way in to everything this driver cannot decode. Twenty-five of this
+    // panel's data points are an undocumented binary format, so the app cannot say
+    // what an unlock record means — but it can hand the raw value over and let the
+    // owner recognise it. Enrol a face, unlock the door once, read the value off
+    // this trigger, and a comparison against it identifies that person from then on.
+    //
+    // The choices are the data points the panel has actually reported, rather than
+    // a list of numbers to guess among, named where Cloud Lookup gave a name at
+    // pairing. That map is only ever used for labels: the value written into the
+    // flow is the number.
+    this.homey.flow.getDeviceTriggerCard('access_panel_dp_value_changed')
+      .registerArgumentAutocompleteListener('dp', async (query, args) => {
+        const seen  = args.device.reportedDps();
+        const codes = args.device.dpCodes();
+        const q     = String(query || '').toLowerCase();
+        return seen
+          .map((dp) => ({
+            id:   String(dp),
+            name: codes[dp] ? `${dp} — ${codes[dp]}` : `DP ${dp}`,
+          }))
+          .filter((o) => o.name.toLowerCase().includes(q) || o.id === q);
+      })
+      .registerRunListener(async (args, state) => Number(args.dp?.id) === Number(state.dp));
+
     this.homey.flow.getConditionCard('access_panel_device_is_connected')
       .registerRunListener(async (args) => args.device._conn?.connected === true);
 
@@ -104,6 +128,35 @@ class AccessPanelDriver extends Homey.Driver {
 
     this.homey.flow.getActionCard('access_panel_refresh_device')
       .registerRunListener(async (args) => args.device.pollNow());
+  }
+
+  /**
+   * The manufacturer's name for every data point, as { number: code }.
+   *
+   * Only ever used to label the choices in the per-data-point flow card. Twenty-five
+   * of them are opaque blobs, and picking "13" out of a list of numbers is a good way
+   * to wire the wrong one; "13 — unlock_face_kit" is not. Best-effort by design: no
+   * Cloud Lookup, no names, and the card falls back to plain numbers rather than
+   * failing.
+   */
+  async _fetchDpCodes(deviceId) {
+    try {
+      const accessId     = this.homey.settings.get('cloud_access_id');
+      const accessSecret = this.homey.settings.get('cloud_access_secret');
+      const region       = this.homey.settings.get('cloud_region');
+      if (!accessId || !accessSecret || !region) return {};
+      const detail = await this.homey.app.cloudDeviceDetail({
+        accessId, accessSecret, region, deviceId });
+      const out = {};
+      for (const entry of detail?.status || []) {
+        if (entry && entry.dp_id && entry.code) out[entry.dp_id] = entry.code;
+      }
+      this.log(`Stored ${Object.keys(out).length} data point names for the flow card`);
+      return out;
+    } catch (err) {
+      this.log(`Could not read data point names: ${err.message}`);
+      return {};
+    }
   }
 
   getCloudMaps() {
@@ -172,6 +225,7 @@ class AccessPanelDriver extends Homey.Driver {
       pendingDevice = {
         name: this.homey.__('device.defaultName.access_panel'),
         data: { id: deviceId },
+        store: { dpCodes: await this._fetchDpCodes(deviceId) },
         settings: {
           ip,
           device_id:             deviceId,
