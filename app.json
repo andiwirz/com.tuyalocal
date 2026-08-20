@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.181",
+  "version": "1.0.182",
   "compatibility": ">=12.13.0",
   "sdk": 3,
   "platforms": [
@@ -62,6 +62,42 @@
   },
   "homeyCommunityTopicId": 154077,
   "capabilities": {
+    "heat_level": {
+      "type": "enum",
+      "title": {
+        "en": "Heating Level",
+        "de": "Heizstufe"
+      },
+      "values": [
+        {
+          "id": "level_1",
+          "title": {
+            "en": "Level 1",
+            "de": "Stufe 1"
+          }
+        },
+        {
+          "id": "level_2",
+          "title": {
+            "en": "Level 2",
+            "de": "Stufe 2"
+          }
+        },
+        {
+          "id": "level_3",
+          "title": {
+            "en": "Level 3",
+            "de": "Stufe 3"
+          }
+        }
+      ],
+      "getable": true,
+      "setable": true,
+      "uiComponent": "picker",
+      "uiQuickAction": false,
+      "insights": true,
+      "icon": "/assets/capabilities/heat_level.svg"
+    },
     "liquid_level": {
       "type": "number",
       "title": {
@@ -5120,6 +5156,32 @@
         ]
       },
       {
+        "id": "heater_level_is",
+        "title": {
+          "en": "Heating level !{{is|is not}}",
+          "de": "Heizstufe !{{ist|ist nicht}}"
+        },
+        "titleFormatted": {
+          "en": "Heating level !{{is|is not}} [[level]]",
+          "de": "Heizstufe !{{ist|ist nicht}} [[level]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=heater"
+          },
+          {
+            "name": "level",
+            "type": "autocomplete",
+            "placeholder": {
+              "en": "Level",
+              "de": "Stufe"
+            }
+          }
+        ]
+      },
+      {
         "id": "heater_mode_is",
         "title": {
           "en": "Heater mode !{{is|is not}}",
@@ -7461,6 +7523,36 @@
             "title": {
               "en": "Temperature (°C)",
               "de": "Temperatur (°C)"
+            }
+          }
+        ]
+      },
+      {
+        "id": "heater_set_level",
+        "title": {
+          "en": "Set heating level",
+          "de": "Heizstufe setzen"
+        },
+        "titleFormatted": {
+          "en": "Set heating level to [[level]]",
+          "de": "Heizstufe auf [[level]] setzen"
+        },
+        "hint": {
+          "en": "The heating power step. These heaters offer named steps rather than a percentage, so the choices come from what your device declares.",
+          "de": "Die Heizleistungsstufe. Diese Geräte bieten benannte Stufen statt eines Prozentwerts, die Auswahl stammt daher aus der Deklaration des Geräts."
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=heater"
+          },
+          {
+            "name": "level",
+            "type": "autocomplete",
+            "placeholder": {
+              "en": "Level",
+              "de": "Stufe"
             }
           }
         ]
@@ -13425,6 +13517,34 @@
               "hint": {
                 "en": "Supported mode values.",
                 "de": "Unterstützte Modus-Werte."
+              }
+            },
+            {
+              "id": "dp_level",
+              "type": "number",
+              "label": {
+                "en": "Heating Level DP",
+                "de": "Heizstufen-DP"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "DP for the heating power level, a list of named steps rather than a percentage. Set to 0 to disable.",
+                "de": "DP für die Heizstufe — eine Liste benannter Stufen, kein Prozentwert. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "level_values",
+              "type": "text",
+              "label": {
+                "en": "Heating level values (comma-separated)",
+                "de": "Heizstufen-Werte (kommagetrennt)"
+              },
+              "value": "level_1,level_2,level_3",
+              "hint": {
+                "en": "The steps this heater accepts, in its own spelling and matched exactly. Cloud Lookup fills this in from the manufacturer's specification; correct it by hand if the picker shows steps your heater does not have, or rejects the one it is on.",
+                "de": "Die Stufen, die dieses Heizgerät annimmt, in seiner eigenen Schreibweise und exakt verglichen. Cloud Lookup trägt sie aus der Herstellerspezifikation ein; von Hand korrigieren, wenn die Auswahl Stufen zeigt, die es nicht gibt, oder die aktuelle ablehnt."
               }
             },
             {

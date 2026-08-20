@@ -18,6 +18,9 @@ const CLOUD_CODE_MAP = {
   dp_child_lock:      ['child_lock', 'lock'],
   dp_countdown_timer: ['countdown_set', 'countdown'],
   dp_countdown_left:  ['countdown_left'],
+  // The reported heater uses "level"; the others are the spellings the same
+  // function carries on neighbouring models.
+  dp_level:           ['level', 'heat_level', 'power_level', 'work_power'],
   dp_work_state:      ['work_state'],
   dp_fault:           ['fault'],
 };
@@ -25,7 +28,8 @@ const CLOUD_CODE_MAP = {
 // When the cloud spec confirms a DP maps to one of these settings, the DP's
 // full declared enum token list is written to the companion setting.
 const CLOUD_ENUM_VALUES_MAP = {
-  dp_mode: 'mode_values',
+  dp_mode:  'mode_values',
+  dp_level: 'level_values',
 };
 
 class HeaterDriver extends Homey.Driver {
@@ -93,6 +97,35 @@ class HeaterDriver extends Homey.Driver {
         return args.device.triggerCapabilityListener('oscillate', enabled);
       });
 
+    // The heating power step. Named steps, not a percentage — Homey's own
+    // power_level is a 0–100 % slider and writing 50 % to a device expecting
+    // "level_2" is simply rejected, so this is an enum with its own card and the
+    // choices come from what the device declares.
+    const levelAutocomplete = async (query, args) => {
+      const values = (args.device.getSetting('level_values') || 'level_1,level_2,level_3')
+        .split(',').map((s) => s.trim()).filter(Boolean);
+      const q = String(query || '').toLowerCase();
+      return values
+        .filter((v) => v.toLowerCase().includes(q))
+        .map((v) => ({ id: v, name: v.charAt(0).toUpperCase() + v.slice(1).replace(/_/g, ' ') }));
+    };
+
+    this.homey.flow.getConditionCard('heater_level_is')
+      .registerArgumentAutocompleteListener('level', levelAutocomplete)
+      .registerRunListener(async (args) =>
+        args.device.getCapabilityValue('heat_level') === args.level.id
+      );
+
+    this.homey.flow.getActionCard('heater_set_level')
+      .registerArgumentAutocompleteListener('level', levelAutocomplete)
+      .registerRunListener(async (args) => {
+        if (!args.device.hasCapability('heat_level')) {
+          throw new Error(this.homey.__('errors.dpNotConfigured', { setting: 'dp_level' }));
+        }
+        await args.device.setCapabilityValue('heat_level', args.level.id);
+        return args.device.triggerCapabilityListener('heat_level', args.level.id);
+      });
+
     this.homey.flow.getConditionCard('heater_is_heating')
       .registerRunListener(async (args) =>
         args.device.getCapabilityValue('heater_active') === true
@@ -110,6 +143,50 @@ class HeaterDriver extends Homey.Driver {
   // method because these maps are module-local constants.
   getCloudMaps() {
     return { codeMap: CLOUD_CODE_MAP, enumValuesMap: CLOUD_ENUM_VALUES_MAP };
+  }
+
+  /**
+   * Keeps a declared token list from contradicting the value the device is sending.
+   *
+   * The reported heater declares its heating level as the range 1, 2, 3 while
+   * actually reporting "level_1". Writing "1" to it is rejected, so taking the
+   * specification at face value would have filled the flow card's choices with
+   * three tokens the device refuses — and the picker guard in _syncEnumOptions
+   * would then refuse the whole list, because the live value is in neither.
+   *
+   * Neither source is wrong about everything: the device is authoritative on how
+   * a step is spelled, the specification on how many there are. So when the live
+   * token is absent from the declared range, the range is rebuilt in the device's
+   * own spelling, keeping the declared count. Only shapes that are plainly the
+   * same thing twice are reconciled — a numeric range against a prefix_number
+   * token; anything else is left exactly as declared.
+   *
+   * @param {Object} cloudDps  Result of detectViaCloud — mutated in place.
+   * @param {Object} liveDps   The raw DP snapshot collected during pairing.
+   */
+  _reconcileTokens(cloudDps, liveDps) {
+    for (const [dpKey, valuesKey] of Object.entries(CLOUD_ENUM_VALUES_MAP)) {
+      const dp   = cloudDps[dpKey];
+      const csv  = cloudDps[valuesKey];
+      if (!(dp > 0) || typeof csv !== 'string' || !csv) continue;
+
+      const live = liveDps?.[String(dp)];
+      if (typeof live !== 'string' || !live) continue;
+
+      const declared = csv.split(',').map((v) => v.trim()).filter(Boolean);
+      if (declared.includes(live)) continue;              // no contradiction
+
+      const m = live.match(/^(.*?)(\d+)$/);               // e.g. "level_1" -> "level_", 1
+      if (!m || !declared.every((v) => /^\d+$/.test(v))) {
+        this.log(`Cloud tokens for ${dpKey}: device reports "${live}", specification says `
+          + `[${declared.join(', ')}] — left as declared, correct "${valuesKey}" by hand if needed`);
+        continue;
+      }
+      const rebuilt = declared.map((n) => `${m[1]}${n}`);
+      cloudDps[valuesKey] = rebuilt.join(',');
+      this.log(`Cloud tokens for ${dpKey}: kept the declared ${declared.length} steps but in the `
+        + `device's own spelling — ${rebuilt.join(', ')}`);
+    }
   }
 
   // One divisor serves both temperatures.
@@ -170,6 +247,7 @@ class HeaterDriver extends Homey.Driver {
         if (Object.keys(collectedDps).length > 0) {
           detectedDps = this._detectDps(collectedDps);
           const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m), CLOUD_ENUM_VALUES_MAP, guessedDefaults(detectedDps, collectedDps));
+          this._reconcileTokens(cloudDps, collectedDps);
           if (Object.keys(cloudDps).length > 0) Object.assign(detectedDps, cloudDps);
         }
       } catch (err) {
@@ -279,16 +357,36 @@ class HeaterDriver extends Homey.Driver {
     const timerEntry = enumDps.find((d) => String(d.val) === 'cancel' || /^\d+h$/.test(String(d.val)));
     const dp_countdown_timer = timerEntry?.dp ?? 0;
 
+    // ── Heating level ─────────────────────────────────────────────────────────
+    // The power step, which on these heaters is a list of named steps rather than
+    // a percentage — so Homey's own power_level slider is the wrong shape for it.
+    // Matched on the "level_N" spelling rather than on a bare number: a bare "1"
+    // is indistinguishable from a step switch, a scene index or a fan speed, and
+    // this driver already has three other enum DPs competing for the same values.
+    const levelEntry = enumDps.find((d) =>
+      d.dp !== dp_mode && d.dp !== dp_work_state && d.dp !== dp_countdown_timer
+      && /^level_\d+$/i.test(String(d.val)));
+    const dp_level = levelEntry?.dp ?? 0;
+    // Locally only the current step is visible, never how many there are. Three is
+    // what the reported heater declares and what this family of devices uses; the
+    // observed number widens it if it is already higher, and Cloud Lookup replaces
+    // the whole list with the declared range wherever the specification carries it.
+    const observedLevel = levelEntry ? parseInt(String(levelEntry.val).split('_')[1], 10) : 0;
+    const levelSteps    = Math.max(3, Number.isFinite(observedLevel) ? observedLevel : 3);
+    const level_values  = levelEntry
+      ? Array.from({ length: levelSteps }, (_, i) => `level_${i + 1}`).join(',')
+      : 'level_1,level_2,level_3';
+
     const oscillateEntry = boolDps.find((d) => d.dp !== dp_onoff && d.dp > 1);
     const dp_oscillate   = oscillateEntry?.dp ?? 0;
 
     return {
       dp_onoff, dp_target_temp, dp_current_temp, dp_mode, dp_oscillate,
       dp_child_lock: 0, dp_fault: 0, dp_countdown_timer, dp_countdown_left: 0,
-      dp_work_state,
+      dp_work_state, dp_level,
       temp_divisor,
       temp_min: 5, temp_max: 35, temp_step: 1,
-      mode_values,
+      mode_values, level_values,
     };
   }
 

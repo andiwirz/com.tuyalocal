@@ -9,6 +9,7 @@ const DEBOUNCE_MS = 300;
 const DP_PROFILE = [
   { settingKey: 'dp_onoff',           capability: 'onoff',           transform: (v) => Boolean(v),  settable: true  },
   { settingKey: 'dp_mode',            capability: 'mode',            transform: (v) => String(v),   settable: true  },
+  { settingKey: 'dp_level',           capability: 'heat_level',      transform: (v) => String(v),   settable: true  },
   { settingKey: 'dp_oscillate',       capability: 'oscillate',       transform: (v) => Boolean(v),  settable: true  },
   { settingKey: 'dp_child_lock',      capability: 'child_lock',      transform: (v) => Boolean(v),  settable: true  },
   { settingKey: 'dp_countdown_timer', capability: 'countdown_timer', transform: (v) => String(v),   settable: true  },
@@ -19,6 +20,7 @@ const DP_PROFILE = [
 
 const OPTIONAL_CAPABILITIES = [
   { setting: 'dp_mode',            capability: 'mode'            },
+  { setting: 'dp_level',           capability: 'heat_level'      },
   { setting: 'dp_oscillate',       capability: 'oscillate'       },
   { setting: 'dp_child_lock',      capability: 'child_lock'      },
   { setting: 'dp_fault',           capability: 'alarm_generic'   },
@@ -41,6 +43,7 @@ class HeaterDevice extends BaseTuyaDevice {
     await this._migrateCapabilities([]);
     await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
     await this._syncEnumOptions('mode', this.getSetting('mode_values'));
+    await this._syncEnumOptions('heat_level', this.getSetting('level_values'));
     await this._syncTempCapabilityOptions();
 
     // â”€â”€ Flow trigger cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -228,6 +231,9 @@ class HeaterDevice extends BaseTuyaDevice {
     }
     if (changedKeys.includes('mode_values')) {
       await this._syncEnumOptions('mode', this.getSetting('mode_values'));
+    }
+    if (changedKeys.includes('level_values')) {
+      await this._syncEnumOptions('heat_level', this.getSetting('level_values'));
     }
     if (changedKeys.some((k) => ['temp_step', 'temp_min', 'temp_max'].includes(k))) {
       await this._syncTempCapabilityOptions();
