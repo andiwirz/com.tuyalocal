@@ -20,7 +20,8 @@
       "presence_sensor": "Präsenzsensor",
       "ev_charger": "Wallbox",
       "level_sensor": "Ultraschall-Füllstandsensor",
-      "weather_station": "Wetterstation"
+      "weather_station": "Wetterstation",
+      "access_panel": "Zutrittspanel"
     }
   },
   "notifications": {
@@ -184,7 +185,8 @@
   },
   "errors": {
     "missing_settings": "Geräteeinstellungen unvollständig — IP-Adresse, Geräte-ID und Local Key prüfen.",
-    "dpNotConfigured": "Dieser Datenpunkt ist auf diesem Gerät nicht eingerichtet ({{setting}}) — bitte zuerst seine DP-Nummer in den Geräteeinstellungen eintragen."
+    "dpNotConfigured": "Dieser Datenpunkt ist auf diesem Gerät nicht eingerichtet ({{setting}}) — bitte zuerst seine DP-Nummer in den Geräteeinstellungen eintragen.",
+    "lockControlDisabled": "Ver- und Entriegeln aus Homey ist für dieses Gerät abgeschaltet. Nach Prüfung der Zustandsanzeige in den Geräteeinstellungen „Ver- und Entriegeln aus Homey zulassen“ einschalten."
   },
   "settings": {
     "logs": {

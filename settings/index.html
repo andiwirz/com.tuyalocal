@@ -399,6 +399,7 @@
         <option value="sec-presence">Presence Sensor</option>
         <option value="sec-evcharger">EV Charger</option>
         <option value="sec-generic">Generic</option>
+        <option value="sec-access">Face Access Panel</option>
         <option value="sec-level">Ultrasonic Level Sensor</option>
         <option value="sec-weather">Weather Station</option>
         <option value="sec-trouble">Troubleshooting</option>
@@ -1091,6 +1092,46 @@
       &mdash; are proprietary binary blobs with no published format. They appear in the
       <a href="#" onclick="showTab('debug'); return false;" class="help-link">DP Debug</a> tab
       and are otherwise ignored. This model has no UV or light sensor at all.</div>
+    </div>
+
+    <div class="section" id="sec-access">
+      <h2>Face Access Panel &mdash; DP reference</h2>
+      <p>Driver for Tuya WiFi access control panels with face, fingerprint, card and code entry
+      (category <code>mk</code>). Read the note below before expecting too much of it: most of
+      what these panels do cannot be reached locally at all.</p>
+      <div class="note"><strong>What this driver cannot do, and why.</strong> Of the 37 data
+      points on the panel it was built for, <strong>25 are Raw</strong> &mdash; an undocumented
+      binary format. Enrolling a face or a fingerprint, creating or deleting temporary
+      passwords, and the unlock records that would tell you <em>who</em> just opened the door
+      all live in those. Tuya publishes that format only under agreement, so there is nothing
+      to decode against. What is left, and what this driver covers, is the lock and door state,
+      the alarms, the doorbell press and a handful of settings.</div>
+      <table class="help-table">
+        <thead><tr><th>Setting</th><th>Default DP</th><th>Capability / Use</th><th>Notes</th><th>R/W</th></tr></thead>
+        <tbody>
+          <tr><td>dp_lock_state</td>      <td>40</td>  <td>locked</td>              <td>The motor position. Reading only, unless <em>allow_lock_control</em> is switched on</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>lock_state_invert</td>  <td>off</td> <td>Direction</td>           <td>Turn on if Homey shows unlocked while the door is locked. Nothing in the data point says which way it counts</td> <td><span class="help-badge badge-rw">Setting</span></td></tr>
+          <tr><td>allow_lock_control</td> <td>off</td> <td>Write permission</td>    <td>Off deliberately &mdash; see the second note below</td>                          <td><span class="help-badge badge-rw">Setting</span></td></tr>
+          <tr><td>dp_door_contact</td>    <td>104</td> <td>alarm_contact</td>       <td>Door open or closed. <em>door_contact_invert</em> swaps it</td>                  <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_door_alarm</td>      <td>105</td> <td>alarm_generic.door</td>  <td>Door sensor alarm, e.g. left open too long</td>                                  <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_error_alarm</td>     <td>102</td> <td>alarm_generic</td>       <td>Device fault</td>                                                                <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_tamper_alarm</td>    <td>103</td> <td>alarm_tamper</td>        <td>Anti-pry alarm</td>                                                              <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_doorbell</td>        <td>101</td> <td>Flow trigger</td>        <td>An event, not a state: two presses in a row both come through</td>                <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_doorbell_volume</td> <td>26</td>  <td>doorbell_volume</td>     <td>Enum <code>mute</code> / <code>low</code> / <code>high</code>, from <em>volume_values</em></td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_hold_open</td>       <td>28</td>  <td>hold_open</td>           <td>Keeps the door released until switched back</td>                                 <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_auto_lock</td>       <td>30</td>  <td>auto_lock</td>           <td>Automatic re-locking on or off</td>                                              <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_auto_lock_time</td>  <td>31</td>  <td>Flow action</td>         <td>Delay before automatic locking, 0&ndash;100 s</td>                               <td><span class="help-badge badge-rw">Setting</span></td></tr>
+          <tr><td>dp_alarm_time</td>      <td>34</td>  <td>Flow action</td>         <td>How long the alarm sounds, 0&ndash;180 s</td>                                    <td><span class="help-badge badge-rw">Setting</span></td></tr>
+        </tbody>
+      </table>
+      <div class="note"><strong>Locking from Homey is off until you switch it on.</strong> Two
+      reasons, and both are about a door rather than a lamp. The specification lists the lock
+      data point as writable, but on many of these panels a remote unlock actually travels
+      through an encrypted channel this app cannot speak, so writing may do nothing at all. And
+      which way round the boolean counts cannot be read off the name &mdash; if it is inverted,
+      the first attempt unlocks a door you meant to lock. Watch the lock state on the tile
+      while you turn the handle, set <em>lock_state_invert</em> if it reads backwards, and only
+      then enable <em>allow_lock_control</em>.</div>
     </div>
 
     <div class="section" id="sec-trouble">
