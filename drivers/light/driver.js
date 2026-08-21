@@ -3,6 +3,7 @@
 const Homey                     = require('homey');
 const TuyAPI                    = require('../../lib/SafeTuyAPI');
 const { setupCloudLookup } = require('../../lib/pairCloudLookup');
+const { describeConnectFailure } = require('../../lib/connectFailure');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
 const { detectViaCloud, guessedDefaults }        = require('../../lib/dpCodeMap');
@@ -47,6 +48,7 @@ class LightDriver extends Homey.Driver {
         throw new Error(this.homey.__('pair.credentials.invalidKey'));
 
       let connected     = false;
+      let failureError = '';
       let detectedDps   = null;
       let actualVersion = String(version);
       const collectedDps = {};
@@ -89,6 +91,7 @@ class LightDriver extends Homey.Driver {
         }
       } catch (err) {
         connected = false;
+        failureError = err.message;
         try { if (pairingDevice) pairingDevice.disconnect(); } catch (_e) {}
         this.log('Connection test failed:', err.message);
       }
@@ -102,7 +105,16 @@ class LightDriver extends Homey.Driver {
         },
       };
       pendingRawDps = collectedDps;
-      return { connected, detectedVersion: actualVersion, detectedDps };
+      // The dialog used to say only "connection failed" — the same sentence
+      // whether the address is wrong, the key is wrong, or the device does not
+      // offer local control at all. So people work through the one visible
+      // choice, the protocol version. Looking at port 6668 separates the cases.
+      const failureHint = connected
+        ? ''
+        : await describeConnectFailure({ ip, error: failureError });
+      if (failureHint) this.log(failureHint);
+
+      return { connected, detectedVersion: actualVersion, detectedDps, failureHint };
     });
 
     session.setHandler('list_devices',    async () => pendingDevice ? [pendingDevice] : []);
