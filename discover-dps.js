@@ -5,7 +5,7 @@
  */
 'use strict';
 
-const TuyAPI = require('tuyapi');
+const TuyAPI = require('./lib/SafeTuyAPI');
 
 const [,, ip, deviceId, localKey, version = '3.3'] = process.argv;
 

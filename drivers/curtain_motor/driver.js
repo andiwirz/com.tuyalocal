@@ -1,7 +1,7 @@
 ﻿'use strict';
 
 const Homey                     = require('homey');
-const TuyAPI                    = require('tuyapi');
+const TuyAPI                    = require('../../lib/SafeTuyAPI');
 const { setupCloudLookup } = require('../../lib/pairCloudLookup');
 const net                       = require('net');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
