@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.194",
+  "version": "1.0.195",
   "compatibility": ">=12.13.0",
   "sdk": 3,
   "platforms": [
@@ -15551,8 +15551,8 @@
               "min": 0,
               "max": 255,
               "hint": {
-                "en": "DP for the heating power level, a list of named steps rather than a percentage. Set to 0 to disable.",
-                "de": "DP für die Heizstufe — eine Liste benannter Stufen, kein Prozentwert. 0 = deaktiviert."
+                "en": "DP for the heating power level, a list of named steps rather than a percentage. Left off by default because its number differs between models, and writing a step into the wrong data point on a heater is worse than not having the feature. Cloud Lookup fills it in together with the list of steps, which is the reliable way. By hand: look in DP Debug for a data point holding a short step name — on the model this was built from it is DP 5. Set to 0 to disable.",
+                "de": "DP für die Heizstufe — eine Liste benannter Stufen, kein Prozentwert. Standardmäßig aus, weil die Nummer je nach Modell verschieden ist und eine Stufe in den falschen Datenpunkt zu schreiben bei einem Heizgerät schlimmer ist als die fehlende Funktion. Cloud Lookup trägt ihn samt Stufenliste ein — das ist der verlässliche Weg. Von Hand: im Reiter DP Debug nach einem Datenpunkt mit kurzem Stufennamen suchen; beim Modell, für das dies gebaut wurde, ist es DP 5. 0 = deaktiviert."
               }
             },
             {
