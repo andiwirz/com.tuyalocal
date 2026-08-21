@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.190",
+  "version": "1.0.191",
   "compatibility": ">=12.13.0",
   "sdk": 3,
   "platforms": [
@@ -62,6 +62,133 @@
   },
   "homeyCommunityTopicId": 154077,
   "capabilities": {
+    "wind_direction": {
+      "type": "enum",
+      "title": {
+        "en": "Wind direction",
+        "de": "Windrichtung"
+      },
+      "values": [
+        {
+          "id": "N",
+          "title": {
+            "en": "N",
+            "de": "N"
+          }
+        },
+        {
+          "id": "NNE",
+          "title": {
+            "en": "NNE",
+            "de": "NNE"
+          }
+        },
+        {
+          "id": "NE",
+          "title": {
+            "en": "NE",
+            "de": "NE"
+          }
+        },
+        {
+          "id": "ENE",
+          "title": {
+            "en": "ENE",
+            "de": "ENE"
+          }
+        },
+        {
+          "id": "E",
+          "title": {
+            "en": "E",
+            "de": "E"
+          }
+        },
+        {
+          "id": "ESE",
+          "title": {
+            "en": "ESE",
+            "de": "ESE"
+          }
+        },
+        {
+          "id": "SE",
+          "title": {
+            "en": "SE",
+            "de": "SE"
+          }
+        },
+        {
+          "id": "SSE",
+          "title": {
+            "en": "SSE",
+            "de": "SSE"
+          }
+        },
+        {
+          "id": "S",
+          "title": {
+            "en": "S",
+            "de": "S"
+          }
+        },
+        {
+          "id": "SSW",
+          "title": {
+            "en": "SSW",
+            "de": "SSW"
+          }
+        },
+        {
+          "id": "SW",
+          "title": {
+            "en": "SW",
+            "de": "SW"
+          }
+        },
+        {
+          "id": "WSW",
+          "title": {
+            "en": "WSW",
+            "de": "WSW"
+          }
+        },
+        {
+          "id": "W",
+          "title": {
+            "en": "W",
+            "de": "W"
+          }
+        },
+        {
+          "id": "WNW",
+          "title": {
+            "en": "WNW",
+            "de": "WNW"
+          }
+        },
+        {
+          "id": "NW",
+          "title": {
+            "en": "NW",
+            "de": "NW"
+          }
+        },
+        {
+          "id": "NNW",
+          "title": {
+            "en": "NNW",
+            "de": "NNW"
+          }
+        }
+      ],
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "uiQuickAction": false,
+      "insights": false,
+      "icon": "/assets/capabilities/wind_direction.svg"
+    },
     "hold_open": {
       "type": "boolean",
       "title": {
@@ -10471,7 +10598,7 @@
                 "en": "Wind Divisor",
                 "de": "Teiler Wind"
               },
-              "value": "10",
+              "value": "1",
               "values": [
                 {
                   "id": "1",
@@ -10496,8 +10623,8 @@
                 }
               ],
               "hint": {
-                "en": "Homey shows wind in km/h; a station sending tenths needs a divisor of 10.",
-                "de": "Homey zeigt Wind in km/h; eine Station, die Zehntel sendet, braucht den Teiler 10."
+                "en": "Homey shows wind in km/h. Unlike temperature and rain on these stations, wind speed and gust are usually whole numbers \u2014 a divisor of 10 turns a gust of 1 km/h into 0.1. Set 10 only if your station really does send tenths.",
+                "de": "Homey zeigt Wind in km/h. Anders als Temperatur und Regen sind Windgeschwindigkeit und B\u00f6e bei diesen Stationen meist ganze Zahlen \u2014 der Teiler 10 macht aus einer B\u00f6e von 1 km/h dann 0,1. Nur auf 10 stellen, wenn die Station tats\u00e4chlich Zehntel sendet."
               }
             },
             {
@@ -10511,8 +10638,8 @@
               "min": 0,
               "max": 255,
               "hint": {
-                "en": "A compass point such as SW, converted to degrees using the list below. 0 = disabled.",
-                "de": "Eine Himmelsrichtung wie SW, die anhand der Liste unten in Grad umgerechnet wird. 0 = deaktiviert."
+                "en": "A compass point such as SW. Shown as it stands under Wind direction, and converted to degrees for Wind angle using the list below. 0 = disabled.",
+                "de": "Eine Himmelsrichtung wie SW. Sie wird unter Windrichtung unver\u00e4ndert angezeigt und anhand der Liste unten f\u00fcr den Windwinkel in Grad umgerechnet. 0 = deaktiviert."
               }
             },
             {

@@ -1067,7 +1067,7 @@
           <tr><td>dp_pressure</td>   <td>109</td> <td>measure_pressure</td>             <td>hPa &mdash; raw 10040 is 1004.0</td>                                        <td><span class="help-badge badge-ro">Read</span></td></tr>
           <tr><td>dp_wind</td>       <td>110</td> <td>measure_wind_strength</td>        <td>km/h. <strong>Not</strong> a UV index &mdash; see the note below</td>        <td><span class="help-badge badge-ro">Read</span></td></tr>
           <tr><td>dp_gust</td>       <td>111</td> <td>measure_gust_strength</td>        <td>km/h</td>                                                                   <td><span class="help-badge badge-ro">Read</span></td></tr>
-          <tr><td>dp_wind_dir</td>   <td>112</td> <td>measure_wind_angle</td>           <td>A compass point such as <code>SW</code>, converted to degrees using <em>wd_values</em></td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_wind_dir</td>   <td>112</td> <td>wind_direction, measure_wind_angle</td> <td>A compass point such as <code>SW</code>. Shown as it stands, and converted to degrees using <em>wd_values</em> so the angle can be charted and compared</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
           <tr><td>dp_rain_1h</td>    <td>113</td> <td>measure_rain_intensity</td>       <td>mm in the last hour, which is mm/h</td>                                     <td><span class="help-badge badge-ro">Read</span></td></tr>
           <tr><td>dp_rain_24h</td>   <td>114</td> <td>measure_rain</td>                 <td>mm in the last 24 hours</td>                                                <td><span class="help-badge badge-ro">Read</span></td></tr>
           <tr><td>dp_rain_total</td> <td>134</td> <td>measure_rain.total</td>           <td>A third rain value the manufacturer names only <code>rain</code> &mdash; check it against your own station</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
@@ -1077,7 +1077,7 @@
           <tr><td>temp_divisor</td>  <td>10</td>  <td>Scale</td>                        <td>Raw 244 is 24.4 &deg;C</td>                                                 <td><span class="help-badge badge-rw">Setting</span></td></tr>
           <tr><td>humidity_divisor</td><td>10</td><td>Scale</td>                        <td>Raw 560 is 56.0 %</td>                                                     <td><span class="help-badge badge-rw">Setting</span></td></tr>
           <tr><td>pressure_divisor</td><td>10</td><td>Scale</td>                        <td>Raw 10040 is 1004.0 hPa</td>                                                <td><span class="help-badge badge-rw">Setting</span></td></tr>
-          <tr><td>wind_divisor</td>  <td>10</td>  <td>Scale</td>                        <td>Raw 4 is 0.4 km/h</td>                                                      <td><span class="help-badge badge-rw">Setting</span></td></tr>
+          <tr><td>wind_divisor</td>  <td>1</td>   <td>Scale</td>                        <td>Raw 4 is 4 km/h. Wind is usually whole numbers where the other readings are tenths</td> <td><span class="help-badge badge-rw">Setting</span></td></tr>
           <tr><td>rain_divisor</td>  <td>10</td>  <td>Scale</td>                        <td>Raw 310 is 31.0 mm</td>                                                     <td><span class="help-badge badge-rw">Setting</span></td></tr>
         </tbody>
       </table>

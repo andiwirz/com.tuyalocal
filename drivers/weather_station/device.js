@@ -23,6 +23,12 @@ const NUMERIC_PROFILE = [
 
 const OPTIONAL_CAPABILITIES = [
   ...NUMERIC_PROFILE.map(({ settingKey, capability }) => ({ setting: settingKey, capability })),
+  // Both, from the same data point. The station sends a compass point, and that is
+  // what a person wants to read off the tile — "SW", not 225°. The angle is kept
+  // beside it because it is the standard capability: it charts as a number in
+  // Insights, and the "wind is from" flow condition compares against it. Neither
+  // stands in for the other.
+  { setting: 'dp_wind_dir', capability: 'wind_direction'     },
   { setting: 'dp_wind_dir', capability: 'measure_wind_angle' },
   { setting: 'dp_comfort',  capability: 'comfort_level'      },
 ];
@@ -34,7 +40,11 @@ class WeatherStationDevice extends BaseTuyaDevice {
     await this._baseInit();
     await this._migrateCapabilities([]);
     await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
-    await this._syncEnumOptions('comfort_level', this.getSetting('comfort_values'));
+    await this._syncEnumOptions('comfort_level',  this.getSetting('comfort_values'));
+    // The tokens are whatever this station sends, so the choices come from the same
+    // setting the angle conversion reads. A station with eight points, or one that
+    // spells them differently, gets its own list rather than the declared sixteen.
+    await this._syncEnumOptions('wind_direction', this.getSetting('wd_values'));
 
     this._triggerDeviceConnected    = this.homey.flow.getDeviceTriggerCard('weather_station_device_connected');
     this._triggerDeviceDisconnected = this.homey.flow.getDeviceTriggerCard('weather_station_device_disconnected');
@@ -111,7 +121,15 @@ class WeatherStationDevice extends BaseTuyaDevice {
         if (angle === null) {
           this._appLog(`Wind direction "${value}" is not in the configured list `
             + `(${this._windTokens().join(', ')}) — reading kept`, 'warn');
-        } else if (this.hasCapability('measure_wind_angle')) {
+          continue;
+        }
+        // The token as sent, for reading, and the angle, for charting and comparing.
+        // Both are gated on the same test: a token outside the configured list has no
+        // angle, and the picker would reject it as a value, so neither is written.
+        if (this.hasCapability('wind_direction')) {
+          await this.setCapabilityValue('wind_direction', String(value)).catch(() => {});
+        }
+        if (this.hasCapability('measure_wind_angle')) {
           await this.setCapabilityValue('measure_wind_angle', angle).catch(() => {});
         }
         continue;
@@ -170,6 +188,9 @@ class WeatherStationDevice extends BaseTuyaDevice {
     }
     if (changedKeys.includes('comfort_values')) {
       await this._syncEnumOptions('comfort_level', this.getSetting('comfort_values'));
+    }
+    if (changedKeys.includes('wd_values')) {
+      await this._syncEnumOptions('wind_direction', this.getSetting('wd_values'));
     }
   }
 }
