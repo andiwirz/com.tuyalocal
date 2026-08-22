@@ -9866,10 +9866,6 @@
               "value": 0,
               "min": 0,
               "max": 10000,
-              "units": {
-                "en": "ms",
-                "de": "ms"
-              },
               "hint": {
                 "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
                 "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
@@ -10364,10 +10360,6 @@
               "value": 0,
               "min": 0,
               "max": 10000,
-              "units": {
-                "en": "ms",
-                "de": "ms"
-              },
               "hint": {
                 "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
                 "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
@@ -11004,10 +10996,6 @@
               "value": 0,
               "min": 0,
               "max": 10000,
-              "units": {
-                "en": "ms",
-                "de": "ms"
-              },
               "hint": {
                 "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
                 "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
@@ -11399,10 +11387,6 @@
               "value": 0,
               "min": 0,
               "max": 10000,
-              "units": {
-                "en": "ms",
-                "de": "ms"
-              },
               "hint": {
                 "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
                 "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
@@ -11899,10 +11883,6 @@
               "value": 0,
               "min": 0,
               "max": 10000,
-              "units": {
-                "en": "ms",
-                "de": "ms"
-              },
               "hint": {
                 "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
                 "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
@@ -12324,10 +12304,6 @@
               "value": 0,
               "min": 0,
               "max": 10000,
-              "units": {
-                "en": "ms",
-                "de": "ms"
-              },
               "hint": {
                 "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
                 "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
@@ -12722,10 +12698,6 @@
               "value": 0,
               "min": 0,
               "max": 10000,
-              "units": {
-                "en": "ms",
-                "de": "ms"
-              },
               "hint": {
                 "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
                 "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
@@ -13172,10 +13144,6 @@
               "value": 0,
               "min": 0,
               "max": 10000,
-              "units": {
-                "en": "ms",
-                "de": "ms"
-              },
               "hint": {
                 "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
                 "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
@@ -13434,10 +13402,6 @@
               "value": 0,
               "min": 0,
               "max": 10000,
-              "units": {
-                "en": "ms",
-                "de": "ms"
-              },
               "hint": {
                 "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
                 "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
@@ -14019,10 +13983,6 @@
               "value": 0,
               "min": 0,
               "max": 10000,
-              "units": {
-                "en": "ms",
-                "de": "ms"
-              },
               "hint": {
                 "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
                 "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
@@ -14584,10 +14544,6 @@
               "value": 0,
               "min": 0,
               "max": 10000,
-              "units": {
-                "en": "ms",
-                "de": "ms"
-              },
               "hint": {
                 "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
                 "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
@@ -15162,10 +15118,6 @@
               "value": 0,
               "min": 0,
               "max": 10000,
-              "units": {
-                "en": "ms",
-                "de": "ms"
-              },
               "hint": {
                 "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
                 "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
@@ -15625,10 +15577,6 @@
               "value": 0,
               "min": 0,
               "max": 10000,
-              "units": {
-                "en": "ms",
-                "de": "ms"
-              },
               "hint": {
                 "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
                 "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
@@ -16107,10 +16055,6 @@
               "value": 0,
               "min": 0,
               "max": 10000,
-              "units": {
-                "en": "ms",
-                "de": "ms"
-              },
               "hint": {
                 "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
                 "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
@@ -16486,10 +16430,6 @@
               "value": 0,
               "min": 0,
               "max": 10000,
-              "units": {
-                "en": "ms",
-                "de": "ms"
-              },
               "hint": {
                 "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
                 "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
@@ -17013,10 +16953,6 @@
               "value": 0,
               "min": 0,
               "max": 10000,
-              "units": {
-                "en": "ms",
-                "de": "ms"
-              },
               "hint": {
                 "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
                 "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
@@ -17411,10 +17347,6 @@
               "value": 0,
               "min": 0,
               "max": 10000,
-              "units": {
-                "en": "ms",
-                "de": "ms"
-              },
               "hint": {
                 "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
                 "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
@@ -17909,10 +17841,6 @@
               "value": 0,
               "min": 0,
               "max": 10000,
-              "units": {
-                "en": "ms",
-                "de": "ms"
-              },
               "hint": {
                 "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
                 "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
@@ -18311,10 +18239,6 @@
               "value": 0,
               "min": 0,
               "max": 10000,
-              "units": {
-                "en": "ms",
-                "de": "ms"
-              },
               "hint": {
                 "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
                 "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
@@ -18810,10 +18734,6 @@
               "value": 0,
               "min": 0,
               "max": 10000,
-              "units": {
-                "en": "ms",
-                "de": "ms"
-              },
               "hint": {
                 "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
                 "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
@@ -19249,10 +19169,6 @@
               "value": 0,
               "min": 0,
               "max": 10000,
-              "units": {
-                "en": "ms",
-                "de": "ms"
-              },
               "hint": {
                 "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
                 "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
