@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.195",
+  "version": "1.0.196",
   "compatibility": ">=12.13.0",
   "sdk": 3,
   "platforms": [
@@ -9857,6 +9857,25 @@
               }
             },
             {
+              "id": "command_gap_ms",
+              "type": "number",
+              "label": {
+                "en": "Minimum gap between commands (ms)",
+                "de": "Mindestabstand zwischen Befehlen (ms)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 10000,
+              "units": {
+                "en": "ms",
+                "de": "ms"
+              },
+              "hint": {
+                "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
+              }
+            },
+            {
               "id": "offline_grace_seconds",
               "type": "number",
               "label": {
@@ -10333,6 +10352,25 @@
               "hint": {
                 "en": "0 = off. Rebuilds the connection periodically while the device is offline.",
                 "de": "0 = aus. Baut die Verbindung regelmäßig neu auf, solange das Gerät offline ist."
+              }
+            },
+            {
+              "id": "command_gap_ms",
+              "type": "number",
+              "label": {
+                "en": "Minimum gap between commands (ms)",
+                "de": "Mindestabstand zwischen Befehlen (ms)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 10000,
+              "units": {
+                "en": "ms",
+                "de": "ms"
+              },
+              "hint": {
+                "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
               }
             },
             {
@@ -10957,6 +10995,25 @@
               }
             },
             {
+              "id": "command_gap_ms",
+              "type": "number",
+              "label": {
+                "en": "Minimum gap between commands (ms)",
+                "de": "Mindestabstand zwischen Befehlen (ms)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 10000,
+              "units": {
+                "en": "ms",
+                "de": "ms"
+              },
+              "hint": {
+                "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
+              }
+            },
+            {
               "id": "offline_grace_seconds",
               "type": "number",
               "label": {
@@ -11330,6 +11387,25 @@
               "hint": {
                 "en": "If the device is offline, reconnect every N minutes. Has no effect while the device is connected. 0 = disabled.",
                 "de": "Wenn das Gerät offline ist, alle N Minuten erneut verbinden. Bei aktiver Verbindung keine Auswirkung. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "command_gap_ms",
+              "type": "number",
+              "label": {
+                "en": "Minimum gap between commands (ms)",
+                "de": "Mindestabstand zwischen Befehlen (ms)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 10000,
+              "units": {
+                "en": "ms",
+                "de": "ms"
+              },
+              "hint": {
+                "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
               }
             },
             {
@@ -11814,6 +11890,25 @@
               }
             },
             {
+              "id": "command_gap_ms",
+              "type": "number",
+              "label": {
+                "en": "Minimum gap between commands (ms)",
+                "de": "Mindestabstand zwischen Befehlen (ms)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 10000,
+              "units": {
+                "en": "ms",
+                "de": "ms"
+              },
+              "hint": {
+                "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
+              }
+            },
+            {
               "id": "offline_grace_seconds",
               "type": "number",
               "label": {
@@ -12220,6 +12315,25 @@
               }
             },
             {
+              "id": "command_gap_ms",
+              "type": "number",
+              "label": {
+                "en": "Minimum gap between commands (ms)",
+                "de": "Mindestabstand zwischen Befehlen (ms)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 10000,
+              "units": {
+                "en": "ms",
+                "de": "ms"
+              },
+              "hint": {
+                "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
+              }
+            },
+            {
               "id": "offline_grace_seconds",
               "type": "number",
               "label": {
@@ -12596,6 +12710,25 @@
               "hint": {
                 "en": "If the device is offline, reconnect every N minutes. Has no effect while the device is connected. 0 = disabled.",
                 "de": "Wenn das Gerät offline ist, alle N Minuten erneut verbinden. Bei aktiver Verbindung keine Auswirkung. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "command_gap_ms",
+              "type": "number",
+              "label": {
+                "en": "Minimum gap between commands (ms)",
+                "de": "Mindestabstand zwischen Befehlen (ms)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 10000,
+              "units": {
+                "en": "ms",
+                "de": "ms"
+              },
+              "hint": {
+                "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
               }
             },
             {
@@ -13030,6 +13163,25 @@
               }
             },
             {
+              "id": "command_gap_ms",
+              "type": "number",
+              "label": {
+                "en": "Minimum gap between commands (ms)",
+                "de": "Mindestabstand zwischen Befehlen (ms)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 10000,
+              "units": {
+                "en": "ms",
+                "de": "ms"
+              },
+              "hint": {
+                "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
+              }
+            },
+            {
               "id": "offline_grace_seconds",
               "type": "number",
               "label": {
@@ -13270,6 +13422,25 @@
               "hint": {
                 "en": "If the device is offline, reconnect every N minutes. Has no effect while the device is connected. 0 = disabled.",
                 "de": "Wenn das Gerät offline ist, alle N Minuten erneut verbinden. Bei aktiver Verbindung keine Auswirkung. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "command_gap_ms",
+              "type": "number",
+              "label": {
+                "en": "Minimum gap between commands (ms)",
+                "de": "Mindestabstand zwischen Befehlen (ms)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 10000,
+              "units": {
+                "en": "ms",
+                "de": "ms"
+              },
+              "hint": {
+                "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
               }
             },
             {
@@ -13839,6 +14010,25 @@
               }
             },
             {
+              "id": "command_gap_ms",
+              "type": "number",
+              "label": {
+                "en": "Minimum gap between commands (ms)",
+                "de": "Mindestabstand zwischen Befehlen (ms)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 10000,
+              "units": {
+                "en": "ms",
+                "de": "ms"
+              },
+              "hint": {
+                "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
+              }
+            },
+            {
               "id": "offline_grace_seconds",
               "type": "number",
               "label": {
@@ -14382,6 +14572,25 @@
               "hint": {
                 "en": "If the device is offline, reconnect every N minutes. Has no effect while the device is connected. 0 = disabled.",
                 "de": "Wenn das Gerät offline ist, alle N Minuten erneut verbinden. Bei aktiver Verbindung keine Auswirkung. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "command_gap_ms",
+              "type": "number",
+              "label": {
+                "en": "Minimum gap between commands (ms)",
+                "de": "Mindestabstand zwischen Befehlen (ms)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 10000,
+              "units": {
+                "en": "ms",
+                "de": "ms"
+              },
+              "hint": {
+                "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
               }
             },
             {
@@ -14944,6 +15153,25 @@
               }
             },
             {
+              "id": "command_gap_ms",
+              "type": "number",
+              "label": {
+                "en": "Minimum gap between commands (ms)",
+                "de": "Mindestabstand zwischen Befehlen (ms)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 10000,
+              "units": {
+                "en": "ms",
+                "de": "ms"
+              },
+              "hint": {
+                "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
+              }
+            },
+            {
               "id": "offline_grace_seconds",
               "type": "number",
               "label": {
@@ -15385,6 +15613,25 @@
               "hint": {
                 "en": "If the device is offline, reconnect every N minutes. Has no effect while the device is connected. 0 = disabled.",
                 "de": "Wenn das Gerät offline ist, alle N Minuten erneut verbinden. Bei aktiver Verbindung keine Auswirkung. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "command_gap_ms",
+              "type": "number",
+              "label": {
+                "en": "Minimum gap between commands (ms)",
+                "de": "Mindestabstand zwischen Befehlen (ms)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 10000,
+              "units": {
+                "en": "ms",
+                "de": "ms"
+              },
+              "hint": {
+                "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
               }
             },
             {
@@ -15851,6 +16098,25 @@
               }
             },
             {
+              "id": "command_gap_ms",
+              "type": "number",
+              "label": {
+                "en": "Minimum gap between commands (ms)",
+                "de": "Mindestabstand zwischen Befehlen (ms)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 10000,
+              "units": {
+                "en": "ms",
+                "de": "ms"
+              },
+              "hint": {
+                "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
+              }
+            },
+            {
               "id": "offline_grace_seconds",
               "type": "number",
               "label": {
@@ -16208,6 +16474,25 @@
               "hint": {
                 "en": "If the device is offline, reconnect every N minutes. Has no effect while the device is connected. 0 = disabled.",
                 "de": "Wenn das Gerät offline ist, alle N Minuten erneut verbinden. Bei aktiver Verbindung keine Auswirkung. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "command_gap_ms",
+              "type": "number",
+              "label": {
+                "en": "Minimum gap between commands (ms)",
+                "de": "Mindestabstand zwischen Befehlen (ms)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 10000,
+              "units": {
+                "en": "ms",
+                "de": "ms"
+              },
+              "hint": {
+                "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
               }
             },
             {
@@ -16719,6 +17004,25 @@
               }
             },
             {
+              "id": "command_gap_ms",
+              "type": "number",
+              "label": {
+                "en": "Minimum gap between commands (ms)",
+                "de": "Mindestabstand zwischen Befehlen (ms)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 10000,
+              "units": {
+                "en": "ms",
+                "de": "ms"
+              },
+              "hint": {
+                "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
+              }
+            },
+            {
               "id": "offline_grace_seconds",
               "type": "number",
               "label": {
@@ -17095,6 +17399,25 @@
               "hint": {
                 "en": "If the device is offline, reconnect every N minutes. Has no effect while the device is connected. 0 = disabled.",
                 "de": "Wenn das Gerät offline ist, alle N Minuten erneut verbinden. Bei aktiver Verbindung keine Auswirkung. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "command_gap_ms",
+              "type": "number",
+              "label": {
+                "en": "Minimum gap between commands (ms)",
+                "de": "Mindestabstand zwischen Befehlen (ms)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 10000,
+              "units": {
+                "en": "ms",
+                "de": "ms"
+              },
+              "hint": {
+                "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
               }
             },
             {
@@ -17577,6 +17900,25 @@
               }
             },
             {
+              "id": "command_gap_ms",
+              "type": "number",
+              "label": {
+                "en": "Minimum gap between commands (ms)",
+                "de": "Mindestabstand zwischen Befehlen (ms)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 10000,
+              "units": {
+                "en": "ms",
+                "de": "ms"
+              },
+              "hint": {
+                "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
+              }
+            },
+            {
               "id": "offline_grace_seconds",
               "type": "number",
               "label": {
@@ -17957,6 +18299,25 @@
               "hint": {
                 "en": "If the device is offline, reconnect every N minutes. Has no effect while the device is connected. 0 = disabled.",
                 "de": "Wenn das Gerät offline ist, alle N Minuten erneut verbinden. Bei aktiver Verbindung keine Auswirkung. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "command_gap_ms",
+              "type": "number",
+              "label": {
+                "en": "Minimum gap between commands (ms)",
+                "de": "Mindestabstand zwischen Befehlen (ms)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 10000,
+              "units": {
+                "en": "ms",
+                "de": "ms"
+              },
+              "hint": {
+                "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
               }
             },
             {
@@ -18440,6 +18801,25 @@
               }
             },
             {
+              "id": "command_gap_ms",
+              "type": "number",
+              "label": {
+                "en": "Minimum gap between commands (ms)",
+                "de": "Mindestabstand zwischen Befehlen (ms)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 10000,
+              "units": {
+                "en": "ms",
+                "de": "ms"
+              },
+              "hint": {
+                "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
+              }
+            },
+            {
               "id": "offline_grace_seconds",
               "type": "number",
               "label": {
@@ -18857,6 +19237,25 @@
               "hint": {
                 "en": "If the device is offline, reconnect every N minutes. No effect while connected. 0 = disabled.",
                 "de": "Wenn offline, alle N Minuten erneut verbinden. Bei aktiver Verbindung keine Auswirkung. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "command_gap_ms",
+              "type": "number",
+              "label": {
+                "en": "Minimum gap between commands (ms)",
+                "de": "Mindestabstand zwischen Befehlen (ms)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 10000,
+              "units": {
+                "en": "ms",
+                "de": "ms"
+              },
+              "hint": {
+                "en": "Some devices drop a command that arrives too soon after the previous one, silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. If a flow that changes two things at once only ever applies the first, try 500 to 2000 here. 0 (the default) sends commands as fast as they come.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. Wenn ein Flow, der zwei Dinge auf einmal ändert, immer nur das erste ausführt, hier 500 bis 2000 versuchen. 0 (Vorgabe) sendet ohne Abstand."
               }
             },
             {
