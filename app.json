@@ -9863,12 +9863,12 @@
                 "en": "Minimum gap between commands (ms)",
                 "de": "Mindestabstand zwischen Befehlen (ms)"
               },
-              "value": 200,
+              "value": 100,
               "min": 0,
               "max": 10000,
               "hint": {
-                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 200 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
-                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 200 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
+                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 100 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 100 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
               }
             },
             {
@@ -10357,12 +10357,12 @@
                 "en": "Minimum gap between commands (ms)",
                 "de": "Mindestabstand zwischen Befehlen (ms)"
               },
-              "value": 200,
+              "value": 100,
               "min": 0,
               "max": 10000,
               "hint": {
-                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 200 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
-                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 200 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
+                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 100 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 100 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
               }
             },
             {
@@ -10993,12 +10993,12 @@
                 "en": "Minimum gap between commands (ms)",
                 "de": "Mindestabstand zwischen Befehlen (ms)"
               },
-              "value": 200,
+              "value": 100,
               "min": 0,
               "max": 10000,
               "hint": {
-                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 200 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
-                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 200 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
+                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 100 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 100 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
               }
             },
             {
@@ -11384,12 +11384,12 @@
                 "en": "Minimum gap between commands (ms)",
                 "de": "Mindestabstand zwischen Befehlen (ms)"
               },
-              "value": 200,
+              "value": 100,
               "min": 0,
               "max": 10000,
               "hint": {
-                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 200 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
-                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 200 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
+                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 100 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 100 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
               }
             },
             {
@@ -11880,12 +11880,12 @@
                 "en": "Minimum gap between commands (ms)",
                 "de": "Mindestabstand zwischen Befehlen (ms)"
               },
-              "value": 200,
+              "value": 100,
               "min": 0,
               "max": 10000,
               "hint": {
-                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 200 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
-                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 200 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
+                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 100 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 100 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
               }
             },
             {
@@ -12301,12 +12301,12 @@
                 "en": "Minimum gap between commands (ms)",
                 "de": "Mindestabstand zwischen Befehlen (ms)"
               },
-              "value": 200,
+              "value": 100,
               "min": 0,
               "max": 10000,
               "hint": {
-                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 200 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
-                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 200 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
+                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 100 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 100 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
               }
             },
             {
@@ -12695,12 +12695,12 @@
                 "en": "Minimum gap between commands (ms)",
                 "de": "Mindestabstand zwischen Befehlen (ms)"
               },
-              "value": 200,
+              "value": 100,
               "min": 0,
               "max": 10000,
               "hint": {
-                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 200 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
-                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 200 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
+                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 100 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 100 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
               }
             },
             {
@@ -13141,12 +13141,12 @@
                 "en": "Minimum gap between commands (ms)",
                 "de": "Mindestabstand zwischen Befehlen (ms)"
               },
-              "value": 200,
+              "value": 100,
               "min": 0,
               "max": 10000,
               "hint": {
-                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 200 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
-                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 200 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
+                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 100 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 100 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
               }
             },
             {
@@ -13399,12 +13399,12 @@
                 "en": "Minimum gap between commands (ms)",
                 "de": "Mindestabstand zwischen Befehlen (ms)"
               },
-              "value": 200,
+              "value": 100,
               "min": 0,
               "max": 10000,
               "hint": {
-                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 200 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
-                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 200 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
+                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 100 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 100 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
               }
             },
             {
@@ -13980,12 +13980,12 @@
                 "en": "Minimum gap between commands (ms)",
                 "de": "Mindestabstand zwischen Befehlen (ms)"
               },
-              "value": 200,
+              "value": 100,
               "min": 0,
               "max": 10000,
               "hint": {
-                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 200 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
-                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 200 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
+                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 100 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 100 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
               }
             },
             {
@@ -14541,12 +14541,12 @@
                 "en": "Minimum gap between commands (ms)",
                 "de": "Mindestabstand zwischen Befehlen (ms)"
               },
-              "value": 200,
+              "value": 100,
               "min": 0,
               "max": 10000,
               "hint": {
-                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 200 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
-                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 200 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
+                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 100 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 100 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
               }
             },
             {
@@ -15115,12 +15115,12 @@
                 "en": "Minimum gap between commands (ms)",
                 "de": "Mindestabstand zwischen Befehlen (ms)"
               },
-              "value": 200,
+              "value": 100,
               "min": 0,
               "max": 10000,
               "hint": {
-                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 200 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
-                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 200 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
+                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 100 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 100 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
               }
             },
             {
@@ -15574,12 +15574,12 @@
                 "en": "Minimum gap between commands (ms)",
                 "de": "Mindestabstand zwischen Befehlen (ms)"
               },
-              "value": 200,
+              "value": 100,
               "min": 0,
               "max": 10000,
               "hint": {
-                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 200 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
-                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 200 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
+                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 100 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 100 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
               }
             },
             {
@@ -16052,12 +16052,12 @@
                 "en": "Minimum gap between commands (ms)",
                 "de": "Mindestabstand zwischen Befehlen (ms)"
               },
-              "value": 200,
+              "value": 100,
               "min": 0,
               "max": 10000,
               "hint": {
-                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 200 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
-                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 200 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
+                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 100 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 100 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
               }
             },
             {
@@ -16427,12 +16427,12 @@
                 "en": "Minimum gap between commands (ms)",
                 "de": "Mindestabstand zwischen Befehlen (ms)"
               },
-              "value": 200,
+              "value": 100,
               "min": 0,
               "max": 10000,
               "hint": {
-                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 200 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
-                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 200 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
+                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 100 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 100 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
               }
             },
             {
@@ -16950,12 +16950,12 @@
                 "en": "Minimum gap between commands (ms)",
                 "de": "Mindestabstand zwischen Befehlen (ms)"
               },
-              "value": 200,
+              "value": 100,
               "min": 0,
               "max": 10000,
               "hint": {
-                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 200 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
-                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 200 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
+                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 100 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 100 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
               }
             },
             {
@@ -17344,12 +17344,12 @@
                 "en": "Minimum gap between commands (ms)",
                 "de": "Mindestabstand zwischen Befehlen (ms)"
               },
-              "value": 200,
+              "value": 100,
               "min": 0,
               "max": 10000,
               "hint": {
-                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 200 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
-                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 200 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
+                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 100 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 100 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
               }
             },
             {
@@ -17838,12 +17838,12 @@
                 "en": "Minimum gap between commands (ms)",
                 "de": "Mindestabstand zwischen Befehlen (ms)"
               },
-              "value": 200,
+              "value": 100,
               "min": 0,
               "max": 10000,
               "hint": {
-                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 200 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
-                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 200 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
+                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 100 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 100 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
               }
             },
             {
@@ -18236,12 +18236,12 @@
                 "en": "Minimum gap between commands (ms)",
                 "de": "Mindestabstand zwischen Befehlen (ms)"
               },
-              "value": 200,
+              "value": 100,
               "min": 0,
               "max": 10000,
               "hint": {
-                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 200 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
-                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 200 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
+                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 100 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 100 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
               }
             },
             {
@@ -18731,12 +18731,12 @@
                 "en": "Minimum gap between commands (ms)",
                 "de": "Mindestabstand zwischen Befehlen (ms)"
               },
-              "value": 200,
+              "value": 100,
               "min": 0,
               "max": 10000,
               "hint": {
-                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 200 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
-                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 200 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
+                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 100 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 100 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
               }
             },
             {
@@ -19166,12 +19166,12 @@
                 "en": "Minimum gap between commands (ms)",
                 "de": "Mindestabstand zwischen Befehlen (ms)"
               },
-              "value": 200,
+              "value": 100,
               "min": 0,
               "max": 10000,
               "hint": {
-                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 200 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
-                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 200 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
+                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 100 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 100 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
               }
             },
             {
