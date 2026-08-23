@@ -108,9 +108,11 @@ class FanLightDriver extends Homey.Driver {
         args.device.getCapabilityValue('fan_direction') === args.direction
       );
 
-    this.homey.flow.getConditionCard('fanlight_light_is_on')
+    // Fuer das Licht erzeugt Homey die Bedingung selbst, weil onoff hier dem Licht
+    // gehoert. Gebraucht wird sie fuer den Ventilator.
+    this.homey.flow.getConditionCard('fanlight_fan_is_on')
       .registerRunListener(async (args) =>
-        args.device.getCapabilityValue('onoff') === true
+        args.device.getCapabilityValue('onoff.fan') === true
       );
 
     // ── Actions ─────────────────────────────────────────────────────────────
@@ -152,20 +154,23 @@ class FanLightDriver extends Homey.Driver {
         return args.device.triggerCapabilityListener('countdown_timer', args.timer);
       });
 
-    this.homey.flow.getActionCard('fanlight_set_light')
+    // Ebenso die Aktionen: Einschalten, Ausschalten und Dimmen liefert Homey fuer
+    // onoff und dim mit. Der Ventilator sitzt auf onoff.fan und dim.fan und bekommt
+    // dort nichts geschenkt, also stehen seine beiden Karten hier.
+    this.homey.flow.getActionCard('fanlight_set_fan')
       .registerRunListener(async (args) => {
-        if (!args.device.hasCapability('onoff')) return;
+        if (!args.device.hasCapability('onoff.fan')) return;
         const enabled = args.enabled === 'true';
-        await args.device.setCapabilityValue('onoff', enabled);
-        return args.device.triggerCapabilityListener('onoff', enabled);
+        await args.device.setCapabilityValue('onoff.fan', enabled);
+        return args.device.triggerCapabilityListener('onoff.fan', enabled);
       });
 
-    this.homey.flow.getActionCard('fanlight_set_light_dim')
+    this.homey.flow.getActionCard('fanlight_set_fan_speed_pct')
       .registerRunListener(async (args) => {
-        if (!args.device.hasCapability('dim')) return;
+        if (!args.device.hasCapability('dim.fan')) return;
         const value = Math.max(0, Math.min(1, Number(args.brightness) / 100));
-        await args.device.setCapabilityValue('dim', value);
-        return args.device.triggerCapabilityListener('dim', value);
+        await args.device.setCapabilityValue('dim.fan', value);
+        return args.device.triggerCapabilityListener('dim.fan', value);
       });
 
     // Sends the raw token, so scene/music are reachable even though Homey's

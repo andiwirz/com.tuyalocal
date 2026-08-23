@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.200",
+  "version": "1.0.201",
   "compatibility": ">=12.13.0",
   "sdk": 3,
   "platforms": [
@@ -5798,8 +5798,8 @@
       {
         "id": "fanlight_device_is_connected",
         "title": {
-          "en": "Fan !{{is|is not}} connected",
-          "de": "Lüfter !{{ist|ist nicht}} verbunden"
+          "en": "Device !{{is|is not}} connected",
+          "de": "Gerät !{{ist|ist nicht}} verbunden"
         },
         "args": [
           {
@@ -6146,10 +6146,10 @@
         }
       },
       {
-        "id": "fanlight_light_is_on",
+        "id": "fanlight_fan_is_on",
         "title": {
-          "en": "Light !{{is|is not}} on",
-          "de": "Licht !{{ist|ist nicht}} an"
+          "en": "Fan !{{is|is not}} running",
+          "de": "Ventilator !{{läuft|läuft nicht}}"
         },
         "args": [
           {
@@ -8574,8 +8574,8 @@
       {
         "id": "fanlight_force_reconnect",
         "title": {
-          "en": "Force fan reconnect",
-          "de": "Lüfter: Verbindung neu aufbauen"
+          "en": "Reconnect the device",
+          "de": "Verbindung neu aufbauen"
         },
         "args": [
           {
@@ -8602,8 +8602,8 @@
       {
         "id": "fanlight_refresh_device",
         "title": {
-          "en": "Refresh fan values",
-          "de": "Lüfter: Daten aktualisieren"
+          "en": "Refresh device data",
+          "de": "Gerätedaten aktualisieren"
         },
         "args": [
           {
@@ -9472,14 +9472,14 @@
         ]
       },
       {
-        "id": "fanlight_set_light",
+        "id": "fanlight_set_fan",
         "title": {
-          "en": "Set light",
-          "de": "Licht setzen"
+          "en": "Turn the fan on or off",
+          "de": "Ventilator ein- oder ausschalten"
         },
         "titleFormatted": {
-          "en": "Turn light [[enabled]]",
-          "de": "Licht [[enabled]] schalten"
+          "en": "Turn the fan [[enabled]]",
+          "de": "Ventilator [[enabled]]schalten"
         },
         "args": [
           {
@@ -9491,8 +9491,8 @@
             "name": "enabled",
             "type": "dropdown",
             "title": {
-              "en": "Light",
-              "de": "Licht"
+              "en": "Fan",
+              "de": "Ventilator"
             },
             "values": [
               {
@@ -9543,14 +9543,14 @@
         ]
       },
       {
-        "id": "fanlight_set_light_dim",
+        "id": "fanlight_set_fan_speed_pct",
         "title": {
-          "en": "Set light brightness",
-          "de": "Licht-Helligkeit setzen"
+          "en": "Set fan speed by percentage",
+          "de": "Lüfterstufe in Prozent setzen"
         },
         "titleFormatted": {
-          "en": "Set light brightness to [[brightness]]%",
-          "de": "Licht-Helligkeit auf [[brightness]]% setzen"
+          "en": "Set fan speed to [[brightness]]%",
+          "de": "Lüfterstufe auf [[brightness]]% setzen"
         },
         "args": [
           {
@@ -9562,14 +9562,18 @@
             "name": "brightness",
             "type": "number",
             "title": {
-              "en": "Brightness",
-              "de": "Helligkeit"
+              "en": "Speed",
+              "de": "Stufe"
             },
             "min": 0,
             "max": 100,
             "step": 1
           }
-        ]
+        ],
+        "hint": {
+          "en": "For fittings whose speed is a number rather than a named step. The percentage is mapped onto the range in the device settings, so 100% is the fitting’s own highest step — six on most of them. Use “Set fan speed” instead where the fitting names its steps.",
+          "de": "Für Leuchten, deren Stufe eine Zahl ist und kein benannter Schritt. Der Prozentwert wird auf den Bereich aus den Geräteeinstellungen abgebildet — 100 % ist also die höchste Stufe der Leuchte, bei den meisten die sechste. Wo die Leuchte ihre Stufen benennt, passt „Lüftergeschwindigkeit setzen“ besser."
+        }
       },
       {
         "id": "fan_set_light_mode",
