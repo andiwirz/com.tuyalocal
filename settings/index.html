@@ -385,6 +385,7 @@
         <option value="sec-dehumidifier">Dehumidifier</option>
         <option value="sec-ac">Air Conditioner</option>
         <option value="sec-fan">Fan</option>
+        <option value="sec-fanlight">Ceiling Fan Light</option>
         <option value="sec-humidifier">Humidifier</option>
         <option value="sec-heater">Heater</option>
         <option value="sec-light">Light</option>
@@ -663,6 +664,72 @@
       <div class="note"><strong>Temperature scaling:</strong> Some AC units send temperatures multiplied by 10 (e.g. 220 = 22.0 °C), a few by 100 (2750 = 27.50 °C). Set <em>temp_divisor</em> to 10 or 100 accordingly in device settings, or let <a href="#" onclick="showTab('fix'); return false;" class="help-link">Fix It</a> → <strong>Check measurement scaling</strong> read the factor the manufacturer declares. Auto-detection recognises this during pairing.</div>
       <div class="note"><strong>Mode, fan &amp; swing values:</strong> The allowed strings vary by manufacturer. Check the DP Debug tab while operating the device manually, then update <em>mode_values</em>, <em>fan_speed_values</em> and <em>swing_values</em> in device settings. After saving, restart the app to apply the new picker options.</div>
       <div class="note"><strong>Auto-detect at pairing:</strong> The pairing wizard automatically detects DP 1 (power), DP 2/3 (temperatures), DP 4 (mode), DP 5 (fan speed), DP 11 (ioniser), DP 15 (swing), DP 20 (fault), DP 103 (sleep) and DP 110 (horizontal swing). Only <em>mode_values</em> and <em>fan_speed_values</em> need to be adjusted manually after pairing.</div>
+    </div>
+
+    <div class="section" id="sec-fanlight">
+      <h2>Ceiling Fan Light &mdash; DP reference</h2>
+      <p>For ceiling fittings that are a light with a fan in them: the Tuya combo
+      families (categories <code>fsd</code> / <code>xdd</code>) and the equivalents from
+      other brands. Use this driver rather than <em>Fan</em> when the fitting has a lamp
+      &mdash; it is filed as a light, so it appears under Lights, joins light groups and
+      answers &ldquo;turn off all the lights on this floor&rdquo;. A fan with no lamp
+      belongs on the Fan driver.</p>
+      <div class="note"><strong>Which half is which.</strong> The lamp is nearly always
+      numbered <em>below</em> the fan on these fittings &mdash; 20 against 60, 20 against
+      107 &mdash; which is the opposite of what a fan-first guess would assume. Pairing
+      therefore matches known pairs outright instead of picking the lowest data point.
+      The three common layouts, counted across the 52 fan-with-light definitions
+      catalogued by the tuya-local project:
+      <table class="help-table" style="margin-top:8px">
+        <thead><tr><th>Layout</th><th>Fan</th><th>Light</th><th>Seen on</th></tr></thead>
+        <tbody>
+          <tr><td>60&nbsp;/&nbsp;20</td>  <td>60 switch, 61 mode, 62 speed, 63 direction</td> <td>20 switch, 21 mode, 22 brightness, 23 colour temp, 24 colour</td> <td>16 models</td></tr>
+          <tr><td>1&nbsp;/&nbsp;9&nbsp;or&nbsp;15</td> <td>1 switch, 2 mode, 3 speed, 8 direction</td> <td>9 or 15 switch, 10 or 16 brightness, 17 colour temp</td> <td>12 models</td></tr>
+          <tr><td>107&nbsp;/&nbsp;20</td> <td>107 switch, 106 mode, 105 speed, 104 direction</td> <td>20&ndash;24 as above</td> <td>5 models</td></tr>
+        </tbody>
+      </table>
+      Anything outside these is found by the value heuristic, and Cloud Lookup names the
+      data points outright &mdash; that is the reliable route on an unusual fitting.</div>
+      <div class="note"><strong>Fan speed.</strong> Most of these fittings run a
+      <strong>1&ndash;6 step scale</strong>, not a percentage: seventeen of the catalogued
+      models declare 1&ndash;6 against four that declare 1&ndash;100. Pairing assumes steps
+      unless the fitting is already reporting a speed above 6. If the speed slider does
+      nothing, or only the bottom of it works, <em>speed_max</em> is the setting to
+      correct &mdash; and Cloud Lookup fills in the declared range by itself.</div>
+      <div class="note"><strong>Oscillation is not guessed.</strong> Only two of the 52
+      catalogued models have an oscillation data point at all, and a boolean says nothing
+      about what it controls &mdash; guessing it produced toggles that cut the fan's power.
+      Cloud Lookup resolves <code>fan_horizontal</code>, <code>fan_vertical</code>,
+      <code>shake</code>, <code>swing</code> and <code>fan_shake</code> by name; otherwise
+      set <em>dp_oscillate</em> by hand or leave it at 0.</div>
+      <p>The settings are the same fields as on the Fan driver, with one difference in
+      where they land: here <em>dp_light_onoff</em> drives the tile's main switch and
+      <em>dp_light_dim</em> its brightness slider, while <em>dp_onoff</em> and
+      <em>dp_speed</em> become the secondary Fan switch and Fan speed.</p>
+        <table class="help-table">
+          <thead><tr><th>Setting</th><th>Default DP</th><th>Capability / Use</th><th>Notes</th><th>R/W</th></tr></thead>
+          <tbody>
+          <tr><td>dp_onoff</td>           <td>1</td> <td>On / Off</td>              <td></td>                                                                                   <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_speed</td>           <td>3</td> <td>Speed slider (dim)</td>    <td>Numeric DP scaled to 0–100 % using <em>speed_min</em> / <em>speed_max</em></td>         <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_fan_speed</td>       <td>0</td> <td>Fan Speed (enum)</td>      <td>0 = disabled. Set <em>fan_speed_values</em>, e.g. <code>low,medium,high,auto</code></td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_oscillate</td>       <td>0</td> <td>Oscillation</td>           <td>0 = disabled</td>                                                                       <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_direction</td>       <td>0</td> <td>Fan Direction</td>         <td>0 = disabled. Values: <code>forward</code> / <code>reverse</code>. Auto-detected at pairing.</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_mode</td>            <td>0</td> <td>Fan Mode (enum)</td>       <td>0 = disabled. Set <em>fan_mode_values</em>, e.g. <code>normal,sleep,nature,breeze,smart</code></td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_child_lock</td>      <td>0</td> <td>Child Lock</td>            <td>0 = disabled</td>                                                                       <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_countdown_timer</td> <td>0</td> <td>Timer</td>                 <td>0 = disabled</td>                                                                       <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_countdown_left</td>  <td>0</td> <td>Timer Remaining</td>       <td>0 = disabled</td>                                                                       <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_light_onoff</td>      <td>0</td> <td>Light On / Off</td>        <td>0 = disabled. For ceiling fans with an integrated light (e.g. DP 15)</td>              <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_light_dim</td>        <td>0</td> <td>Light Brightness</td>      <td>0 = disabled. Scaled using <em>dp_light_dim_min</em> / <em>dp_light_dim_max</em> (default 0–100)</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_light_color_temp</td> <td>0</td> <td>Light Color Temp</td>      <td>0 = disabled. Scaled using <em>dp_light_color_temp_min</em> / <em>dp_light_color_temp_max</em> (default 0–100). Enable <em>dp_light_color_temp_invert</em> if warm and cold are swapped</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+                    <tr><td>dp_light_dim_min</td> <td>0</td> <td>Light brightness floor</td> <td>Range limit, not a DP. Raise it for lights that flicker or cut out at the bottom of the scale</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+            <tr><td>dp_light_dim_max</td> <td>100</td> <td>Light brightness ceiling</td> <td>Range limit, not a DP</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+            <tr><td>dp_light_color_temp_min</td> <td>0</td> <td>Color temperature floor</td> <td>Range limit, not a DP. Some fixtures report this on a 0–1000 scale rather than 0–100</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+            <tr><td>dp_light_color_temp_max</td> <td>100</td> <td>Color temperature ceiling</td> <td>Range limit, not a DP</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+            <tr><td>dp_light_color_temp_invert</td> <td>off</td> <td>Color temperature direction</td> <td>Checkbox, not a DP. Enable when 0 = warm and 100 = cool on your device</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+            <tr><td>dp_light_colour</td> <td>0</td> <td>Light colour (HSV)</td> <td>0 = disabled. Packed colour data point of fan+light combo fixtures (12 hex characters, e.g. DP 24). Enables the colour picker on the light</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+            <tr><td>dp_light_mode</td> <td>0</td> <td>Light mode</td> <td>0 = disabled. The light’s own white/colour/scene/music selector (e.g. DP 21) — separate from the fan’s Mode DP. White ↔ colour is switchable from the device; scene and music via the “Set light mode (advanced)” flow card</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          </tbody>
+        </table>
     </div>
 
     <div class="section" id="sec-fan">

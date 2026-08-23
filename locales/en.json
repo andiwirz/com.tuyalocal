@@ -6,6 +6,7 @@
       "generic": "Tuya Device",
       "air_conditioner": "Air Conditioner",
       "fan": "Fan",
+      "fan_light": "Ceiling Fan Light",
       "humidifier": "Humidifier",
       "heater": "Heater",
       "light": "Light",
