@@ -479,16 +479,26 @@ class FanDriver extends Homey.Driver {
     const lightTempEntry     = intDps.find((d) => d.dp !== dp_speed && d.dp !== dp_light_dim && d.dp >= 10 && d.val >= 0 && d.val <= 100);
     const dp_light_color_temp = lightTempEntry?.dp ?? 0;
 
-    // Detect speed range. Where the DP was found matters as much as the value on it:
-    // a low-numbered DP on a standalone fan is a step switch, so a live value of 3
-    // means three of about six steps, while the high-numbered DP of a combo fixture
-    // is a percentage — both reported brands declare 1–100 there. Reading a 3 on one
-    // of those as "step 3 of 6" would cap the slider at six percent of the fan's
-    // actual range, which is worse than the dead control this replaces.
+    // Detect speed range. Where the data point was found matters as much as the value
+    // on it: a low-numbered one on a standalone fan is a step switch, so a live value
+    // of 3 means three of about six steps, while a high-numbered one carries either a
+    // percentage or a step count and the number alone cannot tell them apart.
+    //
+    // Which way to lean was decided by counting rather than by argument. Across the 52
+    // fan-with-light configurations in the tuya-local project, those with a
+    // high-numbered speed data point declare 1–6 seventeen times and 1–100 four times.
+    // This used to assume 100 on the strength of two reported fixtures, and both of
+    // them happen to sit in that smaller group. So a combo now assumes steps.
+    //
+    // The live value still gets the final say in the one direction it can: a fixture
+    // already reporting more than 6 cannot be running a 1–6 scale, whatever the shape
+    // of its data points. And a declared range from Cloud Lookup overrides all of this
+    // whenever there is one — see CLOUD_RANGE_MAP.
     const rawSpeed  = speedEntry?.val ?? 1;
     const speed_min = 1;
+    const isCombo   = dp_light_onoff > 0 || dp_light_dim > 0 || dp_light_color_temp > 0;
     const speed_max = (speedEntry && !lowSpeed)
-      ? 100
+      ? ((isCombo && rawSpeed <= 6) ? 6 : 100)
       : (rawSpeed <= 6 ? 6 : rawSpeed <= 12 ? 12 : 100);
 
     // Light dim range defaults

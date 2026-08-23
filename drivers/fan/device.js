@@ -52,6 +52,13 @@ const OPTIONAL_CAPABILITIES = [
   { setting: 'dp_light_mode',       capability: 'light_mode'        },
 ];
 
+// Welche Einstellungen bedeuten "an diesem Geraet haengt ein Licht". Einmal
+// benannt, weil sowohl die Klassenwahl als auch deren Neubewertung bei einer
+// Einstellungsaenderung dieselbe Liste braucht.
+const LIGHT_DP_SETTINGS = [
+  'dp_light_onoff', 'dp_light_dim', 'dp_light_color_temp', 'dp_light_colour',
+];
+
 class FanDevice extends BaseTuyaDevice {
   async onInit() {
     this.log('Device initialized:', this.getName());
@@ -62,6 +69,7 @@ class FanDevice extends BaseTuyaDevice {
     await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
     await this._syncEnumOptions('fan_speed', this.getSetting('fan_speed_values'));
     await this._syncEnumOptions('fan_mode',  this.getSetting('fan_mode_values'));
+    await this._syncDeviceClass();
 
     // ── Flow trigger cards ──────────────────────────────────────────────────
     this._triggerDeviceConnected    = this.homey.flow.getDeviceTriggerCard('fan_device_connected');
@@ -407,6 +415,36 @@ class FanDevice extends BaseTuyaDevice {
     if (changedKeys.some((k) => ['fan_speed_values', 'fan_mode_values'].includes(k))) {
       await this._syncEnumOptions('fan_speed', this.getSetting('fan_speed_values'));
       await this._syncEnumOptions('fan_mode',  this.getSetting('fan_mode_values'));
+    }
+    if (changedKeys.some((k) => LIGHT_DP_SETTINGS.includes(k))) {
+      await this._syncDeviceClass();
+    }
+  }
+
+  /**
+   * A fitting with a light in it belongs in Homey's Lights.
+   *
+   * The class is declared once per driver, but these are two appliances in one and
+   * owners reach for the light far more often than the fan. The argument that settled
+   * it came from a reporter with five of them: Homey offers "turn off all the lights
+   * on this floor" and puts a Lights button under Devices, and has no equivalent for
+   * fans — so a ceiling fitting filed as a fan is filed where nobody looks for it.
+   *
+   * Set per device rather than per driver, because the same driver also runs plain
+   * fans with no light at all, and those belong exactly where they are. It follows
+   * the light data points, so switching one off in settings moves the device back.
+   */
+  async _syncDeviceClass() {
+    try {
+      const hasLight = LIGHT_DP_SETTINGS.some((k) => Number(this.getSetting(k)) > 0);
+      const wanted   = hasLight ? 'light' : 'fan';
+      if (this.getClass() === wanted) return;
+      await this.setClass(wanted);
+      this._appLog(`Device class set to "${wanted}" (${hasLight
+        ? 'this fitting has a light, so it belongs with the lights'
+        : 'no light data point configured'})`, 'info');
+    } catch (err) {
+      this._appLog(`Could not set the device class: ${err.message}`, 'warn');
     }
   }
 }
