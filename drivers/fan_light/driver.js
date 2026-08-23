@@ -383,6 +383,15 @@ class FanLightDriver extends Homey.Driver {
     ];
     const layout = KNOWN_LAYOUTS.find((l) => has(l.fan) && has(l.light));
 
+    // The lamp's own block: Tuya keeps brightness, colour temperature and colour
+    // immediately above the light's switch. Used twice below — to find them, and to
+    // keep the fan-speed search out of them.
+    const lightBlock = layout
+      ? { lo: layout.light, hi: layout.light + 4 }
+      : null;
+    const inLightBlock = (dp) => lightBlock && dp >= lightBlock.lo && dp <= lightBlock.hi;
+
+
     // Nothing matched: fall back on the one thing that does hold across the
     // families. Where the fan sits on data point 1 it is always the lower of the
     // two; everywhere else the lamp is. Still a guess, and Cloud Lookup overrides
@@ -391,7 +400,11 @@ class FanLightDriver extends Homey.Driver {
     const fallbackFan   = has(1) ? 1 : (sortedBools[1] ?? sortedBools[0]);
     const fallbackLight = has(1) ? sortedBools.find((n) => n !== 1) : sortedBools[0];
 
-    const dp_onoff = layout ? layout.fan : (fallbackFan ?? 1);
+    // Genau ein Schalter: Auf einem Treiber, dessen Hauptfunktion das Licht ist,
+    // gehoert er dem Licht. Ihn dem Ventilator zu geben liesse die Kachel ohne
+    // Hauptschalter zurueck - und onoff ist bei der Klasse "light" das Licht.
+    const onlyOneSwitch = sortedBools.length === 1;
+    const dp_onoff = layout ? layout.fan : (onlyOneSwitch ? 0 : (fallbackFan ?? 1));
 
     // Numeric speed: a small integer (1–100). The low range is searched first,
     // because that is where standalone fans put it and the assignment there is
@@ -410,8 +423,18 @@ class FanLightDriver extends Homey.Driver {
     // the reported devices. It remains a guess: a fixture whose lamp happens to sit in
     // the 1–100 band at pairing time can have its brightness taken for the speed.
     // Cloud Lookup settles that, and both fields stay editable in device settings.
+    // On these fittings the risk above is not hypothetical: the lamp's brightness sits
+    // on data point 22 with a value like 50, the fan's speed on 62 with a value like 3,
+    // and a search running upwards finds the brightness first. Four of the catalogued
+    // models were detected that way — a speed slider that dimmed the light.
+    //
+    // Where a layout matched, the lamp's own block is therefore skipped. Tuya keeps
+    // brightness, colour temperature and colour immediately above the light's switch,
+    // so the five data points from it are exactly the range to leave alone: 20–24 on
+    // the common layout, 9–13 and 15–19 on the others.
     const speedIn = (lo, hi) => intDps.find((d) =>
-      d.dp !== dp_onoff && d.val >= 1 && d.val <= 100 && d.dp >= lo && d.dp <= hi);
+      d.dp !== dp_onoff && !inLightBlock(d.dp)
+      && d.val >= 1 && d.val <= 100 && d.dp >= lo && d.dp <= hi);
     const lowSpeed   = speedIn(0, 10);
     const speedEntry = lowSpeed || speedIn(11, 255);
     const dp_speed   = speedEntry?.dp ?? 0;
@@ -502,9 +525,11 @@ class FanLightDriver extends Homey.Driver {
     // lights.
     const dp_light_onoff = layout
       ? layout.light
-      : (fallbackLight !== dp_onoff && fallbackLight !== undefined
-          ? fallbackLight
-          : (boolDps.find((d) => d.dp !== dp_onoff && d.dp >= 5)?.dp ?? 0));
+      : (onlyOneSwitch
+          ? sortedBools[0]
+          : (fallbackLight !== dp_onoff && fallbackLight !== undefined
+              ? fallbackLight
+              : (boolDps.find((d) => d.dp !== dp_onoff && d.dp >= 5)?.dp ?? 0)));
 
     // Oscillation is deliberately not guessed. The old rule took the first spare
     // boolean, and true/false says nothing about what it controls: on the reported
@@ -516,13 +541,34 @@ class FanLightDriver extends Homey.Driver {
     // actually identifies the function, and the field stays editable by hand.
     const dp_oscillate = 0;
 
-    // Light brightness: int DP in range 0–100, not speed, dp >= 10
-    const lightDimEntry = intDps.find((d) => d.dp !== dp_speed && d.dp >= 10 && d.val >= 0 && d.val <= 100);
-    const dp_light_dim  = lightDimEntry?.dp ?? 0;
-
-    // Light color temp: int DP in range 0–100, not speed, not light dim, dp >= 10
-    const lightTempEntry     = intDps.find((d) => d.dp !== dp_speed && d.dp !== dp_light_dim && d.dp >= 10 && d.val >= 0 && d.val <= 100);
-    const dp_light_color_temp = lightTempEntry?.dp ?? 0;
+    // Brightness and colour temperature.
+    //
+    // Looking for an integer between 0 and 100 — which is what a driver without a
+    // known layout has to do — misses these fittings entirely: Tuya declares
+    // bright_value as 10–1000 and temp_value as 0–1000, so a lamp at full brightness
+    // reports 1000 and the search walks past it onto a countdown or a pixel count.
+    // On all five of the reported fixtures it did exactly that.
+    //
+    // Where a layout matched there is no need to guess from the value at all. Tuya
+    // keeps the lamp's controls in one block directly above its switch, and the
+    // integers in that block are the brightness and the colour temperature, in that
+    // order. It holds for both shapes in the catalogue: 22 and 23 above a switch on
+    // 20, 10 and 11 above a switch on 9 — the offset differs because the 20-block has
+    // a mode selector at 21 and the 9-block does not, which is precisely why counting
+    // integers beats counting positions.
+    const blockInts = lightBlock
+      ? intDps.filter((d) => d.dp >= lightBlock.lo && d.dp <= lightBlock.hi && d.dp !== dp_speed)
+          .sort((a, b) => a.dp - b.dp)
+      : [];
+    const dp_light_dim = blockInts.length > 0
+      ? blockInts[0].dp
+      : (intDps.find((d) => d.dp !== dp_speed && d.dp >= 10 && d.val >= 0 && d.val <= 100)?.dp ?? 0);
+    const dp_light_color_temp = blockInts.length > 1
+      ? blockInts[1].dp
+      : (blockInts.length === 1
+          ? 0
+          : (intDps.find((d) => d.dp !== dp_speed && d.dp !== dp_light_dim
+              && d.dp >= 10 && d.val >= 0 && d.val <= 100)?.dp ?? 0));
 
     // Detect speed range. Where the data point was found matters as much as the value
     // on it: a low-numbered one on a standalone fan is a step switch, so a live value
