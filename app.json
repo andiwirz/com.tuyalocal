@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.202",
+  "version": "1.0.203",
   "compatibility": ">=12.13.0",
   "sdk": 3,
   "platforms": [
@@ -15817,7 +15817,7 @@
         "dim.fan": {
           "title": {
             "en": "Fan speed",
-            "de": "Luefterstufe"
+            "de": "Lüfterstufe"
           }
         }
       },
@@ -15985,8 +15985,8 @@
               },
               "value": 1,
               "hint": {
-                "en": "DP for power on/off (default: 1)",
-                "de": "DP für Ein/Aus (Standard: 1)"
+                "en": "DP for the fan's own on/off switch — the secondary switch on the tile, not the main one. Common values are 60, 1 and 107 depending on the fitting. 0 = disabled, for fittings whose fan has no switch of its own.",
+                "de": "DP für den Ein-/Aus-Schalter des Ventilators — der zweite Schalter auf der Kachel, nicht der Hauptschalter. Üblich sind 60, 1 oder 107, je nach Leuchte. 0 = deaktiviert, für Leuchten, deren Ventilator keinen eigenen Schalter hat."
               }
             },
             {
@@ -15998,8 +15998,8 @@
               },
               "value": 3,
               "hint": {
-                "en": "DP for numeric speed (0 = disable). Maps to Homey speed slider.",
-                "de": "DP für numerische Geschwindigkeit (0 = deaktiviert). Wird auf den Homey-Regler gemappt."
+                "en": "DP for the fan speed as a number. Drives the secondary slider on the tile and the “Set fan speed by percentage” flow card; the percentage is mapped onto speed_min and speed_max below. Leave at 0 where the fitting names its steps instead — those belong on the Fan Speed DP.",
+                "de": "DP für die Lüfterstufe als Zahl. Steuert den zweiten Regler auf der Kachel und die Flow-Karte „Lüfterstufe in Prozent setzen“; der Prozentwert wird auf speed_min und speed_max unten abgebildet. Bei 0 lassen, wenn die Leuchte ihre Stufen benennt — die gehören auf den DP Lüftergeschwindigkeit."
               }
             },
             {
@@ -16162,8 +16162,8 @@
               },
               "value": 0,
               "hint": {
-                "en": "DP for light on/off (boolean). Set to 0 to disable.",
-                "de": "DP für Licht Ein/Aus (Boolean). 0 = deaktiviert."
+                "en": "DP for the lamp's on/off switch. This is the tile's main switch: it is what a light group and “turn off all the lights” act on. Usually 20, sometimes 9 or 15. Set to 0 to disable.",
+                "de": "DP für den Ein-/Aus-Schalter der Lampe. Das ist der Hauptschalter der Kachel — daran hängen Lichtgruppen und „alle Lichter ausschalten“. Meist 20, mitunter 9 oder 15. 0 = deaktiviert."
               }
             },
             {

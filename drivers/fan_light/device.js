@@ -55,6 +55,12 @@ const OPTIONAL_CAPABILITIES = [
   // The fan half, all optional: a handful of these fittings drive the fan from the
   // same switch as the light, and several have no direction or no timer.
   { setting: 'dp_onoff',            capability: 'onoff.fan'         },
+  // Die Stufe als Zahl. Beim Ventilator-Treiber traegt sie 'dim' und steht im
+  // Manifest, hier gehoert 'dim' dem Licht — also muss sie hier zugeschaltet
+  // werden. Ohne diesen Eintrag wird der Regler nie angelegt: Der Listener
+  // meldet sich nicht an, eingehende Werte laufen ins Leere, und die Flow-Aktion
+  // fuer die Stufe in Prozent kehrt sofort zurueck.
+  { setting: 'dp_speed',            capability: 'dim.fan'           },
   { setting: 'dp_fan_speed',        capability: 'fan_speed'         },
   { setting: 'dp_oscillate',        capability: 'oscillate'         },
   { setting: 'dp_direction',        capability: 'fan_direction'     },
