@@ -110,12 +110,33 @@ class FanLightDriver extends Homey.Driver {
 
     // Fuer das Licht erzeugt Homey die Bedingung selbst, weil onoff hier dem Licht
     // gehoert. Gebraucht wird sie fuer den Ventilator.
+    this.homey.flow.getDeviceTriggerCard('fanlight_fan_switched')
+      .registerRunListener(async (args, state) => String(args.enabled) === String(state.enabled));
+
+    this.homey.flow.getConditionCard('fanlight_oscillate_is_on')
+      .registerRunListener(async (args) =>
+        args.device.getCapabilityValue('oscillate') === true
+      );
+
+    this.homey.flow.getConditionCard('fanlight_child_lock_is_on')
+      .registerRunListener(async (args) =>
+        args.device.getCapabilityValue('child_lock') === true
+      );
+
     this.homey.flow.getConditionCard('fanlight_fan_is_on')
       .registerRunListener(async (args) =>
         args.device.getCapabilityValue('onoff.fan') === true
       );
 
     // ── Actions ─────────────────────────────────────────────────────────────
+    // Dieselbe Vorschlagsliste wie die Aktion: Wer eine Stufe setzen kann, muss sie
+    // auch abfragen koennen, und beide muessen dieselben Namen anbieten.
+    this.homey.flow.getConditionCard('fanlight_fan_speed_is')
+      .registerArgumentAutocompleteListener('fan_speed', fanAC)
+      .registerRunListener(async (args) =>
+        args.device.getCapabilityValue('fan_speed') === args.fan_speed.id
+      );
+
     this.homey.flow.getActionCard('fanlight_set_mode')
       .registerArgumentAutocompleteListener('mode', modeAC)
       .registerRunListener(async (args) => {
@@ -163,6 +184,14 @@ class FanLightDriver extends Homey.Driver {
         const enabled = args.enabled === 'true';
         await args.device.setCapabilityValue('onoff.fan', enabled);
         return args.device.triggerCapabilityListener('onoff.fan', enabled);
+      });
+
+    this.homey.flow.getActionCard('fanlight_set_child_lock')
+      .registerRunListener(async (args) => {
+        if (!args.device.hasCapability('child_lock')) return;
+        const enabled = args.enabled === 'true';
+        await args.device.setCapabilityValue('child_lock', enabled);
+        return args.device.triggerCapabilityListener('child_lock', enabled);
       });
 
     this.homey.flow.getActionCard('fanlight_set_fan_speed_pct')

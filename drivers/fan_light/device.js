@@ -87,6 +87,7 @@ class FanLightDevice extends BaseTuyaDevice {
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('fanlight_dp_changed');
     this._triggerModeChanged        = this.homey.flow.getDeviceTriggerCard('fanlight_mode_changed');
     this._triggerDirectionChanged   = this.homey.flow.getDeviceTriggerCard('fanlight_direction_changed');
+    this._triggerFanSwitched       = this.homey.flow.getDeviceTriggerCard('fanlight_fan_switched');
 
     // ── Capability listeners ─────────────────────────────────────────────────
     // Registered via _registerListeners() so that capabilities enabled later
@@ -373,6 +374,19 @@ class FanLightDevice extends BaseTuyaDevice {
       }
 
       const converted = entry.transform(value);
+
+      // Homey erzeugt "wurde eingeschaltet" nur fuer onoff, und das ist hier das
+      // Licht. Der Ventilator sitzt auf onoff.fan und braucht seinen eigenen.
+      if (entry.capability === 'onoff.fan') {
+        const prevOn = this.getCapabilityValue('onoff.fan');
+        await this.setCapabilityValue('onoff.fan', converted).catch(() => {});
+        if (prevOn !== null && prevOn !== converted) {
+          this._triggerFanSwitched
+            .trigger(this, {}, { enabled: String(converted) })
+            .catch(() => {});
+        }
+        continue;
+      }
 
       if (entry.capability === 'fan_mode') {
         const prevMode = this.getCapabilityValue('fan_mode');

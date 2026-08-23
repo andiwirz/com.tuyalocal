@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.201",
+  "version": "1.0.202",
   "compatibility": ">=12.13.0",
   "sdk": 3,
   "platforms": [
@@ -4230,6 +4230,52 @@
         ]
       },
       {
+        "id": "fanlight_fan_switched",
+        "title": {
+          "en": "The fan was switched on or off",
+          "de": "Ventilator wurde ein- oder ausgeschaltet"
+        },
+        "titleFormatted": {
+          "en": "The fan was [[enabled]]",
+          "de": "Ventilator wurde [[enabled]]"
+        },
+        "hint": {
+          "en": "Homey supplies the equivalent for the light by itself, because on this driver the light is the fitting’s main switch. The fan has its own switch beside it, and this is the card that watches it.",
+          "de": "Für das Licht liefert Homey das Gegenstück selbst, denn auf diesem Treiber ist das Licht der Hauptschalter der Leuchte. Der Ventilator hat seinen eigenen Schalter daneben — diese Karte beobachtet ihn."
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=fan_light"
+          },
+          {
+            "name": "enabled",
+            "type": "dropdown",
+            "title": {
+              "en": "Fan",
+              "de": "Ventilator"
+            },
+            "values": [
+              {
+                "id": "true",
+                "label": {
+                  "en": "turned on",
+                  "de": "eingeschaltet"
+                }
+              },
+              {
+                "id": "false",
+                "label": {
+                  "en": "turned off",
+                  "de": "ausgeschaltet"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
         "id": "feeder_food_level_changed",
         "title": {
           "en": "Food level changed",
@@ -6150,6 +6196,64 @@
         "title": {
           "en": "Fan !{{is|is not}} running",
           "de": "Ventilator !{{läuft|läuft nicht}}"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=fan_light"
+          }
+        ]
+      },
+      {
+        "id": "fanlight_oscillate_is_on",
+        "title": {
+          "en": "The fan !{{is|is not}} oscillating",
+          "de": "Ventilator !{{schwenkt|schwenkt nicht}}"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=fan_light"
+          }
+        ]
+      },
+      {
+        "id": "fanlight_fan_speed_is",
+        "title": {
+          "en": "Fan speed !{{is|is not}}",
+          "de": "Lüftergeschwindigkeit !{{ist|ist nicht}}"
+        },
+        "titleFormatted": {
+          "en": "Fan speed !{{is|is not}} [[fan_speed]]",
+          "de": "Lüftergeschwindigkeit !{{ist|ist nicht}} [[fan_speed]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=fan_light"
+          },
+          {
+            "name": "fan_speed",
+            "type": "autocomplete",
+            "title": {
+              "en": "Fan speed",
+              "de": "Lüftergeschwindigkeit"
+            },
+            "placeholder": {
+              "en": "e.g. high",
+              "de": "z. B. high"
+            }
+          }
+        ]
+      },
+      {
+        "id": "fanlight_child_lock_is_on",
+        "title": {
+          "en": "The child lock !{{is|is not}} on",
+          "de": "Kindersicherung !{{ist|ist nicht}} aktiv"
         },
         "args": [
           {
@@ -9574,6 +9678,48 @@
           "en": "For fittings whose speed is a number rather than a named step. The percentage is mapped onto the range in the device settings, so 100% is the fitting’s own highest step — six on most of them. Use “Set fan speed” instead where the fitting names its steps.",
           "de": "Für Leuchten, deren Stufe eine Zahl ist und kein benannter Schritt. Der Prozentwert wird auf den Bereich aus den Geräteeinstellungen abgebildet — 100 % ist also die höchste Stufe der Leuchte, bei den meisten die sechste. Wo die Leuchte ihre Stufen benennt, passt „Lüftergeschwindigkeit setzen“ besser."
         }
+      },
+      {
+        "id": "fanlight_set_child_lock",
+        "title": {
+          "en": "Set the child lock",
+          "de": "Kindersicherung setzen"
+        },
+        "titleFormatted": {
+          "en": "Set the child lock [[enabled]]",
+          "de": "Kindersicherung [[enabled]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=fan_light"
+          },
+          {
+            "name": "enabled",
+            "type": "dropdown",
+            "title": {
+              "en": "Child lock",
+              "de": "Kindersicherung"
+            },
+            "values": [
+              {
+                "id": "true",
+                "label": {
+                  "en": "On",
+                  "de": "Ein"
+                }
+              },
+              {
+                "id": "false",
+                "label": {
+                  "en": "Off",
+                  "de": "Aus"
+                }
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "fan_set_light_mode",
