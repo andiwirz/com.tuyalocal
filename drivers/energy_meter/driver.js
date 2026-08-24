@@ -207,12 +207,15 @@ class EnergyMeterDriver extends Homey.Driver {
 
       // Say so when this device is one the numbers cannot identify.
       //
-      // On a meter the local heuristic is close to useless, and that is measured
-      // rather than assumed: across the 40 single-data-point meter definitions in the
-      // tuya-local catalogue it resolves six, and widening the table of numbers to the
-      // most common ones takes it to seven. The numbers carry no information — data
-      // point 103 is the power on seven of those models, the current on two and the
-      // voltage on three. Only the manufacturer's code names are consistent.
+      // On a meter the local heuristic can only go so far, and that is measured rather
+      // than assumed: across the 42 single-data-point meter definitions in the
+      // tuya-local catalogue it resolves six. A table listing every number ever seen
+      // for each quantity would reach twelve — and would assign the wrong quantity on
+      // much of the rest, because the same number means different things on different
+      // models: data point 103 is the power on seven of them, the voltage on three and
+      // the current on two; 101 is the voltage on six and the current on one. A
+      // confident wrong reading on a meter is worse than none. Only the manufacturer's
+      // code names are consistent, which is what Cloud Lookup supplies.
       //
       // So a meter paired without Cloud Lookup, whose data points are not the
       // conventional block, ends up with no readings at all. Better to say that here

@@ -691,22 +691,41 @@
           <tr><td>kwh_scale</td>        <td>0.01</td>  <td>Scale</td>        <td>Raw 364 is 3.64&nbsp;kWh. Hundredths is what most of these meters declare, a few use thousandths &mdash; if the total is out by a factor of ten or a hundred, this is the setting</td> <td><span class="help-badge badge-rw">Setting</span></td></tr>
         </tbody>
       </table>
-      <div class="note"><strong>Cloud Lookup matters more here than anywhere else.</strong>
-      A meter reports numbers and almost nothing else, and one number looks much like
-      another &mdash; a voltage of 2376 and an energy total of 2376 are the same integer.
-      Pairing therefore guesses very little on purpose: mains voltage, because it sits in a
-      narrow band, and the conventional block above. Everything else comes from the
-      manufacturer&rsquo;s own code names, which do not move between models the way the data
-      point numbers do. With credentials saved, the data points <em>and</em> their declared
-      divisors are filled in during pairing.</div>
-      <div class="note"><strong>Three-phase meters that pack a phase into one data point
-      are not supported.</strong> Of the 70 meter definitions in the tuya-local catalogue,
-      sixty report each quantity on its own data point &mdash; which is what this driver
-      reads. The other ten put voltage, current and power for a phase into a single binary
-      blob on data points 6, 7 and 8. That format is undocumented and no reading from a real
-      device has been available to check an implementation against, so such a meter will
-      pair and then show nothing. If you have one, a DP Debug capture would be the thing to
-      send.</div>
+      <div class="note"><strong>Cloud Lookup is not optional on a meter &mdash; it is the
+      only thing that identifies these data points.</strong> A meter reports numbers and
+      almost nothing else, and one number looks much like another: a voltage of 2376 and an
+      energy total of 2376 are the same integer. The numbers do not help either, because
+      they are not consistent between models. Counted across the meter definitions in the
+      tuya-local catalogue:
+      <table class="help-table" style="margin-top:8px">
+        <thead><tr><th>Data point</th><th>Means power on</th><th>&hellip; voltage on</th><th>&hellip; current on</th></tr></thead>
+        <tbody>
+          <tr><td>101</td> <td>1 model</td> <td>6 models</td> <td>1 model</td></tr>
+          <tr><td>102</td> <td>&mdash;</td>  <td>3 models</td> <td>5 models</td></tr>
+          <tr><td>103</td> <td>7 models</td> <td>3 models</td> <td>2 models</td></tr>
+          <tr><td>104</td> <td>3 models</td> <td>1 model</td>  <td>4 models</td></tr>
+          <tr><td>105</td> <td>4 models</td> <td>&mdash;</td>  <td>3 models</td></tr>
+          <tr><td>106</td> <td>&mdash;</td>  <td>2 models</td> <td>4 models</td></tr>
+        </tbody>
+      </table>
+      So pairing guesses only what it can defend: the conventional block in the table above,
+      and mains voltage where its value gives it away. That resolves six of the 42 meters in
+      the catalogue that report each quantity separately. A wider table of numbers would
+      reach twelve &mdash; and would confidently assign the wrong quantity on many of the
+      rest, which is worse than reading nothing. The manufacturer&rsquo;s code names do not
+      move between models, and that is what Cloud Lookup supplies.</div>
+      <div class="note"><strong>If a meter shows no readings</strong>, this is almost always
+      why, and pairing now says so in the app log rather than leaving you to guess. Two ways
+      out: save Cloud Lookup credentials and pair the device again, or open <em>DP Debug</em>,
+      read which data point carries which reading, and enter the numbers in the device
+      settings by hand. The second works without any cloud account at all.</div>
+      <div class="note"><strong>Meters that pack a whole phase into one data point are not
+      supported.</strong> Of the 70 meter definitions in the catalogue, 28 report voltage,
+      current and power for a phase as a single binary value &mdash; 27 of them on data
+      point 6. That format is undocumented, and no reading from a real device has been
+      available to check an implementation against, so guessing at it would be worse than
+      saying this plainly. Such a meter will pair and then show nothing. If you have one, a
+      DP Debug capture is the thing to send.</div>
     </div>
 
     <div class="section" id="sec-fanlight">

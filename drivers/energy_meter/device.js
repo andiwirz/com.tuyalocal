@@ -13,11 +13,15 @@ const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 // cannot switch anything. That was the report that prompted this.
 //
 // Scope, from counting the 70 energy-meter definitions in the tuya-local project:
-// sixty of them report each quantity on its own data point, which is what this driver
-// reads. The other ten pack voltage, current and power for a phase into one binary
-// blob on data points 6/7/8. Those are not supported — the format is undocumented,
-// and no sample from a real device has been available to check an implementation
-// against. A three-phase meter of that kind will pair and show nothing.
+// 42 report each quantity on its own data point, which is what this driver reads. The
+// other 28 pack voltage, current and power for a phase into one binary value — 27 of
+// them on data point 6. Those are not supported: the format is undocumented and no
+// reading from a real device has been available to check an implementation against, so
+// such a meter will pair and then show nothing.
+//
+// (An earlier version of this note said sixty and ten. That came from grepping for the
+// name "phase_a" rather than from asking which definitions report all three quantities
+// from one data point, which is the question that actually decides it.)
 const DP_PROFILE = [
   // The switch is first but optional, and off by default: a meter that only measures
   // must not be given a control it does not have.
