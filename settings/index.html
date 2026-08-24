@@ -386,6 +386,7 @@
         <option value="sec-ac">Air Conditioner</option>
         <option value="sec-fan">Fan</option>
         <option value="sec-fanlight">Ceiling Fan Light</option>
+        <option value="sec-meter">Energy Meter</option>
         <option value="sec-humidifier">Humidifier</option>
         <option value="sec-heater">Heater</option>
         <option value="sec-light">Light</option>
@@ -664,6 +665,48 @@
       <div class="note"><strong>Temperature scaling:</strong> Some AC units send temperatures multiplied by 10 (e.g. 220 = 22.0 °C), a few by 100 (2750 = 27.50 °C). Set <em>temp_divisor</em> to 10 or 100 accordingly in device settings, or let <a href="#" onclick="showTab('fix'); return false;" class="help-link">Fix It</a> → <strong>Check measurement scaling</strong> read the factor the manufacturer declares. Auto-detection recognises this during pairing.</div>
       <div class="note"><strong>Mode, fan &amp; swing values:</strong> The allowed strings vary by manufacturer. Check the DP Debug tab while operating the device manually, then update <em>mode_values</em>, <em>fan_speed_values</em> and <em>swing_values</em> in device settings. After saving, restart the app to apply the new picker options.</div>
       <div class="note"><strong>Auto-detect at pairing:</strong> The pairing wizard automatically detects DP 1 (power), DP 2/3 (temperatures), DP 4 (mode), DP 5 (fan speed), DP 11 (ioniser), DP 15 (swing), DP 20 (fault), DP 103 (sleep) and DP 110 (horizontal swing). Only <em>mode_values</em> and <em>fan_speed_values</em> need to be adjusted manually after pairing.</div>
+    </div>
+
+    <div class="section" id="sec-meter">
+      <h2>Energy Meter &mdash; DP reference</h2>
+      <p>For energy meters and metering circuit breakers &mdash; Tuya categories
+      <code>zndb</code> and <code>dlq</code>: DIN-rail meters, clamp meters, and breakers
+      that report what they are switching. Use this driver rather than <em>Smart Plug</em>
+      when the device measures a circuit rather than a socket: it is filed as a sensor and
+      its switch is optional, so a clamp meter with nothing to switch does not get a dead
+      on/off button.</p>
+      <table class="help-table">
+        <thead><tr><th>Setting</th><th>Default DP</th><th>Capability / Use</th><th>Notes</th><th>R/W</th></tr></thead>
+        <tbody>
+          <tr><td>dp_power</td>         <td>19</td> <td>measure_power</td>   <td>Active power. 19 on the classic Tuya metering block; other meters use 105, 103 or 9</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_voltage</td>       <td>20</td> <td>measure_voltage</td> <td>Mains voltage. The one quantity pairing can recognise on its own &mdash; raw 1000&ndash;2800 is 100&ndash;280&nbsp;V and nothing else on these meters idles in that band</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_current</td>       <td>18</td> <td>measure_current</td> <td>Current</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_energy</td>        <td>17</td> <td>meter_power</td>     <td>Cumulative energy counter (<code>add_ele</code> and friends)</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_switch</td>        <td>0</td>  <td>onoff</td>           <td>Off by default. Only breakers can switch what they measure; set it if yours can</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_power_factor</td>  <td>0</td>  <td>power_factor</td>    <td>Where the meter reports one</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_fault</td>         <td>26</td> <td>alarm_generic</td>   <td>Fault bitmap &mdash; any value above zero raises the alarm</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>power_scale</td>      <td>0.1</td>   <td>Scale</td>        <td>Raw 4538 is 453.8&nbsp;W</td> <td><span class="help-badge badge-rw">Setting</span></td></tr>
+          <tr><td>voltage_scale</td>    <td>0.1</td>   <td>Scale</td>        <td>Raw 2376 is 237.6&nbsp;V</td> <td><span class="help-badge badge-rw">Setting</span></td></tr>
+          <tr><td>current_scale</td>    <td>0.001</td> <td>Scale</td>        <td>Raw 2491 is 2.491&nbsp;A</td> <td><span class="help-badge badge-rw">Setting</span></td></tr>
+          <tr><td>kwh_scale</td>        <td>0.01</td>  <td>Scale</td>        <td>Raw 364 is 3.64&nbsp;kWh. Hundredths is what most of these meters declare, a few use thousandths &mdash; if the total is out by a factor of ten or a hundred, this is the setting</td> <td><span class="help-badge badge-rw">Setting</span></td></tr>
+        </tbody>
+      </table>
+      <div class="note"><strong>Cloud Lookup matters more here than anywhere else.</strong>
+      A meter reports numbers and almost nothing else, and one number looks much like
+      another &mdash; a voltage of 2376 and an energy total of 2376 are the same integer.
+      Pairing therefore guesses very little on purpose: mains voltage, because it sits in a
+      narrow band, and the conventional block above. Everything else comes from the
+      manufacturer&rsquo;s own code names, which do not move between models the way the data
+      point numbers do. With credentials saved, the data points <em>and</em> their declared
+      divisors are filled in during pairing.</div>
+      <div class="note"><strong>Three-phase meters that pack a phase into one data point
+      are not supported.</strong> Of the 70 meter definitions in the tuya-local catalogue,
+      sixty report each quantity on its own data point &mdash; which is what this driver
+      reads. The other ten put voltage, current and power for a phase into a single binary
+      blob on data points 6, 7 and 8. That format is undocumented and no reading from a real
+      device has been available to check an implementation against, so such a meter will
+      pair and then show nothing. If you have one, a DP Debug capture would be the thing to
+      send.</div>
     </div>
 
     <div class="section" id="sec-fanlight">

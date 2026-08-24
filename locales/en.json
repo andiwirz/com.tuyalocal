@@ -18,6 +18,7 @@
       "thermostat": "Thermostat",
       "kettle": "Smart Kettle",
       "doorbell": "Doorbell",
+      "energy_meter": "Energy Meter",
       "presence_sensor": "Presence Sensor",
       "ev_charger": "EV Charger",
       "level_sensor": "Ultrasonic Level Sensor",

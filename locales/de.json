@@ -18,6 +18,7 @@
       "thermostat": "Thermostat",
       "kettle": "Smarter Wasserkocher",
       "doorbell": "Türklingel",
+      "energy_meter": "Energiezähler",
       "presence_sensor": "Präsenzsensor",
       "ev_charger": "Wallbox",
       "level_sensor": "Ultraschall-Füllstandsensor",
