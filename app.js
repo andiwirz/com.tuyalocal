@@ -112,6 +112,11 @@ class TuyaLocalApp extends Homey.App {
   }
 
   addLog(source, message, level = 'info') {
+    // Writing a log line must never be able to take down the thing being logged.
+    // _logs is created in onInit, so this only matters where the app object exists
+    // without having been through it — but a caller that crashes because logging
+    // failed is the wrong failure to have, whatever produced the situation.
+    if (!Array.isArray(this._logs)) this._logs = [];
     this._logs.push({
       time:    new Date().toISOString(),
       source:  String(source),
@@ -877,6 +882,50 @@ class TuyaLocalApp extends Homey.App {
     }
     const byId = new Map(cloudDevices.filter((d) => d && d.id).map((d) => [String(d.id), d]));
 
+    // The account listing is not complete, and cannot be relied on to be.
+    // _tuyaGetDevices tries four strategies in order and returns at the first one that
+    // yields anything — they do not see the same devices, so a unit that sits in another
+    // home, under another linked user, or was added to the project directly rather than
+    // through the app account is simply absent from whichever list won.
+    //
+    // Pairing never noticed, because it asks for one device by its own id. That is how a
+    // sensor could be paired from its cloud specification and then be reported here as
+    // "not found in the cloud account" while working perfectly — which is exactly what
+    // was reported, with a clean log, because nothing had failed.
+    //
+    // So whatever the listing missed is asked for directly, by the same route pairing
+    // uses. Batched by twenty, like every other call against this API.
+    const wanted = [];
+    for (const driver of Object.values(this.homey.drivers.getDrivers())) {
+      for (const device of driver.getDevices()) {
+        if (onlyDevice && device.getName() !== onlyDevice) continue;
+        let id = '';
+        try { id = device.getData().id || ''; } catch (e) {}
+        if (id && !byId.has(String(id))) wanted.push(String(id));
+      }
+    }
+    const missingIds = [...new Set(wanted)];
+    for (let i = 0; i < missingIds.length; i += 20) {
+      const batch = missingIds.slice(i, i + 20);
+      try {
+        const rows = await this.cloudEnrich({
+          accessId, accessSecret, region, deviceIds: batch.join(','),
+        });
+        for (const r of rows || []) {
+          if (r && r.id && r.local_key) byId.set(String(r.id), r);
+        }
+      } catch (err) {
+        this.addLog('Cloud',
+          `Direct lookup of ${batch.length} device(s) failed: ${err.message}`, 'warn');
+      }
+    }
+    if (missingIds.length > 0) {
+      const found = missingIds.filter((id) => byId.has(id)).length;
+      this.addLog('Cloud',
+        `${missingIds.length} device(s) missing from the account listing — asked for by id, `
+        + `${found} found`, found === missingIds.length ? 'info' : 'warn');
+    }
+
     const short = (k) => {
       const str = String(k || '');
       return str.length > 4 ? `${str.slice(0, 4)}\u2026 (${str.length} chars)` : '(empty)';
@@ -896,7 +945,7 @@ class TuyaLocalApp extends Homey.App {
         if (!id) { note('no device id'); continue; }
 
         const entry = byId.get(String(id));
-        if (!entry) { note('device not found in the cloud account'); continue; }
+        if (!entry) { note('not in the cloud account, and not found by its id either'); continue; }
         if (!entry.local_key) { note('the cloud account holds no key for it'); continue; }
 
         let stored = '';
