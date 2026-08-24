@@ -34,6 +34,11 @@ const DP_PROFILE = [
   { settingKey: 'dp_fault',         capability: 'alarm_generic',    transform: (v)      => Number(v) > 0,                            settable: false },
 ];
 
+// The calibration coefficients on the classic metering block: test_bit and the four
+// voltage/current/power/electricity coefficients. Read-only factory values that never
+// change and that this driver has no use for.
+const CALIBRATION_DPS = new Set([21, 22, 23, 24, 25]);
+
 const OPTIONAL_CAPABILITIES = [
   { setting: 'dp_switch',       capability: 'onoff'          },
   { setting: 'dp_energy',       capability: 'meter_power'    },
@@ -118,10 +123,15 @@ class EnergyMeterDevice extends BaseTuyaDevice {
         return n > 0 && dp === n;
       });
       if (!entry) {
-        // Calibration coefficients, alarm thresholds and the per-phase blobs all land
-        // here. Logged rather than dropped, so a data point this driver does not know
-        // is visible in DP Debug instead of invisible.
-        this.log(`Unmapped DP ${dp}:`, value);
+        // A data point this driver does not read is logged rather than dropped, so it
+        // is visible instead of invisible — that is how the reported meter's reactive
+        // and effective power were spotted at all.
+        //
+        // Except for the calibration block. Those five are documented, deliberately
+        // unread, and present on every meter of this family, so logging them puts five
+        // lines of noise in front of anything worth reading on each reconnect. The same
+        // guard the level sensor uses, for the same reason.
+        if (!CALIBRATION_DPS.has(dp)) this.log(`Unmapped DP ${dp}:`, value);
         continue;
       }
       if (!this.hasCapability(entry.capability)) continue;
