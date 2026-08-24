@@ -205,6 +205,33 @@ class EnergyMeterDriver extends Homey.Driver {
         (m) => this.log(m), null, guessedDefaults(detected, collectedDps));
       Object.assign(detected, cloudDps || {});
 
+      // Say so when this device is one the numbers cannot identify.
+      //
+      // On a meter the local heuristic is close to useless, and that is measured
+      // rather than assumed: across the 40 single-data-point meter definitions in the
+      // tuya-local catalogue it resolves six, and widening the table of numbers to the
+      // most common ones takes it to seven. The numbers carry no information — data
+      // point 103 is the power on seven of those models, the current on two and the
+      // voltage on three. Only the manufacturer's code names are consistent.
+      //
+      // So a meter paired without Cloud Lookup, whose data points are not the
+      // conventional block, ends up with no readings at all. Better to say that here
+      // than to hand over a silent device.
+      const reads = ['dp_power', 'dp_voltage', 'dp_current']
+        .filter((k) => Number(detected[k]) > 0
+          && Object.prototype.hasOwnProperty.call(collectedDps, String(detected[k])));
+      if (reads.length === 0) {
+        this.log('No measurement data point could be identified on this meter. '
+          + 'A meter reports numbers and little else, so the data point numbers alone '
+          + 'cannot say which is which — set up Cloud Lookup (Settings → Cloud Lookup) '
+          + 'and pair again, or read the numbers off the DP Debug tab and enter them in '
+          + 'the device settings by hand.');
+      } else if (Object.keys(cloudDps || {}).length === 0 && reads.length < 3) {
+        this.log(`Only ${reads.length} of the three measurements were identified `
+          + '(power, voltage, current). Cloud Lookup resolves the rest by name; without '
+          + 'it the remaining data points have to be entered by hand.');
+      }
+
       pendingDevice = {
         name: this.homey.__('device.defaultName.energy_meter'),
         data: { id: deviceId },
