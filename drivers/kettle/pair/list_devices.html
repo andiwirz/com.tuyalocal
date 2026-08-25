@@ -41,8 +41,8 @@
   </style>
 </head>
 <body>
-  <h2>Device found</h2>
-  <p class="subtitle">Ready to add.</p>
+  <h2 id="page-title">Device found</h2>
+  <p class="subtitle" id="page-subtitle">Ready to add.</p>
   <div id="loading">Loading device data…</div>
   <div id="device-card" class="device-card" style="display:none">
     <div>
@@ -51,22 +51,47 @@
     </div>
   </div>
   <table class="dp-table" id="dp-table" style="display:none">
-    <thead><tr><th>Function</th><th>DP</th><th>Current value</th></tr></thead>
+    <thead><tr><th id="th-function">Function</th><th id="th-dp">DP</th><th id="th-currentValue">Current value</th></tr></thead>
     <tbody id="dp-tbody"></tbody>
   </table>
-  <p class="hint-text" id="dp-hint" style="display:none">DP numbers can be changed directly — the current value updates live.</p>
+  <p class="hint-text" id="dp-hint" style="display:none"></p>
   <div class="raw-section" id="raw-section" style="display:none">
     <button class="raw-toggle" id="rawToggle">▶ Show all detected DPs</button>
     <div id="rawContent" style="display:none"></div>
   </div>
   <div id="name-input-wrap" class="name-input-wrap" style="display:none">
-    <label>Device name</label>
+    <label id="name-label">Device name</label>
     <input type="text" id="device-name-input" />
   </div>
   <div id="status" class="status"></div>
   <button id="addBtn" disabled>Add Device</button>
 
   <script>
+    // Homey liefert die Uebersetzung erst zur Laufzeit, das Markup traegt deshalb
+    // die englischen Texte als Rueckfallebene.
+    function initText() {
+      // Die Schluessel stehen ausgeschrieben da, nicht aus Praefix und Namen
+      // zusammengesetzt: sonst findet sie keine Pruefung, die die verwendeten
+      // Schluessel gegen die Sprachdateien haelt.
+      var setze = function (id, text) {
+        var el = document.getElementById(id);
+        if (el) el.textContent = text;
+      };
+      setze('page-title',      Homey.__('pair.list_devices.title')        || 'Device found');
+      setze('page-subtitle',   Homey.__('pair.list_devices.subtitle')     || 'Ready to add.');
+      setze('loading',         Homey.__('pair.list_devices.loading')      || 'Loading device data\u2026');
+      setze('th-function',     Homey.__('pair.list_devices.function')     || 'Function');
+      setze('th-dp',           Homey.__('pair.list_devices.dp')           || 'DP');
+      setze('th-currentValue', Homey.__('pair.list_devices.currentValue') || 'Current value');
+      setze('addBtn',          Homey.__('pair.list_devices.addBtn')       || 'Add Device');
+      setze('name-label',      Homey.__('pair.list_devices.deviceName')   || 'Device name');
+      setze('dp-hint',         Homey.__('pair.list_devices.dpHint')
+        || 'DP numbers can be changed directly \u2014 the current value updates live.');
+      setze('rawToggle',       Homey.__('pair.list_devices.allDps')       || 'Show all detected DPs');
+      var t = document.getElementById('rawToggle');
+      if (t) t.textContent = '\u25b6 ' + t.textContent;
+    }
+    if (typeof Homey !== 'undefined') initText();
     var pendingDevice = null;
     function showStatus(msg, type) {
       var el = document.getElementById('status');
@@ -81,7 +106,7 @@
 
     function onBothLoaded() {
       document.getElementById('loading').style.display = 'none';
-      if (!devicesResult || devicesResult.length === 0) { showStatus('No device found.', 'error'); return; }
+      if (!devicesResult || devicesResult.length === 0) { showStatus(Homey.__('pair.list_devices.noDevice') || 'No device found.', 'error'); return; }
       pendingDevice = devicesResult[0];
       var s = pendingDevice.settings || {}, dps = rawDpsResult;
       document.getElementById('device-name').textContent = pendingDevice.name || 'Kettle';
@@ -150,7 +175,8 @@
           var content = document.getElementById('rawContent');
           var hidden = content.style.display === 'none';
           content.style.display = hidden ? 'block' : 'none';
-          this.textContent = (hidden ? '▼ ' : '▶ ') + 'Show all detected DPs';
+          this.textContent = (hidden ? '▼ ' : '▶ ')
+            + (Homey.__('pair.list_devices.allDps') || 'Show all detected DPs');
         });
       }
       document.getElementById('addBtn').disabled = false;
@@ -168,7 +194,7 @@
     document.getElementById('addBtn').addEventListener('click', function() {
       if (!pendingDevice) return;
       var btn = document.getElementById('addBtn');
-      btn.disabled = true; btn.textContent = 'Adding…';
+      btn.disabled = true; btn.textContent = Homey.__('pair.list_devices.adding') || 'Adding…';
       document.querySelectorAll('.dp-input').forEach(function(input) {
         pendingDevice.settings[input.dataset.key] = parseInt(input.value) || 0;
       });
@@ -176,8 +202,9 @@
       if (nameInput) pendingDevice.name = nameInput;
       Homey.emit('set_device_name', pendingDevice.name, function() {});
       Homey.createDevice(pendingDevice)
-        .then(function() { showStatus('Device added!', 'success'); btn.textContent = '✓ Added!'; setTimeout(function() { Homey.done(); }, 1000); })
-        .catch(function(err) { btn.disabled = false; btn.textContent = 'Add Device'; showStatus('Error: ' + (err.message || String(err)), 'error'); });
+        .then(function() { showStatus(Homey.__('pair.list_devices.added') || 'Device added!', 'success'); btn.textContent = '✓ ' + (Homey.__('pair.list_devices.added') || 'Added!'); setTimeout(function() { Homey.done(); }, 1000); })
+        .catch(function(err) { btn.disabled = false; btn.textContent = Homey.__('pair.list_devices.addBtn') || 'Add Device'; showStatus((Homey.__('pair.list_devices.error') || 'Error: ')
+            + (err.message || String(err)), 'error'); });
     });
 
     if (typeof Homey !== 'undefined') Homey.ready(function() {});
