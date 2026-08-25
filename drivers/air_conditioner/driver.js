@@ -148,6 +148,15 @@ class AirConditionerDriver extends Homey.Driver {
         return args.device.triggerCapabilityListener('child_lock', enabled);
       });
 
+    // Diese Capabilities sind von der App definiert, und dafuer erzeugt Homey
+    // keine Karten - ohne die hier gab es das Bedienelement nur auf der Kachel.
+    this.homey.flow.getActionCard('ac_set_timer')
+      .registerRunListener(async (args) => {
+        if (!args.device.hasCapability('countdown_timer')) return;
+        await args.device.setCapabilityValue('countdown_timer', args.timer);
+        return args.device.triggerCapabilityListener('countdown_timer', args.timer);
+      });
+
     this.homey.flow.getActionCard('ac_force_reconnect')
       .registerRunListener(async (args) => args.device.forceReconnect());
 

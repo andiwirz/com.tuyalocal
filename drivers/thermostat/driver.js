@@ -44,6 +44,16 @@ class ThermostatDriver extends Homey.Driver {
       });
 
     // ── Actions ─────────────────────────────────────────────────────────────
+    // Diese Capabilities sind von der App definiert, und dafuer erzeugt Homey
+    // keine Karten - ohne die hier gab es das Bedienelement nur auf der Kachel.
+    this.homey.flow.getActionCard('thermostat_set_child_lock')
+      .registerRunListener(async (args) => {
+        if (!args.device.hasCapability('child_lock')) return;
+        const enabled = args.enabled === 'true';
+        await args.device.setCapabilityValue('child_lock', enabled);
+        return args.device.triggerCapabilityListener('child_lock', enabled);
+      });
+
     this.homey.flow.getActionCard('thermostat_force_reconnect')
       .registerRunListener(async (args) => args.device.forceReconnect());
 

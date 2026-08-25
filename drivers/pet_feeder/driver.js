@@ -80,6 +80,32 @@ class PetFeederDriver extends Homey.Driver {
         return args.device.triggerCapabilityListener('feed_portions', portionsStr);
       });
 
+    // Diese Capabilities sind von der App definiert, und dafuer erzeugt Homey
+    // keine Karten - ohne die hier gab es das Bedienelement nur auf der Kachel.
+    this.homey.flow.getActionCard('feeder_set_child_lock')
+      .registerRunListener(async (args) => {
+        if (!args.device.hasCapability('child_lock')) return;
+        const enabled = args.enabled === 'true';
+        await args.device.setCapabilityValue('child_lock', enabled);
+        return args.device.triggerCapabilityListener('child_lock', enabled);
+      });
+
+    this.homey.flow.getActionCard('feeder_set_indicator_light')
+      .registerRunListener(async (args) => {
+        if (!args.device.hasCapability('indicator_light')) return;
+        const enabled = args.enabled === 'true';
+        await args.device.setCapabilityValue('indicator_light', enabled);
+        return args.device.triggerCapabilityListener('indicator_light', enabled);
+      });
+
+    this.homey.flow.getActionCard('feeder_set_voice_playback')
+      .registerRunListener(async (args) => {
+        if (!args.device.hasCapability('voice_playback')) return;
+        const enabled = args.enabled === 'true';
+        await args.device.setCapabilityValue('voice_playback', enabled);
+        return args.device.triggerCapabilityListener('voice_playback', enabled);
+      });
+
     this.homey.flow.getActionCard('feeder_force_reconnect')
       .registerRunListener(async (args) => args.device.forceReconnect());
 

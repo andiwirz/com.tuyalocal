@@ -94,6 +94,31 @@ class HumidifierDriver extends Homey.Driver {
         await args.device.setCapabilityValue('fan_speed', args.fan_speed.id);
         return args.device.triggerCapabilityListener('fan_speed', args.fan_speed.id);
       });
+    // Diese Capabilities sind von der App definiert, und dafuer erzeugt Homey
+    // keine Karten - ohne die hier gab es das Bedienelement nur auf der Kachel.
+    this.homey.flow.getActionCard('humidifier_set_anion')
+      .registerRunListener(async (args) => {
+        if (!args.device.hasCapability('anion')) return;
+        const enabled = args.enabled === 'true';
+        await args.device.setCapabilityValue('anion', enabled);
+        return args.device.triggerCapabilityListener('anion', enabled);
+      });
+
+    this.homey.flow.getActionCard('humidifier_set_child_lock')
+      .registerRunListener(async (args) => {
+        if (!args.device.hasCapability('child_lock')) return;
+        const enabled = args.enabled === 'true';
+        await args.device.setCapabilityValue('child_lock', enabled);
+        return args.device.triggerCapabilityListener('child_lock', enabled);
+      });
+
+    this.homey.flow.getActionCard('humidifier_set_timer')
+      .registerRunListener(async (args) => {
+        if (!args.device.hasCapability('countdown_timer')) return;
+        await args.device.setCapabilityValue('countdown_timer', args.timer);
+        return args.device.triggerCapabilityListener('countdown_timer', args.timer);
+      });
+
     this.homey.flow.getActionCard('humidifier_force_reconnect')
       .registerRunListener(async (args) => args.device.forceReconnect());
     this.homey.flow.getActionCard('humidifier_refresh_device')

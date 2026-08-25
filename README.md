@@ -1288,6 +1288,7 @@ All DPs are auto-detected at pairing time. For AOSD and BoboYun, `dp_door_action
 | Set AC ioniser | on / off — requires `dp_anion` > 0 |
 | Set AC horizontal swing | on / off — requires `dp_swing_h` > 0 |
 | Set AC child lock | on / off — requires `dp_child_lock` > 0 |
+| Set AC timer | Countdown, `cancel` or 1–24 h — requires `dp_countdown_timer` > 0 |
 | Force AC reconnect | Drops and re-establishes the TCP connection |
 | Refresh AC device | Triggers an immediate GET request |
 
@@ -1321,6 +1322,7 @@ All DPs are auto-detected at pairing time. For AOSD and BoboYun, `dp_door_action
 | Set fan speed | low / medium / high / auto / turbo |
 | Set fan oscillation | on / off — requires `dp_oscillate` > 0 |
 | Set fan direction | forward / reverse — requires `dp_direction` > 0 |
+| Set fan child lock | on / off — requires `dp_child_lock` > 0 |
 | Force fan reconnect | Drops and re-establishes the TCP connection |
 | Refresh fan values | Triggers an immediate GET request |
 
@@ -1404,6 +1406,9 @@ fan: sub-capabilities (`onoff.fan`, `dim.fan`) and app-defined capabilities (`fa
 | Set target humidity | 25–95 % |
 | Set humidifier mode | auto / manual / normal / sleep / eco / boost |
 | Set humidifier fan speed | low / medium / high / auto |
+| Set humidifier ioniser | on / off — requires `dp_anion` > 0 |
+| Set humidifier child lock | on / off — requires `dp_child_lock` > 0 |
+| Set humidifier timer | Countdown, `cancel` or 1–24 h — requires `dp_countdown_timer` > 0 |
 | Force humidifier reconnect | Drops and re-establishes the TCP connection |
 | Refresh humidifier values | Triggers an immediate GET request |
 
@@ -1435,6 +1440,7 @@ fan: sub-capabilities (`onoff.fan`, `dim.fan`) and app-defined capabilities (`fa
 | Set heater mode | eco / comfort / boost / away / auto |
 | Set heater target temperature | Configurable min/max/step |
 | Set heater child lock | on / off — requires `dp_child_lock` > 0 |
+| Set heater timer | Countdown, `cancel` or 1–24 h — requires `dp_countdown_timer` > 0 |
 | Force heater reconnect | Drops and re-establishes the TCP connection |
 | Refresh heater values | Triggers an immediate GET request |
 
@@ -1519,6 +1525,9 @@ fan: sub-capabilities (`onoff.fan`, `dim.fan`) and app-defined capabilities (`fa
 |---|---|
 | Feed [[portions]] portion(s) now | Dispenses 1–50 portions immediately |
 | Refresh pet feeder values | Triggers an immediate GET request |
+| Set feeder child lock | on / off — requires `dp_child_lock` > 0 |
+| Set feeder indicator light | on / off — requires `dp_indicator_light` > 0 |
+| Set feeder voice playback | on / off — the announcement the feeder plays when it dispenses — requires `dp_voice_playback` > 0 |
 | Force pet feeder reconnect | Drops and re-establishes the TCP connection |
 
 ---
@@ -1651,6 +1660,7 @@ fan: sub-capabilities (`onoff.fan`, `dim.fan`) and app-defined capabilities (`fa
 |---|---|
 | Set thermostat mode | Uses values from `mode_values` setting |
 | Set target temperature | Configurable min/max/step |
+| Set thermostat child lock | on / off — requires `dp_child_lock` > 0 |
 | Force thermostat reconnect | Drops and re-establishes the TCP connection |
 | Refresh thermostat values | Triggers an immediate GET request |
 
