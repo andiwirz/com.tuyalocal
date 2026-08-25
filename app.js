@@ -998,6 +998,13 @@ class TuyaLocalApp extends Homey.App {
 
         const conn = device._conn;
         if (!conn || !conn.connected) { note('not connected — cannot tell'); continue; }
+        // Connected is not the same as working, and on protocol 3.3, 3.2 and 3.1 the
+        // difference matters here: those have no session handshake, so the socket opens
+        // for any device whether or not it speaks that version. Writing the version of a
+        // connection that has never delivered a byte would enshrine the wrong one in the
+        // settings — which is how a reported pool heat pump would have had its 3.4 setting
+        // overwritten with the 3.3 it was merely stuck on. Wait for the device to answer.
+        if (!conn.versionProven) { note('connected but has not answered yet — cannot tell'); continue; }
 
         const inUse = String(conn._version || '');
         if (!inUse) { note('connection reports no version'); continue; }
