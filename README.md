@@ -234,7 +234,7 @@ Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polli
 | `dp_voltage` |  | `measure_voltage` | number | 20 | — |
 | `dp_current` |  | `measure_current` | number | 18 | — |
 | `dp_energy` |  | `meter_power` | number | **0** | ✓ see below |
-| `dp_relay_status` |  | `relay_status` | enum | 38 | ✓ `0` = disabled |
+| `dp_relay_status` | <img src="assets/capabilities/relay_status.svg" height="24"> | `relay_status` | enum | 38 | ✓ `0` = disabled |
 | `dp_fault` |  | `alarm_generic` | boolean | 0 | ✓ `0` = disabled |
 | `dp_power_factor` | <img src="assets/capabilities/power_factor.svg" height="24"> | `power_factor` | number | 0 | ✓ `0` = disabled |
 | `dp_countdown` | <img src="assets/capabilities/countdown_timer.svg" height="24"> | *(flow only)* | number | 0 | ✓ `0` = disabled |
@@ -378,30 +378,30 @@ Same settings as Dehumidifier, plus **Fire and Forget** (on by default — most 
 
 #### Data Points — fan
 
-| Setting | Capability | Type | Default DP | Optional |
-|---|---|---|---|---|
-| `dp_onoff` | `onoff.fan` | boolean | 1 | — |
-| `dp_speed` | `dim.fan` | number | 3 | ✓ `0` = disabled |
-| `dp_fan_speed` | `fan_speed` | enum | 0 | ✓ `0` = disabled |
-| `dp_oscillate` | `oscillate` | boolean | 0 | ✓ `0` = disabled |
-| `dp_direction` | `fan_direction` | enum | 0 | ✓ `0` = disabled |
-| `dp_mode` | `fan_mode` | enum | 0 | ✓ `0` = disabled |
-| `dp_child_lock` | `child_lock` | boolean | 0 | ✓ `0` = disabled |
-| `dp_countdown_timer` | `countdown_timer` | enum | 0 | ✓ `0` = disabled |
-| `dp_countdown_left` | `countdown_left` | number | 0 | ✓ `0` = disabled |
+| Setting | Icon | Capability | Type | Default DP | Optional |
+|---|:---:|---|---|---|---|
+| `dp_onoff` |  | `onoff.fan` | boolean | 1 | — |
+| `dp_speed` |  | `dim.fan` | number | 3 | ✓ `0` = disabled |
+| `dp_fan_speed` | <img src="assets/capabilities/fan_speed.svg" height="24"> | `fan_speed` | enum | 0 | ✓ `0` = disabled |
+| `dp_oscillate` | <img src="assets/capabilities/oscillate.svg" height="24"> | `oscillate` | boolean | 0 | ✓ `0` = disabled |
+| `dp_direction` | <img src="assets/capabilities/fan_direction.svg" height="24"> | `fan_direction` | enum | 0 | ✓ `0` = disabled |
+| `dp_mode` | <img src="assets/capabilities/fan_mode.svg" height="24"> | `fan_mode` | enum | 0 | ✓ `0` = disabled |
+| `dp_child_lock` | <img src="assets/capabilities/child_lock.svg" height="24"> | `child_lock` | boolean | 0 | ✓ `0` = disabled |
+| `dp_countdown_timer` | <img src="assets/capabilities/countdown_timer.svg" height="24"> | `countdown_timer` | enum | 0 | ✓ `0` = disabled |
+| `dp_countdown_left` | <img src="assets/capabilities/countdown_left.svg" height="24"> | `countdown_left` | number | 0 | ✓ `0` = disabled |
 
 `speed_min` / `speed_max` (default 1 … 100) map the device's raw speed range onto the 0–100 % slider.
 A fan with six steps takes `speed_min = 1`, `speed_max = 6`.
 
 #### Data Points — light
 
-| Setting | Capability | Type | Default DP | Optional |
-|---|---|---|---|---|
-| `dp_light_onoff` | `onoff` | boolean | 0 | — |
-| `dp_light_dim` | `dim` | number | 0 | ✓ `0` = disabled |
-| `dp_light_color_temp` | `light_temperature` | number | 0 | ✓ `0` = disabled |
-| `dp_light_colour` | `light_hue`, `light_saturation` | string | 0 | ✓ `0` = disabled |
-| `dp_light_mode` | `light_mode` | enum | 0 | ✓ `0` = disabled |
+| Setting | Icon | Capability | Type | Default DP | Optional |
+|---|:---:|---|---|---|---|
+| `dp_light_onoff` |  | `onoff` | boolean | 0 | — |
+| `dp_light_dim` |  | `dim` | number | 0 | ✓ `0` = disabled |
+| `dp_light_color_temp` |  | `light_temperature` | number | 0 | ✓ `0` = disabled |
+| `dp_light_colour` |  | `light_hue`, `light_saturation` | string | 0 | ✓ `0` = disabled |
+| `dp_light_mode` |  | `light_mode` | enum | 0 | ✓ `0` = disabled |
 
 `dp_light_dim_min` / `dp_light_dim_max` and `dp_light_color_temp_min` / `_max` map the device's raw
 ranges onto Homey's 0–100 %. `dp_light_color_temp_invert` (on by default) flips the colour-temperature
@@ -543,12 +543,12 @@ Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polli
 
 | Setting | Icon | Capability | Type | Default DP | Optional |
 |---|:---:|---|---|---|---|
-| `dp_onoff` | | `onoff` | boolean | 1 | — |
-| `dp_target_temp` | | `target_temperature` | number | 2 | — |
-| `dp_current_temp` | | `measure_temperature` | number | 3 | ✓ `0` = disabled |
+| `dp_onoff` |  | `onoff` | boolean | 1 | — |
+| `dp_target_temp` |  | `target_temperature` | number | 2 | — |
+| `dp_current_temp` |  | `measure_temperature` | number | 3 | ✓ `0` = disabled |
 | `dp_mode` | <img src="assets/capabilities/heat_pump_mode.svg" height="24"> | `heat_pump_mode` | enum | 0 | ✓ `0` = disabled |
 | `dp_preset` | <img src="assets/capabilities/heat_pump_preset.svg" height="24"> | `heat_pump_preset` | enum or bool | 0 | ✓ `0` = disabled |
-| `dp_fault` | | `alarm_generic` | bitfield / bool | 0 | ✓ `0` = disabled |
+| `dp_fault` |  | `alarm_generic` | bitfield / bool | 0 | ✓ `0` = disabled |
 | `dp_power_level` | <img src="assets/capabilities/power_level.svg" height="24"> | `power_level` | number | 0 | ✓ `0` = disabled |
 
 #### Temperature Settings
@@ -588,12 +588,12 @@ Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polli
 
 #### Data Points
 
-| Setting | Capability | Type | Default DP | Optional |
-|---|---|---|---|---|
-| `dp_control` | `windowcoverings_state` | enum `open`/`stop`/`close` | 1 | — |
-| `dp_percent_control` | `windowcoverings_set` | integer 0–100 % | 2 | — |
-| `dp_work_state` | `windowcoverings_state` | enum `opening`/`closing` (read-only) | 7 | ✓ `0` = disabled |
-| `dp_fault` | `alarm_generic` | bitmap | 0 | ✓ `0` = disabled |
+| Setting | Icon | Capability | Type | Default DP | Optional |
+|---|:---:|---|---|---|---|
+| `dp_control` |  | `windowcoverings_state` | enum `open`/`stop`/`close` | 1 | — |
+| `dp_percent_control` |  | `windowcoverings_set` | integer 0–100 % | 2 | — |
+| `dp_work_state` |  | `windowcoverings_state` | enum `opening`/`closing` (read-only) | 7 | ✓ `0` = disabled |
+| `dp_fault` |  | `alarm_generic` | bitmap | 0 | ✓ `0` = disabled |
 
 #### Device Settings
 
@@ -617,16 +617,16 @@ Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polli
 
 #### Data Points
 
-| Setting | Capability | Type | Default DP | Optional |
-|---|---|---|---|---|
-| `dp_onoff` | `onoff` | boolean | 1 | — |
-| `dp_target_temp` | `target_temperature` | number | 2 | — |
-| `dp_current_temp` | `measure_temperature` | number | 3 | — |
-| `dp_mode` | `thermostat_mode` | enum | 4 | ✓ `0` = disabled |
-| `dp_child_lock` | `child_lock` | boolean | 0 | ✓ `0` = disabled |
-| `dp_battery` | `measure_battery` | number | 0 | ✓ `0` = disabled (TRVs only) |
-| `dp_fault` | `alarm_generic` | bitfield | 0 | ✓ `0` = disabled |
-| `dp_hvac_action` | `alarm_heat` | enum / bool / int | 0 | ✓ `0` = disabled — shows heating indicator when boiler is actively firing |
+| Setting | Icon | Capability | Type | Default DP | Optional |
+|---|:---:|---|---|---|---|
+| `dp_onoff` |  | `onoff` | boolean | 1 | — |
+| `dp_target_temp` |  | `target_temperature` | number | 2 | — |
+| `dp_current_temp` |  | `measure_temperature` | number | 3 | — |
+| `dp_mode` | <img src="assets/capabilities/thermostat_mode.svg" height="24"> | `thermostat_mode` | enum | 4 | ✓ `0` = disabled |
+| `dp_child_lock` | <img src="assets/capabilities/child_lock.svg" height="24"> | `child_lock` | boolean | 0 | ✓ `0` = disabled |
+| `dp_battery` |  | `measure_battery` | number | 0 | ✓ `0` = disabled (TRVs only) |
+| `dp_fault` |  | `alarm_generic` | bitfield | 0 | ✓ `0` = disabled |
+| `dp_hvac_action` |  | `alarm_heat` | enum / bool / int | 0 | ✓ `0` = disabled — shows heating indicator when boiler is actively firing |
 
 #### Temperature Settings
 
@@ -657,15 +657,15 @@ Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polli
 
 #### Data Points
 
-| Setting | Capability | Type | Default DP | Optional |
-|---|---|---|---|---|
-| `dp_onoff` | `onoff` | boolean | 1 | — |
-| `dp_current_temp` | `measure_temperature` | number | 2 | — |
-| `dp_target_temp` | `target_temperature` | number | 4 | ✓ `0` = disabled |
-| `dp_keep_warm` | `kettle_keep_warm` | boolean | 13 | ✓ `0` = disabled |
-| `dp_status` | `kettle_status` | enum | 15 | ✓ `0` = disabled |
-| `dp_mode` | `kettle_mode` | enum | 16 | ✓ `0` = disabled |
-| `dp_fault` | `alarm_generic` | bitfield | 0 | ✓ `0` = disabled |
+| Setting | Icon | Capability | Type | Default DP | Optional |
+|---|:---:|---|---|---|---|
+| `dp_onoff` |  | `onoff` | boolean | 1 | — |
+| `dp_current_temp` |  | `measure_temperature` | number | 2 | — |
+| `dp_target_temp` |  | `target_temperature` | number | 4 | ✓ `0` = disabled |
+| `dp_keep_warm` | <img src="assets/capabilities/kettle_keep_warm.svg" height="24"> | `kettle_keep_warm` | boolean | 13 | ✓ `0` = disabled |
+| `dp_status` | <img src="assets/capabilities/kettle_status.svg" height="24"> | `kettle_status` | enum | 15 | ✓ `0` = disabled |
+| `dp_mode` | <img src="assets/capabilities/kettle_mode.svg" height="24"> | `kettle_mode` | enum | 16 | ✓ `0` = disabled |
+| `dp_fault` |  | `alarm_generic` | bitfield | 0 | ✓ `0` = disabled |
 
 #### Temperature Settings
 
@@ -696,14 +696,14 @@ Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polli
 
 #### Data Points
 
-| Setting | Capability | Type | Default DP | Optional |
-|---|---|---|---|---|
-| `dp_switch_1` | `onoff` | boolean | 1 | — |
-| `dp_switch_2` | `onoff.2` | boolean | 0 | ✓ `0` = disabled |
-| `dp_switch_3` | `onoff.3` | boolean | 0 | ✓ `0` = disabled |
-| `dp_switch_4` | `onoff.4` | boolean | 0 | ✓ `0` = disabled |
-| `dp_countdown_1–4` | *(settings only)* | number | 0 | ✓ `0` = disabled |
-| `dp_relay_status` | *(settings only)* | enum | 0 | ✓ `0` = disabled |
+| Setting | Icon | Capability | Type | Default DP | Optional |
+|---|:---:|---|---|---|---|
+| `dp_switch_1` |  | `onoff` | boolean | 1 | — |
+| `dp_switch_2` |  | `onoff.2` | boolean | 0 | ✓ `0` = disabled |
+| `dp_switch_3` |  | `onoff.3` | boolean | 0 | ✓ `0` = disabled |
+| `dp_switch_4` |  | `onoff.4` | boolean | 0 | ✓ `0` = disabled |
+| `dp_countdown_1–4` |  | *(settings only)* | number | 0 | ✓ `0` = disabled |
+| `dp_relay_status` |  | *(settings only)* | enum | 0 | ✓ `0` = disabled |
 
 #### Switch Names
 
@@ -779,12 +779,12 @@ The defaults match the **ZY-M100-WIFI** DP layout exactly. Sensors using a diffe
 
 #### Data Points
 
-| Setting | Capability | Type | Default DP | Notes |
-|---|---|---|---|---|
-| `dp_presence` | `alarm_motion` | enum | 1 | `presence` / `none` |
-| `dp_alarm` | `alarm_generic` | enum | 6 | `checking_result`; anything other than `check_success` / `checking` raises the alarm |
-| `dp_distance` | `measure_distance` | number | 9 | Distance to closest target, cm |
-| `dp_luminance` | `measure_luminance` | number | 104 | Illuminance, lux |
+| Setting | Icon | Capability | Type | Default DP | Notes |
+|---|:---:|---|---|---|---|
+| `dp_presence` |  | `alarm_motion` | enum | 1 | `presence` / `none` |
+| `dp_alarm` |  | `alarm_generic` | enum | 6 | `checking_result`; anything other than `check_success` / `checking` raises the alarm |
+| `dp_distance` | <img src="assets/capabilities/measure_distance.svg" height="24"> | `measure_distance` | number | 9 | Distance to closest target, cm |
+| `dp_luminance` |  | `measure_luminance` | number | 104 | Illuminance, lux |
 
 #### Radar Settings
 
@@ -820,24 +820,24 @@ Uses Homey's native EV charger capabilities, so the built-in **Start charging** 
 
 #### Data Points
 
-| Setting | Capability | Type | Default DP | Notes |
-|---|---|---|---|---|
-| `dp_switch` | `evcharger_charging` | boolean | 18 | Homey's standard charge switch |
-| `dp_work_state` | `evcharger_charging_state` | enum | 3 | Tuya's 8 states mapped onto Homey's 5 — see below |
-| `dp_charge_current` | `target_power` | number | 4 | Charger speaks amps, Homey speaks watts |
-| `dp_phase_a` | voltage / current / power | raw | 6 | Packed DP: 2 B voltage ×0.1 V, 3 B current ×0.001 A, then power in W. Both the 8-byte and 7-byte layouts are decoded automatically |
-| `dp_phase_b` | `measure_*.b` (L2) | raw | 0 | Three-phase only, typically 7 |
-| `dp_phase_c` | `measure_*.c` (L3) | raw | 0 | Three-phase only, typically 8 |
-| `dp_power_total` | `measure_power` | number | 0 | Plain watts, typically 9 (or 5 on some single-phase units). Takes priority over the power decoded from Phase A |
-| `dp_session_energy` | `charge_session_energy` | number | 25 | Energy of current / last session |
-| `dp_energy_total` | `meter_power.charged` | number | 0 | Charger's own lifetime counter, typically 1 — see below |
-| `dp_fault` | `alarm_generic` + `fault_code` | bitmap | 10 | 16-bit bitmap; raw code also exposed as a sensor |
-| `dp_connection_state` | connection state | enum | 13 | Control-pilot state (`controlpi_*`) · ✓ `0` = disabled |
-| `dp_work_mode` | charging mode | enum | 0 | Typically 14 — see below · ✓ `0` = disabled |
-| `dp_temperature` | `measure_temperature` | number | 0 | Typically 24 · ✓ `0` = disabled |
-| `dp_timer_on` | delayed start (h) | number | 0 | Typically 28 · ✓ `0` = disabled |
-| `dp_live_updates` | live measurements | enum | 0 | Typically 27 · ✓ `0` = disabled — see below |
-| `dp_clear_energy` | reset device counter | boolean | 0 | Write-only pulse, typically 16 · ✓ `0` = disabled |
+| Setting | Icon | Capability | Type | Default DP | Notes |
+|---|:---:|---|---|---|---|
+| `dp_switch` |  | `evcharger_charging` | boolean | 18 | Homey's standard charge switch |
+| `dp_work_state` |  | `evcharger_charging_state` | enum | 3 | Tuya's 8 states mapped onto Homey's 5 — see below |
+| `dp_charge_current` |  | `target_power` | number | 4 | Charger speaks amps, Homey speaks watts |
+| `dp_phase_a` |  | voltage / current / power | raw | 6 | Packed DP: 2 B voltage ×0.1 V, 3 B current ×0.001 A, then power in W. Both the 8-byte and 7-byte layouts are decoded automatically |
+| `dp_phase_b` |  | `measure_*.b` (L2) | raw | 0 | Three-phase only, typically 7 |
+| `dp_phase_c` |  | `measure_*.c` (L3) | raw | 0 | Three-phase only, typically 8 |
+| `dp_power_total` |  | `measure_power` | number | 0 | Plain watts, typically 9 (or 5 on some single-phase units). Takes priority over the power decoded from Phase A |
+| `dp_session_energy` | <img src="assets/capabilities/bolt.svg" height="24"> | `charge_session_energy` | number | 25 | Energy of current / last session |
+| `dp_energy_total` |  | `meter_power.charged` | number | 0 | Charger's own lifetime counter, typically 1 — see below |
+| `dp_fault` | <img src="assets/capabilities/alert.svg" height="24"> | `alarm_generic` + `fault_code` | bitmap | 10 | 16-bit bitmap; raw code also exposed as a sensor |
+| `dp_connection_state` |  | connection state | enum | 13 | Control-pilot state (`controlpi_*`) · ✓ `0` = disabled |
+| `dp_work_mode` |  | charging mode | enum | 0 | Typically 14 — see below · ✓ `0` = disabled |
+| `dp_temperature` |  | `measure_temperature` | number | 0 | Typically 24 · ✓ `0` = disabled |
+| `dp_timer_on` |  | delayed start (h) | number | 0 | Typically 28 · ✓ `0` = disabled |
+| `dp_live_updates` |  | live measurements | enum | 0 | Typically 27 · ✓ `0` = disabled — see below |
+| `dp_clear_energy` |  | reset device counter | boolean | 0 | Write-only pulse, typically 16 · ✓ `0` = disabled |
 
 #### Power / Current Conversion
 
@@ -901,15 +901,15 @@ Command Gap, Offline Grace Period).
 
 #### Data Points
 
-| Setting | Capability | Type | Default DP | Optional |
-|---|---|---|---|---|
-| `dp_power` | `measure_power` | number | 19 | — |
-| `dp_voltage` | `measure_voltage` | number | 20 | — |
-| `dp_current` | `measure_current` | number | 18 | — |
-| `dp_energy` | `meter_power` | number | 17 | ✓ `0` = disabled |
-| `dp_switch` | `onoff` | boolean | **0** | ✓ only for breakers |
-| `dp_power_factor` | `power_factor` | number | 0 | ✓ `0` = disabled |
-| `dp_fault` | `alarm_generic` | number | 26 | ✓ any value above zero raises the alarm |
+| Setting | Icon | Capability | Type | Default DP | Optional |
+|---|:---:|---|---|---|---|
+| `dp_power` |  | `measure_power` | number | 19 | — |
+| `dp_voltage` |  | `measure_voltage` | number | 20 | — |
+| `dp_current` |  | `measure_current` | number | 18 | — |
+| `dp_energy` |  | `meter_power` | number | 17 | ✓ `0` = disabled |
+| `dp_switch` |  | `onoff` | boolean | **0** | ✓ only for breakers |
+| `dp_power_factor` | <img src="assets/capabilities/power_factor.svg" height="24"> | `power_factor` | number | 0 | ✓ `0` = disabled |
+| `dp_fault` |  | `alarm_generic` | number | 26 | ✓ any value above zero raises the alarm |
 
 Defaults are the classic Tuya metering block (17 / 18 / 19 / 20), which is what most single-phase
 meters use. DPs 21–25 are the factory calibration coefficients — read-only, never useful, and
@@ -959,39 +959,44 @@ own schedule and nothing is gained by asking more often.
 
 #### Temperature and Humidity
 
-| Setting | Capability | Default DP |
-|---|---|---|
-| `dp_temp_in` | `measure_temperature` (indoor) | 101 |
-| `dp_hum_in` | `measure_humidity` (indoor) | 102 |
-| `dp_temp_out` | `measure_temperature.outdoor` | 103 |
-| `dp_hum_out` | `measure_humidity.outdoor` | 104 |
-| `dp_temp_extra` | additional channel | 0 |
+| Setting | Icon | Capability | Default DP |
+|---|:---:|---|---|
+| `dp_temp_in` |  | `measure_temperature` (indoor) | 101 |
+| `dp_hum_in` |  | `measure_humidity` (indoor) | 102 |
+| `dp_temp_out` |  | `measure_temperature.outdoor` | 103 |
+| `dp_hum_out` |  | `measure_humidity.outdoor` | 104 |
+| `dp_temp_extra` |  | `measure_temperature.extra` | 0 |
 
 `temp_divisor` and `humidity_divisor` default to `10` — these stations send tenths.
 
 #### Pressure, Wind and Rain
 
-| Setting | Capability | Default DP |
-|---|---|---|
-| `dp_pressure` | `measure_pressure` | 109 |
-| `dp_wind` | `measure_wind_strength` | 110 |
-| `dp_gust` | `measure_gust_strength` | 111 |
-| `dp_wind_dir` | `measure_wind_angle` | 112 |
-| `dp_rain_1h` | rainfall, last hour | 113 |
-| `dp_rain_24h` | rainfall, last 24 h | 114 |
-| `dp_rain_total` | rainfall total | 134 |
+| Setting | Icon | Capability | Default DP |
+|---|:---:|---|---|
+| `dp_pressure` |  | `measure_pressure` | 109 |
+| `dp_wind` |  | `measure_wind_strength` | 110 |
+| `dp_gust` |  | `measure_gust_strength` | 111 |
+| `dp_wind_dir` | <img src="assets/capabilities/wind_direction.svg" height="24"> | `wind_direction` + `measure_wind_angle` | 112 |
+| `dp_rain_1h` |  | `measure_rain_intensity` | 113 |
+| `dp_rain_24h` |  | `measure_rain` | 114 |
+| `dp_rain_total` |  | `measure_rain.total` | 134 |
 
 `wind_divisor` defaults to **1**: these stations send whole units, and a divisor of 10 produced gust
 readings with a decimal place the hardware does not have.
 
 `wd_values` maps the raw direction index onto compass points, in order from north clockwise —
-`N,NNE,NE,ENE,E,ESE,SE,SSE,S,SSW,SW,WSW,W,WNW,NW,NNW`. The tile shows the compass point; the
-underlying `measure_wind_angle` keeps the degrees, so both are available to flows.
+`N,NNE,NE,ENE,E,ESE,SE,SSE,S,SSW,SW,WSW,W,WNW,NW,NNW`. That one data point feeds two capabilities
+on purpose: `wind_direction` carries the compass point that the tile shows, and Homey's own
+`measure_wind_angle` keeps the degrees, so a flow can use whichever it needs.
 
 #### Comfort
 
-`dp_comfort` (default 126) reports the station's own comfort assessment. `comfort_values` maps the
-raw strings, default `moist,dry,comfortable,na`.
+| Setting | Icon | Capability | Default DP |
+|---|:---:|---|---|
+| `dp_comfort` | <img src="assets/capabilities/comfort_level.svg" height="24"> | `comfort_level` | 126 |
+
+`comfort_values` maps the raw strings the station sends onto that picker, default
+`moist,dry,comfortable,na`.
 
 ---
 
@@ -1006,14 +1011,17 @@ Same settings as Dehumidifier.
 
 #### Data Points
 
-| Setting | Capability | Type | Default DP |
-|---|---|---|---|
-| `dp_level_percent` | `liquid_level` | number | 22 |
-| `dp_depth` | measured depth | number | 2 |
-| `dp_state` | level state | enum | 1 |
+| Setting | Icon | Capability | Type | Default DP |
+|---|:---:|---|---|---|
+| `dp_level_percent` | <img src="assets/capabilities/liquid_level.svg" height="24"> | `liquid_level` | number | 22 |
+| `dp_depth` | <img src="assets/capabilities/measure_distance.svg" height="24"> | `measure_distance` | number | 2 |
+| `dp_state` | <img src="assets/capabilities/liquid_state.svg" height="24"> | `liquid_state`, `alarm_tank_empty`, `alarm_tank_full` | enum | 1 |
 
 `depth_divisor` defaults to `1000` — the depth arrives in millimetres.
-`state_values` maps the raw strings, default `normal,lower_alarm,upper_alarm`.
+
+`state_values` maps the raw strings, default `normal,lower_alarm,upper_alarm`. The state drives
+three capabilities from the one data point: the `liquid_state` picker showing which of the three it
+is, plus an empty and a full alarm that a flow can react to directly.
 
 #### Thresholds and Installation
 
@@ -1079,12 +1087,12 @@ Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polli
 |---|:---:|---|---|---|---|
 | `dp_portions` | <img src="assets/capabilities/feed_portions.svg" height="24"> | `feed_portions` | enum picker | 3 | — |
 | `dp_motor_state` | <img src="assets/capabilities/motor_state.svg" height="24"> | `motor_state` | enum | 4 | ✓ `0` = disabled |
-| `dp_fault` | | `alarm_generic` | bitfield | 14 | ✓ `0` = disabled |
+| `dp_fault` |  | `alarm_generic` | bitfield | 14 | ✓ `0` = disabled |
 | `dp_feed_report` | <img src="assets/capabilities/feed_report.svg" height="24"> | `feed_report` | number | 15 | ✓ `0` = disabled |
 | `dp_surplus_grain` | <img src="assets/capabilities/surplus_grain.svg" height="24"> | `surplus_grain` | number | 16 | ✓ `0` = disabled |
 | `dp_food_level` | <img src="assets/capabilities/food_status.svg" height="24"> | `food_status` | enum | 0 | ✓ `0` = disabled |
 | `dp_child_lock` | <img src="assets/capabilities/child_lock.svg" height="24"> | `child_lock` | boolean | 0 | ✓ `0` = disabled |
-| `dp_battery` | | `measure_battery` | number | 0 | ✓ `0` = disabled |
+| `dp_battery` |  | `measure_battery` | number | 0 | ✓ `0` = disabled |
 | `dp_indicator_light` | <img src="assets/capabilities/indicator_light.svg" height="24"> | `indicator_light` | boolean | 0 | ✓ `0` = disabled |
 | `dp_voice_playback` | <img src="assets/capabilities/voice_playback.svg" height="24"> | `voice_playback` | boolean | 0 | ✓ `0` = disabled |
 | `dp_battery_status` | <img src="assets/capabilities/battery_status.svg" height="24"> | `battery_status` | enum | 0 | ✓ `0` = disabled |
@@ -1137,16 +1145,16 @@ Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polli
 
 #### Data Points
 
-| Setting | Capability | Default DP | Description |
-|---|---|---|---|
-| `dp_door_contact` | `garagedoor_closed` | 3 | Bool or string `"open"`/`"closed"` contact sensor. WOFEA DP 3, ZC34T DP 1, eWeLink DP 2. |
-| `dp_door_action` | `garagedoor_closed` | 0 | String action state (`opened`/`closed`/`opening`/`closing`). AOSD DP 107, BoboYun DP 10. |
-| `dp_door_control` | — | 6 | Combined open/close command DP. WOFEA DP 6 (enum), AOSD/ZC34T DP 101 (string). |
-| `dp_door_open` | — | 0 | Separate bool open DP (BoboYun DP 106: send `true` → open). |
-| `dp_door_close` | — | 0 | Separate bool close DP (BoboYun DP 107: send `true` → close). |
-| `dp_switch` | — | 1 | Relay toggle DP (WOFEA DP 1 = relay pulse; BoboYun DP 103 = stop). Used by Toggle and Stop actions. |
-| `dp_door_state` | `alarm_generic` | 12 | Alarm state. WOFEA: `none`/`unclosed_time`/`close_time_alarm`. BoboYun: `No`/event strings (set to 141). |
-| `dp_light` | `onoff.light` | 0 | Integrated light switch. AOSD DP 105, BoboYun DP 102. `0` = disabled. |
+| Setting | Icon | Capability | Default DP | Description |
+|---|:---:|---|---|---|
+| `dp_door_contact` |  | `garagedoor_closed` | 3 | Bool or string `"open"`/`"closed"` contact sensor. WOFEA DP 3, ZC34T DP 1, eWeLink DP 2. |
+| `dp_door_action` |  | `garagedoor_closed` | 0 | String action state (`opened`/`closed`/`opening`/`closing`). AOSD DP 107, BoboYun DP 10. |
+| `dp_door_control` |  | — | 6 | Combined open/close command DP. WOFEA DP 6 (enum), AOSD/ZC34T DP 101 (string). |
+| `dp_door_open` |  | — | 0 | Separate bool open DP (BoboYun DP 106: send `true` → open). |
+| `dp_door_close` |  | — | 0 | Separate bool close DP (BoboYun DP 107: send `true` → close). |
+| `dp_switch` |  | — | 1 | Relay toggle DP (WOFEA DP 1 = relay pulse; BoboYun DP 103 = stop). Used by Toggle and Stop actions. |
+| `dp_door_state` |  | `alarm_generic` | 12 | Alarm state. WOFEA: `none`/`unclosed_time`/`close_time_alarm`. BoboYun: `No`/event strings (set to 141). |
+| `dp_light` |  | `onoff.light` | 0 | Integrated light switch. AOSD DP 105, BoboYun DP 102. `0` = disabled. |
 
 All DPs are auto-detected at pairing time. For AOSD and BoboYun, `dp_door_action` and `dp_light` are detected automatically; BoboYun's `dp_door_state` (DP 141) must be set manually.
 
