@@ -1,8 +1,8 @@
 # Tuya Local — Homey App
 
-**Version 1.0.145** · Local WiFi/LAN control of Tuya smart devices — no cloud, no Zigbee hub required.
+**Version 1.0.207** · Local WiFi/LAN control of Tuya smart devices — no cloud, no Zigbee hub required.
 
-All communication happens over your local network via the Tuya LAN protocol. Seventeen built-in drivers cover the most common device types; a fully generic driver handles anything else.
+All communication happens over your local network via the Tuya LAN protocol. Twenty-one built-in drivers cover the most common device types; a fully generic driver handles anything else.
 
 ---
 
@@ -12,8 +12,9 @@ All communication happens over your local network via the Tuya LAN protocol. Sev
 |---|---|---|
 | [Dehumidifier](#dehumidifier-1) | Dehumidifiers, air dryers | Dehumidifier |
 | [Smart Plug](#smart-plug-1) | Smart plugs with energy monitoring | Socket |
-| [Air Conditioner](#air-conditioner-1) | Any Tuya local LAN air conditioner | Thermostat |
+| [Air Conditioner](#air-conditioner-1) | Any Tuya local LAN air conditioner | Air Conditioner |
 | [Fan](#fan-1) | Ceiling fans, table fans, tower fans | Fan |
+| [Ceiling Fan Light](#ceiling-fan-light-1) | Ceiling fans with a built-in light (fan + light on one device) | Light |
 | [Humidifier](#humidifier-1) | Humidifiers, aroma diffusers | Humidifier |
 | [Heater](#heater-1) | Panel heaters, convectors, oil radiators | Heater |
 | [Light](#light-1) | Bulbs, LED strips, ceiling lights | Light |
@@ -26,8 +27,16 @@ All communication happens over your local network via the Tuya LAN protocol. Sev
 | [Wall Switch](#wall-switch-1) | 1/2/3/4-gang WiFi wall switches | Socket |
 | [Doorbell](#doorbell-1) | Tuya video doorbells (Marmitek Buzz LO, Bcom Majic IPBox, Cleverio CD-200 and compatible) | Doorbell |
 | [Presence Sensor](#presence-sensor-1) | mmWave radar presence sensors (ZY-M100-WIFI and compatible) | Sensor |
+| [Energy Meter](#energy-meter-1) | DIN-rail meters, clamp meters and metering breakers (`zndb`, `dlq`) | Sensor |
+| [Weather Station](#weather-station-1) | WiFi weather stations with outdoor sensors (temperature, humidity, pressure, wind, rain) | Sensor |
+| [Ultrasonic Level Sensor](#ultrasonic-level-sensor-1) | Tank and cistern level sensors with configurable alarm thresholds | Sensor |
 | [EV Charger](#ev-charger-1) | Tuya EV chargers, category `qccdz` (Vevor, Nine, Tera, Emini, Aimiler, Ecopoint, Dowell, Feyree, AfyeEV, Junsun, Zencar, iPengen, Suntree, Immax, Voldt, Wadapower and other rebrands) | EV Charger |
 | [Generic Tuya Device](#generic-tuya-device-1) | Any Tuya device not covered above | Other |
+
+A **Face Access Panel** driver also exists but is **deprecated**: these panels keep their user
+database, unlocking and event reporting behind the Tuya cloud, and the local protocol exposes
+too little to control one usefully. Existing devices keep working; the driver no longer appears
+when adding a device.
 
 ---
 
@@ -36,11 +45,13 @@ All communication happens over your local network via the Tuya LAN protocol. Sev
 - **Cloud-free** — all traffic stays on your local network
 - **Real-time push** — instant state updates without polling (polling is optional and configurable)
 - **Automatic reconnect** — exponential back-off with jitter; watchdog detects stale connections and reconnects
-- **Protocol auto-rotation** — after 5 consecutive reconnect failures the connection manager automatically cycles through fallback protocol versions (3.3 → 3.4 → 3.1 → 3.5); once a version connects successfully it is kept and logged so you can update the setting to avoid the retry delay next time
+- **Protocol auto-rotation** — after 5 consecutive reconnect failures the connection manager cycles through the fallback protocol versions (3.3 → 3.4 → 3.1 → 3.5 → 3.2). A connection counts towards that only once the device has actually answered, or once it has simply stayed up: protocols 3.1, 3.2 and 3.3 have no session handshake, so an open TCP socket on its own proves nothing — a device that speaks a different version accepts the socket and then resets it. Once a version really works it is kept and logged, so you can put it in the device settings and skip the retry delay next time
+- **Stale-connection watchdog** — a second watchdog beside the heartbeat, watching for something the heartbeat cannot see: firmware that keeps answering keep-alive pings while it has stopped answering everything else. That state used to look perfectly healthy — and on protocol 3.4/3.5, where a SET is fire-and-forget, commands into it reported success while the device did not move. A device that has sent no data for three polling cycles (at least 90 s) is now reconnected
+- **Command pacing** — a configurable minimum gap between two commands to the same device (**Command Gap**, default 100 ms). Some firmware accepts the first command of a pair and silently drops the second when they arrive microseconds apart, which nothing on 3.4/3.5 reports as an error
 - **Outbound heartbeat** — sends a keep-alive ping every 15 s; keeps connections alive on strict firmware that requires host-initiated keep-alives
 - **Push-only device support** — devices that don't respond to GET requests (e.g. BCM700D-TY01 curtain motors) stay connected and accept SET commands without entering a reconnect loop; set Polling Interval to 0 for these devices
 - **Cloud Lookup** — fetch Device ID and Local Key from the Tuya IoT Platform inside the app settings or directly during device pairing — no CLI tools needed. Device names show your custom name (as set in the Tuya app) as the primary label. Click a device name to see all DPs with types, current values, and allowed ranges. Access credentials are saved on Homey and auto-filled next time
-- **Protocol auto-detect** — pairing and repair default to *Auto-detect*, which tries 3.3 → 3.4 → 3.1 → 3.5 → 3.2 → 3.22 in order and saves the working version automatically
+- **Protocol auto-detect** — pairing and repair default to *Auto-detect*, which tries 3.3 → 3.4 → 3.1 → 3.5 → 3.2 in order and saves the working version automatically
 - **Network scanner** — finds Tuya devices via UDP broadcast (ports 6666 / 6667) and a full TCP subnet scan (port 6668)
 - **Auto DP detection** — on pairing, the app connects to the device, collects live data points and maps them to capabilities automatically
 - **Cloud-assisted DP detection** — once Cloud Lookup credentials are saved, pairing additionally reads the device's Tuya specification and matches DPs by the manufacturer's own code names (`envhumid`, `windspeed`, `work_state`, `bright_value`, …) instead of guessing from value shape. It also picks up the *full* list of allowed values for mode and fan-speed pickers rather than only the value the device happens to report at that moment — which is what makes devices with plain numeric enums (`0` / `1`) work out of the box. Entirely optional
@@ -51,7 +62,9 @@ All communication happens over your local network via the Tuya LAN protocol. Sev
 - **Computed energy metering** — kWh accumulated from live power readings using trapezoidal integration; persisted across restarts
 - **Push notifications** — Homey notifications for water tank events, fault alarms and other device alerts
 - **Efficient polling** — alternates between full GET and lightweight dp_refresh to reduce traffic
-- **Diagnostic tools** — in-app log buffer, live DP debug panel and raw payload viewer
+- **Fix It tab** — five checks that compare your devices against what Tuya declares and offer to correct them: stale local keys, wrong protocol version, wrong measurement scaling, picker options that never got updated, and data points a device does not actually have. Every check previews exactly what it would change, per device, and saves nothing until you confirm
+- **Connect-failure diagnosis** — when a device fails to connect during pairing, the app probes port 6668 and says which of the three it was: nothing at that address, the port closed, or the connection refused because something else already holds the device's single connection slot
+- **Diagnostic tools** — in-app log buffer, live DP debug panel, and a Help tab covering every driver and the common faults
 - **Bilingual** — full English and German UI
 
 ---
@@ -139,7 +152,7 @@ homey app install
 2. **Scan Network** to auto-discover devices, or enter IP / Device ID / Local Key manually.
    - To fill in Device ID and Local Key automatically, click **☁️ Fetch Device ID & Local Key from Cloud** — enter your Tuya API credentials once (or re-use previously saved ones), pick your device from the list, and the fields are filled in automatically.
    - Check **Save credentials on Homey** to have them pre-filled next time.
-3. Leave **Protocol Version** on **Auto-detect** (default) — the app tries 3.3 → 3.4 → 3.1 → 3.5 and saves the working version automatically. Select a specific version only if auto-detect fails.
+3. Leave **Protocol Version** on **Auto-detect** (default) — the app tries 3.3 → 3.4 → 3.1 → 3.5 → 3.2 and saves the working version automatically. Select a specific version only if auto-detect fails.
 4. Click **Test & Connect** — the app connects, collects live data, then shows a summary screen.
 5. Review the detected DP mapping. Adjust DP numbers directly in the table if needed.  
    *Generic:* the full DP mapper opens — assign each data point to a capability and configure scale, unit, options.
@@ -339,6 +352,60 @@ Because the speed slider already occupies `dim`, the light's brightness uses its
 | `fan_mode_values` | `normal,sleep,nature,breeze,smart` |
 
 The `fan_direction` capability uses fixed values `forward` and `reverse` (Tuya standard). The DP is auto-detected at pairing time if the device reports either of those strings.
+
+---
+
+### Ceiling Fan Light
+
+A ceiling fan with a light built into it — one Tuya device carrying two independent things.
+Separate from the Fan driver because Homey has to be told which of the two the device *is*:
+this one is a **Light**, so the main tile, the on/off button and Homey's light groups all act
+on the light. The fan gets its own sub-capabilities and its own flow cards.
+
+| What | Capability | Driven by |
+|---|---|---|
+| Light on/off *(main switch)* | `onoff` | `dp_light_onoff` |
+| Light brightness | `dim` | `dp_light_dim` |
+| Fan on/off | `onoff.fan` | `dp_onoff` |
+| Fan speed (slider) | `dim.fan` | `dp_speed` |
+
+> If the main switch operates the fan instead of the light, `dp_light_onoff` was not detected at
+> pairing. Set it in device settings — the fan keeps its own `dp_onoff`.
+
+#### Connection
+
+Same settings as Dehumidifier, plus **Fire and Forget** (on by default — most of these fans are 3.4/3.5).
+
+#### Data Points — fan
+
+| Setting | Capability | Type | Default DP | Optional |
+|---|---|---|---|---|
+| `dp_onoff` | `onoff.fan` | boolean | 1 | — |
+| `dp_speed` | `dim.fan` | number | 3 | ✓ `0` = disabled |
+| `dp_fan_speed` | `fan_speed` | enum | 0 | ✓ `0` = disabled |
+| `dp_oscillate` | `oscillate` | boolean | 0 | ✓ `0` = disabled |
+| `dp_direction` | `fan_direction` | enum | 0 | ✓ `0` = disabled |
+| `dp_mode` | `fan_mode` | enum | 0 | ✓ `0` = disabled |
+| `dp_child_lock` | `child_lock` | boolean | 0 | ✓ `0` = disabled |
+| `dp_countdown_timer` | `countdown_timer` | enum | 0 | ✓ `0` = disabled |
+| `dp_countdown_left` | `countdown_left` | number | 0 | ✓ `0` = disabled |
+
+`speed_min` / `speed_max` (default 1 … 100) map the device's raw speed range onto the 0–100 % slider.
+A fan with six steps takes `speed_min = 1`, `speed_max = 6`.
+
+#### Data Points — light
+
+| Setting | Capability | Type | Default DP | Optional |
+|---|---|---|---|---|
+| `dp_light_onoff` | `onoff` | boolean | 0 | — |
+| `dp_light_dim` | `dim` | number | 0 | ✓ `0` = disabled |
+| `dp_light_color_temp` | `light_temperature` | number | 0 | ✓ `0` = disabled |
+| `dp_light_colour` | `light_hue`, `light_saturation` | string | 0 | ✓ `0` = disabled |
+| `dp_light_mode` | `light_mode` | enum | 0 | ✓ `0` = disabled |
+
+`dp_light_dim_min` / `dp_light_dim_max` and `dp_light_color_temp_min` / `_max` map the device's raw
+ranges onto Homey's 0–100 %. `dp_light_color_temp_invert` (on by default) flips the colour-temperature
+direction for devices that count from warm to cold rather than the other way round.
 
 ---
 
@@ -817,6 +884,153 @@ The exact Tuya state stays available through the **Detailed charger state change
 
 ---
 
+### Energy Meter
+
+DIN-rail meters, clamp meters and metering circuit breakers — Tuya categories `zndb` and `dlq`.
+
+Separate from the Smart Plug because here the measurement is the point and the switch is optional.
+A clamp meter in a distribution board has no switch at all, and the plug driver — declared as a
+socket with `onoff` in its manifest — gives one anyway: a dead toggle on a device that cannot switch
+anything. `dp_switch` is therefore **0 by default**; set it only on a breaker that really switches
+what it measures.
+
+#### Connection
+
+Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polling Interval,
+Command Gap, Offline Grace Period).
+
+#### Data Points
+
+| Setting | Capability | Type | Default DP | Optional |
+|---|---|---|---|---|
+| `dp_power` | `measure_power` | number | 19 | — |
+| `dp_voltage` | `measure_voltage` | number | 20 | — |
+| `dp_current` | `measure_current` | number | 18 | — |
+| `dp_energy` | `meter_power` | number | 17 | ✓ `0` = disabled |
+| `dp_switch` | `onoff` | boolean | **0** | ✓ only for breakers |
+| `dp_power_factor` | `power_factor` | number | 0 | ✓ `0` = disabled |
+| `dp_fault` | `alarm_generic` | number | 26 | ✓ any value above zero raises the alarm |
+
+Defaults are the classic Tuya metering block (17 / 18 / 19 / 20), which is what most single-phase
+meters use. DPs 21–25 are the factory calibration coefficients — read-only, never useful, and
+deliberately not logged as unmapped.
+
+#### Scaling
+
+| Setting | Default | Example |
+|---|---|---|
+| `power_scale` | `0.1` | raw 4538 → 453.8 W |
+| `voltage_scale` | `0.1` | raw 2376 → 237.6 V |
+| `current_scale` | `0.001` | raw 2491 → 2.491 A |
+| `kwh_scale` | `0.01` | raw 364 → 3.64 kWh |
+
+Values are rounded to the number of decimals the divisor can express, so a raw 2376 becomes 237.6 V
+rather than 237.60000000000002 in Insights for ever. **Check measurement scaling** on the Fix It tab
+reads the divisor Tuya declares and offers to correct these.
+
+#### What the numbers alone cannot tell you
+
+A meter reports numbers and almost nothing else, and one number looks much like another — a voltage
+of 2376 and an energy total of 2376 are the same integer. Local detection therefore resolves the
+conventional block and mains voltage, and leaves the rest to Cloud Lookup, which knows the
+manufacturer's code names (`cur_power`, `add_ele`, `cur_voltage`, …). Across the 42 single-DP meter
+definitions in the tuya-local catalogue the local heuristic identifies six; a wider number table
+would reach twelve and get much of the rest wrong, because DP 103 is the power on seven models, the
+voltage on three and the current on two. A confident wrong reading on a meter is worse than none.
+
+If nothing could be identified, pairing says so rather than handing over a silent device.
+
+> **Not supported:** meters that pack voltage, current and power for a phase into one binary value
+> (28 of the 70 definitions, 27 of them on DP 6). The format is undocumented and no reading from a
+> real device has been available to check an implementation against, so such a meter pairs and then
+> shows nothing.
+
+---
+
+### Weather Station
+
+WiFi weather stations with outdoor sensors — indoor and outdoor temperature and humidity, barometric
+pressure, wind speed, gust and direction, and rainfall.
+
+#### Connection
+
+Same settings as Dehumidifier. **Polling Interval defaults to 300 s**: these stations report on their
+own schedule and nothing is gained by asking more often.
+
+#### Temperature and Humidity
+
+| Setting | Capability | Default DP |
+|---|---|---|
+| `dp_temp_in` | `measure_temperature` (indoor) | 101 |
+| `dp_hum_in` | `measure_humidity` (indoor) | 102 |
+| `dp_temp_out` | `measure_temperature.outdoor` | 103 |
+| `dp_hum_out` | `measure_humidity.outdoor` | 104 |
+| `dp_temp_extra` | additional channel | 0 |
+
+`temp_divisor` and `humidity_divisor` default to `10` — these stations send tenths.
+
+#### Pressure, Wind and Rain
+
+| Setting | Capability | Default DP |
+|---|---|---|
+| `dp_pressure` | `measure_pressure` | 109 |
+| `dp_wind` | `measure_wind_strength` | 110 |
+| `dp_gust` | `measure_gust_strength` | 111 |
+| `dp_wind_dir` | `measure_wind_angle` | 112 |
+| `dp_rain_1h` | rainfall, last hour | 113 |
+| `dp_rain_24h` | rainfall, last 24 h | 114 |
+| `dp_rain_total` | rainfall total | 134 |
+
+`wind_divisor` defaults to **1**: these stations send whole units, and a divisor of 10 produced gust
+readings with a decimal place the hardware does not have.
+
+`wd_values` maps the raw direction index onto compass points, in order from north clockwise —
+`N,NNE,NE,ENE,E,ESE,SE,SSE,S,SSW,SW,WSW,W,WNW,NW,NNW`. The tile shows the compass point; the
+underlying `measure_wind_angle` keeps the degrees, so both are available to flows.
+
+#### Comfort
+
+`dp_comfort` (default 126) reports the station's own comfort assessment. `comfort_values` maps the
+raw strings, default `moist,dry,comfortable,na`.
+
+---
+
+### Ultrasonic Level Sensor
+
+Tank and cistern level sensors: an ultrasonic head measures the distance down to the liquid and
+reports both a depth and a percentage, plus configurable high and low alarm thresholds.
+
+#### Connection
+
+Same settings as Dehumidifier.
+
+#### Data Points
+
+| Setting | Capability | Type | Default DP |
+|---|---|---|---|
+| `dp_level_percent` | `liquid_level` | number | 22 |
+| `dp_depth` | measured depth | number | 2 |
+| `dp_state` | level state | enum | 1 |
+
+`depth_divisor` defaults to `1000` — the depth arrives in millimetres.
+`state_values` maps the raw strings, default `normal,lower_alarm,upper_alarm`.
+
+#### Thresholds and Installation
+
+These are written by flow actions rather than read as capabilities, which is why they sit in their
+own group. Their DP numbers only need changing if your sensor arranges them differently.
+
+| Setting | Meaning | Default DP |
+|---|---|---|
+| `dp_max_set` | High threshold | 7 |
+| `dp_mini_set` | Low threshold | 8 |
+| `dp_upper_switch` | High alarm enabled | 14 |
+| `dp_lower_switch` | Low alarm enabled | 15 |
+| `dp_install_height` | Mounting height above the tank floor | 19 |
+| `dp_depth_full` | Depth that counts as full | 21 |
+
+---
+
 ### Generic Tuya Device
 
 Maps any Tuya DP to any Homey capability. The mapping is built visually during pairing — no manual JSON editing required.
@@ -1101,6 +1315,54 @@ All DPs are auto-detected at pairing time. For AOSD and BoboYun, `dp_door_action
 | Set fan direction | forward / reverse — requires `dp_direction` > 0 |
 | Force fan reconnect | Drops and re-establishes the TCP connection |
 | Refresh fan values | Triggers an immediate GET request |
+
+---
+
+### Ceiling Fan Light
+
+Homey generates the light's own cards — **Turn on**, **Turn off**, **Dim**, **Is on** — automatically
+from the `onoff` and `dim` capabilities, because the driver is a Light. It generates nothing for the
+fan: sub-capabilities (`onoff.fan`, `dim.fan`) and app-defined capabilities (`fan_speed`, `oscillate`,
+`child_lock`) get no cards of their own. Everything below is the driver making up that difference.
+
+#### Triggers
+
+| Trigger | Flow tokens |
+|---|---|
+| Fan connected | — |
+| Fan disconnected | — |
+| The fan was switched on or off | `on` (boolean) |
+| Fan mode changed | `mode` (string), `prev_mode` (string) |
+| Fan direction changed | `direction` (string), `prev_direction` (string) |
+| Fan data point changed | `dp` (string), `value` (string) |
+
+#### Conditions
+
+| Condition |
+|---|
+| Device is / is not connected |
+| Fan is / is not running |
+| Fan speed is / is not [speed] |
+| Fan mode is / is not [mode] |
+| Fan direction is / is not [forward\|reverse] |
+| The fan is / is not oscillating |
+| The child lock is / is not on |
+
+#### Actions
+
+| Action | Notes |
+|---|---|
+| Turn the fan on or off | The fan only — the light keeps Homey's own on/off card |
+| Set fan speed | low / medium / high / auto / turbo — requires `dp_fan_speed` > 0 |
+| Set fan speed by percentage | 0–100 %, mapped onto `speed_min` … `speed_max` — requires `dp_speed` > 0 |
+| Set fan mode | normal / sleep / nature / breeze / smart — requires `dp_mode` > 0 |
+| Set fan direction | forward / reverse — requires `dp_direction` > 0 |
+| Set fan oscillation | on / off — requires `dp_oscillate` > 0 |
+| Set the child lock | on / off — requires `dp_child_lock` > 0 |
+| Set timer | Countdown — requires `dp_countdown_timer` > 0 |
+| Set light mode (advanced) | white / colour / scene / music — requires `dp_light_mode` > 0 |
+| Reconnect the device | Drops and re-establishes the TCP connection |
+| Refresh device data | Triggers an immediate GET request |
 
 ---
 
@@ -1540,6 +1802,97 @@ Homey generates **Start charging**, **Stop charging**, **Is charging** and a cha
 
 ---
 
+### Energy Meter
+
+#### Triggers
+
+| Trigger | Flow tokens |
+|---|---|
+| Device connected | — |
+| Device disconnected | — |
+| A data point changed | `dp` (string), `value` (string) |
+
+#### Conditions
+
+| Condition | Notes |
+|---|---|
+| Device is / is not connected | |
+| Power is / is not above [watts] | |
+| Current is / is not above [amps] | Useful as an overload warning on a circuit whose breaker rating you know |
+| Fault is / is not active | `dp_fault` above zero |
+
+#### Actions
+
+| Action | Notes |
+|---|---|
+| Force reconnect | Drops and re-establishes the TCP connection |
+| Refresh device values | Triggers an immediate GET request |
+
+---
+
+### Weather Station
+
+Homey generates cards for the measurement capabilities itself. The cards below are the driver's own
+additions.
+
+#### Triggers
+
+| Trigger | Flow tokens |
+|---|---|
+| Weather station connected | — |
+| Weather station disconnected | — |
+| Comfort level changed | `comfort` (string), `prev_comfort` (string) |
+| Weather station data point changed | `dp` (string), `value` (string) |
+
+#### Conditions
+
+| Condition | Notes |
+|---|---|
+| Weather station is / is not connected | |
+| Comfort level is / is not [level] | moist / dry / comfortable / na |
+| Wind speed is / is not above [value] | |
+| Wind is / is not from [direction] | Compass point, taken from `wd_values` |
+
+#### Actions
+
+| Action | Notes |
+|---|---|
+| Force weather station reconnect | Drops and re-establishes the TCP connection |
+| Refresh weather station values | Triggers an immediate GET request |
+
+---
+
+### Ultrasonic Level Sensor
+
+#### Triggers
+
+| Trigger | Flow tokens |
+|---|---|
+| Level sensor connected | — |
+| Level sensor disconnected | — |
+| Level state changed | `state` (string), `prev_state` (string) |
+| Level sensor data point changed | `dp` (string), `value` (string) |
+
+#### Conditions
+
+| Condition | Notes |
+|---|---|
+| Level sensor is / is not connected | |
+| Level state is / is not [state] | normal / lower_alarm / upper_alarm |
+| Liquid level is / is not above [percent] | |
+
+#### Actions
+
+| Action | Notes |
+|---|---|
+| Set high threshold | Writes `dp_max_set` on the device |
+| Set low threshold | Writes `dp_mini_set` on the device |
+| Enable or disable a level alarm | Writes `dp_upper_switch` / `dp_lower_switch` |
+| Force level sensor reconnect | Drops and re-establishes the TCP connection |
+| Refresh level sensor values | Triggers an immediate GET request |
+
+---
+
 ## Push Notifications
 
 | Event | Driver | Condition |
@@ -1577,18 +1930,39 @@ Repeated identical messages are automatically suppressed: the first 3 occurrence
 
 ### DP Debug Panel
 
-Live view of the most recent data points per device:
+Every data point the app has received from a device, which is how you find out which DP carries
+what: operate the device with its own buttons while watching the table, and the DP that moves is
+the one the setting needs to point at.
+
 - Select a device from the dropdown
 - Shows DP number, current value, and type
 - Colour-coded: green = `true`, red = `false`, purple = number, orange = string
-- **Auto-refresh** updates every 5 seconds
+- **Auto-refresh** re-reads every 5 seconds — switch it on *before* operating the device, otherwise
+  a DP can change and change back between two looks
+- **Copy Local DP Table**, **Report on GitHub** and **Copy for forum** package the table for a bug report
 
-### Raw Data Panel
+What this panel cannot show is what the numbers *mean*: the local protocol never transmits a name,
+a type or an allowed range. Cloud Lookup does, which is why the two are used together.
 
-Full unprocessed payload for the selected device:
-- DPs as a sorted JSON object
-- Device metadata: `devId`, `uid`, `cid`, timestamp
-- **Copy** button for clipboard export
+### Fix It
+
+Five checks that compare your devices against what Tuya declares for them. Each one previews exactly
+what it would change, device by device, says why a device was left alone, and saves nothing until you
+confirm. All except **protocol versions** need Cloud Lookup credentials.
+
+| Check | What it finds |
+|---|---|
+| **Check local keys** | A local key changes every time the device is reset or re-paired in the Tuya app, and the symptom is a device that never connects again. Compares the stored key against your account. Keys are shown shortened, never in full |
+| **Check protocol versions** | The device is connected and answering on a different version than the settings say. Waits for the device to answer first, so it cannot save a version a device was merely stuck on |
+| **Check measurement scaling** | Readings that are 10× or 100× off, using the divisor Tuya declares rather than leaving you to work it out from the number |
+| **Update pickers on existing devices** | Mode and fan-speed lists that were seeded from whatever the device happened to report at pairing time. Never touches DP numbers |
+| **Find data points your device does not have** | Driver defaults written for one device family pointing at nothing on another. A DP is only reported when the specification does not list it **and** your device has never once reported it |
+
+### Help
+
+A per-driver reference inside the app: what each driver covers, what its data points mean, and the
+faults that come up most often. Linked from the other tabs where a topic needs more room than a
+tooltip.
 
 ### Cloud Lookup
 
@@ -1616,7 +1990,7 @@ Fetch device credentials and DP specifications from the Tuya IoT Platform (avail
 | Heat pump target temp correct but measured temp is 10× too high | Asymmetric DP scaling (e.g. Weau): target DP is raw °C but measured DP is ×10 | Set **Measured Temperature Divisor (override)** (`current_temp_divisor`) to `10`, leave the main `temp_divisor` at `1` |
 | Mode / fan picker shows wrong options | `mode_values` / `fan_speed_values` mismatch | Update values in device settings, then restart the Tuya Local app |
 | Picker still shows old options after saving | Homey caches capability options | Restart the Tuya Local app |
-| Light color mode not working | Wrong `color_mode_white_val` / `color_mode_color_val` | Check Raw Data panel for actual strings sent by device (e.g. `white`, `colour`, `color`) |
+| Light color mode not working | Wrong `color_mode_white_val` / `color_mode_color_val` | Check the DP Debug tab for the actual strings sent by the device (e.g. `white`, `colour`, `color`) |
 | Humidifier water alarm fires on connect | Device sends transient alarm on reconnect | Built-in debounce suppresses these; if they persist increase the alarm guard window |
 | Spurious fault alarm after reconnect | Reconnect artifact | Built-in 30 s grace period on reconnect suppresses these (AC, Heater, Heat Pump) |
 | Heat pump mode/preset picker does nothing | DP was enabled after initial pairing — listener not registered | Restart the Tuya Local app; the listener is re-registered on next `onInit` |
@@ -1626,17 +2000,17 @@ Fetch device credentials and DP specifications from the Tuya IoT Platform (avail
 | Curtain tile shows "moving" but motor has stopped | `work_state` DP not resetting on this device | Set `dp_work_state = 0` to disable it |
 | Curtain motor limit positions are wrong | Motor limits not calibrated | Run limit calibration from the Tuya / Smart Life app (DP 16 `border`) before using Homey |
 | Thermostat temperature is 10× too high | Device sends ×10 values (e.g. BHT-002, Moes) | Set `temp_divisor = 10` in device settings |
-| Thermostat mode picker shows wrong options | `mode_values` mismatch | Check Raw Data panel for actual strings, update `mode_values` in settings |
+| Thermostat mode picker shows wrong options | `mode_values` mismatch | Check the DP Debug tab for the actual strings, update `mode_values` in settings |
 | Thermostat heating indicator (`alarm_heat`) never activates | `dp_hvac_action` not set | Set **DP HVAC Action** in device settings to the DP that reports `heating`/`1`/`true` when the boiler fires |
 | Wall switch trigger doesn't fire for switch 2+ | Using Homey's built-in "Turned on/off" trigger | Use the Wall Switch-specific **"A switch gang changed"** trigger card instead |
 | Wall switch tile names don't update | Homey caches capability titles | Restart the Tuya Local app after changing switch names |
-| Kettle mode picker empty | `mode_values` doesn't match device strings | Check Raw Data for exact mode strings (some use `mzj_black`, `boiling_quick`, etc.) |
+| Kettle mode picker empty | `mode_values` doesn't match device strings | Check DP Debug for the exact mode strings (some use `mzj_black`, `boiling_quick`, etc.) |
 | Device missing DPs or SET commands rejected | Standard Instruction Set hides some DPs | Switch to **DP Instruction Set** on iot.tuya.com → Devices → your device → Instruction Mode |
 | Cloud Lookup shows fewer DPs than expected | Same cause — Standard mode limits visible DPs | Switch to DP Instruction mode, then re-fetch in Cloud Lookup |
 | SET command causes disconnect | Device rejects encrypted command | 1) Refresh Local Key via Cloud Lookup. 2) Enable **Fire and Forget** in device settings. 3) Switch instruction mode to DP on iot.tuya.com |
 | Device unavailable immediately — log shows `Invalid local key length` | Local Key is not exactly 16 characters — likely a copy/paste truncation | Open device **Settings** → re-enter the Local Key (must be exactly 16 characters) |
 | Curtain motor / push-only device enters connect → timeout → disconnect loop | Firmware does not respond to GET requests (e.g. BCM700D-TY01) | Set **Polling Interval** to `0` in device settings — the device will stay connected and push DPs and accept commands normally |
-| Protocol version mismatch after firmware OTA update | OTA changed the required protocol; configured version no longer works | The app auto-rotates through 3.3 / 3.4 / 3.1 / 3.5 after 5 failed reconnects and logs which version connected — update **Protocol Version** in device settings to that version to skip the retry delay |
+| Protocol version mismatch after firmware OTA update | OTA changed the required protocol; configured version no longer works | The app auto-rotates through 3.3 / 3.4 / 3.1 / 3.5 / 3.2 after 5 failed reconnects and logs which version connected — update **Protocol Version** in device settings to that version to skip the retry delay |
 | Device goes offline after a while and never recovers | **Auto-Reconnect Interval** set very low, tearing down healthy connections | Fixed in 1.0.128 — auto-reconnect now only fires while the device is genuinely offline. Set the interval back to `0` or a few minutes |
 | Mode or fan-speed tile stays empty | Device reports values that are not in the picker's list (often plain numbers) | Check the raw value in **DP Debug**, then set `mode_values` / `fan_speed_values` to match exactly (e.g. `0,1`) and restart the app |
 | Newly enabled tile does not respond to taps | Capability listener registered only at startup | Fixed in 1.0.129 for Fan and Dehumidifier. On other drivers, restart the Tuya Local app once |
@@ -1646,12 +2020,19 @@ Fetch device credentials and DP specifications from the Tuya IoT Platform (avail
 | EV charger power slider range looks wrong | `current_min` / `current_max` / `phase_count` don't match the hardware | Set them to your charger's real amp range and phase count — the watt range is derived (`W = A × V × phases`) |
 | EV charger shows no voltage / current / power | Charger only streams live values while `online_state` is `online` | Set `dp_live_updates = 27` — the app re-asserts it on every reconnect |
 | EV charging mode picker has no effect | Charger advertises modes it does not implement | Set `dp_work_mode = 0` to hide the picker; DP 33 (`mode_set`) declares what the hardware really supports |
+| Endless connect → ECONNRESET loop, log always says `attempt 1` | Protocol 3.1/3.2/3.3 has no session handshake, so the open TCP socket was read as success and cleared the failure counter — the version rotation never reached its five failures | Fixed in 1.0.207. A connection now only counts once the device answers. Afterwards, set **Protocol Version** to the version the log says actually worked |
+| Device shows as connected but commands do nothing | Firmware still answers keep-alive pings while it has stopped answering everything else; on 3.4/3.5 a SET is fire-and-forget, so the app sees no error | Fixed in 1.0.190 — a device silent for three polling cycles is reconnected. If it recurs, reduce **Polling Interval** so the watchdog window closes sooner |
+| Two commands in one flow, only the first arrives | Firmware cannot keep up with commands sent microseconds apart, and nothing on 3.4/3.5 reports a dropped SET | Raise **Command Gap** in device settings (default 100 ms; a reported heater needed 2000 ms) |
+| Energy meter shows no readings at all | The DP numbers alone cannot say which number is the power and which the voltage — on this device family the same number means different things on different models | Set up **Cloud Lookup** and pair again: it matches by the manufacturer's own code names. Or read the numbers off **DP Debug** and enter them by hand |
+| Ceiling fan light: the main on/off switches the fan, not the light | `dp_light_onoff` not detected at pairing | Set **DP Light On/Off** in device settings — that DP drives the main `onoff`; the fan sits on its own `dp_onoff` |
 
 ---
 
 ## Tech Stack
 
 - [tuyapi](https://github.com/codetheweb/tuyapi) ^7.5.2 — Tuya LAN protocol implementation
+- `lib/SafeTuyAPI.js` — a thin subclass around it. The library parses incoming packets on the socket's own event, outside any promise, so a malformed frame threw where nothing could catch it and took the whole app down with it. The subclass guards the packet handler and routes the failure back into the connection that caused it
+- `lib/TuyaConnection.js` — connection lifecycle: reconnect back-off, protocol rotation, the heartbeat and stale-data watchdogs, command queueing and pacing
 - Node.js built-ins: `dgram`, `net`, `os`, `dns`
 - Homey App SDK v3
 
