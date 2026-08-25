@@ -1,6 +1,6 @@
 # Tuya Local — Homey App
 
-**Version 1.0.207** · Local WiFi/LAN control of Tuya smart devices — no cloud, no Zigbee hub required.
+**Version 1.0.208** · Local WiFi/LAN control of Tuya smart devices — no cloud, no Zigbee hub required.
 
 All communication happens over your local network via the Tuya LAN protocol. Twenty-one built-in drivers cover the most common device types; a fully generic driver handles anything else.
 
@@ -2060,7 +2060,7 @@ Fetch device credentials and DP specifications from the Tuya IoT Platform (avail
 | EV charger power slider range looks wrong | `current_min` / `current_max` / `phase_count` don't match the hardware | Set them to your charger's real amp range and phase count — the watt range is derived (`W = A × V × phases`) |
 | EV charger shows no voltage / current / power | Charger only streams live values while `online_state` is `online` | Set `dp_live_updates = 27` — the app re-asserts it on every reconnect |
 | EV charging mode picker has no effect | Charger advertises modes it does not implement | Set `dp_work_mode = 0` to hide the picker; DP 33 (`mode_set`) declares what the hardware really supports |
-| Endless connect → ECONNRESET loop, log always says `attempt 1` | Protocol 3.1/3.2/3.3 has no session handshake, so the open TCP socket was read as success and cleared the failure counter — the version rotation never reached its five failures | Fixed in 1.0.207. A connection now only counts once the device answers. Afterwards, set **Protocol Version** to the version the log says actually worked |
+| Endless connect → ECONNRESET loop, log always says `attempt 1` | Protocol 3.1/3.2/3.3 has no session handshake, so the open TCP socket was read as success and cleared the failure counter — the version rotation never reached its five failures | Fixed in 1.0.208. A connection now only counts once the device answers. Afterwards, set **Protocol Version** to the version the log says actually worked |
 | Device shows as connected but commands do nothing | Firmware still answers keep-alive pings while it has stopped answering everything else; on 3.4/3.5 a SET is fire-and-forget, so the app sees no error | Fixed in 1.0.190 — a device silent for three polling cycles is reconnected. If it recurs, reduce **Polling Interval** so the watchdog window closes sooner |
 | Two commands in one flow, only the first arrives | Firmware cannot keep up with commands sent microseconds apart, and nothing on 3.4/3.5 reports a dropped SET | Raise **Command Gap** in device settings (default 100 ms; a reported heater needed 2000 ms) |
 | Energy meter shows no readings at all | The DP numbers alone cannot say which number is the power and which the voltage — on this device family the same number means different things on different models | Set up **Cloud Lookup** and pair again: it matches by the manufacturer's own code names. Or read the numbers off **DP Debug** and enter them by hand |
