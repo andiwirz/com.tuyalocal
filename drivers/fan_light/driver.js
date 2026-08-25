@@ -216,6 +216,16 @@ class FanLightDriver extends Homey.Driver {
       .registerArgumentAutocompleteListener('mode', lightModeAC)
       .registerRunListener(async (args) => args.device.setLightMode(args.mode.id));
 
+    // child_lock und oscillate sind von der App definiert - Homey erzeugt
+    // dafuer weder "wurde umgeschaltet" noch eine Abfrage.
+    this.homey.flow.getDeviceTriggerCard('fanlight_child_lock_changed')
+      .registerRunListener(async (args, state) =>
+        String(args.enabled) === String(state.enabled));
+
+    this.homey.flow.getDeviceTriggerCard('fanlight_oscillate_changed')
+      .registerRunListener(async (args, state) =>
+        String(args.enabled) === String(state.enabled));
+
     this.homey.flow.getActionCard('fanlight_force_reconnect')
       .registerRunListener(async (args) => args.device.forceReconnect());
 

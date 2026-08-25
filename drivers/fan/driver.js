@@ -192,6 +192,24 @@ class FanDriver extends Homey.Driver {
         return args.device.triggerCapabilityListener('child_lock', enabled);
       });
 
+    // child_lock und oscillate sind von der App definiert - Homey erzeugt
+    // dafuer weder "wurde umgeschaltet" noch eine Abfrage.
+    this.homey.flow.getDeviceTriggerCard('fan_child_lock_changed')
+      .registerRunListener(async (args, state) =>
+        String(args.enabled) === String(state.enabled));
+
+    this.homey.flow.getDeviceTriggerCard('fan_oscillate_changed')
+      .registerRunListener(async (args, state) =>
+        String(args.enabled) === String(state.enabled));
+
+    this.homey.flow.getConditionCard('fan_child_lock_is_on')
+      .registerRunListener(async (args) =>
+        args.device.getCapabilityValue('child_lock') === true);
+
+    this.homey.flow.getConditionCard('fan_oscillate_is_on')
+      .registerRunListener(async (args) =>
+        args.device.getCapabilityValue('oscillate') === true);
+
     this.homey.flow.getActionCard('fan_force_reconnect')
       .registerRunListener(async (args) => args.device.forceReconnect());
 

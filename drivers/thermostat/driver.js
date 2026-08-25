@@ -54,6 +54,16 @@ class ThermostatDriver extends Homey.Driver {
         return args.device.triggerCapabilityListener('child_lock', enabled);
       });
 
+    // child_lock und oscillate sind von der App definiert - Homey erzeugt
+    // dafuer weder "wurde umgeschaltet" noch eine Abfrage.
+    this.homey.flow.getDeviceTriggerCard('thermostat_child_lock_changed')
+      .registerRunListener(async (args, state) =>
+        String(args.enabled) === String(state.enabled));
+
+    this.homey.flow.getConditionCard('thermostat_child_lock_is_on')
+      .registerRunListener(async (args) =>
+        args.device.getCapabilityValue('child_lock') === true);
+
     this.homey.flow.getActionCard('thermostat_force_reconnect')
       .registerRunListener(async (args) => args.device.forceReconnect());
 

@@ -85,6 +85,13 @@ class DehumidifierDevice extends BaseTuyaDevice {
     this._triggerDeviceDisconnected = this.homey.flow.getDeviceTriggerCard('dehumidifier_device_disconnected');
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('dehumidifier_dp_changed');
 
+    // Ohne diese Zuordnung schreibt _applyCapability nur den Wert; mit ihr
+    // meldet es zusaetzlich einen echten Wechsel an die Flow-Karte.
+    this._registerChangeTriggers({
+      child_lock: 'dehumidifier_child_lock_changed',
+      oscillate: 'dehumidifier_oscillate_changed',
+    });
+
     // ── Capability listeners (auto-registered from DP_PROFILE) ──────────────
     // Registered via _registerListeners() so that capabilities enabled later
     // through device settings (e.g. dp_oscillate, dp_pump) become controllable
@@ -302,7 +309,7 @@ class DehumidifierDevice extends BaseTuyaDevice {
       }
 
       if (!this.hasCapability(entry.capability)) continue;
-      await this.setCapabilityValue(entry.capability, converted).catch(() => {});
+      await this._applyCapability(entry.capability, converted);
     }
 
     // Debounced persistence — avoids hammering storage on every DPS packet.

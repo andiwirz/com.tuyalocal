@@ -69,6 +69,12 @@ class AirConditionerDevice extends BaseTuyaDevice {
     this._triggerFaultOn            = this.homey.flow.getDeviceTriggerCard('ac_fault_alarm_on');
     this._triggerModeChanged        = this.homey.flow.getDeviceTriggerCard('ac_mode_changed');
 
+    // Ohne diese Zuordnung schreibt _applyCapability nur den Wert; mit ihr
+    // meldet es zusaetzlich einen echten Wechsel an die Flow-Karte.
+    this._registerChangeTriggers({
+      child_lock: 'ac_child_lock_changed',
+    });
+
     // Registered through a helper so that a capability switched on later — by
     // pointing its DP setting at a number — becomes controllable at once. Without
     // that, the tile appears and taps do nothing until the app is restarted.
@@ -236,7 +242,7 @@ class AirConditionerDevice extends BaseTuyaDevice {
         continue;
       }
 
-      await this.setCapabilityValue(entry.capability, converted).catch(() => {});
+      await this._applyCapability(entry.capability, converted);
     }
 
     // Debounced persistence â€” avoids hammering storage on every DPS packet.

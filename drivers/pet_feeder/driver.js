@@ -106,6 +106,16 @@ class PetFeederDriver extends Homey.Driver {
         return args.device.triggerCapabilityListener('voice_playback', enabled);
       });
 
+    // child_lock und oscillate sind von der App definiert - Homey erzeugt
+    // dafuer weder "wurde umgeschaltet" noch eine Abfrage.
+    this.homey.flow.getDeviceTriggerCard('feeder_child_lock_changed')
+      .registerRunListener(async (args, state) =>
+        String(args.enabled) === String(state.enabled));
+
+    this.homey.flow.getConditionCard('feeder_child_lock_is_on')
+      .registerRunListener(async (args) =>
+        args.device.getCapabilityValue('child_lock') === true);
+
     this.homey.flow.getActionCard('feeder_force_reconnect')
       .registerRunListener(async (args) => args.device.forceReconnect());
 

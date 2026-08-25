@@ -66,6 +66,12 @@ class ThermostatDevice extends BaseTuyaDevice {
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('thermostat_dp_changed');
     this._triggerModeChanged        = this.homey.flow.getDeviceTriggerCard('thermostat_mode_changed');
 
+    // Ohne diese Zuordnung schreibt _applyCapability nur den Wert; mit ihr
+    // meldet es zusaetzlich einen echten Wechsel an die Flow-Karte.
+    this._registerChangeTriggers({
+      child_lock: 'thermostat_child_lock_changed',
+    });
+
     // â”€â”€ Capability listeners â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // Registered through a helper so that a capability switched on later — by
     // pointing its DP setting at a number — becomes controllable at once. Without
@@ -154,11 +160,11 @@ class ThermostatDevice extends BaseTuyaDevice {
         }
 
         case 'bool':
-          await this.setCapabilityValue(entry.capability, Boolean(value)).catch(() => {});
+          await this._applyCapability(entry.capability, Boolean(value));
           break;
 
         case 'number':
-          await this.setCapabilityValue(entry.capability, Number(value)).catch(() => {});
+          await this._applyCapability(entry.capability, Number(value));
           break;
 
         case 'alarm': {

@@ -1196,6 +1196,8 @@ All DPs are auto-detected at pairing time. For AOSD and BoboYun, `dp_door_action
 | Device connected | — | — |
 | Device disconnected | — | — |
 | A data point changed | — | `dp` (string), `value` (string) |
+| Dehumidifier child lock switched | `enabled` as a filter — pick *turned on* or *turned off* | — |
+| Dehumidifier oscillation switched | `enabled` as a filter — pick *turned on* or *turned off* | — |
 
 #### Conditions
 
@@ -1206,6 +1208,8 @@ All DPs are auto-detected at pairing time. For AOSD and BoboYun, `dp_door_action
 | Water tank is / is not full |
 | Device is / is not connected |
 | Mode is / is not [mode] |
+| Dehumidifier child lock is / is not on |
+| Dehumidifier oscillation is / is not on |
 
 #### Actions
 
@@ -1264,6 +1268,7 @@ All DPs are auto-detected at pairing time. For AOSD and BoboYun, `dp_door_action
 | AC fault alarm triggered | `fault_code` (number) |
 | AC mode changed | `mode` (string), `prev_mode` (string) |
 | AC data point changed | `dp` (string), `value` (string) |
+| AC child lock switched | `enabled` as a filter — pick *turned on* or *turned off* |
 
 #### Conditions
 
@@ -1274,6 +1279,7 @@ All DPs are auto-detected at pairing time. For AOSD and BoboYun, `dp_door_action
 | AC fan speed is / is not [speed] |
 | AC sleep mode is on / is off |
 | AC fault alarm is / is not active |
+| AC child lock is / is not on |
 
 #### Actions
 
@@ -1305,6 +1311,8 @@ All DPs are auto-detected at pairing time. For AOSD and BoboYun, `dp_door_action
 | Fan mode changed | `mode` (string), `prev_mode` (string) |
 | Fan direction changed | `direction` (string), `prev_direction` (string) |
 | Fan data point changed | `dp` (string), `value` (string) |
+| Fan child lock switched | `enabled` as a filter — pick *turned on* or *turned off* |
+| Fan oscillation switched | `enabled` as a filter — pick *turned on* or *turned off* |
 
 #### Conditions
 
@@ -1313,6 +1321,8 @@ All DPs are auto-detected at pairing time. For AOSD and BoboYun, `dp_door_action
 | Fan is / is not connected |
 | Fan mode is / is not [mode] |
 | Fan direction is / is not [forward\|reverse] |
+| Fan child lock is / is not on |
+| Fan oscillation is / is not on |
 
 #### Actions
 
@@ -1345,6 +1355,8 @@ fan: sub-capabilities (`onoff.fan`, `dim.fan`) and app-defined capabilities (`fa
 | Fan mode changed | `mode` (string), `prev_mode` (string) |
 | Fan direction changed | `direction` (string), `prev_direction` (string) |
 | Fan data point changed | `dp` (string), `value` (string) |
+| Ceiling fan child lock switched | `enabled` as a filter — pick *turned on* or *turned off* |
+| Ceiling fan oscillation switched | `enabled` as a filter — pick *turned on* or *turned off* |
 
 #### Conditions
 
@@ -1389,6 +1401,7 @@ fan: sub-capabilities (`onoff.fan`, `dim.fan`) and app-defined capabilities (`fa
 | Humidifier connected | — | — |
 | Humidifier disconnected | — | — |
 | Humidifier data point changed | — | `dp` (string), `value` (string) |
+| Humidifier child lock switched | `enabled` as a filter — pick *turned on* or *turned off* | — |
 
 #### Conditions
 
@@ -1398,6 +1411,7 @@ fan: sub-capabilities (`onoff.fan`, `dim.fan`) and app-defined capabilities (`fa
 | Humidity is / is not above [value] % |
 | Humidity is / is not below [value] % |
 | Water tank is / is not empty |
+| Humidifier child lock is / is not on |
 
 #### Actions
 
@@ -1424,6 +1438,8 @@ fan: sub-capabilities (`onoff.fan`, `dim.fan`) and app-defined capabilities (`fa
 | Heater disconnected | — |
 | Heater fault alarm triggered | — |
 | Heater data point changed | `dp` (string), `value` (string) |
+| Heater child lock switched | `enabled` as a filter — pick *turned on* or *turned off* |
+| Heater oscillation switched | `enabled` as a filter — pick *turned on* or *turned off* |
 
 #### Conditions
 
@@ -1432,6 +1448,8 @@ fan: sub-capabilities (`onoff.fan`, `dim.fan`) and app-defined capabilities (`fa
 | Heater is / is not connected |
 | Heater fault alarm is / is not active |
 | Heater mode is / is not [mode] |
+| Heater child lock is / is not on |
+| Heater oscillation is / is not on |
 
 #### Actions
 
@@ -1509,6 +1527,7 @@ fan: sub-capabilities (`onoff.fan`, `dim.fan`) and app-defined capabilities (`fa
 | Food level changed | `food_status` (string), `prev_status` (string) |
 | Feeding completed | — |
 | Pet feeder data point changed | `dp` (string), `value` (string) |
+| Feeder child lock switched | `enabled` as a filter — pick *turned on* or *turned off* |
 
 > **Offline grace period:** The "disconnected" trigger is delayed by the **Offline Grace Period** setting (default 60 s). Tuya pet feeder firmware briefly drops the TCP connection at certain intervals — without the grace period this causes spurious nightly offline notifications.
 
@@ -1518,6 +1537,7 @@ fan: sub-capabilities (`onoff.fan`, `dim.fan`) and app-defined capabilities (`fa
 |---|
 | Food level is / is not low |
 | Pet feeder is / is not connected |
+| Feeder child lock is / is not on |
 
 #### Actions
 
@@ -1646,6 +1666,7 @@ fan: sub-capabilities (`onoff.fan`, `dim.fan`) and app-defined capabilities (`fa
 | Thermostat connected | — |
 | Thermostat disconnected | — |
 | Thermostat data point changed | `dp` (string), `value` (string) |
+| Thermostat child lock switched | `enabled` as a filter — pick *turned on* or *turned off* |
 
 #### Conditions
 
@@ -1653,6 +1674,7 @@ fan: sub-capabilities (`onoff.fan`, `dim.fan`) and app-defined capabilities (`fa
 |---|
 | Thermostat mode is / is not [mode] |
 | Thermostat is / is not connected |
+| Thermostat child lock is / is not on |
 
 #### Actions
 

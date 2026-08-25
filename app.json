@@ -5180,6 +5180,510 @@
             "example": "true"
           }
         ]
+      },
+      {
+        "id": "ac_child_lock_changed",
+        "title": {
+          "en": "AC child lock switched",
+          "de": "Klimaanlage: Kindersicherung umgeschaltet"
+        },
+        "titleFormatted": {
+          "en": "AC child lock was [[enabled]]",
+          "de": "Klimaanlage: Kindersicherung [[enabled]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_conditioner"
+          },
+          {
+            "name": "enabled",
+            "type": "dropdown",
+            "title": {
+              "en": "Child lock",
+              "de": "Kindersicherung"
+            },
+            "values": [
+              {
+                "id": "true",
+                "label": {
+                  "en": "turned on",
+                  "de": "eingeschaltet"
+                }
+              },
+              {
+                "id": "false",
+                "label": {
+                  "en": "turned off",
+                  "de": "ausgeschaltet"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "dehumidifier_child_lock_changed",
+        "title": {
+          "en": "Dehumidifier child lock switched",
+          "de": "Luftentfeuchter: Kindersicherung umgeschaltet"
+        },
+        "titleFormatted": {
+          "en": "Dehumidifier child lock was [[enabled]]",
+          "de": "Luftentfeuchter: Kindersicherung [[enabled]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=dehumidifier"
+          },
+          {
+            "name": "enabled",
+            "type": "dropdown",
+            "title": {
+              "en": "Child lock",
+              "de": "Kindersicherung"
+            },
+            "values": [
+              {
+                "id": "true",
+                "label": {
+                  "en": "turned on",
+                  "de": "eingeschaltet"
+                }
+              },
+              {
+                "id": "false",
+                "label": {
+                  "en": "turned off",
+                  "de": "ausgeschaltet"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "fan_child_lock_changed",
+        "title": {
+          "en": "Fan child lock switched",
+          "de": "Ventilator: Kindersicherung umgeschaltet"
+        },
+        "titleFormatted": {
+          "en": "Fan child lock was [[enabled]]",
+          "de": "Ventilator: Kindersicherung [[enabled]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=fan"
+          },
+          {
+            "name": "enabled",
+            "type": "dropdown",
+            "title": {
+              "en": "Child lock",
+              "de": "Kindersicherung"
+            },
+            "values": [
+              {
+                "id": "true",
+                "label": {
+                  "en": "turned on",
+                  "de": "eingeschaltet"
+                }
+              },
+              {
+                "id": "false",
+                "label": {
+                  "en": "turned off",
+                  "de": "ausgeschaltet"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "fanlight_child_lock_changed",
+        "title": {
+          "en": "Ceiling fan child lock switched",
+          "de": "Deckenventilator: Kindersicherung umgeschaltet"
+        },
+        "titleFormatted": {
+          "en": "Ceiling fan child lock was [[enabled]]",
+          "de": "Deckenventilator: Kindersicherung [[enabled]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=fan_light"
+          },
+          {
+            "name": "enabled",
+            "type": "dropdown",
+            "title": {
+              "en": "Child lock",
+              "de": "Kindersicherung"
+            },
+            "values": [
+              {
+                "id": "true",
+                "label": {
+                  "en": "turned on",
+                  "de": "eingeschaltet"
+                }
+              },
+              {
+                "id": "false",
+                "label": {
+                  "en": "turned off",
+                  "de": "ausgeschaltet"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "heater_child_lock_changed",
+        "title": {
+          "en": "Heater child lock switched",
+          "de": "Heizgerät: Kindersicherung umgeschaltet"
+        },
+        "titleFormatted": {
+          "en": "Heater child lock was [[enabled]]",
+          "de": "Heizgerät: Kindersicherung [[enabled]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=heater"
+          },
+          {
+            "name": "enabled",
+            "type": "dropdown",
+            "title": {
+              "en": "Child lock",
+              "de": "Kindersicherung"
+            },
+            "values": [
+              {
+                "id": "true",
+                "label": {
+                  "en": "turned on",
+                  "de": "eingeschaltet"
+                }
+              },
+              {
+                "id": "false",
+                "label": {
+                  "en": "turned off",
+                  "de": "ausgeschaltet"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "humidifier_child_lock_changed",
+        "title": {
+          "en": "Humidifier child lock switched",
+          "de": "Luftbefeuchter: Kindersicherung umgeschaltet"
+        },
+        "titleFormatted": {
+          "en": "Humidifier child lock was [[enabled]]",
+          "de": "Luftbefeuchter: Kindersicherung [[enabled]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=humidifier"
+          },
+          {
+            "name": "enabled",
+            "type": "dropdown",
+            "title": {
+              "en": "Child lock",
+              "de": "Kindersicherung"
+            },
+            "values": [
+              {
+                "id": "true",
+                "label": {
+                  "en": "turned on",
+                  "de": "eingeschaltet"
+                }
+              },
+              {
+                "id": "false",
+                "label": {
+                  "en": "turned off",
+                  "de": "ausgeschaltet"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "feeder_child_lock_changed",
+        "title": {
+          "en": "Feeder child lock switched",
+          "de": "Futterautomat: Kindersicherung umgeschaltet"
+        },
+        "titleFormatted": {
+          "en": "Feeder child lock was [[enabled]]",
+          "de": "Futterautomat: Kindersicherung [[enabled]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=pet_feeder"
+          },
+          {
+            "name": "enabled",
+            "type": "dropdown",
+            "title": {
+              "en": "Child lock",
+              "de": "Kindersicherung"
+            },
+            "values": [
+              {
+                "id": "true",
+                "label": {
+                  "en": "turned on",
+                  "de": "eingeschaltet"
+                }
+              },
+              {
+                "id": "false",
+                "label": {
+                  "en": "turned off",
+                  "de": "ausgeschaltet"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "thermostat_child_lock_changed",
+        "title": {
+          "en": "Thermostat child lock switched",
+          "de": "Thermostat: Kindersicherung umgeschaltet"
+        },
+        "titleFormatted": {
+          "en": "Thermostat child lock was [[enabled]]",
+          "de": "Thermostat: Kindersicherung [[enabled]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=thermostat"
+          },
+          {
+            "name": "enabled",
+            "type": "dropdown",
+            "title": {
+              "en": "Child lock",
+              "de": "Kindersicherung"
+            },
+            "values": [
+              {
+                "id": "true",
+                "label": {
+                  "en": "turned on",
+                  "de": "eingeschaltet"
+                }
+              },
+              {
+                "id": "false",
+                "label": {
+                  "en": "turned off",
+                  "de": "ausgeschaltet"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "dehumidifier_oscillate_changed",
+        "title": {
+          "en": "Dehumidifier oscillation switched",
+          "de": "Luftentfeuchter: Schwenken umgeschaltet"
+        },
+        "titleFormatted": {
+          "en": "Dehumidifier oscillation was [[enabled]]",
+          "de": "Luftentfeuchter: Schwenken [[enabled]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=dehumidifier"
+          },
+          {
+            "name": "enabled",
+            "type": "dropdown",
+            "title": {
+              "en": "Oscillation",
+              "de": "Schwenken"
+            },
+            "values": [
+              {
+                "id": "true",
+                "label": {
+                  "en": "turned on",
+                  "de": "eingeschaltet"
+                }
+              },
+              {
+                "id": "false",
+                "label": {
+                  "en": "turned off",
+                  "de": "ausgeschaltet"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "fan_oscillate_changed",
+        "title": {
+          "en": "Fan oscillation switched",
+          "de": "Ventilator: Schwenken umgeschaltet"
+        },
+        "titleFormatted": {
+          "en": "Fan oscillation was [[enabled]]",
+          "de": "Ventilator: Schwenken [[enabled]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=fan"
+          },
+          {
+            "name": "enabled",
+            "type": "dropdown",
+            "title": {
+              "en": "Oscillation",
+              "de": "Schwenken"
+            },
+            "values": [
+              {
+                "id": "true",
+                "label": {
+                  "en": "turned on",
+                  "de": "eingeschaltet"
+                }
+              },
+              {
+                "id": "false",
+                "label": {
+                  "en": "turned off",
+                  "de": "ausgeschaltet"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "fanlight_oscillate_changed",
+        "title": {
+          "en": "Ceiling fan oscillation switched",
+          "de": "Deckenventilator: Schwenken umgeschaltet"
+        },
+        "titleFormatted": {
+          "en": "Ceiling fan oscillation was [[enabled]]",
+          "de": "Deckenventilator: Schwenken [[enabled]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=fan_light"
+          },
+          {
+            "name": "enabled",
+            "type": "dropdown",
+            "title": {
+              "en": "Oscillation",
+              "de": "Schwenken"
+            },
+            "values": [
+              {
+                "id": "true",
+                "label": {
+                  "en": "turned on",
+                  "de": "eingeschaltet"
+                }
+              },
+              {
+                "id": "false",
+                "label": {
+                  "en": "turned off",
+                  "de": "ausgeschaltet"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "heater_oscillate_changed",
+        "title": {
+          "en": "Heater oscillation switched",
+          "de": "Heizgerät: Schwenken umgeschaltet"
+        },
+        "titleFormatted": {
+          "en": "Heater oscillation was [[enabled]]",
+          "de": "Heizgerät: Schwenken [[enabled]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=heater"
+          },
+          {
+            "name": "enabled",
+            "type": "dropdown",
+            "title": {
+              "en": "Oscillation",
+              "de": "Schwenken"
+            },
+            "values": [
+              {
+                "id": "true",
+                "label": {
+                  "en": "turned on",
+                  "de": "eingeschaltet"
+                }
+              },
+              {
+                "id": "false",
+                "label": {
+                  "en": "turned off",
+                  "de": "ausgeschaltet"
+                }
+              }
+            ]
+          }
+        ]
       }
     ],
     "conditions": [
@@ -6752,6 +7256,146 @@
             "name": "device",
             "type": "device",
             "filter": "driver_id=energy_meter"
+          }
+        ]
+      },
+      {
+        "id": "ac_child_lock_is_on",
+        "title": {
+          "en": "AC child lock !{{is|is not}} on",
+          "de": "Klimaanlagen-Kindersicherung !{{ist|ist nicht}} an"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_conditioner"
+          }
+        ]
+      },
+      {
+        "id": "dehumidifier_child_lock_is_on",
+        "title": {
+          "en": "Dehumidifier child lock !{{is|is not}} on",
+          "de": "Luftentfeuchter-Kindersicherung !{{ist|ist nicht}} an"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=dehumidifier"
+          }
+        ]
+      },
+      {
+        "id": "fan_child_lock_is_on",
+        "title": {
+          "en": "Fan child lock !{{is|is not}} on",
+          "de": "Ventilator-Kindersicherung !{{ist|ist nicht}} an"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=fan"
+          }
+        ]
+      },
+      {
+        "id": "heater_child_lock_is_on",
+        "title": {
+          "en": "Heater child lock !{{is|is not}} on",
+          "de": "Heizgerät-Kindersicherung !{{ist|ist nicht}} an"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=heater"
+          }
+        ]
+      },
+      {
+        "id": "humidifier_child_lock_is_on",
+        "title": {
+          "en": "Humidifier child lock !{{is|is not}} on",
+          "de": "Luftbefeuchter-Kindersicherung !{{ist|ist nicht}} an"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=humidifier"
+          }
+        ]
+      },
+      {
+        "id": "feeder_child_lock_is_on",
+        "title": {
+          "en": "Feeder child lock !{{is|is not}} on",
+          "de": "Futterautomat-Kindersicherung !{{ist|ist nicht}} an"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=pet_feeder"
+          }
+        ]
+      },
+      {
+        "id": "thermostat_child_lock_is_on",
+        "title": {
+          "en": "Thermostat child lock !{{is|is not}} on",
+          "de": "Thermostat-Kindersicherung !{{ist|ist nicht}} an"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=thermostat"
+          }
+        ]
+      },
+      {
+        "id": "dehumidifier_oscillate_is_on",
+        "title": {
+          "en": "Dehumidifier oscillation !{{is|is not}} on",
+          "de": "Luftentfeuchter-Schwenken !{{ist|ist nicht}} an"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=dehumidifier"
+          }
+        ]
+      },
+      {
+        "id": "fan_oscillate_is_on",
+        "title": {
+          "en": "Fan oscillation !{{is|is not}} on",
+          "de": "Ventilator-Schwenken !{{ist|ist nicht}} an"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=fan"
+          }
+        ]
+      },
+      {
+        "id": "heater_oscillate_is_on",
+        "title": {
+          "en": "Heater oscillation !{{is|is not}} on",
+          "de": "Heizgerät-Schwenken !{{ist|ist nicht}} an"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=heater"
           }
         ]
       }

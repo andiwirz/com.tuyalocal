@@ -61,6 +61,13 @@ class HeaterDevice extends BaseTuyaDevice {
     this._triggerStartedHeating     = this.homey.flow.getDeviceTriggerCard('heater_started_heating');
     this._triggerStoppedHeating     = this.homey.flow.getDeviceTriggerCard('heater_stopped_heating');
 
+    // Ohne diese Zuordnung schreibt _applyCapability nur den Wert; mit ihr
+    // meldet es zusaetzlich einen echten Wechsel an die Flow-Karte.
+    this._registerChangeTriggers({
+      child_lock: 'heater_child_lock_changed',
+      oscillate: 'heater_oscillate_changed',
+    });
+
     // Registered through a helper so that a capability switched on later — by
     // pointing its DP setting at a number — becomes controllable at once. Without
     // that, the tile appears and taps do nothing until the app is restarted.
@@ -217,7 +224,7 @@ class HeaterDevice extends BaseTuyaDevice {
         continue;
       }
 
-      await this.setCapabilityValue(entry.capability, converted).catch(() => {});
+      await this._applyCapability(entry.capability, converted);
     }
 
     if (changed) {

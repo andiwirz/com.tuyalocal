@@ -78,6 +78,13 @@ class FanDevice extends BaseTuyaDevice {
     this._triggerModeChanged        = this.homey.flow.getDeviceTriggerCard('fan_mode_changed');
     this._triggerDirectionChanged   = this.homey.flow.getDeviceTriggerCard('fan_direction_changed');
 
+    // Ohne diese Zuordnung schreibt _applyCapability nur den Wert; mit ihr
+    // meldet es zusaetzlich einen echten Wechsel an die Flow-Karte.
+    this._registerChangeTriggers({
+      child_lock: 'fan_child_lock_changed',
+      oscillate: 'fan_oscillate_changed',
+    });
+
     // ── Capability listeners ─────────────────────────────────────────────────
     // Registered via _registerListeners() so that capabilities enabled later
     // through device settings (e.g. dp_light_onoff) become controllable
@@ -387,7 +394,7 @@ class FanDevice extends BaseTuyaDevice {
       }
 
       if (!this.hasCapability(entry.capability)) continue;
-      await this.setCapabilityValue(entry.capability, converted).catch(() => {});
+      await this._applyCapability(entry.capability, converted);
     }
 
     if (changed) {

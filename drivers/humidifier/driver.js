@@ -119,6 +119,16 @@ class HumidifierDriver extends Homey.Driver {
         return args.device.triggerCapabilityListener('countdown_timer', args.timer);
       });
 
+    // child_lock und oscillate sind von der App definiert - Homey erzeugt
+    // dafuer weder "wurde umgeschaltet" noch eine Abfrage.
+    this.homey.flow.getDeviceTriggerCard('humidifier_child_lock_changed')
+      .registerRunListener(async (args, state) =>
+        String(args.enabled) === String(state.enabled));
+
+    this.homey.flow.getConditionCard('humidifier_child_lock_is_on')
+      .registerRunListener(async (args) =>
+        args.device.getCapabilityValue('child_lock') === true);
+
     this.homey.flow.getActionCard('humidifier_force_reconnect')
       .registerRunListener(async (args) => args.device.forceReconnect());
     this.homey.flow.getActionCard('humidifier_refresh_device')

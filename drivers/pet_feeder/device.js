@@ -93,6 +93,12 @@ class PetFeederDevice extends BaseTuyaDevice {
     this._triggerDeviceDisconnected  = this.homey.flow.getDeviceTriggerCard('feeder_device_disconnected');
     this._triggerDpChanged           = this.homey.flow.getDeviceTriggerCard('feeder_dp_changed');
 
+    // Ohne diese Zuordnung schreibt _applyCapability nur den Wert; mit ihr
+    // meldet es zusaetzlich einen echten Wechsel an die Flow-Karte.
+    this._registerChangeTriggers({
+      child_lock: 'feeder_child_lock_changed',
+    });
+
     // â”€â”€ Capability listeners â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // Registered through a helper so that a capability switched on later — by
     // pointing its DP setting at a number — becomes controllable at once. Without
@@ -290,7 +296,7 @@ class PetFeederDevice extends BaseTuyaDevice {
         continue;
       }
 
-      await this.setCapabilityValue(entry.capability, converted).catch(() => {});
+      await this._applyCapability(entry.capability, converted);
     }
 
     if (changed) {
