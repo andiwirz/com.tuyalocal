@@ -15414,13 +15414,15 @@
           "title": {
             "en": "Light",
             "de": "Licht"
-          }
+          },
+          "icon": "/assets/capabilities/light_bulb.svg"
         },
         "dim.light": {
           "title": {
             "en": "Light Brightness",
             "de": "Licht-Helligkeit"
-          }
+          },
+          "icon": "/assets/capabilities/light_bulb.svg"
         }
       },
       "settings": [
@@ -15992,13 +15994,15 @@
           "title": {
             "en": "Fan",
             "de": "Ventilator"
-          }
+          },
+          "icon": "/assets/capabilities/fan_speed.svg"
         },
         "dim.fan": {
           "title": {
             "en": "Fan speed",
             "de": "Lüfterstufe"
-          }
+          },
+          "icon": "/assets/capabilities/fan_speed.svg"
         }
       },
       "settings": [
@@ -19665,7 +19669,8 @@
           "title": {
             "en": "Night Light",
             "de": "Nachtlicht"
-          }
+          },
+          "icon": "/assets/capabilities/light_bulb.svg"
         },
         "alarm_generic": {
           "title": {
