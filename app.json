@@ -12471,6 +12471,19 @@
               ]
             },
             {
+              "id": "lock_protocol",
+              "type": "checkbox",
+              "label": {
+                "en": "Lock protocol version",
+                "de": "Protokollversion festhalten"
+              },
+              "value": false,
+              "hint": {
+                "en": "Stops the app trying other protocol versions when the device keeps failing to connect. The rotation exists to find a version nobody knows; switch this on when you do know it, so a network outage cannot send the app wandering through versions you have already ruled out.",
+                "de": "Hält die App davon ab, andere Protokollversionen zu probieren, wenn die Verbindung wiederholt scheitert. Die Rotation ist dafür da, eine unbekannte Version zu finden — wer sie kennt, schaltet das hier ein, damit eine Netzstörung die App nicht durch Versionen schickt, die längst ausscheiden."
+              }
+            },
+            {
               "id": "polling_interval",
               "type": "number",
               "label": {
@@ -12959,6 +12972,19 @@
                   }
                 }
               ]
+            },
+            {
+              "id": "lock_protocol",
+              "type": "checkbox",
+              "label": {
+                "en": "Lock protocol version",
+                "de": "Protokollversion festhalten"
+              },
+              "value": false,
+              "hint": {
+                "en": "Stops the app trying other protocol versions when the device keeps failing to connect. The rotation exists to find a version nobody knows; switch this on when you do know it, so a network outage cannot send the app wandering through versions you have already ruled out.",
+                "de": "Hält die App davon ab, andere Protokollversionen zu probieren, wenn die Verbindung wiederholt scheitert. Die Rotation ist dafür da, eine unbekannte Version zu finden — wer sie kennt, schaltet das hier ein, damit eine Netzstörung die App nicht durch Versionen schickt, die längst ausscheiden."
+              }
             },
             {
               "id": "polling_interval",
@@ -13597,6 +13623,19 @@
               ]
             },
             {
+              "id": "lock_protocol",
+              "type": "checkbox",
+              "label": {
+                "en": "Lock protocol version",
+                "de": "Protokollversion festhalten"
+              },
+              "value": false,
+              "hint": {
+                "en": "Stops the app trying other protocol versions when the device keeps failing to connect. The rotation exists to find a version nobody knows; switch this on when you do know it, so a network outage cannot send the app wandering through versions you have already ruled out.",
+                "de": "Hält die App davon ab, andere Protokollversionen zu probieren, wenn die Verbindung wiederholt scheitert. Die Rotation ist dafür da, eine unbekannte Version zu finden — wer sie kennt, schaltet das hier ein, damit eine Netzstörung die App nicht durch Versionen schickt, die längst ausscheiden."
+              }
+            },
+            {
               "id": "polling_interval",
               "type": "number",
               "label": {
@@ -14087,6 +14126,19 @@
                   }
                 }
               ]
+            },
+            {
+              "id": "lock_protocol",
+              "type": "checkbox",
+              "label": {
+                "en": "Lock protocol version",
+                "de": "Protokollversion festhalten"
+              },
+              "value": false,
+              "hint": {
+                "en": "Stops the app trying other protocol versions when the device keeps failing to connect. The rotation exists to find a version nobody knows; switch this on when you do know it, so a network outage cannot send the app wandering through versions you have already ruled out.",
+                "de": "Hält die App davon ab, andere Protokollversionen zu probieren, wenn die Verbindung wiederholt scheitert. Die Rotation ist dafür da, eine unbekannte Version zu finden — wer sie kennt, schaltet das hier ein, damit eine Netzstörung die App nicht durch Versionen schickt, die längst ausscheiden."
+              }
             },
             {
               "id": "polling_interval",
@@ -14588,6 +14640,19 @@
               ]
             },
             {
+              "id": "lock_protocol",
+              "type": "checkbox",
+              "label": {
+                "en": "Lock protocol version",
+                "de": "Protokollversion festhalten"
+              },
+              "value": false,
+              "hint": {
+                "en": "Stops the app trying other protocol versions when the device keeps failing to connect. The rotation exists to find a version nobody knows; switch this on when you do know it, so a network outage cannot send the app wandering through versions you have already ruled out.",
+                "de": "Hält die App davon ab, andere Protokollversionen zu probieren, wenn die Verbindung wiederholt scheitert. Die Rotation ist dafür da, eine unbekannte Version zu finden — wer sie kennt, schaltet das hier ein, damit eine Netzstörung die App nicht durch Versionen schickt, die längst ausscheiden."
+              }
+            },
+            {
               "id": "polling_interval",
               "type": "number",
               "label": {
@@ -15009,6 +15074,19 @@
               ]
             },
             {
+              "id": "lock_protocol",
+              "type": "checkbox",
+              "label": {
+                "en": "Lock protocol version",
+                "de": "Protokollversion festhalten"
+              },
+              "value": false,
+              "hint": {
+                "en": "Stops the app trying other protocol versions when the device keeps failing to connect. The rotation exists to find a version nobody knows; switch this on when you do know it, so a network outage cannot send the app wandering through versions you have already ruled out.",
+                "de": "Hält die App davon ab, andere Protokollversionen zu probieren, wenn die Verbindung wiederholt scheitert. Die Rotation ist dafür da, eine unbekannte Version zu finden — wer sie kennt, schaltet das hier ein, damit eine Netzstörung die App nicht durch Versionen schickt, die längst ausscheiden."
+              }
+            },
+            {
               "id": "polling_interval",
               "type": "number",
               "label": {
@@ -15397,6 +15475,19 @@
                   "label": "3.1"
                 }
               ]
+            },
+            {
+              "id": "lock_protocol",
+              "type": "checkbox",
+              "label": {
+                "en": "Lock protocol version",
+                "de": "Protokollversion festhalten"
+              },
+              "value": false,
+              "hint": {
+                "en": "Stops the app trying other protocol versions when the device keeps failing to connect. The rotation exists to find a version nobody knows; switch this on when you do know it, so a network outage cannot send the app wandering through versions you have already ruled out.",
+                "de": "Hält die App davon ab, andere Protokollversionen zu probieren, wenn die Verbindung wiederholt scheitert. Die Rotation ist dafür da, eine unbekannte Version zu finden — wer sie kennt, schaltet das hier ein, damit eine Netzstörung die App nicht durch Versionen schickt, die längst ausscheiden."
+              }
             },
             {
               "id": "polling_interval",
@@ -15850,6 +15941,19 @@
               ]
             },
             {
+              "id": "lock_protocol",
+              "type": "checkbox",
+              "label": {
+                "en": "Lock protocol version",
+                "de": "Protokollversion festhalten"
+              },
+              "value": false,
+              "hint": {
+                "en": "Stops the app trying other protocol versions when the device keeps failing to connect. The rotation exists to find a version nobody knows; switch this on when you do know it, so a network outage cannot send the app wandering through versions you have already ruled out.",
+                "de": "Hält die App davon ab, andere Protokollversionen zu probieren, wenn die Verbindung wiederholt scheitert. Die Rotation ist dafür da, eine unbekannte Version zu finden — wer sie kennt, schaltet das hier ein, damit eine Netzstörung die App nicht durch Versionen schickt, die längst ausscheiden."
+              }
+            },
+            {
               "id": "polling_interval",
               "type": "number",
               "label": {
@@ -16102,6 +16206,19 @@
                   }
                 }
               ]
+            },
+            {
+              "id": "lock_protocol",
+              "type": "checkbox",
+              "label": {
+                "en": "Lock protocol version",
+                "de": "Protokollversion festhalten"
+              },
+              "value": false,
+              "hint": {
+                "en": "Stops the app trying other protocol versions when the device keeps failing to connect. The rotation exists to find a version nobody knows; switch this on when you do know it, so a network outage cannot send the app wandering through versions you have already ruled out.",
+                "de": "Hält die App davon ab, andere Protokollversionen zu probieren, wenn die Verbindung wiederholt scheitert. Die Rotation ist dafür da, eine unbekannte Version zu finden — wer sie kennt, schaltet das hier ein, damit eine Netzstörung die App nicht durch Versionen schickt, die längst ausscheiden."
+              }
             },
             {
               "id": "polling_interval",
@@ -16685,6 +16802,19 @@
               ]
             },
             {
+              "id": "lock_protocol",
+              "type": "checkbox",
+              "label": {
+                "en": "Lock protocol version",
+                "de": "Protokollversion festhalten"
+              },
+              "value": false,
+              "hint": {
+                "en": "Stops the app trying other protocol versions when the device keeps failing to connect. The rotation exists to find a version nobody knows; switch this on when you do know it, so a network outage cannot send the app wandering through versions you have already ruled out.",
+                "de": "Hält die App davon ab, andere Protokollversionen zu probieren, wenn die Verbindung wiederholt scheitert. Die Rotation ist dafür da, eine unbekannte Version zu finden — wer sie kennt, schaltet das hier ein, damit eine Netzstörung die App nicht durch Versionen schickt, die längst ausscheiden."
+              }
+            },
+            {
               "id": "polling_interval",
               "type": "number",
               "label": {
@@ -17246,6 +17376,19 @@
                   }
                 }
               ]
+            },
+            {
+              "id": "lock_protocol",
+              "type": "checkbox",
+              "label": {
+                "en": "Lock protocol version",
+                "de": "Protokollversion festhalten"
+              },
+              "value": false,
+              "hint": {
+                "en": "Stops the app trying other protocol versions when the device keeps failing to connect. The rotation exists to find a version nobody knows; switch this on when you do know it, so a network outage cannot send the app wandering through versions you have already ruled out.",
+                "de": "Hält die App davon ab, andere Protokollversionen zu probieren, wenn die Verbindung wiederholt scheitert. Die Rotation ist dafür da, eine unbekannte Version zu finden — wer sie kennt, schaltet das hier ein, damit eine Netzstörung die App nicht durch Versionen schickt, die längst ausscheiden."
+              }
             },
             {
               "id": "polling_interval",
@@ -17828,6 +17971,19 @@
               ]
             },
             {
+              "id": "lock_protocol",
+              "type": "checkbox",
+              "label": {
+                "en": "Lock protocol version",
+                "de": "Protokollversion festhalten"
+              },
+              "value": false,
+              "hint": {
+                "en": "Stops the app trying other protocol versions when the device keeps failing to connect. The rotation exists to find a version nobody knows; switch this on when you do know it, so a network outage cannot send the app wandering through versions you have already ruled out.",
+                "de": "Hält die App davon ab, andere Protokollversionen zu probieren, wenn die Verbindung wiederholt scheitert. Die Rotation ist dafür da, eine unbekannte Version zu finden — wer sie kennt, schaltet das hier ein, damit eine Netzstörung die App nicht durch Versionen schickt, die längst ausscheiden."
+              }
+            },
+            {
               "id": "polling_interval",
               "type": "number",
               "label": {
@@ -18402,6 +18558,19 @@
               ]
             },
             {
+              "id": "lock_protocol",
+              "type": "checkbox",
+              "label": {
+                "en": "Lock protocol version",
+                "de": "Protokollversion festhalten"
+              },
+              "value": false,
+              "hint": {
+                "en": "Stops the app trying other protocol versions when the device keeps failing to connect. The rotation exists to find a version nobody knows; switch this on when you do know it, so a network outage cannot send the app wandering through versions you have already ruled out.",
+                "de": "Hält die App davon ab, andere Protokollversionen zu probieren, wenn die Verbindung wiederholt scheitert. Die Rotation ist dafür da, eine unbekannte Version zu finden — wer sie kennt, schaltet das hier ein, damit eine Netzstörung die App nicht durch Versionen schickt, die längst ausscheiden."
+              }
+            },
+            {
               "id": "polling_interval",
               "type": "number",
               "label": {
@@ -18859,6 +19028,19 @@
                   }
                 }
               ]
+            },
+            {
+              "id": "lock_protocol",
+              "type": "checkbox",
+              "label": {
+                "en": "Lock protocol version",
+                "de": "Protokollversion festhalten"
+              },
+              "value": false,
+              "hint": {
+                "en": "Stops the app trying other protocol versions when the device keeps failing to connect. The rotation exists to find a version nobody knows; switch this on when you do know it, so a network outage cannot send the app wandering through versions you have already ruled out.",
+                "de": "Hält die App davon ab, andere Protokollversionen zu probieren, wenn die Verbindung wiederholt scheitert. Die Rotation ist dafür da, eine unbekannte Version zu finden — wer sie kennt, schaltet das hier ein, damit eine Netzstörung die App nicht durch Versionen schickt, die längst ausscheiden."
+              }
             },
             {
               "id": "polling_interval",
@@ -19339,6 +19521,19 @@
               ]
             },
             {
+              "id": "lock_protocol",
+              "type": "checkbox",
+              "label": {
+                "en": "Lock protocol version",
+                "de": "Protokollversion festhalten"
+              },
+              "value": false,
+              "hint": {
+                "en": "Stops the app trying other protocol versions when the device keeps failing to connect. The rotation exists to find a version nobody knows; switch this on when you do know it, so a network outage cannot send the app wandering through versions you have already ruled out.",
+                "de": "Hält die App davon ab, andere Protokollversionen zu probieren, wenn die Verbindung wiederholt scheitert. Die Rotation ist dafür da, eine unbekannte Version zu finden — wer sie kennt, schaltet das hier ein, damit eine Netzstörung die App nicht durch Versionen schickt, die längst ausscheiden."
+              }
+            },
+            {
               "id": "polling_interval",
               "type": "number",
               "label": {
@@ -19712,6 +19907,19 @@
                   }
                 }
               ]
+            },
+            {
+              "id": "lock_protocol",
+              "type": "checkbox",
+              "label": {
+                "en": "Lock protocol version",
+                "de": "Protokollversion festhalten"
+              },
+              "value": false,
+              "hint": {
+                "en": "Stops the app trying other protocol versions when the device keeps failing to connect. The rotation exists to find a version nobody knows; switch this on when you do know it, so a network outage cannot send the app wandering through versions you have already ruled out.",
+                "de": "Hält die App davon ab, andere Protokollversionen zu probieren, wenn die Verbindung wiederholt scheitert. Die Rotation ist dafür da, eine unbekannte Version zu finden — wer sie kennt, schaltet das hier ein, damit eine Netzstörung die App nicht durch Versionen schickt, die längst ausscheiden."
+              }
             },
             {
               "id": "polling_interval",
@@ -20237,6 +20445,19 @@
               ]
             },
             {
+              "id": "lock_protocol",
+              "type": "checkbox",
+              "label": {
+                "en": "Lock protocol version",
+                "de": "Protokollversion festhalten"
+              },
+              "value": false,
+              "hint": {
+                "en": "Stops the app trying other protocol versions when the device keeps failing to connect. The rotation exists to find a version nobody knows; switch this on when you do know it, so a network outage cannot send the app wandering through versions you have already ruled out.",
+                "de": "Hält die App davon ab, andere Protokollversionen zu probieren, wenn die Verbindung wiederholt scheitert. Die Rotation ist dafür da, eine unbekannte Version zu finden — wer sie kennt, schaltet das hier ein, damit eine Netzstörung die App nicht durch Versionen schickt, die längst ausscheiden."
+              }
+            },
+            {
               "id": "polling_interval",
               "type": "number",
               "label": {
@@ -20629,6 +20850,19 @@
                   }
                 }
               ]
+            },
+            {
+              "id": "lock_protocol",
+              "type": "checkbox",
+              "label": {
+                "en": "Lock protocol version",
+                "de": "Protokollversion festhalten"
+              },
+              "value": false,
+              "hint": {
+                "en": "Stops the app trying other protocol versions when the device keeps failing to connect. The rotation exists to find a version nobody knows; switch this on when you do know it, so a network outage cannot send the app wandering through versions you have already ruled out.",
+                "de": "Hält die App davon ab, andere Protokollversionen zu probieren, wenn die Verbindung wiederholt scheitert. Die Rotation ist dafür da, eine unbekannte Version zu finden — wer sie kennt, schaltet das hier ein, damit eine Netzstörung die App nicht durch Versionen schickt, die längst ausscheiden."
+              }
             },
             {
               "id": "polling_interval",
@@ -21124,6 +21358,19 @@
               ]
             },
             {
+              "id": "lock_protocol",
+              "type": "checkbox",
+              "label": {
+                "en": "Lock protocol version",
+                "de": "Protokollversion festhalten"
+              },
+              "value": false,
+              "hint": {
+                "en": "Stops the app trying other protocol versions when the device keeps failing to connect. The rotation exists to find a version nobody knows; switch this on when you do know it, so a network outage cannot send the app wandering through versions you have already ruled out.",
+                "de": "Hält die App davon ab, andere Protokollversionen zu probieren, wenn die Verbindung wiederholt scheitert. Die Rotation ist dafür da, eine unbekannte Version zu finden — wer sie kennt, schaltet das hier ein, damit eine Netzstörung die App nicht durch Versionen schickt, die längst ausscheiden."
+              }
+            },
+            {
               "id": "polling_interval",
               "type": "number",
               "label": {
@@ -21522,6 +21769,19 @@
                   }
                 }
               ]
+            },
+            {
+              "id": "lock_protocol",
+              "type": "checkbox",
+              "label": {
+                "en": "Lock protocol version",
+                "de": "Protokollversion festhalten"
+              },
+              "value": false,
+              "hint": {
+                "en": "Stops the app trying other protocol versions when the device keeps failing to connect. The rotation exists to find a version nobody knows; switch this on when you do know it, so a network outage cannot send the app wandering through versions you have already ruled out.",
+                "de": "Hält die App davon ab, andere Protokollversionen zu probieren, wenn die Verbindung wiederholt scheitert. Die Rotation ist dafür da, eine unbekannte Version zu finden — wer sie kennt, schaltet das hier ein, damit eine Netzstörung die App nicht durch Versionen schickt, die längst ausscheiden."
+              }
             },
             {
               "id": "polling_interval",
@@ -22025,6 +22285,19 @@
               ]
             },
             {
+              "id": "lock_protocol",
+              "type": "checkbox",
+              "label": {
+                "en": "Lock protocol version",
+                "de": "Protokollversion festhalten"
+              },
+              "value": false,
+              "hint": {
+                "en": "Stops the app trying other protocol versions when the device keeps failing to connect. The rotation exists to find a version nobody knows; switch this on when you do know it, so a network outage cannot send the app wandering through versions you have already ruled out.",
+                "de": "Hält die App davon ab, andere Protokollversionen zu probieren, wenn die Verbindung wiederholt scheitert. Die Rotation ist dafür da, eine unbekannte Version zu finden — wer sie kennt, schaltet das hier ein, damit eine Netzstörung die App nicht durch Versionen schickt, die längst ausscheiden."
+              }
+            },
+            {
               "id": "polling_interval",
               "type": "number",
               "label": {
@@ -22517,6 +22790,19 @@
               ]
             },
             {
+              "id": "lock_protocol",
+              "type": "checkbox",
+              "label": {
+                "en": "Lock protocol version",
+                "de": "Protokollversion festhalten"
+              },
+              "value": false,
+              "hint": {
+                "en": "Stops the app trying other protocol versions when the device keeps failing to connect. The rotation exists to find a version nobody knows; switch this on when you do know it, so a network outage cannot send the app wandering through versions you have already ruled out.",
+                "de": "Hält die App davon ab, andere Protokollversionen zu probieren, wenn die Verbindung wiederholt scheitert. Die Rotation ist dafür da, eine unbekannte Version zu finden — wer sie kennt, schaltet das hier ein, damit eine Netzstörung die App nicht durch Versionen schickt, die längst ausscheiden."
+              }
+            },
+            {
               "id": "polling_interval",
               "type": "number",
               "label": {
@@ -22950,6 +23236,19 @@
                   }
                 }
               ]
+            },
+            {
+              "id": "lock_protocol",
+              "type": "checkbox",
+              "label": {
+                "en": "Lock protocol version",
+                "de": "Protokollversion festhalten"
+              },
+              "value": false,
+              "hint": {
+                "en": "Stops the app trying other protocol versions when the device keeps failing to connect. The rotation exists to find a version nobody knows; switch this on when you do know it, so a network outage cannot send the app wandering through versions you have already ruled out.",
+                "de": "Hält die App davon ab, andere Protokollversionen zu probieren, wenn die Verbindung wiederholt scheitert. Die Rotation ist dafür da, eine unbekannte Version zu finden — wer sie kennt, schaltet das hier ein, damit eine Netzstörung die App nicht durch Versionen schickt, die längst ausscheiden."
+              }
             },
             {
               "id": "polling_interval",
