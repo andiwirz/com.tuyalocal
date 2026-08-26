@@ -144,18 +144,63 @@ class LevelSensorDevice extends BaseTuyaDevice {
         continue;
       }
 
-      // Thresholds, installation height and the two alarm switches are written by
-      // flow actions and carry no capability, so an incoming value only has to be
-      // remembered — which the assignment above already did.
-      const known = ['dp_max_set', 'dp_mini_set', 'dp_install_height', 'dp_depth_full',
-        'dp_upper_switch', 'dp_lower_switch'].some((k) => settings[k] > 0 && dp === settings[k]);
-      if (!known) this.log(`Unknown DP ${dp}:`, value);
+      // Thresholds, installation height and the two alarm switches carry no capability:
+      // they are configuration inside the device, not readings. They are shown in the
+      // settings all the same, because being able to say which data point holds the
+      // high threshold without being able to see what it holds is half an answer — and
+      // that is exactly how one reporter came to read the data point number as the
+      // threshold itself.
+      const anzeige = this._displayField(settings, dp);
+      if (anzeige) {
+        // Nur bei echter Aenderung schreiben. Das Geraet meldet diese sechs bei jedem
+        // vollen Abruf mit, und eine Einstellung bei jedem Durchlauf neu zu schreiben
+        // waere Schreiblast ohne Gegenwert.
+        if (this.getSetting(anzeige.key) !== anzeige.text) {
+          await this.setSettings({ [anzeige.key]: anzeige.text }).catch(() => {});
+        }
+        continue;
+      }
+      this.log(`Unknown DP ${dp}:`, value);
     }
 
     if (changed) {
       this._scheduleStoreSave();
       this._writeDpSnapshot();
     }
+  }
+
+  /**
+   * Welches Anzeigefeld gehoert zu diesem Datenpunkt, und wie liest sich sein Wert?
+   *
+   * Die beiden Schwellen sind Prozent des vollen Tanks. Einbauhoehe und Tiefe bei 100 %
+   * kommen in denselben ganzen Einheiten wie die Tiefe - Hersteller deklarieren die
+   * Einheit als "m", zaehlen aber in Millimetern, deshalb derselbe Teiler wie dort.
+   * Die beiden Schalter sind an oder aus.
+   *
+   * @returns {{key: string, text: string}|null}
+   */
+  _displayField(settings, dp) {
+    const wert = this._lastDps[String(dp)];
+    const prozent = (v) => `${Number(v)} %`;
+    const meter   = (v) => `${(Number(v) / this._depthDivisor()).toFixed(3)} m`;
+    // Ausgeschriebene Schluessel, nicht zusammengesetzte: eine Pruefung, die die
+    // verwendeten Schluessel gegen die Sprachdateien haelt, findet nur, was dasteht.
+    const schalter = (v) => (v ? this.homey.__('settings.on')  || 'on'
+                               : this.homey.__('settings.off') || 'off');
+    const tabelle = [
+      ['dp_max_set',        'val_max_set',        prozent],
+      ['dp_mini_set',       'val_mini_set',       prozent],
+      ['dp_install_height', 'val_install_height', meter],
+      ['dp_depth_full',     'val_depth_full',     meter],
+      ['dp_upper_switch',   'val_upper_switch',   schalter],
+      ['dp_lower_switch',   'val_lower_switch',   schalter],
+    ];
+    for (const [dpKey, feld, formatiere] of tabelle) {
+      if (settings[dpKey] > 0 && dp === settings[dpKey]) {
+        return { key: feld, text: formatiere(wert) };
+      }
+    }
+    return null;
   }
 
   // ── Homey lifecycle ────────────────────────────────────────────────────────

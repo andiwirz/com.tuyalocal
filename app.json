@@ -13767,75 +13767,177 @@
         {
           "type": "group",
           "label": {
-            "en": "Thresholds and installation (written by flow actions)",
-            "de": "Grenzwerte und Einbau (werden per Flow gesetzt)"
+            "en": "Thresholds and installation",
+            "de": "Schwellen und Einbaumaße"
           },
           "children": [
             {
               "id": "dp_max_set",
               "type": "number",
               "label": {
-                "en": "High Threshold DP (%)",
-                "de": "Obergrenze-DP (%)"
+                "en": "High Threshold DP",
+                "de": "DP Obere Schwelle"
+              },
+              "hint": {
+                "en": "The data point number carrying the high threshold — not the threshold itself. The value on it is a percentage of the full tank, and the device raises its upper alarm above it. In the Smart Life app this is \"Max load\". Written by the \"Set high threshold\" flow action; the current value is shown below.",
+                "de": "Die Nummer des Datenpunkts, auf dem die obere Schwelle steht — nicht die Schwelle selbst. Der Wert darauf ist ein Prozentsatz des vollen Tanks, oberhalb dessen das Gerät seinen oberen Alarm auslöst. In der Smart-Life-App heißt das \"Max load\". Wird von der Flow-Aktion \"Obere Schwelle setzen\" geschrieben; der aktuelle Wert steht darunter."
               },
               "value": 7,
               "min": 0,
               "max": 255
             },
             {
+              "id": "val_max_set",
+              "type": "text",
+              "label": {
+                "en": "High threshold (current value)",
+                "de": "Obere Schwelle (aktueller Wert)"
+              },
+              "value": "—",
+              "hint": {
+                "en": "Read-only. What the device reports on the data point above; a dash means it has not sent it yet.",
+                "de": "Nur zur Anzeige. Was das Gerät auf dem Datenpunkt darüber meldet; ein Strich heißt, es hat ihn noch nicht gesendet."
+              }
+            },
+            {
               "id": "dp_mini_set",
               "type": "number",
               "label": {
-                "en": "Low Threshold DP (%)",
-                "de": "Untergrenze-DP (%)"
+                "en": "Low Threshold DP",
+                "de": "DP Untere Schwelle"
+              },
+              "hint": {
+                "en": "The data point number carrying the low threshold. The value on it is a percentage of the full tank, and the device raises its lower alarm below it. In the Smart Life app this is \"Mini load\".",
+                "de": "Die Nummer des Datenpunkts, auf dem die untere Schwelle steht. Der Wert darauf ist ein Prozentsatz des vollen Tanks, unterhalb dessen das Gerät seinen unteren Alarm auslöst. In der Smart-Life-App heißt das \"Mini load\"."
               },
               "value": 8,
               "min": 0,
               "max": 255
             },
             {
+              "id": "val_mini_set",
+              "type": "text",
+              "label": {
+                "en": "Low threshold (current value)",
+                "de": "Untere Schwelle (aktueller Wert)"
+              },
+              "value": "—",
+              "hint": {
+                "en": "Read-only. What the device reports on the data point above; a dash means it has not sent it yet.",
+                "de": "Nur zur Anzeige. Was das Gerät auf dem Datenpunkt darüber meldet; ein Strich heißt, es hat ihn noch nicht gesendet."
+              }
+            },
+            {
               "id": "dp_upper_switch",
               "type": "number",
               "label": {
                 "en": "High Alarm Enable DP",
-                "de": "DP für Alarm oben ein/aus"
+                "de": "DP Oberer Alarm aktiv"
+              },
+              "hint": {
+                "en": "The data point number that switches the upper alarm on and off in the device itself. Independent of what Homey does with the level — the device stops reporting the alarm state at all while this is off.",
+                "de": "Die Nummer des Datenpunkts, der den oberen Alarm im Gerät selbst ein- und ausschaltet. Unabhängig davon, was Homey mit dem Füllstand macht — solange er aus ist, meldet das Gerät den Alarmzustand gar nicht."
               },
               "value": 14,
               "min": 0,
               "max": 255
             },
             {
+              "id": "val_upper_switch",
+              "type": "text",
+              "label": {
+                "en": "High alarm (current value)",
+                "de": "Oberer Alarm (aktueller Wert)"
+              },
+              "value": "—",
+              "hint": {
+                "en": "Read-only. What the device reports on the data point above; a dash means it has not sent it yet.",
+                "de": "Nur zur Anzeige. Was das Gerät auf dem Datenpunkt darüber meldet; ein Strich heißt, es hat ihn noch nicht gesendet."
+              }
+            },
+            {
               "id": "dp_lower_switch",
               "type": "number",
               "label": {
                 "en": "Low Alarm Enable DP",
-                "de": "DP für Alarm unten ein/aus"
+                "de": "DP Unterer Alarm aktiv"
+              },
+              "hint": {
+                "en": "The data point number that switches the lower alarm on and off in the device itself.",
+                "de": "Die Nummer des Datenpunkts, der den unteren Alarm im Gerät selbst ein- und ausschaltet."
               },
               "value": 15,
               "min": 0,
               "max": 255
             },
             {
+              "id": "val_lower_switch",
+              "type": "text",
+              "label": {
+                "en": "Low alarm (current value)",
+                "de": "Unterer Alarm (aktueller Wert)"
+              },
+              "value": "—",
+              "hint": {
+                "en": "Read-only. What the device reports on the data point above; a dash means it has not sent it yet.",
+                "de": "Nur zur Anzeige. Was das Gerät auf dem Datenpunkt darüber meldet; ein Strich heißt, es hat ihn noch nicht gesendet."
+              }
+            },
+            {
               "id": "dp_install_height",
               "type": "number",
               "label": {
                 "en": "Installation Height DP",
-                "de": "DP für Einbauhöhe"
+                "de": "DP Einbauhöhe"
+              },
+              "hint": {
+                "en": "The data point number carrying the mounting height — the distance from the sensor down to the floor of the tank. The device needs it to turn a measured distance into a fill level. Sent in whole units and shown below in metres, using the Depth Divisor above.",
+                "de": "Die Nummer des Datenpunkts mit der Einbauhöhe — dem Abstand vom Sensor bis zum Boden des Tanks. Das Gerät braucht sie, um aus einer gemessenen Entfernung einen Füllstand zu machen. Wird in ganzen Einheiten gesendet und unten in Metern angezeigt, über den Teiler weiter oben."
               },
               "value": 19,
               "min": 0,
               "max": 255
             },
             {
+              "id": "val_install_height",
+              "type": "text",
+              "label": {
+                "en": "Installation height (current value)",
+                "de": "Einbauhöhe (aktueller Wert)"
+              },
+              "value": "—",
+              "hint": {
+                "en": "Read-only. What the device reports on the data point above; a dash means it has not sent it yet.",
+                "de": "Nur zur Anzeige. Was das Gerät auf dem Datenpunkt darüber meldet; ein Strich heißt, es hat ihn noch nicht gesendet."
+              }
+            },
+            {
               "id": "dp_depth_full",
               "type": "number",
               "label": {
                 "en": "Depth at 100 % DP",
-                "de": "DP für Höhe bei 100 %"
+                "de": "DP Tiefe bei 100 %"
+              },
+              "hint": {
+                "en": "The data point number carrying the distance from the sensor down to the surface when the tank counts as full — \"Sensor to full line\" in the Smart Life app. Same units as the depth, shown below in metres.",
+                "de": "Die Nummer des Datenpunkts mit dem Abstand vom Sensor bis zur Oberfläche bei vollem Tank — in der Smart-Life-App \"Sensor to full line\". Dieselben Einheiten wie die Tiefe, unten in Metern angezeigt."
               },
               "value": 21,
               "min": 0,
               "max": 255
+            },
+            {
+              "id": "val_depth_full",
+              "type": "text",
+              "label": {
+                "en": "Depth at 100 % (current value)",
+                "de": "Tiefe bei 100 % (aktueller Wert)"
+              },
+              "value": "—",
+              "hint": {
+                "en": "Read-only. What the device reports on the data point above; a dash means it has not sent it yet.",
+                "de": "Nur zur Anzeige. Was das Gerät auf dem Datenpunkt darüber meldet; ein Strich heißt, es hat ihn noch nicht gesendet."
+              }
             }
           ]
         },

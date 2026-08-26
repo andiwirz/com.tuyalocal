@@ -202,6 +202,8 @@
       "empty": "No log entries yet.",
       "entries": "entries",
       "confirmClear": "Clear all log entries?"
-    }
+    },
+    "on": "on",
+    "off": "off"
   }
 }
