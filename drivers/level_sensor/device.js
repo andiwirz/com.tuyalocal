@@ -182,7 +182,12 @@ class LevelSensorDevice extends BaseTuyaDevice {
   _displayField(settings, dp) {
     const wert = this._lastDps[String(dp)];
     const prozent = (v) => `${Number(v)} %`;
-    const meter   = (v) => `${(Number(v) / this._depthDivisor()).toFixed(3)} m`;
+    // Mit Rohwert, und das ist kein Beiwerk. Der Teiler ist eine Einstellung, und auf
+    // mindestens einem gemeldeten Geraet zaehlen Tiefe und Einbaumasse nicht in
+    // derselben Einheit - 1059 sind dort 1,059 m, waehrend die Tiefe in Zentimetern
+    // kommt. Welcher Teiler stimmt, entscheidet sich am Geraet; die Rohzahl daneben
+    // laesst sich mit der Hersteller-App vergleichen, die gerechnete allein nicht.
+    const meter   = (v) => `${(Number(v) / this._depthDivisor()).toFixed(3)} m (raw ${Number(v)})`;
     // Ausgeschriebene Schluessel, nicht zusammengesetzte: eine Pruefung, die die
     // verwendeten Schluessel gegen die Sprachdateien haelt, findet nur, was dasteht.
     const schalter = (v) => (v ? this.homey.__('settings.on')  || 'on'
