@@ -26,6 +26,23 @@ class LightDriver extends Homey.Driver {
     this.homey.flow.getConditionCard('light_device_is_connected')
       .registerRunListener(async (args) => args.device._conn?.connected === true);
 
+    // light_mode ist eine Homey-Capability, aber Homey erzeugt dafuer keine Aktion:
+    // der Modus wird sonst nebenbei gesetzt, wenn ein Flow Farbe oder Farbtemperatur
+    // aendert. Wer ihn fuer sich umschalten will, braucht diese Karte.
+    //
+    // Geschrieben wird die Capability, nicht der Geraetewert - dann uebersetzt der
+    // vorhandene Listener im Geraet auf die Woerter, die diese Lampe versteht.
+    this.homey.flow.getActionCard('light_set_color_mode')
+      .registerRunListener(async (args) => {
+        if (!args.device.hasCapability('light_mode')) return;
+        await args.device.setCapabilityValue('light_mode', args.mode);
+        return args.device.triggerCapabilityListener('light_mode', args.mode);
+      });
+
+    this.homey.flow.getConditionCard('light_color_mode_is')
+      .registerRunListener(async (args) =>
+        args.device.getCapabilityValue('light_mode') === args.mode);
+
     this.homey.flow.getActionCard('light_force_reconnect')
       .registerRunListener(async (args) => args.device.forceReconnect());
 

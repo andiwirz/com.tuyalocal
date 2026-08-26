@@ -7398,6 +7398,48 @@
             "filter": "driver_id=heater"
           }
         ]
+      },
+      {
+        "id": "light_color_mode_is",
+        "title": {
+          "en": "Light colour mode !{{is|is not}}",
+          "de": "Licht-Farbmodus !{{ist|ist nicht}}"
+        },
+        "titleFormatted": {
+          "en": "Light colour mode !{{is|is not}} [[mode]]",
+          "de": "Licht-Farbmodus !{{ist|ist nicht}} [[mode]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=light"
+          },
+          {
+            "name": "mode",
+            "type": "dropdown",
+            "title": {
+              "en": "Mode",
+              "de": "Modus"
+            },
+            "values": [
+              {
+                "id": "color",
+                "label": {
+                  "en": "Colour",
+                  "de": "Farbe"
+                }
+              },
+              {
+                "id": "temperature",
+                "label": {
+                  "en": "White",
+                  "de": "Weiß"
+                }
+              }
+            ]
+          }
+        ]
       }
     ],
     "actions": [
@@ -12239,6 +12281,52 @@
                 "label": {
                   "en": "Off",
                   "de": "Aus"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "light_set_color_mode",
+        "title": {
+          "en": "Set light colour mode",
+          "de": "Licht-Farbmodus setzen"
+        },
+        "titleFormatted": {
+          "en": "Set light colour mode to [[mode]]",
+          "de": "Licht-Farbmodus auf [[mode]] setzen"
+        },
+        "hint": {
+          "en": "Switches the lamp between coloured and white light. Homey normally sets this implicitly when a flow changes the colour or the colour temperature; this card changes it on its own. Requires the Colour Mode DP in device settings — the words the lamp itself uses are configurable there too.",
+          "de": "Schaltet die Lampe zwischen Farb- und Weisslicht um. Homey setzt das sonst nebenbei, wenn ein Flow die Farbe oder die Farbtemperatur ändert; diese Karte schaltet es für sich. Benötigt den Farbmodus-DP in den Geräteeinstellungen — dort stehen auch die Wörter, die die Lampe selbst verwendet."
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=light"
+          },
+          {
+            "name": "mode",
+            "type": "dropdown",
+            "title": {
+              "en": "Mode",
+              "de": "Modus"
+            },
+            "values": [
+              {
+                "id": "color",
+                "label": {
+                  "en": "Colour",
+                  "de": "Farbe"
+                }
+              },
+              {
+                "id": "temperature",
+                "label": {
+                  "en": "White",
+                  "de": "Weiß"
                 }
               }
             ]

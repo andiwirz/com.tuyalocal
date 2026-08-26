@@ -1479,11 +1479,13 @@ fan: sub-capabilities (`onoff.fan`, `dim.fan`) and app-defined capabilities (`fa
 | Condition |
 |---|
 | Light is / is not connected |
+| Light colour mode is / is not [colour\|white] |
 
 #### Actions
 
 | Action | Notes |
 |---|---|
+| Set light colour mode | Colour / White — switches `work_mode` on the lamp; requires `dp_color_mode` > 0 |
 | Force light reconnect | Drops and re-establishes the TCP connection |
 | Refresh light values | Triggers an immediate GET request |
 
