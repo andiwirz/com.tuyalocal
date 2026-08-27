@@ -90,11 +90,24 @@ class LevelSensorDevice extends BaseTuyaDevice {
     let   changed  = false;
 
     for (const [dpStr, value] of Object.entries(dps)) {
+      const dp = parseInt(dpStr, 10);
+
+      // Die Anzeigefelder stehen vor der Aenderungs-Sperre, und das ist der Punkt: sie
+      // spiegeln einen Zustand, sie melden kein Ereignis. Diese sechs Datenpunkte sind
+      // Konfiguration im Geraet und aendern sich so gut wie nie - und _lastDps wird
+      // beim Start aus dem Geraetespeicher wiederhergestellt. Hinter der Sperre waeren
+      // sie nach einem Update bereits bekannt und wuerden nie geschrieben; genau das
+      // hat ein Melder gesehen, fuenf Striche und einen Wert.
+      const anzeige = this._displayField(settings, dp, value);
+      if (anzeige && this.getSetting(anzeige.key) !== anzeige.text) {
+        // Nur bei geaendertem Text: das Geraet meldet die sechs bei jedem vollen Abruf
+        // mit, und jedes Mal zu schreiben waere Schreiblast ohne Gegenwert.
+        await this.setSettings({ [anzeige.key]: anzeige.text }).catch(() => {});
+      }
+
       if (this._lastDps[dpStr] === value) continue;
       this._lastDps[dpStr] = value;
       changed = true;
-
-      const dp = parseInt(dpStr, 10);
 
       this._triggerDpChanged
         .trigger(this, { dp: dpStr, value: String(value) })
@@ -108,9 +121,8 @@ class LevelSensorDevice extends BaseTuyaDevice {
       }
 
       // ── Depth ─────────────────────────────────────────────────────────────
-      // measure_distance is metres; the device counts in whole units of
-      // millimetres or centimetres depending on the model, which is what the
-      // divisor setting is for.
+      // measure_distance ist in Zentimetern deklariert; das Geraet zaehlt in ganzen
+      // Einheiten, je nach Modell Millimeter oder Zentimeter - dafuer ist der Teiler da.
       if (settings.dp_depth > 0 && dp === settings.dp_depth) {
         if (this.hasCapability('measure_distance')) {
           await this.setCapabilityValue('measure_distance', Number(value) / this._depthDivisor())
@@ -144,23 +156,10 @@ class LevelSensorDevice extends BaseTuyaDevice {
         continue;
       }
 
-      // Thresholds, installation height and the two alarm switches carry no capability:
-      // they are configuration inside the device, not readings. They are shown in the
-      // settings all the same, because being able to say which data point holds the
-      // high threshold without being able to see what it holds is half an answer — and
-      // that is exactly how one reporter came to read the data point number as the
-      // threshold itself.
-      const anzeige = this._displayField(settings, dp);
-      if (anzeige) {
-        // Nur bei echter Aenderung schreiben. Das Geraet meldet diese sechs bei jedem
-        // vollen Abruf mit, und eine Einstellung bei jedem Durchlauf neu zu schreiben
-        // waere Schreiblast ohne Gegenwert.
-        if (this.getSetting(anzeige.key) !== anzeige.text) {
-          await this.setSettings({ [anzeige.key]: anzeige.text }).catch(() => {});
-        }
-        continue;
-      }
-      this.log(`Unknown DP ${dp}:`, value);
+      // Schwellen, Einbaumasse und die beiden Alarmschalter tragen keine Capability -
+      // sie sind Konfiguration im Geraet, keine Messwerte. Angezeigt werden sie
+      // trotzdem, weiter oben; hier bleibt nur, sie nicht als unbekannt zu melden.
+      if (!anzeige) this.log(`Unknown DP ${dp}:`, value);
     }
 
     if (changed) {
@@ -179,15 +178,15 @@ class LevelSensorDevice extends BaseTuyaDevice {
    *
    * @returns {{key: string, text: string}|null}
    */
-  _displayField(settings, dp) {
-    const wert = this._lastDps[String(dp)];
+  _displayField(settings, dp, wert) {
     const prozent = (v) => `${Number(v)} %`;
-    // Mit Rohwert, und das ist kein Beiwerk. Der Teiler ist eine Einstellung, und auf
-    // mindestens einem gemeldeten Geraet zaehlen Tiefe und Einbaumasse nicht in
-    // derselben Einheit - 1059 sind dort 1,059 m, waehrend die Tiefe in Zentimetern
-    // kommt. Welcher Teiler stimmt, entscheidet sich am Geraet; die Rohzahl daneben
-    // laesst sich mit der Hersteller-App vergleichen, die gerechnete allein nicht.
-    const meter   = (v) => `${(Number(v) / this._depthDivisor()).toFixed(3)} m (raw ${Number(v)})`;
+    // Immer durch 1000, nicht ueber den Teiler der Tiefe. Der gilt fuer den Messwert,
+    // und der zaehlt je nach Modell in Zentimetern - ein Melder hat ihn deshalb auf 1
+    // stehen, weil seine Tiefe damit richtig herauskommt. Die beiden Einbaumasse zaehlen
+    // aber in Millimetern: Tuya deklariert fuer sie 100-3000, was nur als Millimeter
+    // Sinn ergibt (0,1 bis 3 m fuer einen Tanksensor), und die Hersteller-App zeigt fuer
+    // 1059 genau 1,059 m. Der Rohwert steht daneben, damit sich das nachpruefen laesst.
+    const meter   = (v) => `${(Number(v) / 1000).toFixed(3)} m (raw ${Number(v)})`;
     // Ausgeschriebene Schluessel, nicht zusammengesetzte: eine Pruefung, die die
     // verwendeten Schluessel gegen die Sprachdateien haelt, findet nur, was dasteht.
     const schalter = (v) => (v ? this.homey.__('settings.on')  || 'on'

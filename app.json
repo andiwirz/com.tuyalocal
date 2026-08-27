@@ -13769,8 +13769,8 @@
                 }
               ],
               "hint": {
-                "en": "Homey shows the depth in metres, the device counts in whole units. Manufacturers declare the unit as \"m\" even where the range makes that impossible, so pick the one that matches your tank: if a full tank reads 100× too high, the divisor is too small.",
-                "de": "Homey zeigt die Höhe in Metern, das Gerät zählt in ganzen Einheiten. Hersteller geben als Einheit „m“ an, auch wo der Wertebereich das ausschließt — also den Teiler wählen, der zum eigenen Behälter passt: Zeigt ein voller Behälter das Hundertfache, ist der Teiler zu klein."
+                "en": "Homey shows the depth in centimetres; the device counts in whole units. Manufacturers declare the unit as \"m\" even where the range makes that impossible, so pick the one that matches your tank: if a full tank reads 100x too high, the divisor is too small. This applies to the depth reading only — the installation figures below are always millimetres.",
+                "de": "Homey zeigt die Tiefe in Zentimetern; das Gerät zählt in ganzen Einheiten. Hersteller deklarieren die Einheit als „m\", auch wo der Wertebereich das ausschließt — wählen Sie also den, der zu Ihrem Tank passt: liest ein voller Tank hundertfach zu hoch, ist der Teiler zu klein. Das gilt nur für den Messwert — die Einbaumaße weiter unten sind immer Millimeter."
               }
             },
             {
