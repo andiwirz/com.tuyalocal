@@ -58,7 +58,8 @@
       "error": "Error: ",
       "ipPlaceholder": "e.g. 192.168.1.56",
       "invalidIp": "Invalid IP address format.",
-      "invalidKey": "Local key must be 16 or 32 characters."
+      "invalidKey": "Local key must be 16 or 32 characters.",
+      "scanProtocol": "protocol"
     },
     "list_devices": {
       "title": "Device found",

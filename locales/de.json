@@ -58,7 +58,8 @@
       "error": "Fehler: ",
       "ipPlaceholder": "z.B. 192.168.1.56",
       "invalidIp": "Ungültiges IP-Adressformat.",
-      "invalidKey": "Lokaler Schlüssel muss 16 oder 32 Zeichen lang sein."
+      "invalidKey": "Lokaler Schlüssel muss 16 oder 32 Zeichen lang sein.",
+      "scanProtocol": "Protokoll"
     },
     "list_devices": {
       "title": "Gerät gefunden",
