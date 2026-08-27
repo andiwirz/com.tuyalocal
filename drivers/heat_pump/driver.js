@@ -14,12 +14,15 @@ const { detectViaCloud, guessedDefaults }        = require('../../lib/dpCodeMap'
 // commonly represent them. See lib/dpCodeMap.js. dp_power_level and dp_preset
 // are omitted — their code names vary too much between heat pump models to
 // guess confidently.
+// Verglichen wird kleingeschrieben und ohne Trennzeichen, "SetTemp" trifft also
+// "settemp". Die zweite Reihe je Zeile stammt von einer gemeldeten Inverter-Pool-
+// waermepumpe, die ihre Datenpunkte in den 100er-Block legt und in CamelCase benennt.
 const CLOUD_CODE_MAP = {
   dp_onoff:       ['switch', 'switch_1', { code: 'power', type: 'Boolean' }],
-  dp_mode:        ['mode', 'work_mode'],
-  dp_target_temp: ['temp_set'],
-  dp_current_temp: ['temp_current'],
-  dp_fault:       ['fault'],
+  dp_mode:        ['mode', 'work_mode', 'setmode'],
+  dp_target_temp: ['temp_set', 'settemp'],
+  dp_current_temp: ['temp_current', 'wintemp', 'waterintemp'],
+  dp_fault:       ['fault', 'fault1'],
 };
 
   // Reads the full declared token list, not just the value the device happens to
@@ -35,6 +38,12 @@ const CLOUD_ENUM_VALUES_MAP = {
 
 // ── Mode strings recognised during auto-detect ────────────────────────────────
 // Covers common naming across 15+ pool/water heat pump models.
+// Woerter, an denen ein Preset zu erkennen ist. Bewusst kurz gehalten: je weiter die
+// Liste, desto eher greift sie sich einen Datenpunkt, der etwas anderes meint.
+const PRESET_VALUES = new Set([
+  'sleep', 'comfort', 'boost', 'eco', 'silent', 'quiet', 'turbo', 'powerful',
+]);
+
 const MODE_VALUES = new Set([
   'heat', 'cool', 'auto', 'warm', 'smart', 'cold',
   'heating', 'cooling', 'hot', 'make_cold', 'make_hot',
@@ -252,12 +261,14 @@ class HeatPumpDriver extends Homey.Driver {
     const dp_mode   = modeEntry?.dp ?? 0;
 
     // ── Preset ────────────────────────────────────────────────────────────────
-    // Bool DP whose value is not used for on/off or temp_unit.
-    // Common temp-unit DPs: 103, 6, 13, 10, 19, 21.
-    const TEMP_UNIT_DPS = new Set([103, 6, 13, 10, 19, 21]);
-    const dp_preset = boolDps.find((d) =>
-      d !== dp_onoff && !TEMP_UNIT_DPS.has(d)
-    ) ?? 0;
+    // Wie der Modus daneben: an einem wiedererkennbaren Wort, nicht an einem uebrigen
+    // Ja/Nein. heat_pump_preset ist ein Auswahlfeld mit sleep, comfort und boost - ein
+    // Boolean laesst sich da nicht hineinschreiben, und die alte Regel ("der erste
+    // boolesche Datenpunkt, der nicht Ein/Aus ist") griff sich auf einer gemeldeten
+    // Poolwaermepumpe den stillen Modus, auf anderen ebenso gut ein Abtau-Kennzeichen
+    // oder ein Relais. Der Waehler erschien dann und konnte nichts.
+    const presetEntry = stringDps.find((d) => d.dp !== dp_mode && PRESET_VALUES.has(d.val));
+    const dp_preset   = presetEntry?.dp ?? 0;
 
     // ── Fault alarm ───────────────────────────────────────────────────────────
     // Bitfields arrive as integers. Check a known list of fault DP positions.
