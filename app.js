@@ -895,13 +895,33 @@ class TuyaLocalApp extends Homey.App {
     //
     // So whatever the listing missed is asked for directly, by the same route pairing
     // uses. Batched by twenty, like every other call against this API.
+    // Die Kennungen, unter denen ein Geraet in der Tuya-Cloud stehen kann.
+    //
+    // getData().id schreibt Homey beim Paaren fest und laesst sie nie mehr aendern. Die
+    // Einstellung device_id ist die, mit der das Geraet spricht, und sie ist aenderbar -
+    // nach einem erneuten Anlernen in der Tuya-App steht dort eine andere. Wer nur die
+    // erste sucht, findet ein solches Geraet nie wieder und meldet es als nicht im Konto
+    // vorhanden, waehrend der abgelaufene Schluessel stehen bleibt.
+    //
+    // Die Einstellung kommt zuerst, sie ist die aktuelle. Als lokale Funktion, weil
+    // dieser Rumpf einzeln gelesen und ausgefuehrt wird.
+    const kennungen = (device) => {
+      let data = '';
+      let setting = '';
+      try { data = String(device.getData().id || ''); } catch (e) {}
+      try { setting = String(device.getSetting('device_id') || ''); } catch (e) {}
+      const ids = [...new Set([setting, data].filter(Boolean))];
+      return { ids, setting, data,
+        abweichend: Boolean(setting && data && setting !== data) };
+    };
+
     const wanted = [];
     for (const driver of Object.values(this.homey.drivers.getDrivers())) {
       for (const device of driver.getDevices()) {
         if (onlyDevice && device.getName() !== onlyDevice) continue;
-        let id = '';
-        try { id = device.getData().id || ''; } catch (e) {}
-        if (id && !byId.has(String(id))) wanted.push(String(id));
+        for (const id of kennungen(device).ids) {
+          if (!byId.has(id)) wanted.push(id);
+        }
       }
     }
     const missingIds = [...new Set(wanted)];
@@ -940,12 +960,20 @@ class TuyaLocalApp extends Homey.App {
         if (onlyDevice && name !== onlyDevice) continue;
         const note = (reason) => skipped.push({ name, driver: driver.id, reason });
 
-        let id = '';
-        try { id = device.getData().id || ''; } catch (e) {}
-        if (!id) { note('no device id'); continue; }
+        const kennung = kennungen(device);
+        if (kennung.ids.length === 0) { note('no device id'); continue; }
 
-        const entry = byId.get(String(id));
-        if (!entry) { note('not in the cloud account, and not found by its id either'); continue; }
+        const entry = kennung.ids.map((id) => byId.get(id)).find(Boolean);
+        if (!entry) {
+          // Weichen die beiden Kennungen ab, ist das der wahrscheinliche Grund und
+          // gehoert in die Begruendung: gesucht wurde unter beiden, gefunden keine.
+          note(kennung.abweichend
+            ? 'not found in the cloud under either id — the Device ID in settings '
+              + `(${kennung.setting.slice(0, 8)}\u2026) differs from the one it was paired `
+              + `with (${kennung.data.slice(0, 8)}\u2026), and the account holds neither`
+            : 'not in the cloud account, and not found by its id either');
+          continue;
+        }
         if (!entry.local_key) { note('the cloud account holds no key for it'); continue; }
 
         let stored = '';
