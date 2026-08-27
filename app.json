@@ -14016,6 +14016,9 @@
         "de": "Luftentfeuchter"
       },
       "class": "dehumidifier",
+      "connectivity": [
+        "lan"
+      ],
       "capabilities": [
         "onoff",
         "measure_humidity",
@@ -14568,6 +14571,9 @@
         "de": "Thermostat"
       },
       "class": "thermostat",
+      "connectivity": [
+        "lan"
+      ],
       "capabilities": [
         "onoff",
         "target_temperature",
@@ -15003,6 +15009,9 @@
         "de": "Smarter Wasserkocher"
       },
       "class": "kettle",
+      "connectivity": [
+        "lan"
+      ],
       "capabilities": [
         "onoff",
         "measure_temperature"
@@ -15407,6 +15416,9 @@
         "de": "Wandschalter"
       },
       "class": "socket",
+      "connectivity": [
+        "lan"
+      ],
       "capabilities": [
         "onoff"
       ],
@@ -15858,6 +15870,9 @@
         "de": "Generisches Tuya-Gerät"
       },
       "class": "other",
+      "connectivity": [
+        "lan"
+      ],
       "capabilities": [],
       "settings": [
         {
@@ -16105,6 +16120,9 @@
         "de": "Smart Plug"
       },
       "class": "socket",
+      "connectivity": [
+        "lan"
+      ],
       "capabilities": [
         "onoff",
         "measure_power",
@@ -16681,6 +16699,9 @@
         "de": "Klimaanlage"
       },
       "class": "airconditioning",
+      "connectivity": [
+        "lan"
+      ],
       "capabilities": [
         "onoff",
         "target_temperature",
@@ -17264,6 +17285,9 @@
         "de": "Lüfter"
       },
       "class": "fan",
+      "connectivity": [
+        "lan"
+      ],
       "capabilities": [
         "onoff",
         "dim",
@@ -17853,6 +17877,9 @@
         "de": "Deckenventilator mit Licht"
       },
       "class": "light",
+      "connectivity": [
+        "lan"
+      ],
       "capabilities": [
         "onoff",
         "dim"
@@ -18446,6 +18473,9 @@
         "de": "Luftbefeuchter"
       },
       "class": "humidifier",
+      "connectivity": [
+        "lan"
+      ],
       "capabilities": [
         "onoff",
         "measure_humidity",
@@ -18913,6 +18943,9 @@
         "de": "Heizgerät"
       },
       "class": "heater",
+      "connectivity": [
+        "lan"
+      ],
       "capabilities": [
         "onoff",
         "target_temperature"
@@ -19431,6 +19464,9 @@
         "de": "Licht"
       },
       "class": "light",
+      "connectivity": [
+        "lan"
+      ],
       "capabilities": [
         "onoff",
         "dim"
@@ -19818,6 +19854,9 @@
         "de": "Futterautomat"
       },
       "class": "petfeeder",
+      "connectivity": [
+        "lan"
+      ],
       "capabilities": [
         "feed_portions",
         "indicator_light",
@@ -20340,6 +20379,9 @@
         "de": "Garagentor"
       },
       "class": "garagedoor",
+      "connectivity": [
+        "lan"
+      ],
       "capabilities": [
         "garagedoor_closed"
       ],
@@ -20738,6 +20780,9 @@
         "de": "Wärmepumpe"
       },
       "class": "heatpump",
+      "connectivity": [
+        "lan"
+      ],
       "capabilities": [
         "onoff",
         "target_temperature",
@@ -21251,6 +21296,9 @@
         "de": "Rolladenmotor"
       },
       "class": "blinds",
+      "connectivity": [
+        "lan"
+      ],
       "capabilities": [
         "windowcoverings_state",
         "windowcoverings_set",
@@ -21645,6 +21693,9 @@
         "de": "Türklingel"
       },
       "class": "doorbell",
+      "connectivity": [
+        "lan"
+      ],
       "capabilities": [
         "alarm_generic"
       ],
@@ -22153,6 +22204,9 @@
         "de": "Energiezähler"
       },
       "class": "sensor",
+      "connectivity": [
+        "lan"
+      ],
       "capabilities": [
         "measure_power",
         "measure_voltage",
@@ -22664,6 +22718,9 @@
         "de": "Präsenzsensor"
       },
       "class": "sensor",
+      "connectivity": [
+        "lan"
+      ],
       "capabilities": [
         "alarm_motion",
         "alarm_generic",
@@ -23087,6 +23144,9 @@
         "de": "Wallbox"
       },
       "class": "evcharger",
+      "connectivity": [
+        "lan"
+      ],
       "capabilities": [
         "evcharger_charging",
         "evcharger_charging_state",
