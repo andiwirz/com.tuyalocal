@@ -59,7 +59,9 @@
       "ipPlaceholder": "e.g. 192.168.1.56",
       "invalidIp": "Invalid IP address format.",
       "invalidKey": "Local key must be 16 or 32 characters.",
-      "scanProtocol": "protocol"
+      "scanProtocol": "protocol",
+      "keyShow": "Show key",
+      "keyHide": "Hide key"
     },
     "list_devices": {
       "title": "Device found",
