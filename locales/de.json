@@ -61,7 +61,19 @@
       "invalidKey": "Lokaler Schlüssel muss 16 oder 32 Zeichen lang sein.",
       "scanProtocol": "Protokoll",
       "keyShow": "Schlüssel anzeigen",
-      "keyHide": "Schlüssel verbergen"
+      "keyHide": "Schlüssel verbergen",
+      "deviceIdPlaceholder": "Tuya Geräte-ID",
+      "localKeyPlaceholder": "16-stelliger lokaler Schlüssel",
+      "helpToggle": "Wo finde ich Geräte-ID und lokalen Schlüssel?",
+      "cloudToggle": "Geräte-ID und Schlüssel aus der Cloud holen",
+      "cloudFetch": "Geräte abrufen",
+      "cloudSecret": "32-stelliges Geheimnis",
+      "cloudSave": "Zugangsdaten auf Homey speichern (beim nächsten Mal ausgefüllt)",
+      "cloudSaved": "✓ Gespeichert",
+      "cloudHide": "Ausblenden",
+      "versionCommon": "3.3 (am häufigsten)",
+      "versionLegacy": "3.1 (älter)",
+      "helpBody": "<div class=\"section-title\">1. App-Konto verknüpfen</div> <ol> <li>Melden Sie sich auf der <strong>Tuya Developer Platform</strong> an und öffnen Sie Ihr Projekt unter <em>Cloud &gt; Development</em>.</li> <li>Wechseln Sie auf den Reiter <strong>Devices</strong> und klicken Sie auf <strong>Link Tuya App Account</strong>.</li> <li>Klicken Sie auf <strong>Add App Account</strong> und scannen Sie den QR-Code mit der <strong>Smart Life- bzw. Tuya-App</strong> (Profil &gt; QR-Code-Scanner, oben rechts).</li> <li>Bestätigen Sie die Verknüpfung in der App. Ihre Geräte erscheinen anschließend unter <strong>All Devices</strong>.</li> </ol> <hr> <div class=\"section-title\">2. Geräte-ID finden</div> <ol> <li>Gehen Sie in Ihrem Projekt auf <em>Cloud &gt; Devices &gt; All Devices</em>.</li> <li>Suchen Sie Ihr Gerät in der Liste. Die <strong>Device ID</strong> steht direkt unter dem Gerätenamen — kopieren Sie sie.</li> </ol> <hr> <div class=\"section-title\">3. Lokalen Schlüssel über den API Explorer auslesen</div> <ol> <li>Klicken Sie links in der Seitenleiste auf <em>Cloud &gt; API Explorer</em>.</li> <li>Wählen Sie im linken Menü <em>Smart Home Management System &gt; Device Management &gt; <strong>Query Device Details</strong></em>.</li> <li>Stellen Sie oben rechts das richtige <strong>Data Center</strong> ein (etwa „Central Europe Data Center\").</li> <li>Tragen Sie Ihre <strong>Device ID</strong> in das Eingabefeld ein und klicken Sie auf <strong>Submit Request</strong>.</li> <li>Suchen Sie in der JSON-Antwort das Feld <code>local_key</code> — das ist Ihr lokaler Verschlüsselungsschlüssel.</li> </ol>"
     },
     "list_devices": {
       "title": "Gerät gefunden",

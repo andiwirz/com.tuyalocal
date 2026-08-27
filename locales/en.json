@@ -61,7 +61,19 @@
       "invalidKey": "Local key must be 16 or 32 characters.",
       "scanProtocol": "protocol",
       "keyShow": "Show key",
-      "keyHide": "Hide key"
+      "keyHide": "Hide key",
+      "deviceIdPlaceholder": "Tuya Device ID",
+      "localKeyPlaceholder": "16-character local key",
+      "helpToggle": "Where do I find Device ID & Local Key?",
+      "cloudToggle": "Fetch Device ID & Local Key from Cloud",
+      "cloudFetch": "Fetch Devices",
+      "cloudSecret": "32-character secret",
+      "cloudSave": "Save credentials on Homey (auto-fill next time)",
+      "cloudSaved": "✓ Saved",
+      "cloudHide": "Hide",
+      "versionCommon": "3.3 (most common)",
+      "versionLegacy": "3.1 (legacy)",
+      "helpBody": "<div class=\"section-title\">1. Link your app account</div> <ol> <li>Log in to the <strong>Tuya Developer Platform</strong> and open your project under <em>Cloud &gt; Development</em>.</li> <li>Go to the <strong>Devices</strong> tab and click <strong>Link Tuya App Account</strong>.</li> <li>Click <strong>Add App Account</strong> and scan the QR code with your <strong>Smart Life / Tuya app</strong> (Profile &gt; QR code scanner, top right).</li> <li>Confirm the link in the app. Your devices will appear under <strong>All Devices</strong>.</li> </ol> <hr> <div class=\"section-title\">2. Find the Device ID</div> <ol> <li>In your project go to <em>Cloud &gt; Devices &gt; All Devices</em>.</li> <li>Find your device in the list. The <strong>Device ID</strong> is shown directly below the device name — copy it.</li> </ol> <hr> <div class=\"section-title\">3. Read the Local Key via API Explorer</div> <ol> <li>In the left sidebar click <em>Cloud &gt; API Explorer</em>.</li> <li>In the left menu select <em>Smart Home Management System &gt; Device Management &gt; <strong>Query Device Details</strong></em>.</li> <li>Select the correct <strong>Data Center</strong> in the top right (e.g. \"Central Europe Data Center\").</li> <li>Enter your <strong>Device ID</strong> in the input field and click <strong>Submit Request</strong>.</li> <li>In the JSON response look for the field <code>local_key</code> — that is your local encryption key.</li> </ol>"
     },
     "list_devices": {
       "title": "Device found",
