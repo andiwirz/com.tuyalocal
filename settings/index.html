@@ -1516,10 +1516,31 @@
       <p style="margin-bottom:6px">Checks your paired devices against the manufacturer's own specification and offers to correct what does not match.</p>
       <p style="font-size:11px;color:#888;line-height:1.5">Nothing here saves anything until you confirm: each check shows exactly what it would change, per device, and says why a device was left alone. All except <strong>protocol versions</strong> need Cloud Lookup credentials — enter them under <strong>Cloud Lookup</strong> first.</p>
 
-      <!-- First on this tab: a wrong key is the one fault that stops a device working
+      <!-- Above the checks, because it is the one thing that helps whatever the fault
+           turns out to be. The same button sits under Help, but nobody with a device
+           that will not work goes looking under Help — they come here. Putting it
+           first also means it is found before the checks have been run, which is the
+           right order: the bundle records the state as it is now. -->
+      <div style="padding-bottom:16px;border-bottom:1px solid #e3e5e8">
+        <div style="font-size:13px;font-weight:600;color:#1d1d1f;margin-bottom:4px">Create support bundle</div>
+        <div style="font-size:11px;color:#888;line-height:1.5;margin-bottom:8px">
+          Collects everything about every device in one go — the driver, the data point mapping,
+          the live values, the connection history and the warnings from the log. Send it with a
+          report, or read it yourself: it puts what a device is actually sending next to what the
+          app expects, which is where most faults become obvious. Local keys never appear in it
+          and device IDs are shortened, so it is safe to share.
+        </div>
+        <div class="bar">
+          <button class="primary" id="btnBundleFix">&#128203; Create support bundle</button>
+          <span id="bundleFixStatus" style="font-size:12px;color:#888"></span>
+        </div>
+        <div class="note">Also written to the app log, so instead of pasting it you can create a <strong>Homey diagnostics report</strong> right afterwards and send only its ID. Where to send it: <a href="#" onclick="showTab('help'); jumpToSection('sec-report'); return false;" class="help-link">Help → Reporting device issues</a>.</div>
+      </div>
+
+      <!-- First of the checks: a wrong key is the one fault that stops a device working
            entirely, and the comparison against the account is exact rather than
            inferred like the checks below it. -->
-      <div>
+      <div style="margin-top:22px">
         <div style="font-size:13px;font-weight:600;color:#1d1d1f;margin-bottom:4px">Check local keys</div>
         <div style="font-size:11px;color:#888;line-height:1.5;margin-bottom:8px">
           A device's local key changes every time it is reset or re-paired in the Tuya app, and the
@@ -2074,32 +2095,44 @@
         });
       }
 
-      document.getElementById('btnBundle').addEventListener('click', function() {
-        var btn    = this;
-        var status = document.getElementById('bundleStatus');
-        btn.disabled = true;
-        var orig = btn.textContent;
-        btn.textContent = 'Collecting…';
-        // Wording is honest about the wait: one cloud request per device at roughly
-        // 300 ms, which on a dozen devices is several seconds of apparent silence.
-        status.textContent = 'querying devices and the Tuya cloud…';
-        status.style.color = '#888';
-        _progressTargets = [status];
-        fetchBundle(null, function(err, res) {
-          btn.disabled = false;
-          btn.textContent = orig;
-          _progressTargets = [];
-          if (err) {
-            status.textContent = 'Failed: ' + apiError(err);
-            status.style.color = '#c5221f';
-            return;
-          }
-          status.textContent = '';
-          document.getElementById('bundleText').value = res.text;
-          document.getElementById('bundleHint').textContent = '';
-          document.getElementById('bundle-modal').classList.add('open');
+      // The same button sits under Help and at the end of Fix It. Two copies of this
+      // handler would be two things to keep in step, so it is wired once per button
+      // id — whichever was pressed owns the status line and the disabled state.
+      //
+      // Why the button exists twice: someone with a device that will not work goes to
+      // Fix It, runs the checks, and if none of them finds anything is left with no
+      // next step. Nobody in that position goes looking under Help.
+      function wireBundleButton(btnId, statusId) {
+        var btn = document.getElementById(btnId);
+        if (!btn) return;
+        btn.addEventListener('click', function() {
+          var status = document.getElementById(statusId);
+          btn.disabled = true;
+          var orig = btn.textContent;
+          btn.textContent = 'Collecting…';
+          // Wording is honest about the wait: one cloud request per device at roughly
+          // 300 ms, which on a dozen devices is several seconds of apparent silence.
+          status.textContent = 'querying devices and the Tuya cloud…';
+          status.style.color = '#888';
+          _progressTargets = [status];
+          fetchBundle(null, function(err, res) {
+            btn.disabled = false;
+            btn.textContent = orig;
+            _progressTargets = [];
+            if (err) {
+              status.textContent = 'Failed: ' + apiError(err);
+              status.style.color = '#c5221f';
+              return;
+            }
+            status.textContent = '';
+            document.getElementById('bundleText').value = res.text;
+            document.getElementById('bundleHint').textContent = '';
+            document.getElementById('bundle-modal').classList.add('open');
+          });
         });
-      });
+      }
+      wireBundleButton('btnBundle',    'bundleStatus');
+      wireBundleButton('btnBundleFix', 'bundleFixStatus');
 
       window.closeBundle = function(event) {
         if (event && event.target !== document.getElementById('bundle-modal')) return;
