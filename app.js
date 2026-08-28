@@ -15,6 +15,16 @@ const BUNDLE_LOG_MAX = 120;
 // Plaetze fuellen, und der Logs-Reiter der App - der denselben Puffer liest - zeigte
 // nur noch Warnungen ohne den Verlauf dazwischen.
 const KEEP_BUDGET = 300;
+// Bis zu wie vielen Vorkommen einer Meldung ihre Zeitpunkte einzeln dastehen, statt zu
+// Anzahl und Zeitspanne zusammengefasst zu werden.
+const ZEITEN_MAX = 6;
+
+/** Nur die Uhrzeit — das Datum steht schon am Anfang der Zeile. */
+const uhrzeit = (t) => {
+  if (!t) return '?';
+  const d = new Date(t);
+  return Number.isNaN(d.getTime()) ? '?' : d.toISOString().slice(11, 19);
+};
 
 /** Gehoert dieser Eintrag in den Support-Bericht? Siehe addLog. */
 const berichtenswert = (e) => e.level === 'warn' || e.level === 'error' || e.keep === true;
@@ -358,8 +368,11 @@ class TuyaLocalApp extends Homey.App {
           out.push(`  history    ${st.connects} connection${st.connects === 1 ? '' : 's'}`
             + ` since app start · up ${dauer(st.upMs)} total · avg ${dauer(st.avgMs)}`
             + ` · longest ${dauer(st.longestMs)}`);
+          // Die Rate erst, wenn genug dahintersteht: ein Paket in vier Sekunden
+          // ergibt "0.26/s", und das ist keine Aussage, sondern eine Division.
+          const rateSagtEtwas = st.upMs >= 60000 && st.packets >= 10;
           out.push(`  packets    ${st.packets} received`
-            + (st.perSecond ? ` · ${st.perSecond.toFixed(2)}/s while connected` : '')
+            + (rateSagtEtwas ? ` · ${st.perSecond.toFixed(2)}/s while connected` : '')
             + ` · data ever received: ${st.everData ? 'yes' : 'NO'}`);
         }
 
@@ -457,7 +470,20 @@ class TuyaLocalApp extends Homey.App {
 
     // Warnungen, Fehler, und was ausdruecklich in den Bericht gehoert - siehe das
     // keep-Kennzeichen in addLog. Der Rest der 500 Eintraege ist Rauschen im Bericht.
-    const logs = this.homey.settings.get('diagnostic_logs');
+    // Der laufende Puffer, nicht der gespeicherte.
+    //
+    // Geschrieben wird gedrosselt, und der Timer wird bei jeder neuen Zeile
+    // zurueckgesetzt - ein Geraet, das alle drei Sekunden etwas meldet, schiebt das
+    // Speichern unbegrenzt vor sich her. Der gespeicherte Stand kann also beliebig alt
+    // sein, und er fehlte genau dort, wo es zaehlt: wer den Knopf drueckt, weil eben
+    // etwas passiert ist, bekam alles ausser dem, was eben passiert war. In einem
+    // gemeldeten Bericht fehlte die Connected-Zeile von drei Sekunden vorher.
+    //
+    // settings bleibt der Rueckfall: this._logs entsteht in onInit, und ein Bericht
+    // darf nicht daran scheitern, dass er vorher angefordert wird.
+    const logs = Array.isArray(this._logs) && this._logs.length
+      ? this._logs
+      : this.homey.settings.get('diagnostic_logs');
     const bad  = (Array.isArray(logs) ? logs : []).filter(
       (e) => e.level === 'warn' || e.level === 'error' || e.keep);
 
@@ -471,8 +497,10 @@ class TuyaLocalApp extends Homey.App {
     for (const e of bad) {
       const schluessel = `${e.source}\u0000${e.level}\u0000${e.message}`;
       const g = gruppen.get(schluessel);
-      if (g) { g.anzahl++; g.zuletzt = e.time; } else {
-        gruppen.set(schluessel, { e, anzahl: 1, zuerst: e.time, zuletzt: e.time });
+      if (g) { g.anzahl++; g.zuletzt = e.time; g.zeiten.push(e.time); } else {
+        gruppen.set(schluessel, {
+          e, anzahl: 1, zuerst: e.time, zuletzt: e.time, zeiten: [e.time],
+        });
       }
     }
     const gefaltet = [...gruppen.values()].reverse();     // neueste zuerst
@@ -487,9 +515,15 @@ class TuyaLocalApp extends Homey.App {
 
     const logLines = gezeigt.map((g) => {
       const t = g.zuletzt ? new Date(g.zuletzt).toISOString() : '?';
-      const wie = g.anzahl > 1
-        ? `  ×${g.anzahl} since ${g.zuerst ? new Date(g.zuerst).toISOString() : '?'}`
-        : '';
+      // Bei wenigen Vorkommen die Zeitpunkte ausschreiben. Das Falten war fuer
+      // Fluten gedacht; auf die Verbindungsereignisse angewandt nahm es genau das
+      // weg, wofuer sie aufgenommen wurden - "Connected ×3" verschweigt, wann.
+      // Ab ZEITEN_MAX ist die Zusammenfassung das Bessere: bei einem Geraet in einer
+      // Wiederverbindungsschleife will niemand achtzig Zeitstempel lesen.
+      const wie = g.anzahl === 1 ? ''
+        : g.anzahl <= ZEITEN_MAX
+          ? `  ×${g.anzahl} — ${g.zeiten.map(uhrzeit).join(', ')}`
+          : `  ×${g.anzahl} since ${g.zuerst ? new Date(g.zuerst).toISOString() : '?'}`;
       return `${t}  [${(g.e.level || 'info').toUpperCase()}]  [${g.e.source || '?'}]  `
         + `${g.e.message || ''}${wie}`;
     });
