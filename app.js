@@ -10,6 +10,14 @@ const LOG_MAX = 500;
 // dass die Sektion auch im schlimmsten Fall kurz genug bleibt, um mitgeschickt statt
 // abgeschnitten zu werden.
 const BUNDLE_LOG_MAX = 120;
+// Wie viele der LOG_MAX Plaetze Warnungen, Fehler und gekennzeichnete Ereignisse
+// hoechstens belegen duerfen. Ohne diesen Deckel koennten sie ueber Monate alle 500
+// Plaetze fuellen, und der Logs-Reiter der App - der denselben Puffer liest - zeigte
+// nur noch Warnungen ohne den Verlauf dazwischen.
+const KEEP_BUDGET = 300;
+
+/** Gehoert dieser Eintrag in den Support-Bericht? Siehe addLog. */
+const berichtenswert = (e) => e.level === 'warn' || e.level === 'error' || e.keep === true;
 
 /** Millisekunden als "4m 32s" - fuer die Verbindungszahlen im Support-Bericht. */
 const dauer = (ms) => {
@@ -33,6 +41,11 @@ class TuyaLocalApp extends Homey.App {
   async onInit() {
     this._logs = [];
     this._flushTimer = null;
+    // Wann dieser App-Lauf begann. Die Verbindungszahlen im Support-Bericht zaehlen ab
+    // hier, und ohne diese Angabe lesen sie sich falsch: "1 connection, up 9s" neben
+    // einer Logzeile ueber achtzehn Stunden sieht nach Widerspruch aus, ist aber nur
+    // eine App, die neun Sekunden alt ist.
+    this._startedAt = Date.now();
 
     // Restore logs from last session (best-effort)
     try {
@@ -146,13 +159,34 @@ class TuyaLocalApp extends Homey.App {
       // sind damit falsy und verhalten sich wie bisher.
       ...(keep ? { keep: true } : {}),
     });
-    if (this._logs.length > LOG_MAX) this._logs.shift();
+    if (this._logs.length > LOG_MAX) this._trimLogs();
 
     // Debounced flush to persistent store (max once per 5 s)
     clearTimeout(this._flushTimer);
     this._flushTimer = setTimeout(() => {
       try { this.homey.settings.set('diagnostic_logs', this._logs); } catch (e) {}
     }, 5000);
+  }
+
+  /**
+   * Macht Platz im Ringpuffer, ohne die Signale wegzuwerfen.
+   *
+   * Beschnitten wurde rein nach Alter. In einem eingeschickten Bericht standen deshalb
+   * 14 berichtenswerte Eintraege neben 486 info-Zeilen, die kein Bericht je zeigt - bei
+   * einem ruhigen Geraet reichte das trotzdem dreizehn Tage zurueck, bei zwanzig
+   * gespraechigen waere die Warnungs-Historie nach einer Stunde zu Ende gewesen. Routine
+   * darf Signale nicht verdraengen.
+   *
+   * Also weicht zuerst die aelteste gewoehnliche Zeile. Nur wenn die berichtenswerten
+   * ihren Deckel sprengen oder gar nichts anderes mehr da ist, weicht die aelteste von
+   * ihnen - sonst bliebe im Logs-Reiter irgendwann nichts als Warnungen stehen.
+   */
+  _trimLogs() {
+    const berichtet = this._logs.reduce((k, e) => k + (berichtenswert(e) ? 1 : 0), 0);
+    const suche = berichtet > KEEP_BUDGET
+      ? this._logs.findIndex((e) => berichtenswert(e))
+      : this._logs.findIndex((e) => !berichtenswert(e));
+    this._logs.splice(suche === -1 ? 0 : suche, 1);
   }
 
   /**
@@ -226,6 +260,16 @@ class TuyaLocalApp extends Homey.App {
     const appVersion = this.homey.manifest?.version ?? '?';
     out.push(`Tuya Local v${appVersion} — support bundle`);
     out.push(`Generated: ${new Date().toISOString()}`);
+    if (this._startedAt) {
+      out.push(`App started: ${new Date(this._startedAt).toISOString()}`
+        + ` (running ${dauer(Date.now() - this._startedAt)})`);
+    }
+    // Best effort: nicht jede Homey-Ausgabe fuehrt das Feld, und ein Bericht darf daran
+    // nicht scheitern.
+    try {
+      const hv = this.homey.version || this.homey.platformVersion;
+      if (hv) out.push(`Homey: ${hv}`);
+    } catch (e) { /* ohne */ }
 
     const snapshot = this.homey.settings.get('dp_snapshot') || {};
 
@@ -308,8 +352,11 @@ class TuyaLocalApp extends Homey.App {
         // hereinkommt, staendig hinausfliegt oder ruhig steht und nur nichts sagt.
         const st = conn?.stats;
         if (st && st.connects > 0) {
+          // "since app start" gehoert in die Zeile, nicht in eine Fussnote: sonst
+          // liest sich "1 connection · up 9s" neben einer Logzeile ueber achtzehn
+          // Stunden wie ein Fehler im Bericht.
           out.push(`  history    ${st.connects} connection${st.connects === 1 ? '' : 's'}`
-            + ` · up ${dauer(st.upMs)} total · avg ${dauer(st.avgMs)}`
+            + ` since app start · up ${dauer(st.upMs)} total · avg ${dauer(st.avgMs)}`
             + ` · longest ${dauer(st.longestMs)}`);
           out.push(`  packets    ${st.packets} received`
             + (st.perSecond ? ` · ${st.perSecond.toFixed(2)}/s while connected` : '')
@@ -317,9 +364,14 @@ class TuyaLocalApp extends Homey.App {
         }
 
         // DP mapping and the remaining settings, credentials removed.
-        const dpKeys  = Object.keys(settings).filter((k) => k.startsWith('dp_')).sort();
+        // Nach dem Wert, nicht nach dem Namen: dp_countdown_left_minutes und
+        // dp_countdown_timer_numeric heissen so, sind aber Format-Schalter und keine
+        // DP-Nummern. Unter "DP mapping" gelesen sehen sie aus wie eine kaputte
+        // Zuordnung.
+        const istDpNummer = (k) => k.startsWith('dp_') && typeof settings[k] === 'number';
+        const dpKeys  = Object.keys(settings).filter(istDpNummer).sort();
         const others  = Object.keys(settings).filter((k) =>
-          !k.startsWith('dp_') && !['ip', 'device_id', 'local_key', 'version',
+          !istDpNummer(k) && !['ip', 'device_id', 'local_key', 'version',
             'connection_status', 'last_seen', 'polling_interval'].includes(k)).sort();
         if (dpKeys.length) {
           out.push('  DP mapping');
