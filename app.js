@@ -5,6 +5,20 @@ const crypto = require('crypto');
 const https  = require('https');
 
 const LOG_MAX = 500;
+// Wie viele *verschiedene* Meldungen der Bericht auflistet. Nach dem Zusammenfassen
+// gleicher Zeilen sind das sehr viel weniger als LOG_MAX, und der Deckel sorgt dafuer,
+// dass die Sektion auch im schlimmsten Fall kurz genug bleibt, um mitgeschickt statt
+// abgeschnitten zu werden.
+const BUNDLE_LOG_MAX = 120;
+
+/** Millisekunden als "4m 32s" - fuer die Verbindungszahlen im Support-Bericht. */
+const dauer = (ms) => {
+  const s = Math.round((ms || 0) / 1000);
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ${s % 60}s`;
+  return `${Math.floor(m / 60)}h ${m % 60}m`;
+};
 
 const TUYA_REGIONS = {
   eu:      'openapi.tuyaeu.com',
@@ -111,7 +125,13 @@ class TuyaLocalApp extends Homey.App {
     return '';
   }
 
-  addLog(source, message, level = 'info') {
+  /**
+   * @param {boolean} [keep] Gehoert in den Support-Bericht, unabhaengig von der Stufe.
+   *   Ohne das kamen nur Warnungen und Fehler an, und "Connected" ist info - man sah
+   *   die Ausfaelle, aber nicht den Rhythmus dazwischen. Die Stufe deswegen anzuheben
+   *   waere die falsche Antwort: im laufenden Protokoll ist die Zeile keine Warnung.
+   */
+  addLog(source, message, level = 'info', keep = false) {
     // Writing a log line must never be able to take down the thing being logged.
     // _logs is created in onInit, so this only matters where the app object exists
     // without having been through it — but a caller that crashes because logging
@@ -122,6 +142,9 @@ class TuyaLocalApp extends Homey.App {
       source:  String(source),
       message: String(message),
       level:   String(level),
+      // Nur setzen, wenn wahr: aeltere gespeicherte Eintraege haben das Feld nicht,
+      // sind damit falsy und verhalten sich wie bisher.
+      ...(keep ? { keep: true } : {}),
     });
     if (this._logs.length > LOG_MAX) this._logs.shift();
 
@@ -280,6 +303,19 @@ class TuyaLocalApp extends Homey.App {
         out.push(`  status     ${settings.connection_status ?? '?'} · last seen ${settings.last_seen ?? '?'}`
           + ` · poll ${settings.polling_interval ?? '?'}s`);
 
+        // Was die Verbindung ueber den App-Lauf hinweg getan hat. Einzelne Zeilen im
+        // Log sagen wenig; erst die Reihe zeigt, ob ein Geraet gar nicht erst
+        // hereinkommt, staendig hinausfliegt oder ruhig steht und nur nichts sagt.
+        const st = conn?.stats;
+        if (st && st.connects > 0) {
+          out.push(`  history    ${st.connects} connection${st.connects === 1 ? '' : 's'}`
+            + ` · up ${dauer(st.upMs)} total · avg ${dauer(st.avgMs)}`
+            + ` · longest ${dauer(st.longestMs)}`);
+          out.push(`  packets    ${st.packets} received`
+            + (st.perSecond ? ` · ${st.perSecond.toFixed(2)}/s while connected` : '')
+            + ` · data ever received: ${st.everData ? 'yes' : 'NO'}`);
+        }
+
         // DP mapping and the remaining settings, credentials removed.
         const dpKeys  = Object.keys(settings).filter((k) => k.startsWith('dp_')).sort();
         const others  = Object.keys(settings).filter((k) =>
@@ -367,23 +403,57 @@ class TuyaLocalApp extends Homey.App {
       try { onProgress(allDevices.length, allDevices.length, null); } catch (e) {}
     }
 
-    // Only warnings and errors: the full buffer runs to 500 entries and the
-    // informational lines are noise in a report.
+    // Warnungen, Fehler, und was ausdruecklich in den Bericht gehoert - siehe das
+    // keep-Kennzeichen in addLog. Der Rest der 500 Eintraege ist Rauschen im Bericht.
     const logs = this.homey.settings.get('diagnostic_logs');
-    const bad  = (Array.isArray(logs) ? logs : []).filter((e) => e.level === 'warn' || e.level === 'error');
+    const bad  = (Array.isArray(logs) ? logs : []).filter(
+      (e) => e.level === 'warn' || e.level === 'error' || e.keep);
+
+    // Gleiche Meldungen zusammenfassen.
+    //
+    // Ein einzelner geschwaetziger Fehler konnte den ganzen Bericht fuellen: dreissig
+    // gleichlautende Zeilen in dreissig Sekunden standen dreissig Mal da und haben
+    // alles andere aus dem Blickfeld gedraengt. Wie oft und wie lange sagt dasselbe
+    // in einer Zeile, und was daneben passierte, bleibt sichtbar.
+    const gruppen = new Map();
+    for (const e of bad) {
+      const schluessel = `${e.source}\u0000${e.level}\u0000${e.message}`;
+      const g = gruppen.get(schluessel);
+      if (g) { g.anzahl++; g.zuletzt = e.time; } else {
+        gruppen.set(schluessel, { e, anzahl: 1, zuerst: e.time, zuletzt: e.time });
+      }
+    }
+    const gefaltet = [...gruppen.values()].reverse();     // neueste zuerst
+    const gezeigt  = gefaltet.slice(0, BUNDLE_LOG_MAX);
+
     out.push('');
-    out.push(`LOG — warnings and errors, newest first (${bad.length} of ${(logs || []).length} entries)`);
-    const logLines = bad.slice().reverse().map((e) => {
-      const t = e.time ? new Date(e.time).toISOString() : '?';
-      return `${t}  [${(e.level || 'info').toUpperCase()}]  [${e.source || '?'}]  ${e.message || ''}`;
+    out.push(`LOG — warnings, errors and connection events, newest first`);
+    out.push(`  ${gezeigt.length} of ${gefaltet.length} distinct message${gefaltet.length === 1 ? '' : 's'}`
+      + ` from ${bad.length} of ${(logs || []).length} entries.`
+      + ' Repeats are folded into one line. The device sections above carry the DP'
+      + ' mapping and the live values — please include them when quoting this report.');
+
+    const logLines = gezeigt.map((g) => {
+      const t = g.zuletzt ? new Date(g.zuletzt).toISOString() : '?';
+      const wie = g.anzahl > 1
+        ? `  ×${g.anzahl} since ${g.zuerst ? new Date(g.zuerst).toISOString() : '?'}`
+        : '';
+      return `${t}  [${(g.e.level || 'info').toUpperCase()}]  [${g.e.source || '?'}]  `
+        + `${g.e.message || ''}${wie}`;
     });
     for (const l of logLines) out.push('  ' + l);
+    if (gefaltet.length > gezeigt.length) {
+      out.push(`  … ${gefaltet.length - gezeigt.length} older message(s) not shown.`);
+    }
 
     return {
       text:       out.join('\n'),
       appVersion,
       devices,
       // Trimmed separately: the issue URL has a length budget the full log blows.
+      // Dieselben zusammengefassten Zeilen wie oben — fuer einen GitHub-Bericht wiegt
+      // das noch schwerer als fuer den Fliesstext: fuenfundzwanzig gleichlautende
+      // Zeilen haben den knappen Platz gefuellt und nichts gesagt.
       recentLog:  logLines.slice(0, 25).join('\n'),
     };
   }
