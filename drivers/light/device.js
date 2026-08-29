@@ -45,6 +45,12 @@ class LightDevice extends BaseTuyaDevice {
 
     await this._migrateCapabilities([]);
     await this._syncLightCapabilities();
+    // measure_power entsteht nur, wenn eine feste Wattzahl eingetragen ist - bei 0
+    // bleibt das Geraet, wie es war.
+    await this._syncOptionalCapabilities([
+      { setting: 'power_on_watts', capability: 'measure_power' },
+    ]);
+    await this._applyFixedPower();
 
     // â”€â”€ Flow trigger cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     this._triggerDeviceConnected    = this.homey.flow.getDeviceTriggerCard('light_device_connected');
@@ -55,6 +61,11 @@ class LightDevice extends BaseTuyaDevice {
     this.registerCapabilityListener('onoff', async (value) => {
       const dp = this.getSetting('dp_onoff');
       if (dp > 0) await this._set(dp, value);
+      // Der Zustand wird mitgegeben: Homey uebernimmt ihn erst, wenn dieser Listener
+      // aufgeloest hat, die Faehigkeit traegt hier also noch den alten Wert. Ohne das
+      // haengt die gemeldete Leistung eine Schaltung hinterher, bis das Geraet den DP
+      // von sich aus zurueckmeldet - und mit fire_and_forget kann das ausbleiben.
+      await this._applyFixedPower(Boolean(value));
     });
 
     this._dimTimer = null;
@@ -167,6 +178,7 @@ class LightDevice extends BaseTuyaDevice {
       // â”€â”€ On/Off â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       if (settings.dp_onoff > 0 && dp === settings.dp_onoff) {
         await this.setCapabilityValue('onoff', Boolean(value)).catch(() => {});
+        await this._applyFixedPower(Boolean(value));
         continue;
       }
 
@@ -268,6 +280,12 @@ class LightDevice extends BaseTuyaDevice {
     const lightSettings = ['dp_color_temp', 'dp_color_mode', 'dp_color'];
     if (changedKeys.some((k) => lightSettings.includes(k))) {
       await this._syncLightCapabilities();
+    }
+    if (changedKeys.some((k) => ['power_on_watts', 'power_off_watts'].includes(k))) {
+      await this._syncOptionalCapabilities([
+        { setting: 'power_on_watts', capability: 'measure_power' },
+      ]);
+      await this._applyFixedPower();
     }
   }
 }

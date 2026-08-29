@@ -32,6 +32,9 @@ const DP_PROFILE = [
 ];
 
 const OPTIONAL_CAPABILITIES = [
+  // Feste Leistung statt Homeys Schaetzung, die mit der Stufe herunterrechnet. Steht die
+  // Wattzahl auf 0, entsteht die Faehigkeit nicht und alles bleibt wie bisher.
+  { setting: 'power_on_watts',      capability: 'measure_power'     },
   { setting: 'dp_fan_speed',        capability: 'fan_speed'         },
   { setting: 'dp_oscillate',        capability: 'oscillate'         },
   { setting: 'dp_direction',        capability: 'fan_direction'     },
@@ -67,6 +70,7 @@ class FanDevice extends BaseTuyaDevice {
 
     await this._migrateCapabilities([]);
     await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
+    await this._applyFixedPower();
     await this._syncEnumOptions('fan_speed', this.getSetting('fan_speed_values'));
     await this._syncEnumOptions('fan_mode',  this.getSetting('fan_mode_values'));
     await this._syncDeviceClass();
@@ -418,6 +422,11 @@ class FanDevice extends BaseTuyaDevice {
     if (changedKeys.some((k) => OPTIONAL_CAPABILITIES.map((o) => o.setting).includes(k))) {
       await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
       this._registerListeners(); // newly added capabilities need listeners immediately
+    }
+    // power_off_watts steht nicht in der Tabelle, loest den Abgleich darueber also
+    // nicht aus - den Wert neu zu setzen aber schon.
+    if (changedKeys.some((k) => ['power_on_watts', 'power_off_watts'].includes(k))) {
+      await this._applyFixedPower();
     }
     if (changedKeys.some((k) => ['fan_speed_values', 'fan_mode_values'].includes(k))) {
       await this._syncEnumOptions('fan_speed', this.getSetting('fan_speed_values'));

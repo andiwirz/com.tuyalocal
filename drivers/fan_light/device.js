@@ -52,6 +52,10 @@ const DP_PROFILE = [
 ];
 
 const OPTIONAL_CAPABILITIES = [
+  // Feste Leistung statt Homeys Schaetzung. Homey rechnet den hinterlegten Verbrauch
+  // mit dem Dimmwert herunter; viele LED-Leuchten ziehen aber bei jeder Stufe dasselbe.
+  // Steht die Wattzahl auf 0, entsteht die Faehigkeit nicht und alles bleibt wie bisher.
+  { setting: 'power_on_watts',      capability: 'measure_power'     },
   // The fan half, all optional: a handful of these fittings drive the fan from the
   // same switch as the light, and several have no direction or no timer.
   { setting: 'dp_onoff',            capability: 'onoff.fan'         },
@@ -84,6 +88,7 @@ class FanLightDevice extends BaseTuyaDevice {
 
     await this._migrateCapabilities([]);
     await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
+    await this._applyFixedPower();
     await this._syncEnumOptions('fan_speed', this.getSetting('fan_speed_values'));
     await this._syncEnumOptions('fan_mode',  this.getSetting('fan_mode_values'));
 
@@ -448,6 +453,11 @@ class FanLightDevice extends BaseTuyaDevice {
     if (changedKeys.some((k) => OPTIONAL_CAPABILITIES.map((o) => o.setting).includes(k))) {
       await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
       this._registerListeners(); // newly added capabilities need listeners immediately
+    }
+    // power_off_watts steht nicht in der Tabelle - eine Aenderung daran allein loest
+    // den Abgleich darueber also nicht aus, den Wert neu zu setzen aber schon.
+    if (changedKeys.some((k) => ['power_on_watts', 'power_off_watts'].includes(k))) {
+      await this._applyFixedPower();
     }
     if (changedKeys.some((k) => ['fan_speed_values', 'fan_mode_values'].includes(k))) {
       await this._syncEnumOptions('fan_speed', this.getSetting('fan_speed_values'));

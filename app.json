@@ -17806,6 +17806,38 @@
           },
           "children": [
             {
+              "id": "power_on_watts",
+              "type": "number",
+              "label": {
+                "en": "Fixed power when on (W)",
+                "de": "Feste Leistung eingeschaltet (W)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 3500,
+              "step": 0.1,
+              "hint": {
+                "en": "Report a fixed wattage instead of letting Homey scale its estimate with the speed. Many fans draw nearly the same power at every step, so an estimate that follows the slider is wrong all day. Enter what the fan actually draws while running — a plug-in meter reading is the honest source. 0 = off, leaving Homey to estimate as before.",
+                "de": "Eine feste Wattzahl melden, statt Homey seine Schaetzung mit der Stufe herunterrechnen zu lassen. Viele Ventilatoren ziehen auf jeder Stufe nahezu dasselbe, eine dem Regler folgende Schaetzung ist dann den ganzen Tag falsch. Trage ein, was der Ventilator im Betrieb wirklich zieht — ein Zwischenstecker-Messgeraet ist die ehrliche Quelle. 0 = aus, dann schaetzt Homey wie bisher."
+              }
+            },
+            {
+              "id": "power_off_watts",
+              "type": "number",
+              "label": {
+                "en": "Fixed power when off (W)",
+                "de": "Feste Leistung ausgeschaltet (W)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 100,
+              "step": 0.1,
+              "hint": {
+                "en": "Standby draw, reported while off. Only used when a fixed power when on is set. Leave at 0 unless you have measured otherwise.",
+                "de": "Ruheverbrauch, gemeldet solange ausgeschaltet. Wirkt nur, wenn eine feste Leistung eingeschaltet gesetzt ist. Bei 0 belassen, sofern nicht anders gemessen."
+              }
+            },
+            {
               "id": "fire_and_forget",
               "type": "checkbox",
               "label": {
@@ -18401,6 +18433,38 @@
             "de": "Gerät"
           },
           "children": [
+            {
+              "id": "power_on_watts",
+              "type": "number",
+              "label": {
+                "en": "Fixed power when on (W)",
+                "de": "Feste Leistung eingeschaltet (W)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 3500,
+              "step": 0.1,
+              "hint": {
+                "en": "Report a fixed wattage instead of letting Homey scale its estimate with the brightness. Many LED lamps draw very nearly the same power at every dim level, so an estimate that follows the slider is wrong all day. Enter what the lamp actually draws while on — a plug-in meter reading is the honest source — and the app reports that figure whenever the light is on. 0 = off, leaving Homey to estimate as before.",
+                "de": "Eine feste Wattzahl melden, statt Homey seine Schaetzung mit der Helligkeit herunterrechnen zu lassen. Viele LED-Leuchten ziehen bei jeder Dimmstufe nahezu dasselbe, eine dem Regler folgende Schaetzung ist dann den ganzen Tag falsch. Trage ein, was die Leuchte eingeschaltet wirklich zieht — ein Zwischenstecker-Messgeraet ist die ehrliche Quelle —, und die App meldet diesen Wert, solange das Licht an ist. 0 = aus, dann schaetzt Homey wie bisher."
+              }
+            },
+            {
+              "id": "power_off_watts",
+              "type": "number",
+              "label": {
+                "en": "Fixed power when off (W)",
+                "de": "Feste Leistung ausgeschaltet (W)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 100,
+              "step": 0.1,
+              "hint": {
+                "en": "Standby draw, reported while the light is off. Only used when a fixed power when on is set. Leave at 0 unless you have measured otherwise; a smart lamp that stays on the network does draw something, usually well under a watt.",
+                "de": "Ruheverbrauch, gemeldet solange das Licht aus ist. Wirkt nur, wenn eine feste Leistung eingeschaltet gesetzt ist. Bei 0 belassen, sofern nicht anders gemessen; eine Leuchte, die im Netz bleibt, zieht durchaus etwas, meist deutlich unter einem Watt."
+              }
+            },
             {
               "id": "fire_and_forget",
               "type": "checkbox",
@@ -19782,6 +19846,38 @@
             "de": "Gerät"
           },
           "children": [
+            {
+              "id": "power_on_watts",
+              "type": "number",
+              "label": {
+                "en": "Fixed power when on (W)",
+                "de": "Feste Leistung eingeschaltet (W)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 3500,
+              "step": 0.1,
+              "hint": {
+                "en": "Report a fixed wattage instead of letting Homey scale its estimate with the brightness. Many LED lamps draw very nearly the same power at every dim level, so an estimate that follows the slider is wrong all day. Enter what the lamp actually draws while on — a plug-in meter reading is the honest source — and the app reports that figure whenever the light is on. 0 = off, leaving Homey to estimate as before.",
+                "de": "Eine feste Wattzahl melden, statt Homey seine Schaetzung mit der Helligkeit herunterrechnen zu lassen. Viele LED-Leuchten ziehen bei jeder Dimmstufe nahezu dasselbe, eine dem Regler folgende Schaetzung ist dann den ganzen Tag falsch. Trage ein, was die Leuchte eingeschaltet wirklich zieht — ein Zwischenstecker-Messgeraet ist die ehrliche Quelle —, und die App meldet diesen Wert, solange das Licht an ist. 0 = aus, dann schaetzt Homey wie bisher."
+              }
+            },
+            {
+              "id": "power_off_watts",
+              "type": "number",
+              "label": {
+                "en": "Fixed power when off (W)",
+                "de": "Feste Leistung ausgeschaltet (W)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 100,
+              "step": 0.1,
+              "hint": {
+                "en": "Standby draw, reported while the light is off. Only used when a fixed power when on is set. Leave at 0 unless you have measured otherwise; a smart lamp that stays on the network does draw something, usually well under a watt.",
+                "de": "Ruheverbrauch, gemeldet solange das Licht aus ist. Wirkt nur, wenn eine feste Leistung eingeschaltet gesetzt ist. Bei 0 belassen, sofern nicht anders gemessen; eine Leuchte, die im Netz bleibt, zieht durchaus etwas, meist deutlich unter einem Watt."
+              }
+            },
             {
               "id": "fire_and_forget",
               "type": "checkbox",
