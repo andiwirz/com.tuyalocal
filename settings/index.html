@@ -468,7 +468,6 @@
         <button class="primary" id="btnBundle">&#128203; Create support bundle</button>
         <span id="bundleStatus" style="font-size:12px;color:#888"></span>
       </div>
-      <div class="note">The bundle is also written to the app log. So instead of pasting it you can create a <strong>Homey diagnostics report</strong> right afterwards and send only its ID — the report then contains the whole bundle. Local keys never appear in it and device IDs are shortened to six characters, so either route is safe to share.</div>
       <div class="note"><strong>Which route to use.</strong> In the <strong>DP Debug</strong> tab, with a device selected, two buttons do the work for you. <strong>Report on GitHub</strong> opens a bug report with driver, versions, protocol and both data point tables already filled in — use it for a reproducible fault that needs fixing. <strong>Copy for forum</strong> puts a forum-ready post on the clipboard, folded into a collapsible block so it does not bury the thread, and opens the topic — use it for a question where other users may well know the answer, as several regulars there do. Pick one: the same report in both places splits the conversation.</div>
       <p style="font-size:12px;color:#666">Collected by hand, the same information comes from three places — one per tab. Useful to know if you only want to send part of it: the first two belong together and neither replaces the other, since one shows what the device does and the other what its data points mean.</p>
       <ol style="font-size:12px;line-height:1.8;color:#333">
@@ -1534,7 +1533,7 @@
           <button class="primary" id="btnBundleFix">&#128203; Create support bundle</button>
           <span id="bundleFixStatus" style="font-size:12px;color:#888"></span>
         </div>
-        <div class="note">Also written to the app log, so instead of pasting it you can create a <strong>Homey diagnostics report</strong> right afterwards and send only its ID. Where to send it: <a href="#" onclick="showTab('help'); jumpToSection('sec-report'); return false;" class="help-link">Help → Reporting device issues</a>.</div>
+        <div class="note">Where to send it: <a href="#" onclick="showTab('help'); jumpToSection('sec-report'); return false;" class="help-link">Help → Reporting device issues</a>.</div>
       </div>
 
       <!-- First of the checks: a wrong key is the one fault that stops a device working
