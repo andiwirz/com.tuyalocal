@@ -23540,6 +23540,13 @@
                   }
                 },
                 {
+                  "id": "0.1",
+                  "label": {
+                    "en": "0.1 — raw value is kWh × 10",
+                    "de": "0,1 — Rohwert ist kWh × 10"
+                  }
+                },
+                {
                   "id": "1",
                   "label": {
                     "en": "1 — raw value is kWh",
@@ -23566,6 +23573,13 @@
                   "label": {
                     "en": "0.01 — raw value is kWh × 100 (default)",
                     "de": "0,01 — Rohwert ist kWh × 100 (Standard)"
+                  }
+                },
+                {
+                  "id": "0.1",
+                  "label": {
+                    "en": "0.1 — raw value is kWh × 10",
+                    "de": "0,1 — Rohwert ist kWh × 10"
                   }
                 },
                 {
@@ -23662,6 +23676,221 @@
               "hint": {
                 "en": "Three-phase chargers only (typically 8). Set to 0 for single-phase units.",
                 "de": "Nur bei dreiphasigen Wallboxen (typisch 8). Bei einphasigen Geräten 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_voltage_a",
+              "type": "number",
+              "label": {
+                "en": "Voltage DP, phase A / L1",
+                "de": "Spannungs-DP, Phase A / L1"
+              },
+              "value": 0,
+              "hint": {
+                "en": "Only for chargers that report this as a plain number rather than inside the packed phase DP above. Leave both kinds configured and the packed one wins. Example: a Feyree reports L1 voltage on DP 102. Set to 0 to disable.",
+                "de": "Nur fuer Wallboxen, die den Wert als schlichte Zahl melden statt im gepackten Phasen-DP darueber. Sind beide gesetzt, gilt der gepackte. Beispiel: eine Feyree meldet die L1-Spannung auf DP 102. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_voltage_b",
+              "type": "number",
+              "label": {
+                "en": "Voltage DP, phase B / L2",
+                "de": "Spannungs-DP, Phase B / L2"
+              },
+              "value": 0,
+              "hint": {
+                "en": "Only for chargers that report this as a plain number rather than inside the packed phase DP above. Leave both kinds configured and the packed one wins. Feyree: DP 103. Set to 0 to disable.",
+                "de": "Nur fuer Wallboxen, die den Wert als schlichte Zahl melden statt im gepackten Phasen-DP darueber. Sind beide gesetzt, gilt der gepackte. Feyree: DP 103. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_voltage_c",
+              "type": "number",
+              "label": {
+                "en": "Voltage DP, phase C / L3",
+                "de": "Spannungs-DP, Phase C / L3"
+              },
+              "value": 0,
+              "hint": {
+                "en": "Only for chargers that report this as a plain number rather than inside the packed phase DP above. Leave both kinds configured and the packed one wins. Feyree: DP 104. Set to 0 to disable.",
+                "de": "Nur fuer Wallboxen, die den Wert als schlichte Zahl melden statt im gepackten Phasen-DP darueber. Sind beide gesetzt, gilt der gepackte. Feyree: DP 104. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_current_a",
+              "type": "number",
+              "label": {
+                "en": "Current DP, phase A / L1",
+                "de": "Strom-DP, Phase A / L1"
+              },
+              "value": 0,
+              "hint": {
+                "en": "Only for chargers that report this as a plain number rather than inside the packed phase DP above. Leave both kinds configured and the packed one wins. Feyree: DP 105. Not to be confused with the charge current DP, which sets the limit rather than reporting what flows. Set to 0 to disable.",
+                "de": "Nur fuer Wallboxen, die den Wert als schlichte Zahl melden statt im gepackten Phasen-DP darueber. Sind beide gesetzt, gilt der gepackte. Feyree: DP 105. Nicht zu verwechseln mit dem Ladestrom-DP, der das Limit setzt, statt den fliessenden Strom zu melden. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_current_b",
+              "type": "number",
+              "label": {
+                "en": "Current DP, phase B / L2",
+                "de": "Strom-DP, Phase B / L2"
+              },
+              "value": 0,
+              "hint": {
+                "en": "Only for chargers that report this as a plain number rather than inside the packed phase DP above. Leave both kinds configured and the packed one wins. Feyree: DP 106. Set to 0 to disable.",
+                "de": "Nur fuer Wallboxen, die den Wert als schlichte Zahl melden statt im gepackten Phasen-DP darueber. Sind beide gesetzt, gilt der gepackte. Feyree: DP 106. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_current_c",
+              "type": "number",
+              "label": {
+                "en": "Current DP, phase C / L3",
+                "de": "Strom-DP, Phase C / L3"
+              },
+              "value": 0,
+              "hint": {
+                "en": "Only for chargers that report this as a plain number rather than inside the packed phase DP above. Leave both kinds configured and the packed one wins. Feyree: DP 107. Set to 0 to disable.",
+                "de": "Nur fuer Wallboxen, die den Wert als schlichte Zahl melden statt im gepackten Phasen-DP darueber. Sind beide gesetzt, gilt der gepackte. Feyree: DP 107. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "voltage_scale",
+              "type": "dropdown",
+              "label": {
+                "en": "Voltage DP scale",
+                "de": "Skalierung Spannungs-DP"
+              },
+              "value": "1",
+              "values": [
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "1 — raw value is volts (default)",
+                    "de": "1 — Rohwert ist Volt (Standard)"
+                  }
+                },
+                {
+                  "id": "0.1",
+                  "label": {
+                    "en": "0.1 — raw value is volts × 10",
+                    "de": "0,1 — Rohwert ist Volt × 10"
+                  }
+                }
+              ],
+              "hint": {
+                "en": "Applies to the separate voltage DPs above, not to the packed phase DP — that one carries its own scaling. A reading of 2359 for 235.9 V means 0.1.",
+                "de": "Gilt fuer die getrennten Spannungs-DPs darueber, nicht fuer den gepackten Phasen-DP — der bringt seine Skalierung mit. Ein Wert von 2359 fuer 235,9 V heisst 0,1."
+              }
+            },
+            {
+              "id": "amp_scale",
+              "type": "dropdown",
+              "label": {
+                "en": "Measured current DP scale",
+                "de": "Skalierung gemessener Strom-DP"
+              },
+              "value": "1",
+              "values": [
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "1 — raw value is amps (default)",
+                    "de": "1 — Rohwert ist Ampere (Standard)"
+                  }
+                },
+                {
+                  "id": "0.1",
+                  "label": {
+                    "en": "0.1 — raw value is amps × 10",
+                    "de": "0,1 — Rohwert ist Ampere × 10"
+                  }
+                },
+                {
+                  "id": "0.01",
+                  "label": {
+                    "en": "0.01 — raw value is amps × 100",
+                    "de": "0,01 — Rohwert ist Ampere × 100"
+                  }
+                }
+              ],
+              "hint": {
+                "en": "Applies to the separate current DPs above — the current that flows. The charge current limit has its own scale setting further up; the two are often different.",
+                "de": "Gilt fuer die getrennten Strom-DPs darueber — den fliessenden Strom. Das Ladestrom-Limit hat weiter oben seine eigene Skalierung; die beiden unterscheiden sich oft."
+              }
+            },
+            {
+              "id": "power_scale",
+              "type": "dropdown",
+              "label": {
+                "en": "Power DP scale",
+                "de": "Skalierung Leistungs-DP"
+              },
+              "value": "1",
+              "values": [
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "1 — raw value is watts (default)",
+                    "de": "1 — Rohwert ist Watt (Standard)"
+                  }
+                },
+                {
+                  "id": "10",
+                  "label": {
+                    "en": "10 — raw value is watts × 10 / hundredths of a kW",
+                    "de": "10 — Rohwert ist Watt × 10 bzw. Hundertstel kW"
+                  }
+                },
+                {
+                  "id": "100",
+                  "label": {
+                    "en": "100 — raw value is tenths of a kW",
+                    "de": "100 — Rohwert ist Zehntel kW"
+                  }
+                },
+                {
+                  "id": "1000",
+                  "label": {
+                    "en": "1000 — raw value is kilowatts",
+                    "de": "1000 — Rohwert ist Kilowatt"
+                  }
+                }
+              ],
+              "hint": {
+                "en": "Multiplier turning the total power DP into watts. Most chargers report watts directly; some report kilowatts. A reading of 110 for 11 kW means 100.",
+                "de": "Faktor, der den Gesamtleistungs-DP in Watt umrechnet. Die meisten Wallboxen melden Watt, manche Kilowatt. Ein Wert von 110 fuer 11 kW heisst 100."
+              }
+            },
+            {
+              "id": "temp_scale",
+              "type": "dropdown",
+              "label": {
+                "en": "Temperature DP scale",
+                "de": "Skalierung Temperatur-DP"
+              },
+              "value": "1",
+              "values": [
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "1 — raw value is degrees (default)",
+                    "de": "1 — Rohwert ist Grad (Standard)"
+                  }
+                },
+                {
+                  "id": "0.1",
+                  "label": {
+                    "en": "0.1 — raw value is degrees × 10",
+                    "de": "0,1 — Rohwert ist Grad × 10"
+                  }
+                }
+              ],
+              "hint": {
+                "en": "A reading of 435 for 43.5 °C means 0.1.",
+                "de": "Ein Wert von 435 fuer 43,5 °C heisst 0,1."
               }
             },
             {

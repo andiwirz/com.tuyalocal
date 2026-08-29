@@ -83,17 +83,22 @@ const OPTIONAL_CAPABILITIES = [
   { setting: 'dp_temperature',      capability: 'measure_temperature'   },
   { setting: 'dp_session_energy',   capability: 'charge_session_energy' },
   { setting: 'dp_timer_on',         capability: 'charge_delay_hours'    },
-  // Voltage and current come only from the packed phase DP. measure_power is
-  // deliberately not optional — the SDK expects it on an EV charger, and the
-  // "estimate" energy source can populate it without a power DP.
-  { setting: 'dp_phase_a',          capability: 'measure_voltage'       },
-  { setting: 'dp_phase_a',          capability: 'measure_current'       },
+  // Voltage and current arrive one of two ways, and either justifies the capability:
+  // the packed phase DP, or a plain numeric DP per quantity. The array form of
+  // `setting` is what _syncOptionalCapabilities takes for exactly this case.
+  //
+  // measure_power is deliberately not optional — the SDK expects it on an EV charger,
+  // and the "estimate" energy source can populate it without a power DP.
+  { setting: ['dp_phase_a', 'dp_voltage_a'], capability: 'measure_voltage'   },
+  { setting: ['dp_phase_a', 'dp_current_a'], capability: 'measure_current'   },
   // Phase B / C — only present on three-phase chargers
-  { setting: 'dp_phase_b',          capability: 'measure_voltage.b'     },
-  { setting: 'dp_phase_b',          capability: 'measure_current.b'     },
+  { setting: ['dp_phase_b', 'dp_voltage_b'], capability: 'measure_voltage.b' },
+  { setting: ['dp_phase_b', 'dp_current_b'], capability: 'measure_current.b' },
+  // Per-phase power stays tied to the packed DP: a charger that reports voltage and
+  // current separately gives no per-phase power to show, only a total.
   { setting: 'dp_phase_b',          capability: 'measure_power.b'       },
-  { setting: 'dp_phase_c',          capability: 'measure_voltage.c'     },
-  { setting: 'dp_phase_c',          capability: 'measure_current.c'     },
+  { setting: ['dp_phase_c', 'dp_voltage_c'], capability: 'measure_voltage.c' },
+  { setting: ['dp_phase_c', 'dp_current_c'], capability: 'measure_current.c' },
   { setting: 'dp_phase_c',          capability: 'measure_power.c'       },
 ];
 
@@ -336,16 +341,29 @@ class EvChargerDevice extends BaseTuyaDevice {
   }
 
   /** Writes a parsed phase to the given capability suffix ('' | '.b' | '.c'). */
+  /**
+   * Ein einzelner Messwert einer Phase.
+   *
+   * Der gepackte Phasen-DP bringt Spannung, Strom und Leistung in einem Paket; Lader,
+   * die sie getrennt melden, liefern je DP nur eine Groesse. Beide Wege enden hier,
+   * damit Rundung und Faehigkeitsnamen an einer Stelle stehen und nicht auseinander
+   * laufen koennen.
+   *
+   * @param {'voltage'|'current'} art
+   * @param {string} suffix  '' fuer Phase A, '.b' / '.c' fuer die uebrigen
+   */
+  async _applyPhaseField(art, suffix, wert) {
+    const name = art === 'voltage' ? `measure_voltage${suffix}` : `measure_current${suffix}`;
+    if (!this.hasCapability(name)) return;
+    // Spannung auf ein Zehntel, Strom auf ein Hundertstel - wie bisher im gepackten Weg.
+    const genau = art === 'voltage' ? 10 : 100;
+    await this.setCapabilityValue(name, Math.round(wert * genau) / genau).catch(() => {});
+  }
+
   async _applyPhase(parsed, suffix) {
-    const v = `measure_voltage${suffix}`;
-    const c = `measure_current${suffix}`;
     const p = `measure_power${suffix}`;
-    if (this.hasCapability(v)) {
-      await this.setCapabilityValue(v, Math.round(parsed.voltage * 10) / 10).catch(() => {});
-    }
-    if (this.hasCapability(c)) {
-      await this.setCapabilityValue(c, Math.round(parsed.current * 100) / 100).catch(() => {});
-    }
+    await this._applyPhaseField('voltage', suffix, parsed.voltage);
+    await this._applyPhaseField('current', suffix, parsed.current);
     // Total power (DP 9) wins over per-phase power for the main measure_power
     // tile, so only write it here when no total-power DP is configured.
     if (this.hasCapability(p) && (suffix !== '' || this.getSetting('dp_power_total') <= 0)) {
@@ -602,7 +620,11 @@ class EvChargerDevice extends BaseTuyaDevice {
 
       // ── Total power (DP 9) / single-phase power (DP 5) ────────────────────
       if (settings.dp_power_total > 0 && dp === settings.dp_power_total) {
-        await this.setCapabilityValue('measure_power', Math.round(Number(value))).catch(() => {});
+        // Most chargers report watts, so the factor defaults to 1 and this line does
+        // what it always did. Some report tenths of a kilowatt - 110 for 11 kW - and
+        // without a factor that showed up as 110 W.
+        const watt = Number(value) * this._scaleOf('power_scale', 1);
+        await this.setCapabilityValue('measure_power', Math.round(watt)).catch(() => {});
         continue;
       }
 
@@ -618,6 +640,32 @@ class EvChargerDevice extends BaseTuyaDevice {
           continue;
         }
         await this._applyPhase(parsed, phaseSuffix);
+        continue;
+      }
+
+      // ── Voltage / current as plain numbers, one DP each ──────────────────
+      //
+      // Newer chargers - a reported Feyree among them - report per-phase voltage on
+      // 102/103/104 and current on 105/106/107 as ordinary numbers instead of the
+      // packed phase DP above. That DP goes through _parsePhase, which expects a raw
+      // buffer, so these values had nowhere to go and both capabilities stayed empty.
+      //
+      // Behind their own settings, all defaulting to 0: an existing device has none of
+      // these set, reaches this point with no match, and carries on exactly as before.
+      const einzeln = [
+        ['dp_voltage_a', 'voltage', '',   'voltage_scale'],
+        ['dp_voltage_b', 'voltage', '.b', 'voltage_scale'],
+        ['dp_voltage_c', 'voltage', '.c', 'voltage_scale'],
+        ['dp_current_a', 'current', '',   'amp_scale'],
+        ['dp_current_b', 'current', '.b', 'amp_scale'],
+        ['dp_current_c', 'current', '.c', 'amp_scale'],
+      ].find(([key]) => settings[key] > 0 && dp === settings[key]);
+      if (einzeln) {
+        const [, art, suffix, faktor] = einzeln;
+        const zahl = Number(value);
+        if (Number.isFinite(zahl)) {
+          await this._applyPhaseField(art, suffix, zahl * this._scaleOf(faktor, 1));
+        }
         continue;
       }
 
@@ -694,7 +742,10 @@ class EvChargerDevice extends BaseTuyaDevice {
       // ── Temperature ──────────────────────────────────────────────────────
       if (settings.dp_temperature > 0 && dp === settings.dp_temperature) {
         if (this.hasCapability('measure_temperature')) {
-          await this.setCapabilityValue('measure_temperature', Number(value)).catch(() => {});
+          // Vorgabe 1: unveraendert wie bisher. 435 fuer 43,5 Grad braucht 0,1.
+          const grad = Number(value) * this._scaleOf('temp_scale', 1);
+          await this.setCapabilityValue('measure_temperature',
+            Math.round(grad * 10) / 10).catch(() => {});
         }
         continue;
       }
@@ -781,7 +832,8 @@ class EvChargerDevice extends BaseTuyaDevice {
     }
     // A corrected scale changes how existing readings should be interpreted, so
     // pull fresh values rather than leaving the old ones on screen.
-    if (changedKeys.some((k) => ['current_scale', 'session_energy_scale', 'total_energy_scale'].includes(k))) {
+    if (changedKeys.some((k) => ['current_scale', 'session_energy_scale', 'total_energy_scale',
+      'voltage_scale', 'amp_scale', 'power_scale', 'temp_scale'].includes(k))) {
       this._lastDps = {}; // clear dedup so the next poll re-applies every DP
       this.pollNow().catch(() => {});
     }
