@@ -29,6 +29,49 @@ class LevelSensorDevice extends BaseTuyaDevice {
   }
 
   /**
+   * Nach dem Verbinden ausdruecklich nach den Einstell-DPs fragen.
+   *
+   * Ein Tuya-Geraet schickt von sich aus, was sich aendert. Die Schwellen, die
+   * Einbaumasse und die beiden Alarmschalter aendern sich nie - sie sind Einstellungen
+   * im Geraet -, also kommen sie nie an, und die Felder, die sie anzeigen sollen,
+   * bleiben leer. In einem gemeldeten Fall waren nach vollstaendiger Neuinstallation
+   * genau die zwei gefuellt, die der Nutzer kurz zuvor in der Hersteller-App verstellt
+   * hatte; die uebrigen vier standen auf "—".
+   *
+   * Die Statusabfrage hilft nicht: sie liefert, was das Geraet zu liefern beschliesst.
+   * Wonach ausdruecklich gefragt werden kann, ist der DP_REFRESH, und der nimmt eine
+   * Liste von DP-Nummern entgegen.
+   *
+   * Etwas Abstand zum Verbindungsaufbau, damit die Anfrage nicht mit der ersten
+   * Statusabfrage zusammenfaellt - manche Firmware beantwortet nur eine von beiden.
+   */
+  _onConnected() {
+    clearTimeout(this._configRefreshTimer);
+    this._configRefreshTimer = setTimeout(() => {
+      const dps = this._configDps();
+      if (dps.length > 0) this._conn?.refresh(dps).catch(() => {});
+    }, 1500);
+  }
+
+  /**
+   * Die DP-Nummern, die dieses Geraet fuer seine Einstellungen fuehrt.
+   *
+   * Nur die, die still sind. Fuellstand, Tiefe und Zustand kommen von selbst und
+   * gehoeren nicht in eine Nachfrage, die ohnehin nicht jedes Geraet beantwortet.
+   */
+  async onDeleted() {
+    clearTimeout(this._configRefreshTimer);
+    await super.onDeleted();
+  }
+
+  _configDps() {
+    return ['dp_max_set', 'dp_mini_set', 'dp_install_height', 'dp_depth_full',
+      'dp_upper_switch', 'dp_lower_switch']
+      .map((k) => Number(this.getSetting(k)) || 0)
+      .filter((dp) => dp > 0);
+  }
+
+  /**
    * The two alarm tokens, taken from the declared list rather than written in.
    *
    * Which token means "too low" differs between models, and the list itself comes
