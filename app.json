@@ -15587,6 +15587,19 @@
           },
           "children": [
             {
+              "id": "aggregate_main",
+              "type": "checkbox",
+              "label": {
+                "en": "Main switch controls all channels",
+                "de": "Hauptschalter steuert alle Kanäle"
+              },
+              "value": false,
+              "hint": {
+                "en": "On a multi-gang switch the main on/off is channel 1 — the one the tile, a dashboard and a voice assistant reach. \"Kitchen off\" then switches one channel of two. Switch this on and the main on/off becomes all channels at once: on switches them all on, off switches them all off whatever they were doing, and it reads as on while any one of them is on, including after someone used the switch on the wall. Channel 1 moves to its own control beside the others. Off by default, because it changes what an existing flow on the main on/off does.",
+                "de": "Bei einem Mehrfachschalter ist das Haupt-Ein/Aus der Kanal 1 — jene Fähigkeit, die die Kachel trägt, die ein Dashboard zeigt und die ein Sprachassistent bedient. „Küche aus\" schaltet damit einen von zwei Kanälen. Eingeschaltet wird das Haupt-Ein/Aus zur Summe aller Kanäle: ein schaltet alle ein, aus schaltet alle aus, gleich was sie gerade taten, und es steht auf ein, solange einer von ihnen an ist — auch wenn jemand am Schalter selbst gedrückt hat. Kanal 1 zieht auf einen eigenen Regler neben die anderen um. Ab Werk aus, weil es ändert, was ein bestehender Flow auf dem Haupt-Ein/Aus bewirkt."
+              }
+            },
+            {
               "id": "dp_switch_1",
               "type": "number",
               "label": {

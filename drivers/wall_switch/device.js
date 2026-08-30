@@ -11,6 +11,9 @@ const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 // DP 8  countdown_2   : integer seconds â€” countdown timer for gang 2
 // DP 14 relay_status  : enum off|on|last â€” power-on behavior
 
+// Die Faehigkeit von Kanal 1 haengt an der Einstellung: ohne Sammelschalter traegt er
+// das blosse `onoff` wie bisher, mit ihm zieht er auf `onoff.1` um und `onoff` wird die
+// Summe. Siehe _gangCapability - GANG_CAPS.capability ist darum nur die Vorgabe.
 const GANG_CAPS = [
   { gang: 1, settingKey: 'dp_switch_1', nameSetting: 'name_switch_1', capability: 'onoff'    },
   { gang: 2, settingKey: 'dp_switch_2', nameSetting: 'name_switch_2', capability: 'onoff.2'  },
@@ -49,41 +52,129 @@ class WallSwitchDevice extends BaseTuyaDevice {
 
   // â”€â”€ Gang capability sync â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  async _syncGangCapabilities() {
-    for (const gang of GANG_CAPS) {
-      const dp = this.getSetting(gang.settingKey) || 0;
+  /** True, solange der Hauptschalter alle Kanaele zusammenfassen soll. */
+  get _aggregating() {
+    return this.getSetting('aggregate_main') === true;
+  }
 
-      if (dp > 0 && !this.hasCapability(gang.capability)) {
-        await this.addCapability(gang.capability);
-      } else if (dp <= 0 && gang.gang > 1 && this.hasCapability(gang.capability)) {
-        await this.removeCapability(gang.capability);
+  /**
+   * Welche Faehigkeit dieser Kanal gerade traegt.
+   *
+   * Nur Kanal 1 wandert: ohne Sammelschalter das blosse `onoff` - die Faehigkeit, die
+   * Kachel, Dashboard und Sprachassistent bedienen -, mit ihm `onoff.1`, damit `onoff`
+   * fuer die Summe frei wird. Genau daran haengt der gemeldete Fall: eine zusaetzliche
+   * Unterfaehigkeit haette das Problem nicht geloest, weil jene drei weiterhin bei
+   * Kanal 1 gelandet waeren.
+   */
+  _gangCapability(gang) {
+    if (gang.gang !== 1) return gang.capability;
+    return this._aggregating ? 'onoff.1' : 'onoff';
+  }
+
+  /** Alle Kanaele, die eine DP-Nummer haben. */
+  _activeGangs() {
+    return GANG_CAPS.filter((g) => (this.getSetting(g.settingKey) || 0) > 0);
+  }
+
+  async _syncGangCapabilities() {
+    // `onoff` bleibt in beiden Betriebsarten bestehen - es ist die Hauptfaehigkeit und
+    // darf nie fehlen; nur seine Bedeutung wechselt. Umziehen muss allein Kanal 1.
+    const einsHat = this._aggregating ? 'onoff.1' : 'onoff';
+    const einsWeg = this._aggregating ? 'onoff' : 'onoff.1';
+    if (einsWeg === 'onoff.1' && this.hasCapability('onoff.1')) {
+      await this.removeCapability('onoff.1').catch(() => {});
+    }
+    if ((this.getSetting('dp_switch_1') || 0) > 0 && !this.hasCapability(einsHat)) {
+      await this.addCapability(einsHat).catch(() => {});
+    }
+
+    for (const gang of GANG_CAPS) {
+      const dp  = this.getSetting(gang.settingKey) || 0;
+      const cap = this._gangCapability(gang);
+
+      if (dp > 0 && !this.hasCapability(cap)) {
+        await this.addCapability(cap);
+      } else if (dp <= 0 && gang.gang > 1 && this.hasCapability(cap)) {
+        await this.removeCapability(cap);
         continue;
       }
 
-      if (dp > 0 && this.hasCapability(gang.capability)) {
+      if (dp > 0 && this.hasCapability(cap)) {
         await this._setGangTitle(gang);
       }
     }
+
+    if (this._aggregating) await this._setAggregateTitle();
+  }
+
+  /** Der Sammelschalter heisst nach dem, was er tut, nicht nach Kanal 1. */
+  async _setAggregateTitle() {
+    await this._setCapabilityOptionsIfChanged('onoff', {
+      title: { en: 'All channels', de: 'Alle Kanäle' },
+    }).catch(() => {});
+  }
+
+  /**
+   * Den Sammelwert aus den Kanaelen nachziehen: ein, sobald einer an ist.
+   *
+   * Ausdruecklich mit setCapabilityValue und nie ueber den Listener - sonst schriebe das
+   * Nachziehen wieder Befehle aufs Geraet und die Schleife waere da, die zu vermeiden
+   * ausdruecklich verlangt war.
+   */
+  async _updateAggregate(vorgriffGang, vorgriffWert) {
+    if (!this._aggregating || !this.hasCapability('onoff')) return;
+    const irgendeinerAn = this._activeGangs().some((g) => {
+      if (g.gang === vorgriffGang) return vorgriffWert === true;
+      const cap = this._gangCapability(g);
+      return this.hasCapability(cap) && this.getCapabilityValue(cap) === true;
+    });
+    if (this.getCapabilityValue('onoff') === irgendeinerAn) return;
+    await this.setCapabilityValue('onoff', irgendeinerAn).catch(() => {});
   }
 
   async _setGangTitle(gang) {
     const customName = (this.getSetting(gang.nameSetting) || '').trim();
-    const defaultEn  = gang.gang === 1 ? 'Power' : `Switch ${gang.gang}`;
-    const defaultDe  = gang.gang === 1 ? 'Ein/Aus' : `Schalter ${gang.gang}`;
+    // Neben einem Sammelschalter heisst Kanal 1 "Schalter 1" wie seine Geschwister;
+    // allein traegt er weiterhin "Ein/Aus", weil er dann das Geraet selbst ist.
+    const eigen     = gang.gang === 1 && this._aggregating;
+    const defaultEn = gang.gang === 1 && !eigen ? 'Power' : `Switch ${gang.gang}`;
+    const defaultDe = gang.gang === 1 && !eigen ? 'Ein/Aus' : `Schalter ${gang.gang}`;
     const title = customName
       ? { en: customName, de: customName }
       : { en: defaultEn, de: defaultDe };
-    await this._setCapabilityOptionsIfChanged(gang.capability, { title }).catch(() => {});
+    await this._setCapabilityOptionsIfChanged(this._gangCapability(gang), { title })
+      .catch(() => {});
   }
 
   _registerGangListeners() {
     for (const gang of GANG_CAPS) {
-      const dp = this.getSetting(gang.settingKey) || 0;
-      if (dp > 0 && this.hasCapability(gang.capability)) {
-        this.registerCapabilityListener(gang.capability, async (value) => {
+      const dp  = this.getSetting(gang.settingKey) || 0;
+      const cap = this._gangCapability(gang);
+      if (dp > 0 && this.hasCapability(cap)) {
+        this.registerCapabilityListener(cap, async (value) => {
           await this._set(dp, value);
+          // Der Sammelwert folgt der Faehigkeit, die Homey gleich setzt - hier steht
+          // noch der alte Wert, also wird er mitgegeben.
+          await this._updateAggregate(gang.gang, value);
         });
       }
+    }
+
+    // Der Sammelschalter selbst. Jeder eingerichtete Kanal bekommt den Befehl, auch der,
+    // der schon so steht: "aus schaltet immer alle aus" war die ausdrueckliche Vorgabe,
+    // und ein uebersprungener Kanal waere genau das Loch darin - nach einem Griff an die
+    // Wand weiss die App nicht sicher, was jeder Kanal gerade tut.
+    if (this._aggregating && this.hasCapability('onoff')) {
+      this.registerCapabilityListener('onoff', async (value) => {
+        for (const gang of this._activeGangs()) {
+          const dp = this.getSetting(gang.settingKey) || 0;
+          await this._set(dp, value).catch(() => {});
+          const cap = this._gangCapability(gang);
+          if (this.hasCapability(cap)) {
+            await this.setCapabilityValue(cap, value).catch(() => {});
+          }
+        }
+      });
     }
   }
 
@@ -115,9 +206,13 @@ class WallSwitchDevice extends BaseTuyaDevice {
         return gDp > 0 && dp === gDp;
       });
 
-      if (gangEntry && this.hasCapability(gangEntry.capability)) {
+      const gangCap = gangEntry ? this._gangCapability(gangEntry) : null;
+      if (gangEntry && this.hasCapability(gangCap)) {
         const bool = Boolean(value);
-        await this.setCapabilityValue(gangEntry.capability, bool).catch(() => {});
+        await this.setCapabilityValue(gangCap, bool).catch(() => {});
+        // Auch ein Griff an die Wand zieht den Sammelschalter nach - das war die
+        // Anforderung, die eine reine Befehlsverdrahtung nicht erfuellt haette.
+        await this._updateAggregate();
 
         // Only fire trigger if the gang state ACTUALLY changed â€” prevents spurious
         // triggers on reconnect (when _lastDps is cleared and all DPs re-process).
@@ -155,6 +250,13 @@ class WallSwitchDevice extends BaseTuyaDevice {
   // â”€â”€ Homey lifecycle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async onSettings({ changedKeys }) {
+    // Der Sammelschalter aendert, welche Faehigkeit Kanal 1 traegt - das muss vor allem
+    // anderen geschehen, sonst melden sich die Listener auf der alten an.
+    if (changedKeys.includes('aggregate_main')) {
+      await this._syncGangCapabilities();
+      this._registerGangListeners();
+      await this._updateAggregate();
+    }
     const connectionKeys = ['ip', 'device_id', 'local_key', 'version'];
     if (changedKeys.some((k) => connectionKeys.includes(k))) {
       this.log('Connection settings changed, reconnecting');
