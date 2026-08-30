@@ -636,7 +636,27 @@ class EvChargerDevice extends BaseTuyaDevice {
       if (phaseSuffix !== null) {
         const parsed = this._parsePhase(value);
         if (!parsed) {
-          this._appLog(`phase${phaseSuffix || '_a'}: could not parse raw DP ${dp} value`, 'warn');
+          // Einmal je DP: das Geraet meldet mehrmals pro Sekunde, und derselbe Rat
+          // hundertmal ist keiner mehr.
+          if (!this._phaseHinted?.has(dp)) {
+            (this._phaseHinted = this._phaseHinted || new Set()).add(dp);
+            const phase = phaseSuffix === '.b' ? 'B / L2'
+              : phaseSuffix === '.c' ? 'C / L3' : 'A / L1';
+            // Eine blanke Zahl ist die haeufigste Ursache, und sie hat eine genaue
+            // Antwort: der Wert gehoert in eines der Einzelfelder. Ein gemeldeter
+            // Charger hatte alle drei Phasenfelder mit Spannungs-DPs belegt, weil die
+            // gepackten Felder in der Liste zuoberst stehen und man sechs Zahlen in
+            // sechs Felder der Reihe nach eintraegt.
+            const zahl = typeof value === 'number';
+            this._appLog(
+              `DP ${dp} is set as the packed phase ${phase} DP, but it carries `
+              + `${zahl ? `a plain number (${value})` : 'no readable packed data'} — that `
+              + 'field expects voltage, current and power in one raw packet. If this DP '
+              + `holds only one of them, clear "Phase ${phase} DP" and enter ${dp} in `
+              + `"Voltage DP, phase ${phase}" or "Current DP, phase ${phase}" instead. `
+              + 'The manufacturer\'s DP list under Cloud Lookup says which it is.',
+              'warn');
+          }
           continue;
         }
         await this._applyPhase(parsed, phaseSuffix);
