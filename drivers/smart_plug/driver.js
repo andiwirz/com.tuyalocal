@@ -6,7 +6,7 @@ const { setupCloudLookup } = require('../../lib/pairCloudLookup');
 const { describeConnectFailure } = require('../../lib/connectFailure');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
-const { detectViaCloud, guessedDefaults }        = require('../../lib/dpCodeMap');
+const { detectViaCloud, guessedDefaults, shiftedEnergyBlock } = require('../../lib/dpCodeMap');
 
 // Maps this driver's settings keys to the Tuya cloud "code" names that
 // commonly represent them. See lib/dpCodeMap.js. dp_power_factor is omitted
@@ -225,6 +225,13 @@ class SmartPlugDriver extends Homey.Driver {
       dp_countdown:     0,   // disabled by default
     };
 
+    // Die verschobene Belegung 20/21/22/23, bevor die Regeln nach Nummer greifen: dort
+    // ist DP 21 der Strom, waehrend die Regel weiter unten ihn ausdruecklich meidet,
+    // weil er auf den meisten Steckdosen "test_bit" heisst. Als Teil dieses Blocks ist
+    // er es nicht - 13216 Milliampere sind kein Werksmerker. Siehe shiftedEnergyBlock.
+    const verschoben = shiftedEnergyBlock(dps);
+    if (verschoben) Object.assign(result, verschoben);
+
     // Collect all boolean DPs first, then prefer DP 1 — the Tuya spec
     // assigns on/off to DP 1 in the vast majority of devices.
     const boolDps = Object.entries(dps)
@@ -236,6 +243,8 @@ class SmartPlugDriver extends Homey.Driver {
 
     for (const [dpStr, val] of Object.entries(dps)) {
       const dp = parseInt(dpStr, 10);
+      // Was der verschobene Block schon vergeben hat, bleibt vergeben.
+      if (verschoben && [20, 21, 22, 23].includes(dp)) continue;
       if (typeof val === 'boolean') {
         // Already handled above — skip
       } else if (typeof val === 'number') {

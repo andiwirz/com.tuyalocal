@@ -6,7 +6,7 @@ const { setupCloudLookup }      = require('../../lib/pairCloudLookup');
 const { describeConnectFailure } = require('../../lib/connectFailure');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
-const { detectViaCloud, guessedDefaults } = require('../../lib/dpCodeMap');
+const { detectViaCloud, guessedDefaults, shiftedEnergyBlock } = require('../../lib/dpCodeMap');
 
 // Defaults are the classic Tuya metering block, which is what the reported meter
 // uses and what the majority of single-phase devices in the tuya-local catalogue
@@ -119,6 +119,20 @@ class EnergyMeterDriver extends Homey.Driver {
     // sits squarely inside the band that would otherwise identify a mains voltage. The
     // first draft of this method read the reported meter's current as its voltage and
     // then found no current at all.
+    // Erst die verschobene Belegung 20/21/22/23 - sie ueberschneidet sich mit dem
+    // herkoemmlichen Block an DP 20, und dort bedeuten sie Gegenteiliges. Ohne diese
+    // Abfrage las ein gemeldeter Lastschalter seine Energie (100 = 0,1 kWh) als
+    // Netzspannung. Siehe shiftedEnergyBlock; sie tritt zurueck, sobald DP 19 da ist.
+    const verschoben = shiftedEnergyBlock(dps);
+    if (verschoben) {
+      Object.assign(result, verschoben);
+      // add_ele traegt Skala 3, dieser Treiber steht auf 0,01. Die Belegung bringt
+      // ihre Skalierung mit; sie hier nicht nachzuziehen hiesse, die Zaehlerstaende
+      // zehnfach zu melden.
+      result.kwh_scale = '0.001';
+      return result;
+    }
+
     const CONVENTIONAL = {
       17: 'dp_energy', 18: 'dp_current', 19: 'dp_power', 20: 'dp_voltage',
     };
