@@ -258,7 +258,7 @@ class FanLightDevice extends BaseTuyaDevice {
     // light tile bundling the mode switch with them, so nothing else puts the lamp
     // into colour mode. Sent first, and only when it is not already there.
     await this._ensureColourMode();
-    await this._set(dp, buildColorHex(h, s, v));
+    await this._set(dp, buildColorHex(h, s, v, this._colourFormat));
   }
 
   /** Puts the lamp into colour mode, unless it is there already. */
@@ -366,6 +366,12 @@ class FanLightDevice extends BaseTuyaDevice {
       if (settings.dp_light_colour > 0 && dp === settings.dp_light_colour) {
         const parsed = parseColorHex(String(value));
         if (parsed) {
+          // Was das Geraet meldet, ist das, was es versteht. Die Laenge der
+          // Zeichenkette sagt das eindeutig, also wird in derselben Sprache
+          // geantwortet - siehe lib/tuyaColor.js. Ein gemeldetes Modell erwartete die
+          // lange Form und zeigte auf jede kurze hin gruen, weil es die ersten sechs
+          // Zeichen als RGB liest.
+          this._colourFormat = parsed.format;
           if (this.hasCapability('light_hue')) {
             await this.setCapabilityValue('light_hue', parsed.h / 360).catch(() => {});
           }
