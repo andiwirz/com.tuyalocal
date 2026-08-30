@@ -62,6 +62,13 @@ const DP_PROFILE = [
   { settingKey: 'dp_power_level',  capability: 'power_level',        type: 'number',  settable: false },
 ];
 
+// Welche Einstellung die erlaubten Werte einer Auswahl fuehrt. Stimmen Liste und
+// Geraet nicht ueberein, verpuffen Befehle wortlos - siehe _reconcileEnumToken.
+const ENUM_VALUE_SETTINGS = {
+  heat_pump_mode:   'mode_values',
+  heat_pump_preset: 'preset_values',
+};
+
 const OPTIONAL_CAPABILITIES = [
   { setting: 'dp_mode',        capability: 'heat_pump_mode'  },
   { setting: 'dp_preset',      capability: 'heat_pump_preset'},
@@ -187,6 +194,17 @@ class HeatPumpDevice extends BaseTuyaDevice {
       }
 
       if (!this.hasCapability(entry.capability)) continue;
+
+      // Meldet das Geraet ein Token, das nicht in der Begleitliste steht, ist die Liste
+      // falsch - und Befehle mit einem Wert daraus verpuffen kommentarlos. Ein
+      // gemeldeter Fall hatte mode_values auf "heat,cool,auto", waehrend das Geraet
+      // "warm" meldete und laut Herstellerangabe nur smart/warm/cool kennt: die
+      // Modusauswahl in Homey bot drei Werte an, die keiner war. Siehe
+      // _reconcileEnumToken.
+      const listeZu = ENUM_VALUE_SETTINGS[entry.capability];
+      if (listeZu && typeof value === 'string') {
+        await this._reconcileEnumToken(entry.capability, listeZu, value);
+      }
 
       const div = settings.temp_divisor || 1;
       // current_temp_divisor overrides div for measured temp only (0 = use div)
