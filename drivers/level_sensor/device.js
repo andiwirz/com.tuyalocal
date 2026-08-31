@@ -7,8 +7,12 @@ const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 const OPTIONAL_CAPABILITIES = [
   { setting: 'dp_depth', capability: 'measure_distance'  },
   { setting: 'dp_state', capability: 'liquid_state'      },
-  { setting: 'dp_state', capability: 'alarm_tank_empty'  },
-  { setting: 'dp_state', capability: 'alarm_tank_full'   },
+  // Die beiden Alarme haben zwei moegliche Quellen, und jede rechtfertigt sie: den
+  // Zustands-DP des Geraets, oder eine eigene Schwelle in Homey. Die Array-Form von
+  // `setting` ist genau dafuer da. Wer nur eigene Schwellen setzt, bekommt die Alarme
+  // also auch ohne dp_state.
+  { setting: ['dp_state', 'own_low_percent'],  capability: 'alarm_tank_empty' },
+  { setting: ['dp_state', 'own_high_percent'], capability: 'alarm_tank_full'  },
 ];
 
 class LevelSensorDevice extends BaseTuyaDevice {
@@ -24,6 +28,14 @@ class LevelSensorDevice extends BaseTuyaDevice {
     this._triggerDeviceDisconnected = this.homey.flow.getDeviceTriggerCard('level_sensor_device_disconnected');
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('level_sensor_dp_changed');
     this._triggerStateChanged       = this.homey.flow.getDeviceTriggerCard('level_sensor_state_changed');
+    this._triggerRoseAbove          = this.homey.flow.getDeviceTriggerCard('level_sensor_level_rose_above');
+    this._triggerFellBelow          = this.homey.flow.getDeviceTriggerCard('level_sensor_level_fell_below');
+    // Die Schwelle steht in der Karte, nicht im Geraet: es feuert genau dann, wenn der
+    // Fuellstand sie ueberschreitet - nicht bei jedem Wert darueber.
+    this._triggerRoseAbove.registerRunListener(
+      (args, state) => state.vorher <= args.level && state.jetzt > args.level);
+    this._triggerFellBelow.registerRunListener(
+      (args, state) => state.vorher >= args.level && state.jetzt < args.level);
 
     await this._connect();
   }
@@ -62,6 +74,38 @@ class LevelSensorDevice extends BaseTuyaDevice {
   async onDeleted() {
     clearTimeout(this._configRefreshTimer);
     await super.onDeleted();
+  }
+
+  /** Die eigene Schwelle in Prozent, oder 0 wenn keine gesetzt ist. */
+  _ownThreshold(welche) {
+    const wert = Number(this.getSetting(
+      welche === 'low' ? 'own_low_percent' : 'own_high_percent'));
+    return Number.isFinite(wert) && wert > 0 ? wert : 0;
+  }
+
+  /**
+   * Die Alarme aus dem Fuellstand rechnen, wenn eigene Schwellen gesetzt sind.
+   *
+   * Gemeldeter Grund: die Schwellen im Geraet loesen dessen eigenen Alarm aus und bei
+   * manchen Modellen einen lauten Summer. Sie lassen sich also nicht bloss verschieben,
+   * um in Homey frueher gewarnt zu werden - dafuer braucht es eine zweite, eigene.
+   *
+   * Der liquid_state-Enum bleibt unberuehrt. Der meldet, was das Geraet sagt; ihn zu
+   * verbiegen hiesse, dass Kachel und DP-Debug sich widersprechen. Die Alarme sind der
+   * richtige Ort: sie sind Homeys Urteil, der Enum ist die Auskunft des Geraets.
+   *
+   * @param {number} pct Der Fuellstand in Prozent.
+   */
+  async _applyOwnThresholds(pct) {
+    const niedrig = this._ownThreshold('low');
+    const hoch    = this._ownThreshold('high');
+
+    if (niedrig > 0 && this.hasCapability('alarm_tank_empty')) {
+      await this.setCapabilityValue('alarm_tank_empty', pct <= niedrig).catch(() => {});
+    }
+    if (hoch > 0 && this.hasCapability('alarm_tank_full')) {
+      await this.setCapabilityValue('alarm_tank_full', pct >= hoch).catch(() => {});
+    }
   }
 
   _configDps() {
@@ -158,8 +202,20 @@ class LevelSensorDevice extends BaseTuyaDevice {
 
       // ── Level percentage ──────────────────────────────────────────────────
       if (settings.dp_level_percent > 0 && dp === settings.dp_level_percent) {
-        const pct = Math.max(0, Math.min(100, Number(value)));
+        const pct    = Math.max(0, Math.min(100, Number(value)));
+        const vorher = this.getCapabilityValue('liquid_level');
         await this.setCapabilityValue('liquid_level', pct).catch(() => {});
+
+        // Die Ausloeser bekommen beide Werte und entscheiden in ihrem Run-Listener, ob
+        // die Schwelle dazwischen liegt. Der erste Wert nach dem Verbinden loest nicht
+        // aus: davor steht null, und das ist kein Uebergang, sondern der erste Blick.
+        if (typeof vorher === 'number' && vorher !== pct) {
+          const zustand = { vorher, jetzt: pct };
+          this._triggerRoseAbove.trigger(this, { level: pct }, zustand).catch(() => {});
+          this._triggerFellBelow.trigger(this, { level: pct }, zustand).catch(() => {});
+        }
+
+        await this._applyOwnThresholds(pct);
         continue;
       }
 
@@ -188,11 +244,14 @@ class LevelSensorDevice extends BaseTuyaDevice {
               .catch(() => {});
           }
         }
-        if (this.hasCapability('alarm_tank_empty')) {
+        // Eine eigene Schwelle hat Vorrang: sie ist der Grund, warum es sie gibt.
+        // Wer sie setzt, will frueher gewarnt werden, als das Geraet es tut - und
+        // dessen Zustand wuerde die Warnung sonst gleich wieder zuruecknehmen.
+        if (this.hasCapability('alarm_tank_empty') && !(this._ownThreshold('low') > 0)) {
           await this.setCapabilityValue('alarm_tank_empty', low !== null && token === low)
             .catch(() => {});
         }
-        if (this.hasCapability('alarm_tank_full')) {
+        if (this.hasCapability('alarm_tank_full') && !(this._ownThreshold('high') > 0)) {
           await this.setCapabilityValue('alarm_tank_full', high !== null && token === high)
             .catch(() => {});
         }

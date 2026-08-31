@@ -2678,6 +2678,84 @@
         ]
       },
       {
+        "id": "level_sensor_level_rose_above",
+        "title": {
+          "en": "Liquid level rose above",
+          "de": "Füllstand ist über einen Wert gestiegen"
+        },
+        "titleFormatted": {
+          "en": "Liquid level rose above [[level]]%",
+          "de": "Füllstand ist ueber [[level]]% gestiegen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=level_sensor"
+          },
+          {
+            "name": "level",
+            "type": "number",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "placeholder": {
+              "en": "Level (%)",
+              "de": "Füllstand (%)"
+            }
+          }
+        ],
+        "tokens": [
+          {
+            "name": "level",
+            "type": "number",
+            "title": {
+              "en": "Liquid level",
+              "de": "Füllstand"
+            }
+          }
+        ]
+      },
+      {
+        "id": "level_sensor_level_fell_below",
+        "title": {
+          "en": "Liquid level dropped below",
+          "de": "Füllstand ist unter einen Wert gefallen"
+        },
+        "titleFormatted": {
+          "en": "Liquid level dropped below [[level]]%",
+          "de": "Füllstand ist unter [[level]]% gefallen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=level_sensor"
+          },
+          {
+            "name": "level",
+            "type": "number",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "placeholder": {
+              "en": "Level (%)",
+              "de": "Füllstand (%)"
+            }
+          }
+        ],
+        "tokens": [
+          {
+            "name": "level",
+            "type": "number",
+            "title": {
+              "en": "Liquid level",
+              "de": "Füllstand"
+            }
+          }
+        ]
+      },
+      {
         "id": "dehumidifier_humidity_above",
         "title": {
           "en": "Humidity went above threshold",
@@ -13810,6 +13888,38 @@
             "de": "Schwellen und Einbaumaße"
           },
           "children": [
+            {
+              "id": "own_low_percent",
+              "type": "number",
+              "label": {
+                "en": "Own low alarm at (%)",
+                "de": "Eigener Leer-Alarm bei (%)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 100,
+              "step": 1,
+              "hint": {
+                "en": "Raise the empty alarm in Homey as soon as the level falls to this percentage. Independent of the thresholds stored in the device: those are what makes the unit itself alarm, and on some models sound a buzzer, so they cannot be moved just to get an earlier warning in Homey. 0 = off, and the alarm then follows the device's own level state as before.",
+                "de": "Den Leer-Alarm in Homey auslösen, sobald der Füllstand auf diesen Prozentwert fällt. Unabhängig von den Schwellen im Gerät: die lösen dessen eigenen Alarm aus und bei manchen Modellen einen Summer, lassen sich also nicht bloß verschieben, um in Homey früher gewarnt zu werden. 0 = aus, dann folgt der Alarm wie bisher dem Füllstandszustand des Geräts."
+              }
+            },
+            {
+              "id": "own_high_percent",
+              "type": "number",
+              "label": {
+                "en": "Own full alarm at (%)",
+                "de": "Eigener Voll-Alarm bei (%)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 100,
+              "step": 1,
+              "hint": {
+                "en": "Raise the full alarm in Homey as soon as the level reaches this percentage. Independent of the thresholds stored in the device: those are what makes the unit itself alarm, and on some models sound a buzzer, so they cannot be moved just to get an earlier warning in Homey. 0 = off, and the alarm then follows the device's own level state as before.",
+                "de": "Den Voll-Alarm in Homey auslösen, sobald der Füllstand diesen Prozentwert erreicht. Unabhängig von den Schwellen im Gerät: die lösen dessen eigenen Alarm aus und bei manchen Modellen einen Summer, lassen sich also nicht bloß verschieben, um in Homey früher gewarnt zu werden. 0 = aus, dann folgt der Alarm wie bisher dem Füllstandszustand des Geräts."
+              }
+            },
             {
               "id": "dp_max_set",
               "type": "number",
