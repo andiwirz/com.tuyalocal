@@ -142,6 +142,26 @@ class TuyaLocalApp extends Homey.App {
     if (msg.includes('HMAC mismatch')) {
       return ' — Local Key is incorrect or has been rotated. Get the current key from Tuya IoT Platform and update it via the device Repair screen. If the key is correct, try switching to protocol Auto-detect in Repair — the device may have upgraded from 3.3 to 3.4.';
     }
+    // Die haeufigste Meldung ueberhaupt, und bisher die einzige ohne Rat. Sie kommt
+    // aus der Bibliothek, wenn der TCP-Verbindungsaufbau in seine Zeitgrenze laeuft -
+    // und das Netzsegment einer App, die vierzig Geraete fuehrt, ist selten die
+    // Ursache; ein einzelnes Geraet ist es.
+    // "Handshake timed out" ist ausgenommen: dort hat das Geraet die Verbindung sehr
+    // wohl angenommen und nur den Schluesseltausch nicht zu Ende gebracht - das ist ein
+    // Versionsproblem, und TuyaConnection._failureHint sagt es dort schon richtig.
+    if (msg.includes('Handshake timed out')) {
+      return ' — the device accepted the connection but never completed the key exchange,'
+        + ' which usually means it does not speak the protocol version being tried. The app'
+        + ' rotates through the others on its own.';
+    }
+    if (msg.includes('timed out') || msg.includes('ETIMEDOUT')) {
+      return ' — nothing answered at that address within the connect window. The device'
+        + ' is switched off, asleep, or its IP has changed; a fixed address in the router'
+        + ' prevents the last one. It can also mean the device already holds its single'
+        + ' local connection open for something else — the Tuya or Smart Life app, another'
+        + ' integration, or a second entry in this app pointing at the same address. The'
+        + ' protocol version is not the cause here.';
+    }
     if (msg.includes('ECONNRESET') || msg.includes('ECONNREFUSED')) {
       return ' — likely protocol version mismatch. Use Auto-detect in the device Repair screen.';
     }
