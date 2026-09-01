@@ -1340,8 +1340,8 @@ All DPs are auto-detected at pairing time. For AOSD and BoboYun, `dp_door_action
 | Humidity dropped below threshold | threshold (%) | `humidity`, `prevHumidity`, `trend` |
 | Water tank became full | — | — |
 | Water tank was emptied | — | — |
-| Device connected | — | — |
-| Device disconnected | — | — |
+| Dehumidifier connected | — | — |
+| Dehumidifier disconnected | — | — |
 | A data point changed | — | `dp` (string), `value` (string) |
 | Dehumidifier child lock switched | `enabled` as a filter — pick *turned on* or *turned off* | — |
 | Dehumidifier oscillation switched | `enabled` as a filter — pick *turned on* or *turned off* | — |
@@ -1353,7 +1353,7 @@ All DPs are auto-detected at pairing time. For AOSD and BoboYun, `dp_door_action
 | Humidity is / is not above [value] % |
 | Humidity is / is not below [value] % |
 | Water tank is / is not full |
-| Device is / is not connected |
+| Dehumidifier is / is not connected |
 | Mode is / is not [mode] |
 | Dehumidifier child lock is / is not on |
 | Dehumidifier oscillation is / is not on |
@@ -1368,8 +1368,11 @@ All DPs are auto-detected at pairing time. For AOSD and BoboYun, `dp_door_action
 | Set countdown timer | cancel / 1h … 24h |
 | Enable / disable child lock | Only works when `dp_child_lock` > 0 |
 | Enable / disable ioniser | Only works when `dp_anion` > 0 |
-| Refresh device state | Triggers an immediate GET request |
-| Force reconnect | Drops and re-establishes the TCP connection |
+| Set self-clean | on / off — requires `dp_self_clean` > 0 |
+| Set water pump | on / off — requires `dp_pump` > 0 |
+| Set dehumidifier oscillation | on / off — requires `dp_oscillate` > 0 |
+| Refresh dehumidifier values | Triggers an immediate GET request |
+| Force dehumidifier reconnect | Drops and re-establishes the TCP connection |
 
 ---
 
@@ -1381,8 +1384,9 @@ All DPs are auto-detected at pairing time. For AOSD and BoboYun, `dp_door_action
 |---|---|---|
 | Power went above threshold | threshold (W) | `power` (W), `prevPower` (W) |
 | Power dropped below threshold | threshold (W) | `power` (W), `prevPower` (W) |
-| Device connected | — | — |
-| Device disconnected | — | — |
+| Smart plug fault alarm triggered | — | `fault_code` (string) |
+| Smart plug connected | — | — |
+| Smart plug disconnected | — | — |
 | A data point changed | — | `dp` (string), `value` (string) |
 
 #### Conditions
@@ -1397,8 +1401,8 @@ All DPs are auto-detected at pairing time. For AOSD and BoboYun, `dp_door_action
 
 | Action | Notes |
 |---|---|
-| Refresh device state | Triggers an immediate GET request |
-| Force reconnect | Drops and re-establishes the TCP connection |
+| Refresh smart plug values | Triggers an immediate GET request |
+| Force smart plug reconnect | Drops and re-establishes the TCP connection |
 | Set countdown timer | 0–86400 s; `0` cancels. Requires `dp_countdown` > 0 |
 | Reset energy meter | Resets the computed kWh accumulator to zero |
 
@@ -1470,6 +1474,7 @@ All DPs are auto-detected at pairing time. For AOSD and BoboYun, `dp_door_action
 | Fan direction is / is not [forward\|reverse] |
 | Fan child lock is / is not on |
 | Fan oscillation is / is not on |
+| Light is / is not on |
 
 #### Actions
 
@@ -1480,6 +1485,10 @@ All DPs are auto-detected at pairing time. For AOSD and BoboYun, `dp_door_action
 | Set fan oscillation | on / off — requires `dp_oscillate` > 0 |
 | Set fan direction | forward / reverse — requires `dp_direction` > 0 |
 | Set fan child lock | on / off — requires `dp_child_lock` > 0 |
+| Set timer | Countdown before the fan switches itself off — requires `dp_countdown_timer` > 0 |
+| Set light | on / off — the lamp built into the fan, requires `dp_light_onoff` > 0 |
+| Set light brightness | 0–100 % — requires `dp_light_dim` > 0 |
+| Set light mode (advanced) | Raw mode string for lamps with white / colour modes |
 | Force fan reconnect | Drops and re-establishes the TCP connection |
 | Refresh fan values | Triggers an immediate GET request |
 
@@ -1530,8 +1539,8 @@ fan: sub-capabilities (`onoff.fan`, `dim.fan`) and app-defined capabilities (`fa
 | Set the child lock | on / off — requires `dp_child_lock` > 0 |
 | Set timer | Countdown — requires `dp_countdown_timer` > 0 |
 | Set light mode (advanced) | white / colour / scene / music — requires `dp_light_mode` > 0 |
-| Reconnect the device | Drops and re-establishes the TCP connection |
-| Refresh device data | Triggers an immediate GET request |
+| Force ceiling fan light reconnect | Drops and re-establishes the TCP connection |
+| Refresh ceiling fan light values | Triggers an immediate GET request |
 
 ---
 
@@ -1584,6 +1593,8 @@ fan: sub-capabilities (`onoff.fan`, `dim.fan`) and app-defined capabilities (`fa
 | Heater connected | — |
 | Heater disconnected | — |
 | Heater fault alarm triggered | — |
+| Heater started heating | — |
+| Heater stopped heating | — |
 | Heater data point changed | `dp` (string), `value` (string) |
 | Heater child lock switched | `enabled` as a filter — pick *turned on* or *turned off* |
 | Heater oscillation switched | `enabled` as a filter — pick *turned on* or *turned off* |
@@ -1594,7 +1605,9 @@ fan: sub-capabilities (`onoff.fan`, `dim.fan`) and app-defined capabilities (`fa
 |---|
 | Heater is / is not connected |
 | Heater fault alarm is / is not active |
+| Heater is / is not actively heating |
 | Heater mode is / is not [mode] |
+| Heating level is / is not [level] |
 | Heater child lock is / is not on |
 | Heater oscillation is / is not on |
 
@@ -1606,6 +1619,7 @@ fan: sub-capabilities (`onoff.fan`, `dim.fan`) and app-defined capabilities (`fa
 | Set heater target temperature | Configurable min/max/step |
 | Set heater child lock | on / off — requires `dp_child_lock` > 0 |
 | Set heater timer | Countdown, `cancel` or 1–24 h — requires `dp_countdown_timer` > 0 |
+| Set heating level | The element's power step — requires `dp_heat_level` > 0 |
 | Force heater reconnect | Drops and re-establishes the TCP connection |
 | Refresh heater values | Triggers an immediate GET request |
 
@@ -1649,6 +1663,7 @@ fan: sub-capabilities (`onoff.fan`, `dim.fan`) and app-defined capabilities (`fa
 | Device connected | — |
 | Device disconnected | — |
 | A data point changed | `dp` (string), `value` (string) |
+| A specific data point changed | `value`, `previous_value` — pick the DP number in the card |
 
 #### Conditions
 
@@ -1658,10 +1673,11 @@ fan: sub-capabilities (`onoff.fan`, `dim.fan`) and app-defined capabilities (`fa
 
 #### Actions
 
-| Action |
-|---|
-| Refresh device state |
-| Force reconnect |
+| Action | Notes |
+|---|---|
+| Send DP command | Write any value to any data point — the escape hatch for anything the drivers do not cover |
+| Refresh device values | Triggers an immediate GET request |
+| Force reconnect | Drops and re-establishes the TCP connection |
 
 ---
 
@@ -1803,6 +1819,7 @@ fan: sub-capabilities (`onoff.fan`, `dim.fan`) and app-defined capabilities (`fa
 | Close curtain | Sends `close` on `dp_control` |
 | Stop curtain | Sends `stop` on `dp_control` |
 | Set curtain position to [%] | 0 = fully closed, 100 = fully open |
+| Move curtain to favourite position | The position stored in the motor itself; requires `dp_favourite` > 0 |
 | Force curtain motor reconnect | Drops and re-establishes the TCP connection |
 | Refresh curtain motor values | Triggers an immediate GET request |
 
@@ -1917,6 +1934,7 @@ fan: sub-capabilities (`onoff.fan`, `dim.fan`) and app-defined capabilities (`fa
 | Condition |
 |---|
 | Motion is / is not active |
+| Night light is / is not on |
 | Doorbell is / is not connected |
 
 #### Actions
@@ -1928,8 +1946,46 @@ fan: sub-capabilities (`onoff.fan`, `dim.fan`) and app-defined capabilities (`fa
 | Set night vision | Select mode: Auto / Off / Color (always on); requires `dp_nightvision` ≠ 0 |
 | Set chime volume | Enter volume 0–100 (step 10); requires `dp_chime_volume` ≠ 0 |
 | Set motion sensitivity | Select Low / Medium / High; requires `dp_motion_sensitivity` ≠ 0 |
+| Set night light | on / off; requires `dp_night_light` > 0 |
+| Set alarm reporting | Whether the doorbell reports its alarm events; requires `dp_alarm_report` > 0 |
+| Set ring tone | Select one of the chimes the device carries; requires `dp_ring_tone` > 0 |
 | Force doorbell reconnect | Drops and re-establishes the TCP connection |
 | Refresh doorbell values | Triggers an immediate GET request |
+
+---
+
+### Access Panel
+
+#### Triggers
+
+| Trigger | Flow tokens |
+|---|---|
+| Doorbell pressed | — |
+| Lock state changed | `locked` (boolean) |
+| A specific data point changed | `value`, `previous_value`, `code` — pick the DP number in the card |
+| Access panel connected | — |
+| Access panel disconnected | — |
+| Access panel data point changed | `dp` (string), `value` (string) |
+
+#### Conditions
+
+| Condition |
+|---|
+| Door is / is not locked |
+| Door is / is not open |
+| Access panel is / is not connected |
+
+#### Actions
+
+| Action | Notes |
+|---|---|
+| Set hold open | Keeps the door released until switched back — requires `dp_hold_open` > 0 |
+| Set automatic locking | Whether the door re-locks by itself — requires `dp_auto_lock` > 0 |
+| Set automatic locking delay | Seconds before it does — requires `dp_auto_lock_delay` > 0 |
+| Set alarm duration | How long the panel sounds its alarm — requires `dp_alarm_duration` > 0 |
+| Set doorbell volume | Requires `dp_doorbell_volume` > 0 |
+| Force access panel reconnect | Drops and re-establishes the TCP connection |
+| Refresh access panel values | Triggers an immediate GET request |
 
 ---
 

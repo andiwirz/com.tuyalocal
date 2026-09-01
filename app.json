@@ -2918,8 +2918,8 @@
       {
         "id": "dehumidifier_device_connected",
         "title": {
-          "en": "Device connected",
-          "de": "Gerät verbunden"
+          "en": "Dehumidifier connected",
+          "de": "Entfeuchter verbunden"
         },
         "args": [
           {
@@ -2932,8 +2932,8 @@
       {
         "id": "dehumidifier_device_disconnected",
         "title": {
-          "en": "Device disconnected",
-          "de": "Gerät getrennt"
+          "en": "Dehumidifier disconnected",
+          "de": "Entfeuchter getrennt"
         },
         "args": [
           {
@@ -3098,8 +3098,8 @@
       {
         "id": "thermostat_device_connected",
         "title": {
-          "en": "Device connected",
-          "de": "Gerät verbunden"
+          "en": "Thermostat connected",
+          "de": "Thermostat verbunden"
         },
         "args": [
           {
@@ -3112,8 +3112,8 @@
       {
         "id": "thermostat_device_disconnected",
         "title": {
-          "en": "Device disconnected",
-          "de": "Gerät getrennt"
+          "en": "Thermostat disconnected",
+          "de": "Thermostat getrennt"
         },
         "args": [
           {
@@ -3190,8 +3190,8 @@
       {
         "id": "kettle_device_connected",
         "title": {
-          "en": "Device connected",
-          "de": "Gerät verbunden"
+          "en": "Kettle connected",
+          "de": "Wasserkocher verbunden"
         },
         "args": [
           {
@@ -3204,8 +3204,8 @@
       {
         "id": "kettle_device_disconnected",
         "title": {
-          "en": "Device disconnected",
-          "de": "Gerät getrennt"
+          "en": "Kettle disconnected",
+          "de": "Wasserkocher getrennt"
         },
         "args": [
           {
@@ -3296,8 +3296,8 @@
       {
         "id": "switch_device_connected",
         "title": {
-          "en": "Device connected",
-          "de": "Gerät verbunden"
+          "en": "Wall switch connected",
+          "de": "Wandschalter verbunden"
         },
         "args": [
           {
@@ -3310,8 +3310,8 @@
       {
         "id": "switch_device_disconnected",
         "title": {
-          "en": "Device disconnected",
-          "de": "Gerät getrennt"
+          "en": "Wall switch disconnected",
+          "de": "Wandschalter getrennt"
         },
         "args": [
           {
@@ -3430,8 +3430,8 @@
       {
         "id": "plug_device_connected",
         "title": {
-          "en": "Device connected",
-          "de": "Gerät verbunden"
+          "en": "Smart plug connected",
+          "de": "Steckdose verbunden"
         },
         "args": [
           {
@@ -3444,8 +3444,8 @@
       {
         "id": "plug_device_disconnected",
         "title": {
-          "en": "Device disconnected",
-          "de": "Gerät getrennt"
+          "en": "Smart plug disconnected",
+          "de": "Steckdose getrennt"
         },
         "args": [
           {
@@ -3748,8 +3748,8 @@
       {
         "id": "fanlight_device_connected",
         "title": {
-          "en": "Fan connected",
-          "de": "Lüfter verbunden"
+          "en": "Ceiling fan light connected",
+          "de": "Deckenlicht verbunden"
         },
         "args": [
           {
@@ -3776,8 +3776,8 @@
       {
         "id": "fanlight_device_disconnected",
         "title": {
-          "en": "Fan disconnected",
-          "de": "Lüfter getrennt"
+          "en": "Ceiling fan light disconnected",
+          "de": "Deckenlicht getrennt"
         },
         "args": [
           {
@@ -5240,8 +5240,8 @@
       {
         "id": "meter_device_connected",
         "title": {
-          "en": "Device connected",
-          "de": "Gerät verbunden"
+          "en": "Energy meter connected",
+          "de": "Energiezähler verbunden"
         },
         "args": [
           {
@@ -5254,8 +5254,8 @@
       {
         "id": "meter_device_disconnected",
         "title": {
-          "en": "Device disconnected",
-          "de": "Gerät getrennt"
+          "en": "Energy meter disconnected",
+          "de": "Energiezähler getrennt"
         },
         "args": [
           {
@@ -6120,8 +6120,8 @@
       {
         "id": "dehumidifier_device_is_connected",
         "title": {
-          "en": "Device !{{is|is not}} connected",
-          "de": "Gerät ist !{{verbunden|nicht verbunden}}"
+          "en": "Dehumidifier !{{is|is not}} connected",
+          "de": "Entfeuchter !{{ist|ist nicht}} verbunden"
         },
         "args": [
           {
@@ -6195,8 +6195,8 @@
       {
         "id": "thermostat_device_is_connected",
         "title": {
-          "en": "Device !{{is|is not}} connected",
-          "de": "Gerät ist !{{verbunden|nicht verbunden}}"
+          "en": "Thermostat !{{is|is not}} connected",
+          "de": "Thermostat !{{ist|ist nicht}} verbunden"
         },
         "args": [
           {
@@ -6239,8 +6239,8 @@
       {
         "id": "kettle_device_is_connected",
         "title": {
-          "en": "Device !{{is|is not}} connected",
-          "de": "Gerät ist !{{verbunden|nicht verbunden}}"
+          "en": "Kettle !{{is|is not}} connected",
+          "de": "Wasserkocher !{{ist|ist nicht}} verbunden"
         },
         "args": [
           {
@@ -6267,8 +6267,8 @@
       {
         "id": "switch_device_is_connected",
         "title": {
-          "en": "Device !{{is|is not}} connected",
-          "de": "Gerät ist !{{verbunden|nicht verbunden}}"
+          "en": "Wall switch !{{is|is not}} connected",
+          "de": "Wandschalter !{{ist|ist nicht}} verbunden"
         },
         "args": [
           {
@@ -6337,8 +6337,8 @@
       {
         "id": "plug_device_is_connected",
         "title": {
-          "en": "Device !{{is|is not}} connected",
-          "de": "Gerät ist !{{verbunden|nicht verbunden}}"
+          "en": "Smart plug !{{is|is not}} connected",
+          "de": "Steckdose !{{ist|ist nicht}} verbunden"
         },
         "args": [
           {
@@ -6528,8 +6528,8 @@
       {
         "id": "fanlight_device_is_connected",
         "title": {
-          "en": "Device !{{is|is not}} connected",
-          "de": "Gerät !{{ist|ist nicht}} verbunden"
+          "en": "Ceiling fan light !{{is|is not}} connected",
+          "de": "Deckenlicht !{{ist|ist nicht}} verbunden"
         },
         "args": [
           {
@@ -7304,8 +7304,8 @@
       {
         "id": "meter_device_is_connected",
         "title": {
-          "en": "Device !{{is|is not}} connected",
-          "de": "Gerät ist !{{verbunden|nicht verbunden}}"
+          "en": "Energy meter !{{is|is not}} connected",
+          "de": "Energiezähler !{{ist|ist nicht}} verbunden"
         },
         "args": [
           {
@@ -8501,8 +8501,8 @@
       {
         "id": "dehumidifier_force_reconnect",
         "title": {
-          "en": "Force reconnect",
-          "de": "Verbindung neu aufbauen"
+          "en": "Force dehumidifier reconnect",
+          "de": "Entfeuchter neu verbinden"
         },
         "args": [
           {
@@ -8515,8 +8515,8 @@
       {
         "id": "dehumidifier_refresh_device",
         "title": {
-          "en": "Refresh device values",
-          "de": "Gerätewerte aktualisieren"
+          "en": "Refresh dehumidifier values",
+          "de": "Entfeuchter-Werte aktualisieren"
         },
         "args": [
           {
@@ -8606,8 +8606,8 @@
       {
         "id": "thermostat_force_reconnect",
         "title": {
-          "en": "Force reconnect",
-          "de": "Verbindung neu aufbauen"
+          "en": "Force thermostat reconnect",
+          "de": "Thermostat neu verbinden"
         },
         "args": [
           {
@@ -8620,8 +8620,8 @@
       {
         "id": "thermostat_refresh_device",
         "title": {
-          "en": "Refresh device values",
-          "de": "Gerätewerte aktualisieren"
+          "en": "Refresh thermostat values",
+          "de": "Thermostat-Werte aktualisieren"
         },
         "args": [
           {
@@ -8693,8 +8693,8 @@
       {
         "id": "kettle_force_reconnect",
         "title": {
-          "en": "Force reconnect",
-          "de": "Verbindung neu aufbauen"
+          "en": "Force kettle reconnect",
+          "de": "Wasserkocher neu verbinden"
         },
         "args": [
           {
@@ -8707,8 +8707,8 @@
       {
         "id": "kettle_refresh_device",
         "title": {
-          "en": "Refresh device values",
-          "de": "Gerätewerte aktualisieren"
+          "en": "Refresh kettle values",
+          "de": "Wasserkocher-Werte aktualisieren"
         },
         "args": [
           {
@@ -8822,8 +8822,8 @@
       {
         "id": "switch_force_reconnect",
         "title": {
-          "en": "Force reconnect",
-          "de": "Verbindung neu aufbauen"
+          "en": "Force wall switch reconnect",
+          "de": "Wandschalter neu verbinden"
         },
         "args": [
           {
@@ -8836,8 +8836,8 @@
       {
         "id": "switch_refresh_device",
         "title": {
-          "en": "Refresh device values",
-          "de": "Gerätewerte aktualisieren"
+          "en": "Refresh wall switch values",
+          "de": "Wandschalter-Werte aktualisieren"
         },
         "args": [
           {
@@ -8986,8 +8986,8 @@
       {
         "id": "plug_force_reconnect",
         "title": {
-          "en": "Force reconnect",
-          "de": "Verbindung neu aufbauen"
+          "en": "Force smart plug reconnect",
+          "de": "Steckdose neu verbinden"
         },
         "args": [
           {
@@ -9000,8 +9000,8 @@
       {
         "id": "plug_refresh_device",
         "title": {
-          "en": "Refresh device values",
-          "de": "Gerätewerte aktualisieren"
+          "en": "Refresh smart plug values",
+          "de": "Steckdose-Werte aktualisieren"
         },
         "args": [
           {
@@ -9648,8 +9648,8 @@
       {
         "id": "fanlight_force_reconnect",
         "title": {
-          "en": "Reconnect the device",
-          "de": "Verbindung neu aufbauen"
+          "en": "Force ceiling fan light reconnect",
+          "de": "Deckenlicht neu verbinden"
         },
         "args": [
           {
@@ -9676,8 +9676,8 @@
       {
         "id": "fanlight_refresh_device",
         "title": {
-          "en": "Refresh device data",
-          "de": "Gerätedaten aktualisieren"
+          "en": "Refresh ceiling fan light values",
+          "de": "Deckenlicht-Werte aktualisieren"
         },
         "args": [
           {
@@ -11529,8 +11529,8 @@
       {
         "id": "meter_force_reconnect",
         "title": {
-          "en": "Force reconnect",
-          "de": "Verbindung neu aufbauen"
+          "en": "Force energy meter reconnect",
+          "de": "Energiezähler neu verbinden"
         },
         "args": [
           {
@@ -11543,8 +11543,8 @@
       {
         "id": "meter_refresh_device",
         "title": {
-          "en": "Refresh device values",
-          "de": "Gerätewerte aktualisieren"
+          "en": "Refresh energy meter values",
+          "de": "Energiezähler-Werte aktualisieren"
         },
         "args": [
           {
