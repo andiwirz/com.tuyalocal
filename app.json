@@ -2282,6 +2282,19 @@
       "uiQuickAction": false,
       "insights": true,
       "icon": "/assets/capabilities/measure_distance.svg"
+    },
+    "heat_pump_silent": {
+      "type": "boolean",
+      "title": {
+        "en": "Silent mode",
+        "de": "Flüstermodus"
+      },
+      "getable": true,
+      "setable": true,
+      "uiComponent": "toggle",
+      "uiQuickAction": false,
+      "insights": false,
+      "icon": "/assets/capabilities/heat_pump_silent.svg"
     }
   },
   "flow": {
@@ -4713,6 +4726,30 @@
         ]
       },
       {
+        "id": "heat_pump_silent_changed",
+        "title": {
+          "en": "Silent mode changed",
+          "de": "Flüstermodus geändert"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=heat_pump"
+          }
+        ],
+        "tokens": [
+          {
+            "name": "silent",
+            "type": "boolean",
+            "title": {
+              "en": "Silent mode",
+              "de": "Flüstermodus"
+            }
+          }
+        ]
+      },
+      {
         "id": "curtain_opened",
         "title": {
           "en": "Curtain fully opened",
@@ -6999,6 +7036,20 @@
         "title": {
           "en": "Heat pump !{{is|is not}} connected",
           "de": "Wärmepumpe !{{ist|ist nicht}} verbunden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=heat_pump"
+          }
+        ]
+      },
+      {
+        "id": "heat_pump_silent_is",
+        "title": {
+          "en": "Silent mode !{{is|is not}} on",
+          "de": "Flüstermodus !{{ist|ist nicht}} ein"
         },
         "args": [
           {
@@ -10918,6 +10969,44 @@
             "name": "device",
             "type": "device",
             "filter": "driver_id=heat_pump"
+          }
+        ]
+      },
+      {
+        "id": "heat_pump_set_silent",
+        "title": {
+          "en": "Turn silent mode on or off",
+          "de": "Flüstermodus ein- oder ausschalten"
+        },
+        "titleFormatted": {
+          "en": "Turn silent mode [[state]]",
+          "de": "Flüstermodus [[state]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=heat_pump"
+          },
+          {
+            "name": "state",
+            "type": "dropdown",
+            "values": [
+              {
+                "id": "on",
+                "label": {
+                  "en": "on",
+                  "de": "ein"
+                }
+              },
+              {
+                "id": "off",
+                "label": {
+                  "en": "off",
+                  "de": "aus"
+                }
+              }
+            ]
           }
         ]
       },
@@ -21264,6 +21353,51 @@
               "hint": {
                 "en": "Preset DP. Phalén DP 117 (bool: false=sleep, true=boost). 0 = disabled.",
                 "de": "Voreinstellungs-DP. Phalén DP 117 (bool: false=leise, true=boost). 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_silent",
+              "type": "number",
+              "label": {
+                "en": "Silent Mode DP",
+                "de": "DP Flüstermodus"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "step": 1,
+              "hint": {
+                "en": "Data point carrying the quiet/night mode, called SilentMode on most heat pumps — DP 117 on the reported model. Adds a Silent mode switch to the device and a flow action to go with it. 0 = disabled.",
+                "de": "Datenpunkt für den Flüster- oder Nachtmodus, bei den meisten Wärmepumpen SilentMode genannt — beim gemeldeten Modell DP 117. Fügt dem Gerät einen Schalter „Flüstermodus\" hinzu, dazu eine Flow-Aktion. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "silent_true_means",
+              "type": "dropdown",
+              "label": {
+                "en": "On this data point, true means",
+                "de": "Auf diesem Datenpunkt bedeutet true"
+              },
+              "value": "smart",
+              "values": [
+                {
+                  "id": "smart",
+                  "label": {
+                    "en": "Smart — false is the quiet mode (default)",
+                    "de": "Smart — false ist der leise Modus (Standard)"
+                  }
+                },
+                {
+                  "id": "silent",
+                  "label": {
+                    "en": "Silent — true is the quiet mode",
+                    "de": "Leise — true ist der leise Modus"
+                  }
+                }
+              ],
+              "hint": {
+                "en": "Which raw value means the quiet mode. Its Tuya name is SilentMode, which suggests true is quiet, but on the reported heat pump it is the other way round: true is Smart and false is Silence. If the switch in Homey turns out inverted on your unit — quiet when it reads off — change this to Silent.",
+                "de": "Welcher Rohwert den leisen Modus bedeutet. Der Tuya-Name lautet SilentMode, was für true = leise spräche; bei der gemeldeten Wärmepumpe ist es umgekehrt: true ist Smart, false ist Silence. Zeigt der Schalter in Homey bei deinem Gerät verkehrt herum — leise, obwohl er aus steht —, stelle hier auf „Leise\" um."
               }
             },
             {

@@ -60,6 +60,7 @@ const DP_PROFILE = [
   { settingKey: 'dp_preset',       capability: 'heat_pump_preset',   type: 'preset',  settable: true  },
   { settingKey: 'dp_fault',        capability: 'alarm_generic',      type: 'alarm',   settable: false },
   { settingKey: 'dp_power_level',  capability: 'power_level',        type: 'number',  settable: false },
+  { settingKey: 'dp_silent',       capability: 'heat_pump_silent',   type: 'silent',  settable: true  },
 ];
 
 // Welche Einstellung die erlaubten Werte einer Auswahl fuehrt. Stimmen Liste und
@@ -74,6 +75,7 @@ const OPTIONAL_CAPABILITIES = [
   { setting: 'dp_preset',      capability: 'heat_pump_preset'},
   { setting: 'dp_fault',       capability: 'alarm_generic'   },
   { setting: 'dp_power_level', capability: 'power_level'     },
+  { setting: 'dp_silent',      capability: 'heat_pump_silent'},
 ];
 
 class HeatPumpDevice extends BaseTuyaDevice {
@@ -95,6 +97,7 @@ class HeatPumpDevice extends BaseTuyaDevice {
 
     // â”€â”€ Flow trigger cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     this._triggerModeChanged        = this.homey.flow.getDeviceTriggerCard('heat_pump_mode_changed');
+    this._triggerSilentChanged      = this.homey.flow.getDeviceTriggerCard('heat_pump_silent_changed');
     this._triggerFault              = this.homey.flow.getDeviceTriggerCard('heat_pump_fault_triggered');
     this._triggerDeviceConnected    = this.homey.flow.getDeviceTriggerCard('heat_pump_device_connected');
     this._triggerDeviceDisconnected = this.homey.flow.getDeviceTriggerCard('heat_pump_device_disconnected');
@@ -144,6 +147,13 @@ class HeatPumpDevice extends BaseTuyaDevice {
         const dp = this.getSetting('dp_mode');
         if (!dp || dp === 0) throw new Error('Mode DP not configured');
         await this._set(dp, value);
+      });
+    }
+    if (this.hasCapability('heat_pump_silent')) {
+      this.registerCapabilityListener('heat_pump_silent', async (value) => {
+        const dp = this.getSetting('dp_silent');
+        if (!dp || dp === 0) throw new Error('Silent Mode DP not configured');
+        await this._set(dp, this._silentToRaw(value));
       });
     }
     if (this.hasCapability('heat_pump_preset')) {
@@ -212,6 +222,20 @@ class HeatPumpDevice extends BaseTuyaDevice {
 
       switch (entry.type) {
         // â”€â”€ On / Off â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // â”€â”€ Fluestermodus â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        case 'silent': {
+          const leise = this._rawToSilent(value);
+          const vorher = this.getCapabilityValue('heat_pump_silent');
+          await this.setCapabilityValue('heat_pump_silent', leise).catch(() => {});
+          // Der erste Wert nach dem Verbinden loest nicht aus: davor steht null, und
+          // das ist kein Wechsel, sondern der erste Blick auf einen Zustand, den das
+          // Geraet die ganze Zeit schon hatte.
+          if (vorher !== null && vorher !== undefined && vorher !== leise) {
+            this._triggerSilentChanged.trigger(this, { silent: leise }).catch(() => {});
+          }
+          break;
+        }
+
         case 'switch': {
           await this.setCapabilityValue('onoff', Boolean(value)).catch(() => {});
           break;
@@ -356,6 +380,29 @@ class HeatPumpDevice extends BaseTuyaDevice {
     if (changedKeys.includes('preset_values') || changedKeys.includes('dp_preset')) {
       await this._syncPresetOptions();
     }
+  }
+
+  /**
+   * Welcher Rohwert den leisen Modus bedeutet.
+   *
+   * Der Tuya-Code heisst "SilentMode", was fuer true = leise spraeche. Auf der
+   * gemeldeten Waermepumpe ist es umgekehrt - true ist Smart, false ist Silence -, und
+   * das ist gemessen, nicht vermutet. Beides fest zu verdrahten waere fuer die jeweils
+   * andere Bauart verkehrt, also entscheidet eine Einstellung. Die Faehigkeit heisst
+   * immer "Fluestermodus" und ist an, wenn leise gefahren wird.
+   */
+  _silentTrueIsQuiet() {
+    return this.getSetting('silent_true_means') === 'silent';
+  }
+
+  /** Rohwert -> "leise ist an". */
+  _rawToSilent(raw) {
+    return this._silentTrueIsQuiet() ? Boolean(raw) : !raw;
+  }
+
+  /** "leise ist an" -> Rohwert. */
+  _silentToRaw(leise) {
+    return this._silentTrueIsQuiet() ? Boolean(leise) : !leise;
   }
 
   // â”€â”€ Sync helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

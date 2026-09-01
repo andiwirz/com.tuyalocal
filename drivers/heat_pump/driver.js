@@ -75,7 +75,22 @@ class HeatPumpDriver extends Homey.Driver {
     this.homey.flow.getConditionCard('heat_pump_device_is_connected')
       .registerRunListener(async (args) => args.device._conn?.connected === true);
 
+    this.homey.flow.getConditionCard('heat_pump_silent_is')
+      .registerRunListener(async (args) =>
+        args.device.getCapabilityValue('heat_pump_silent') === true
+      );
+
     // ── Actions ──────────────────────────────────────────────────────────────
+    // Ueber triggerCapabilityListener, wie die uebrigen Aktionen: so laeuft der Befehl
+    // durch denselben Weg wie ein Druck auf den Schalter, samt der Umrechnung, welcher
+    // Rohwert den leisen Modus bedeutet.
+    this.homey.flow.getActionCard('heat_pump_set_silent')
+      .registerRunListener(async (args) => {
+        const leise = args.state === 'on';
+        await args.device.setCapabilityValue('heat_pump_silent', leise);
+        return args.device.triggerCapabilityListener('heat_pump_silent', leise);
+      });
+
     this.homey.flow.getActionCard('heat_pump_set_mode')
       .registerArgumentAutocompleteListener('mode', async (query, args) => {
         const values = (args.device.getSetting('mode_values') || 'heat,cool,auto')
