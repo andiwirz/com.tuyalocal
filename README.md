@@ -45,7 +45,7 @@ when adding a device.
 - **Cloud-free** — all traffic stays on your local network
 - **Real-time push** — instant state updates without polling (polling is optional and configurable)
 - **Automatic reconnect** — exponential back-off with jitter; watchdog detects stale connections and reconnects
-- **Protocol auto-rotation** — after 5 consecutive reconnect failures the connection manager cycles through the fallback protocol versions (3.3 → 3.4 → 3.1 → 3.5 → 3.2). A connection counts towards that only once the device has actually answered, or once it has simply stayed up: protocols 3.1, 3.2 and 3.3 have no session handshake, so an open TCP socket on its own proves nothing — a device that speaks a different version accepts the socket and then resets it. Once a version really works it is kept and logged, so you can put it in the device settings and skip the retry delay next time
+- **Protocol detection** — three things happen before anything is guessed. Every Tuya frame but 3.2 carries its version as plain text at the start of its payload, so a frame that cannot be decoded is still read for that and the connection switches straight to it — the device's own statement about itself, not an inference. A version under which packets have actually been decoded then sticks: those prove the framing *and* the key, and no run of failures gives that up short of a firmware change. Only where neither applies does the connection cycle through the fallbacks (3.3 → 3.4 → 3.1 → 3.5 → 3.2) after 5 consecutive failures. An open socket alone never counts as proof: 3.1, 3.2 and 3.3 have no session handshake, so a device speaking a different version accepts the socket and then resets it. Whatever version settles is written into the device settings, so the next reconnect starts there
 - **Stale-connection watchdog** — a second watchdog beside the heartbeat, watching for something the heartbeat cannot see: firmware that keeps answering keep-alive pings while it has stopped answering everything else. That state used to look perfectly healthy — and on protocol 3.4/3.5, where a SET is fire-and-forget, commands into it reported success while the device did not move. A device that has sent no data for three polling cycles (at least 90 s) is now reconnected
 - **Command pacing** — a configurable minimum gap between two commands to the same device (**Command Gap**, default 100 ms). Some firmware accepts the first command of a pair and silently drops the second when they arrive microseconds apart, which nothing on 3.4/3.5 reports as an error
 - **Outbound heartbeat** — sends a keep-alive ping every 15 s; keeps connections alive on strict firmware that requires host-initiated keep-alives
@@ -64,6 +64,7 @@ when adding a device.
 - **Efficient polling** — alternates between full GET and lightweight dp_refresh to reduce traffic
 - **Fix It tab** — five checks that compare your devices against what Tuya declares and offer to correct them: stale local keys, wrong protocol version, wrong measurement scaling, picker options that never got updated, and data points a device does not actually have. Every check previews exactly what it would change, per device, and saves nothing until you confirm
 - **Connect-failure diagnosis** — when a device fails to connect during pairing, the app probes port 6668 and says which of the three it was: nothing at that address, the port closed, or the connection refused because something else already holds the device's single connection slot
+- **Support bundle** — one button, at the top of the **Fix It** tab, collecting everything a report needs: per device the driver, the protocol version configured *and* in use, the full DP mapping, the live values, the connection history (how many connections, how long they held, how many packets arrived, whether any data ever did) and the manufacturer's specification where Cloud Lookup is set up. Local keys never appear in it and device IDs are shortened. Repeated log lines are folded into one with a count, so a single chatty fault cannot crowd out everything else
 - **Diagnostic tools** — in-app log buffer, live DP debug panel, and a Help tab covering every driver and the common faults
 - **Bilingual** — full English and German UI
 
@@ -249,6 +250,25 @@ Set `dp_energy = 17` only if your device provides a reliable cumulative local en
 
 The energy accumulator can be reset via the **Reset energy meter** flow action.
 
+#### The Shifted DP Layout
+
+Besides the conventional block 17/18/19/20 there is a second arrangement, common on
+breakers and on plugs outside the usual family:
+
+| DP | Code | | DP | Code |
+|---|---|---|---|---|
+| 20 | `add_ele` — energy, scale 3 | | 22 | `cur_voltage` — voltage, scale 1 |
+| 21 | `cur_current` — current, scale 3 | | 23 | `cur_power` — power, scale 1 |
+
+Pairing recognises it. The two overlap at DP 20 and mean opposite things there — voltage
+in one, energy in the other — so the tell is DP 22: a mains voltage is the one quantity a
+value alone identifies, since 100–280 V covers every grid and nothing else idles there.
+
+With Cloud Lookup configured none of this is needed: the app matches `switch_1`,
+`cur_power`, `cur_current`, `cur_voltage`, `add_ele`, `relay_status` and `countdown_1` by
+name and fills the settings in from the manufacturer's own list.
+
+
 #### Turn On Behavior Values
 
 Controls what the device does when mains power is restored after an outage.
@@ -353,6 +373,22 @@ Because the speed slider already occupies `dim`, the light's brightness uses its
 
 The `fan_direction` capability uses fixed values `forward` and `reverse` (Tuya standard). The DP is auto-detected at pairing time if the device reports either of those strings.
 
+#### Fixed Power Reporting
+
+Homey multiplies the consumption you store for a device by its `dim` value, which on a
+fan is the speed — and for most fans that is simply wrong, since they draw very nearly
+the same at every step. With a
+houseful of them the energy total is wrong all day.
+
+| Setting | Meaning | Default |
+|---|---|---|
+| `power_on_watts` | Report this wattage while the device is on | 0 (off) |
+| `power_off_watts` | Standby draw reported while it is off | 0 |
+
+Enter what a plug-in meter reads and the app reports that figure instead, whatever the
+slider says. A measured value takes precedence over Homey's estimate. At `0` nothing
+changes.
+
 ---
 
 ### Ceiling Fan Light
@@ -406,6 +442,26 @@ A fan with six steps takes `speed_min = 1`, `speed_max = 6`.
 `dp_light_dim_min` / `dp_light_dim_max` and `dp_light_color_temp_min` / `_max` map the device's raw
 ranges onto Homey's 0–100 %. `dp_light_color_temp_invert` (on by default) flips the colour-temperature
 direction for devices that count from warm to cold rather than the other way round.
+
+#### Colour Format
+
+Tuya has two colour encodings, and the app speaks whichever the fitting itself reports —
+nothing to configure.
+
+| Length | Layout | |
+|---|---|---|
+| 12 characters | `HHHHSSSSVVVV` | hue 0–360, saturation and value 0–1000 |
+| 14 characters | `RRGGBBHHHHSSVV` | RGB first, then hue 0–360 and 0–255 pairs |
+
+A fitting expecting the longer form reads the first six characters of the short one as
+RGB, and those come out as `00 xx 03` for every hue — which shows as green at every
+colour in the picker, brighter or dimmer. The format is taken from what the device
+reports, since that is by definition what it understands.
+
+#### Fixed Power Reporting
+
+The light half carries the same `power_on_watts` / `power_off_watts` settings as the
+Light driver — see there.
 
 ---
 
@@ -521,6 +577,21 @@ Older protocol uses DPs 1–5 instead of 20–24.
 
 In **white mode**, the brightness (`dim`) slider writes directly to `dp_brightness`. In **color mode**, the brightness slider updates the V (value) component of the HSV hex string. Hue and saturation are mapped from the Homey `light_hue` / `light_saturation` capabilities.
 
+#### Fixed Power Reporting
+
+Homey multiplies the consumption you store for a device by its dim value, and for most
+LED lamps that is simply wrong — they draw very nearly the same at every step. With a
+houseful of them the energy total is wrong all day.
+
+| Setting | Meaning | Default |
+|---|---|---|
+| `power_on_watts` | Report this wattage while the device is on | 0 (off) |
+| `power_off_watts` | Standby draw reported while it is off | 0 |
+
+Enter what a plug-in meter reads and the app reports that figure instead, whatever the
+slider says. A measured value takes precedence over Homey's estimate. At `0` nothing
+changes.
+
 ---
 
 ### Heat Pump
@@ -550,6 +621,23 @@ Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polli
 | `dp_preset` | <img src="assets/capabilities/heat_pump_preset.svg" height="24"> | `heat_pump_preset` | enum or bool | 0 | ✓ `0` = disabled |
 | `dp_fault` |  | `alarm_generic` | bitfield / bool | 0 | ✓ `0` = disabled |
 | `dp_power_level` | <img src="assets/capabilities/power_level.svg" height="24"> | `power_level` | number | 0 | ✓ `0` = disabled |
+| `dp_silent` | <img src="assets/capabilities/heat_pump_silent.svg" height="24"> | `heat_pump_silent` | boolean | 0 | ✓ `0` = disabled |
+
+#### Silent Mode
+
+The quiet or night mode most pumps carry as `SilentMode` — DP 117 on the Fairland /
+Phalén family. Set `dp_silent` to it and the device gains a Silent mode switch, plus a
+flow action, condition and trigger.
+
+Which raw value means quiet is a setting rather than a rule, because the two disagree.
+The data point is named `SilentMode`, which reads as `true` = quiet; on a measured
+Fairland InverterPlus it is the other way round — `true` is Smart, `false` is Silence.
+
+| Setting | Meaning | Default |
+|---|---|---|
+| `silent_true_means` | Whether `true` on that data point is the Smart mode or the quiet one | `smart` |
+
+If the switch reads off while the pump is audibly running quietly, set it to `silent`.
 
 #### Temperature Settings
 
@@ -568,7 +656,16 @@ Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polli
 | `mode_values` | Comma-separated mode strings matching your device | `heat,cool,auto` |
 | `preset_values` | Comma-separated preset names — for bool DPs the first value = false, second = true | `sleep,comfort,boost` |
 
-Check the **Raw Data** panel in app settings to find the exact strings your device sends. A bool preset DP (e.g. Phalén DP 117: `false` = sleep, `true` = boost) is handled automatically — set `preset_values = sleep,boost`.
+Check **DP Debug** in app settings to find the exact strings your device sends. A bool
+preset DP is handled automatically — set `preset_values` to two names and `false` takes
+the first, `true` the second.
+
+If your device reports a mode that `mode_values` does not list, the app now says so in
+the log. A Tuya device discards an enum value it does not recognise without a word, so
+this is what "the mode picker does nothing" looks like from outside.
+
+DP 117 has its own setting above and does not belong in `preset_values` — it is a switch
+between two named modes, not one of three presets.
 
 ---
 
@@ -705,6 +802,24 @@ Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polli
 | `dp_countdown_1–4` |  | *(settings only)* | number | 0 | ✓ `0` = disabled |
 | `dp_relay_status` |  | *(settings only)* | enum | 0 | ✓ `0` = disabled |
 
+#### All Channels at Once
+
+On a multi-gang switch the main on/off is channel 1 — the capability the tile carries, a
+dashboard shows and a voice assistant reaches. "Kitchen off" then switches one channel of
+two.
+
+| Setting | Meaning | Default |
+|---|---|---|
+| `aggregate_main` | Main on/off controls every configured channel | off |
+
+Switched on, the main on/off turns them all on or all off — off always reaching every
+channel whatever it was doing — and reads as on while any one of them is on, including
+after someone used the switch on the wall. Channel 1 moves to its own control beside the
+others. No flows are involved and nothing loops.
+
+Off by default, because turning it on changes what an existing flow on the main on/off
+does.
+
 #### Switch Names
 
 Each switch tile can be renamed in **Settings → Switch Names**. Leave empty for the default name ("Power" / "Switch 2/3/4"). The app needs to be restarted for name changes to take effect.
@@ -826,6 +941,8 @@ Uses Homey's native EV charger capabilities, so the built-in **Start charging** 
 | `dp_work_state` |  | `evcharger_charging_state` | enum | 3 | Tuya's 8 states mapped onto Homey's 5 — see below |
 | `dp_charge_current` |  | `target_power` | number | 4 | Charger speaks amps, Homey speaks watts |
 | `dp_phase_a` |  | voltage / current / power | raw | 6 | Packed DP: 2 B voltage ×0.1 V, 3 B current ×0.001 A, then power in W. Both the 8-byte and 7-byte layouts are decoded automatically |
+| `dp_voltage_a` / `_b` / `_c` |  | `measure_voltage` (+`.b` `.c`) | number | 0 | Plain numeric voltage, one DP per phase — for chargers that do not use the packed DP |
+| `dp_current_a` / `_b` / `_c` |  | `measure_current` (+`.b` `.c`) | number | 0 | Plain numeric current, one DP per phase |
 | `dp_phase_b` |  | `measure_*.b` (L2) | raw | 0 | Three-phase only, typically 7 |
 | `dp_phase_c` |  | `measure_*.c` (L3) | raw | 0 | Three-phase only, typically 8 |
 | `dp_power_total` |  | `measure_power` | number | 0 | Plain watts, typically 9 (or 5 on some single-phase units). Takes priority over the power decoded from Phase A |
@@ -858,6 +975,10 @@ Chargers are not consistent here, and a single pairing snapshot cannot tell the 
 | Setting | Description | Default |
 |---|---|---|
 | `current_scale` | `1` = raw value is amps · `0.1` = raw value is amps × 10 | 1 |
+| `voltage_scale` | Scale for the separate voltage DPs. `2359` for 235.9 V means `0.1` | 1 |
+| `amp_scale` | Scale for the separate current DPs — the current that flows, not the limit above | 1 |
+| `power_scale` | Multiplier turning the total power DP into watts. `110` for 11 kW means `100` | 1 |
+| `temp_scale` | `435` for 43.5 °C means `0.1` | 1 |
 | `session_energy_scale` | `0.01` = raw value is kWh × 100 · `1` = raw value is kWh | 0.01 |
 | `total_energy_scale` | Same options, for the lifetime counter — some chargers scale it differently from the session counter | 0.01 |
 
@@ -923,6 +1044,10 @@ deliberately not logged as unmapped.
 | `voltage_scale` | `0.1` | raw 2376 → 237.6 V |
 | `current_scale` | `0.001` | raw 2491 → 2.491 A |
 | `kwh_scale` | `0.01` | raw 364 → 3.64 kWh |
+
+Pairing also recognises the shifted layout — energy on DP 20, current 21, voltage 22,
+power 23 — and sets `kwh_scale` to `0.001` with it, since `add_ele` carries scale 3 there.
+See the Smart Plug section for what distinguishes the two.
 
 Values are rounded to the number of decimals the divisor can express, so a raw 2376 becomes 237.6 V
 rather than 237.60000000000002 in Insights for ever. **Check measurement scaling** on the Fix It tab
@@ -1036,6 +1161,28 @@ own group. Their DP numbers only need changing if your sensor arranges them diff
 | `dp_lower_switch` | Low alarm enabled | 15 |
 | `dp_install_height` | Mounting height above the tank floor | 19 |
 | `dp_depth_full` | Depth that counts as full | 21 |
+
+Each of these is followed by a read-only field showing the value the device currently
+holds, with the raw number beside it. The app asks for them explicitly after connecting:
+they are settings inside the device and never change, so a device that only reports what
+moves would never send them at all.
+
+#### Your Own Alarm Thresholds
+
+The thresholds above are the device's own. Reaching one sets off its alarm, and on some
+models a loud buzzer — so they cannot simply be moved to get an earlier warning in Homey.
+
+| Setting | Meaning | Default |
+|---|---|---|
+| `own_low_percent` | Raise the empty alarm in Homey at this percentage | 0 (off) |
+| `own_high_percent` | Raise the full alarm in Homey at this percentage | 0 (off) |
+
+Set either and that alarm is computed from the level instead of from the device's own
+state, and takes precedence over it — the device reporting `normal` no longer withdraws
+a warning you asked for. At `0` nothing changes.
+
+`liquid_state` keeps reporting what the device says either way. It is the device's own
+statement; the alarms are where Homey's judgement belongs.
 
 ---
 
@@ -1563,6 +1710,7 @@ fan: sub-capabilities (`onoff.fan`, `dim.fan`) and app-defined capabilities (`fa
 | Heat pump connected | — |
 | Heat pump disconnected | — |
 | Heat pump mode changed | `mode` (string), `prev_mode` (string) |
+| Silent mode changed | `silent` (boolean) |
 | Fault alarm triggered | `fault_code` (string) |
 | Heat pump data point changed | `dp` (string), `value` (string) |
 
@@ -1571,6 +1719,7 @@ fan: sub-capabilities (`onoff.fan`, `dim.fan`) and app-defined capabilities (`fa
 | Condition |
 |---|
 | Heat pump is / is not on |
+| Silent mode is / is not on |
 | Fault alarm is / is not active |
 | Heat pump is / is not connected |
 
@@ -1580,6 +1729,7 @@ fan: sub-capabilities (`onoff.fan`, `dim.fan`) and app-defined capabilities (`fa
 |---|---|
 | Set operating mode | Values from `mode_values` setting — autocomplete in flow editor |
 | Set preset | Values from `preset_values` setting — autocomplete in flow editor |
+| Turn silent mode on or off | Needs `dp_silent` set — see the driver's Silent Mode section |
 | Force heat pump reconnect | Drops and re-establishes the TCP connection |
 | Refresh heat pump values | Triggers an immediate GET request |
 
@@ -1913,6 +2063,8 @@ additions.
 | Level sensor connected | — |
 | Level sensor disconnected | — |
 | Level state changed | `state` (string), `prev_state` (string) |
+| Liquid level rose above [percent] | `level` (number) |
+| Liquid level dropped below [percent] | `level` (number) |
 | Level sensor data point changed | `dp` (string), `value` (string) |
 
 #### Conditions
