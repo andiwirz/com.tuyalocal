@@ -67,7 +67,23 @@ class WallSwitchDevice extends BaseTuyaDevice {
    * Kanal 1 gelandet waeren.
    */
   _gangCapability(gang) {
-    if (gang.gang !== 1) return gang.capability;
+    return this._capForGang(gang.gang);
+  }
+
+  /**
+   * Dasselbe, aber nach der blossen Kanalnummer.
+   *
+   * Die Flow-Karten haben keinen GANG_CAPS-Eintrag zur Hand, nur eine 1 bis 4 aus dem
+   * Argument. Sie hatten die Zuordnung darum selbst verdrahtet - und die stimmte nicht
+   * mehr, sobald der Sammelschalter `onoff` uebernahm: "Kanal 1" schaltete gemeldet
+   * beide Kanaele, weil es beim Sammelschalter landete. Eine Stelle, die es weiss, statt
+   * vier, die es wiederholen.
+   *
+   * @param {number|string} nummer 1 … 4
+   */
+  _capForGang(nummer) {
+    const n = parseInt(nummer, 10);
+    if (n !== 1) return `onoff.${n}`;
     return this._aggregating ? 'onoff.1' : 'onoff';
   }
 

@@ -29,9 +29,12 @@ class WallSwitchDriver extends Homey.Driver {
     this.homey.flow.getConditionCard('switch_device_is_connected')
       .registerRunListener(async (args) => args.device._conn?.connected === true);
 
+    // Welche Faehigkeit ein Kanal traegt, weiss das Geraet - siehe _capForGang. Kanal 1
+    // wandert auf onoff.1, sobald der Sammelschalter `onoff` uebernimmt, und eine Karte,
+    // die das selbst ausrechnet, schaltet dann den falschen.
     this.homey.flow.getConditionCard('switch_gang_is_on')
       .registerRunListener(async (args) => {
-        const cap = args.gang === '1' ? 'onoff' : `onoff.${args.gang}`;
+        const cap = args.device._capForGang(args.gang);
         return args.device.getCapabilityValue(cap) === true;
       });
 
@@ -48,7 +51,7 @@ class WallSwitchDriver extends Homey.Driver {
 
     this.homey.flow.getActionCard('switch_set_gang')
       .registerRunListener(async (args) => {
-        const cap = args.gang === '1' ? 'onoff' : `onoff.${args.gang}`;
+        const cap = args.device._capForGang(args.gang);
         if (!args.device.hasCapability(cap)) {
           throw new Error(`Switch ${args.gang} is not configured on this device`);
         }
@@ -58,7 +61,7 @@ class WallSwitchDriver extends Homey.Driver {
 
     this.homey.flow.getActionCard('switch_toggle_gang')
       .registerRunListener(async (args) => {
-        const cap = args.gang === '1' ? 'onoff' : `onoff.${args.gang}`;
+        const cap = args.device._capForGang(args.gang);
         if (!args.device.hasCapability(cap)) {
           throw new Error(`Switch ${args.gang} is not configured on this device`);
         }
