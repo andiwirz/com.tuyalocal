@@ -636,8 +636,16 @@ Fairland InverterPlus it is the other way round — `true` is Smart, `false` is 
 | Setting | Meaning | Default |
 |---|---|---|
 | `silent_true_means` | Whether `true` on that data point is the Smart mode or the quiet one | `smart` |
+| `silent_values` | The two names, if the data point carries a named value instead of a switch | `smart,silence` |
 
-If the switch reads off while the pump is audibly running quietly, set it to `silent`.
+If the switch reads off while the pump is audibly running quietly, set `silent_true_means`
+to `silent`.
+
+Some pumps name the two modes rather than switching them — a reported Fairland PSL puts
+`smart` / `silence` on DP 102 where another Fairland puts a boolean on DP 117. The app
+tells the two apart by what the device reports, so nothing needs choosing; only the two
+names have to be in `silent_values`, normal mode first. On a boolean device that setting
+is ignored.
 
 #### Temperature Settings
 

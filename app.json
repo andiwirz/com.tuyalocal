@@ -21401,6 +21401,19 @@
               }
             },
             {
+              "id": "silent_values",
+              "type": "text",
+              "label": {
+                "en": "Silent mode values (comma-separated)",
+                "de": "Werte Flüstermodus (kommagetrennt)"
+              },
+              "value": "smart,silence",
+              "hint": {
+                "en": "Only for heat pumps whose silent mode is a named value rather than a switch — the app tells the two apart by what the device reports and ignores this on a boolean one. Two names: the normal mode first, the quiet one second. A reported Fairland PSL uses smart,silence on DP 102. Check DP Debug for the exact spelling; a value the device does not know is discarded without an error.",
+                "de": "Nur für Wärmepumpen, deren Flüstermodus ein benannter Wert statt eines Schalters ist — die App unterscheidet beides daran, was das Gerät meldet, und übergeht dies bei einem booleschen DP. Zwei Namen: zuerst der normale Betrieb, dann der leise. Eine gemeldete Fairland PSL nutzt smart,silence auf DP 102. Die genaue Schreibweise steht im DP-Debug; einen Wert, den das Gerät nicht kennt, verwirft es ohne Fehlermeldung."
+              }
+            },
+            {
               "id": "dp_fault",
               "type": "number",
               "label": {

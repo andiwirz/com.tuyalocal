@@ -395,13 +395,63 @@ class HeatPumpDevice extends BaseTuyaDevice {
     return this.getSetting('silent_true_means') === 'silent';
   }
 
-  /** Rohwert -> "leise ist an". */
+  /**
+   * Die beiden Namen, falls das Geraet den Fluestermodus benennt statt ihn zu schalten.
+   *
+   * @returns {{normal: string, leise: string}|null}
+   */
+  _silentTokens() {
+    const teile = String(this.getSetting('silent_values') || '')
+      .split(',').map((v) => v.trim()).filter(Boolean);
+    return teile.length >= 2 ? { normal: teile[0], leise: teile[1] } : null;
+  }
+
+  /**
+   * Rohwert -> "leise ist an".
+   *
+   * Zwei Bauarten fuer dieselbe Funktion, und das Geraet sagt selbst, welche es ist:
+   *
+   *   DP 117 boolesch      true = Smart, false = Silence   (gemeldete Fairland)
+   *   DP 102 Zeichenkette  "smart" / "silence"             (gemeldete Fairland PSL)
+   *
+   * Unterschieden wird am Wert, nicht an einer Einstellung - so wie es der
+   * Voreinstellungs-Zweig in diesem Treiber schon haelt. Nur die beiden Namen muessen
+   * hinterlegt sein, weil sie zum Senden gebraucht werden.
+   */
   _rawToSilent(raw) {
+    if (typeof raw === 'string') {
+      const t = this._silentTokens();
+      if (!t) return false;
+      const wert = raw.trim().toLowerCase();
+      if (wert === t.leise.toLowerCase())  return true;
+      if (wert === t.normal.toLowerCase()) return false;
+      // Weder das eine noch das andere: die Liste passt nicht zum Geraet, und ein
+      // Befehl daraus wuerde wortlos verworfen. Einmal sagen, nicht bei jedem Paket.
+      if (!this._silentTokenWarned) {
+        this._silentTokenWarned = true;
+        this._appLog(`Silent mode: the device reports "${raw}", but "Silent mode values" `
+          + `is [${t.normal}, ${t.leise}]. Correct that setting — a command with a value `
+          + 'the device does not know is discarded without an error.', 'warn');
+      }
+      return false;
+    }
     return this._silentTrueIsQuiet() ? Boolean(raw) : !raw;
   }
 
-  /** "leise ist an" -> Rohwert. */
+  /**
+   * "leise ist an" -> Rohwert.
+   *
+   * Welche Bauart, entscheidet der zuletzt gesehene Wert desselben DP - dieselbe Probe
+   * wie beim Voreinstellungs-DP weiter oben. Vor dem ersten empfangenen Wert bleibt es
+   * beim Schalter, denn das ist die haeufigere Bauart.
+   */
   _silentToRaw(leise) {
+    const dp = this.getSetting('dp_silent');
+    const zuletzt = dp ? this._lastDps[String(dp)] : undefined;
+    if (typeof zuletzt === 'string') {
+      const t = this._silentTokens();
+      if (t) return leise ? t.leise : t.normal;
+    }
     return this._silentTrueIsQuiet() ? Boolean(leise) : !leise;
   }
 
