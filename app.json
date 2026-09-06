@@ -5179,6 +5179,44 @@
         ]
       },
       {
+        "id": "ev_work_mode_changed",
+        "title": {
+          "en": "Charging mode changed",
+          "de": "Lademodus geändert"
+        },
+        "hint": {
+          "en": "Fires when the charger reports a different charging mode (Tuya work_mode, usually DP 14) — whether it was changed from Homey, from the charger, or from the manufacturer's own app. Requires DP Work Mode to be set in device settings.",
+          "de": "Wird ausgelöst, wenn das Ladegerät einen anderen Lademodus meldet (Tuya work_mode, meist DP 14) — gleich ob er von Homey, am Gerät oder in der App des Herstellers umgestellt wurde. Setzt voraus, dass DP Lademodus in den Geräteeinstellungen belegt ist."
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=ev_charger"
+          }
+        ],
+        "tokens": [
+          {
+            "name": "mode",
+            "type": "string",
+            "title": {
+              "en": "Mode",
+              "de": "Modus"
+            },
+            "example": "charge_now"
+          },
+          {
+            "name": "prev_mode",
+            "type": "string",
+            "title": {
+              "en": "Previous mode",
+              "de": "Vorheriger Modus"
+            },
+            "example": "charge_schedule"
+          }
+        ]
+      },
+      {
         "id": "ev_fault_alarm_on",
         "title": {
           "en": "Charger fault occurred",
@@ -7295,6 +7333,73 @@
                 "label": {
                   "en": "Fault",
                   "de": "Fehler"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ev_work_mode_is",
+        "title": {
+          "en": "Charging mode !{{is|is not}}",
+          "de": "Lademodus !{{ist|ist nicht}}"
+        },
+        "titleFormatted": {
+          "en": "Charging mode !{{is|is not}} [[mode]]",
+          "de": "Lademodus !{{ist|ist nicht}} [[mode]]"
+        },
+        "hint": {
+          "en": "Reads the value the charger reports on its work mode data point. A charger that does not implement a mode simply never reports it.",
+          "de": "Liest den Wert, den das Ladegerät auf seinem Lademodus-Datenpunkt meldet. Ein Modus, den das Gerät nicht beherrscht, wird schlicht nie gemeldet."
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=ev_charger"
+          },
+          {
+            "name": "mode",
+            "type": "dropdown",
+            "title": {
+              "en": "Mode",
+              "de": "Modus"
+            },
+            "values": [
+              {
+                "id": "charge_now",
+                "label": {
+                  "en": "Charge Now",
+                  "de": "Sofort laden"
+                }
+              },
+              {
+                "id": "charge_pct",
+                "label": {
+                  "en": "Charge to %",
+                  "de": "Bis % laden"
+                }
+              },
+              {
+                "id": "charge_energy",
+                "label": {
+                  "en": "Charge kWh",
+                  "de": "kWh laden"
+                }
+              },
+              {
+                "id": "charge_schedule",
+                "label": {
+                  "en": "Scheduled",
+                  "de": "Geplant"
+                }
+              },
+              {
+                "id": "charge_delay",
+                "label": {
+                  "en": "Delayed Start",
+                  "de": "Verzögerter Start"
                 }
               }
             ]
@@ -11481,6 +11586,73 @@
             "min": 1,
             "max": 48,
             "step": 1
+          }
+        ]
+      },
+      {
+        "id": "ev_set_work_mode",
+        "title": {
+          "en": "Set charging mode",
+          "de": "Lademodus setzen"
+        },
+        "titleFormatted": {
+          "en": "Set charging mode to [[mode]]",
+          "de": "Lademodus auf [[mode]] setzen"
+        },
+        "hint": {
+          "en": "Switches the charger between immediate, scheduled and target-based charging. Useful before \"Start charging\": several chargers ignore the charge switch while they are in scheduled mode. Not every charger implements every mode — one it does not know is discarded without an error, so check DP Debug after the first try.",
+          "de": "Schaltet zwischen sofortigem, geplantem und zielbasiertem Laden um. Nützlich vor „Ladevorgang starten\": mehrere Ladegeräte übergehen den Ladeschalter, solange sie im geplanten Modus stehen. Nicht jedes Gerät beherrscht jeden Modus — einen unbekannten verwirft es ohne Fehlermeldung, also lohnt nach dem ersten Versuch ein Blick ins DP-Debug."
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=ev_charger"
+          },
+          {
+            "name": "mode",
+            "type": "dropdown",
+            "title": {
+              "en": "Mode",
+              "de": "Modus"
+            },
+            "values": [
+              {
+                "id": "charge_now",
+                "label": {
+                  "en": "Charge Now",
+                  "de": "Sofort laden"
+                }
+              },
+              {
+                "id": "charge_pct",
+                "label": {
+                  "en": "Charge to %",
+                  "de": "Bis % laden"
+                }
+              },
+              {
+                "id": "charge_energy",
+                "label": {
+                  "en": "Charge kWh",
+                  "de": "kWh laden"
+                }
+              },
+              {
+                "id": "charge_schedule",
+                "label": {
+                  "en": "Scheduled",
+                  "de": "Geplant"
+                }
+              },
+              {
+                "id": "charge_delay",
+                "label": {
+                  "en": "Delayed Start",
+                  "de": "Verzögerter Start"
+                }
+              }
+            ]
           }
         ]
       },

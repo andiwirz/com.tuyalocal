@@ -79,6 +79,17 @@ class EvChargerDriver extends Homey.Driver {
         return String(args.device._lastDps?.[String(dp)] ?? '') === args.state;
       });
 
+    // Wie die Karte darueber liest auch diese den rohen Wert statt der Kachel. Meldet
+    // ein Ladegeraet einen Modus ausserhalb der Auswahlliste, laesst sich die
+    // Faehigkeit nicht setzen - eine Bedingung, die dann auf jeden Modus "nein" saegte,
+    // waere schlimmer als keine.
+    this.homey.flow.getConditionCard('ev_work_mode_is')
+      .registerRunListener(async (args) => {
+        const dp = args.device.getSetting('dp_work_mode');
+        if (!dp || dp <= 0) return false;
+        return String(args.device._lastDps?.[String(dp)] ?? '') === args.mode;
+      });
+
     // ── Actions ─────────────────────────────────────────────────────────────
     // Convenience card for users who think in amps — the charger's own unit.
     // Homey's built-in "Set target power" card covers the same DP in watts.
@@ -91,6 +102,20 @@ class EvChargerDriver extends Homey.Driver {
         const watts = amps * args.device._wattsPerAmp();
         await args.device.setCapabilityValue('target_power', watts);
         return args.device.triggerCapabilityListener('target_power', watts);
+      });
+
+    // Gemeldet von einem Voldt-Besitzer: steht das Geraet auf charge_schedule, greift
+    // Homeys Karte "Ladevorgang starten" nicht, und der Modus liess sich nur von Hand
+    // umstellen. Der Weg ueber den Capability-Listener ist derselbe, den ein Tippen auf
+    // die Auswahl nimmt - die Kachel folgt also mit.
+    this.homey.flow.getActionCard('ev_set_work_mode')
+      .registerRunListener(async (args) => {
+        if (!args.device.hasCapability('ev_work_mode')) {
+          throw new Error('Charging mode is not available on this charger. '
+            + 'Set DP Work Mode in its advanced settings first.');
+        }
+        await args.device.setCapabilityValue('ev_work_mode', args.mode).catch(() => {});
+        return args.device.triggerCapabilityListener('ev_work_mode', args.mode);
       });
 
     this.homey.flow.getActionCard('ev_reset_energy')

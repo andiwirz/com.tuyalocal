@@ -2035,6 +2035,7 @@ Homey generates **Start charging**, **Stop charging**, **Is charging** and a cha
 |---|---|---|
 | Charging session finished | `energy` (number) | Fires when the charger leaves the charging state, with the kWh delivered in that session |
 | Detailed charger state changed | `state`, `prev_state` (string) | Raw Tuya state — distinguishes *waiting* / *finished* / *plugged in*, which Homey's standard state groups together |
+| Charging mode changed | `mode`, `prev_mode` (string) | Fires however the mode was changed — from Homey, at the charger, or in the manufacturer's app. Requires `dp_work_mode` > 0 |
 | Charger fault occurred | `fault_code` (number) | Raw 16-bit fault bitmap value, debounced against reconnect artifacts |
 | Charger connected | — | Device established a LAN connection |
 | Charger disconnected | — | Connection lost after offline grace period |
@@ -2045,6 +2046,7 @@ Homey generates **Start charging**, **Stop charging**, **Is charging** and a cha
 | Condition | Notes |
 |---|---|
 | Detailed charger state is / is not | Compares the raw Tuya `work_state` — finer-grained than Homey's standard state |
+| Charging mode is / is not | Compares the raw Tuya `work_mode`: *Charge Now*, *Charge to %*, *Charge kWh*, *Scheduled*, *Delayed Start* |
 | Charger is / is not connected | — |
 
 #### Actions
@@ -2052,6 +2054,7 @@ Homey generates **Start charging**, **Stop charging**, **Is charging** and a cha
 | Action | Notes |
 |---|---|
 | Set charge current | Enter amps; clamped to `current_min` … `current_max` and converted to watts internally. Homey's built-in *Set target power* covers the same DP in watts |
+| Set charging mode | Switches between *Charge Now*, *Charge to %*, *Charge kWh*, *Scheduled* and *Delayed Start*. Several chargers ignore the charge switch while they are in scheduled mode, so this belongs before *Start charging* in such a flow |
 | Reset energy meter | Clears the accumulated total; also sends the device's own clear-energy command when `dp_clear_energy` is set |
 | Force charger reconnect | Drops and re-establishes the TCP connection |
 | Refresh charger values | Triggers an immediate GET request |

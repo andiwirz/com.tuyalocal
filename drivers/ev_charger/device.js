@@ -161,6 +161,7 @@ class EvChargerDevice extends BaseTuyaDevice {
     this._triggerChargingEnded      = this.homey.flow.getDeviceTriggerCard('ev_charging_ended');
     this._triggerStateChanged       = this.homey.flow.getDeviceTriggerCard('ev_state_changed');
     this._triggerFaultOn            = this.homey.flow.getDeviceTriggerCard('ev_fault_alarm_on');
+    this._triggerWorkModeChanged    = this.homey.flow.getDeviceTriggerCard('ev_work_mode_changed');
 
     // ── Capability listeners ─────────────────────────────────────────────────
     this._registeredCaps = new Set();
@@ -747,14 +748,25 @@ class EvChargerDevice extends BaseTuyaDevice {
 
       // ── Work mode ────────────────────────────────────────────────────────
       if (settings.dp_work_mode > 0 && dp === settings.dp_work_mode) {
+        const modus = String(value);
         if (this.hasCapability('ev_work_mode')) {
-          await this.setCapabilityValue('ev_work_mode', String(value)).catch((err) => {
+          await this.setCapabilityValue('ev_work_mode', modus).catch((err) => {
             this._appLog(
               `work_mode: could not set "${value}". Many chargers report modes ` +
               `they don't implement — check DP 33 (mode_set) for the real list.`,
               'warn',
             );
           });
+        }
+        // Der Auslöser haengt am gemeldeten Wert, nicht an der Kachel. Meldet ein
+        // Ladegeraet einen Modus, den die Auswahlliste nicht kennt, scheitert das
+        // Setzen der Faehigkeit gleich darueber - gewechselt hat es trotzdem, und ein
+        // Flow, der darauf wartet, soll den Wechsel sehen.
+        const vorher = this._prevWorkMode ?? null;
+        this._prevWorkMode = modus;
+        if (vorher !== null && vorher !== modus) {
+          this._triggerWorkModeChanged
+            .trigger(this, { mode: modus, prev_mode: vorher }).catch(() => {});
         }
         continue;
       }
