@@ -10,6 +10,22 @@ const { detectViaCloud, guessedDefaults }        = require('../../lib/dpCodeMap'
 
 // Maps this driver's settings keys to the Tuya cloud "code" names for the
 // qccdz (EV charger) category. See lib/dpCodeMap.js.
+//
+// Codes are matched case- and punctuation-insensitively, so "A_Voltage" and
+// "a_voltage" are one alias. The names in the 101+ range are vendor-specific: a
+// reported Feyree wall box calls power, meter, temperature and state something of
+// its own, and none of the standard qccdz codes appear on it at all.
+//
+// The six single-phase fields had no aliases whatsoever until then. They were added
+// later, when it turned out that not every charger packs its three phases into one
+// field, and the cloud map was never extended with them — so on every device, the
+// one source that could have filled them stayed silent.
+//
+// Deliberately absent: the charging current. On the reported Feyree it is
+// DeviceMaxSetA (113) and an *enum*, while this driver writes a number, and the
+// specification does not say which names the enum accepts. Without an alias
+// guessedDefaults clears the default of 4 — the device has no DP 4 — which is more
+// use than a DP that swallows every command in silence.
 const CLOUD_CODE_MAP = {
   dp_switch:           ['switch'],
   dp_work_state:       ['work_state'],
@@ -17,13 +33,19 @@ const CLOUD_CODE_MAP = {
   dp_phase_a:          ['phase_a', 'phase_1'],
   dp_phase_b:          ['phase_b', 'phase_2'],
   dp_phase_c:          ['phase_c', 'phase_3'],
-  dp_power_total:      ['power_total', 'cur_power'],
-  dp_energy_total:     ['forward_energy_total'],
+  dp_voltage_a:        ['A_Voltage'],
+  dp_voltage_b:        ['B_Voltage'],
+  dp_voltage_c:        ['C_Voltage'],
+  dp_current_a:        ['A_Current'],
+  dp_current_b:        ['B_Current'],
+  dp_current_c:        ['C_Current'],
+  dp_power_total:      ['power_total', 'cur_power', 'DeviceKw'],
+  dp_energy_total:     ['forward_energy_total', 'DeviceKwh'],
   dp_session_energy:   ['charge_energy_once'],
   dp_fault:            ['fault'],
-  dp_connection_state: ['connection_state'],
+  dp_connection_state: ['connection_state', 'DeviceState'],
   dp_work_mode:        ['work_mode'],
-  dp_temperature:      ['temp_current'],
+  dp_temperature:      ['temp_current', 'DeviceTemp'],
   dp_timer_on:         ['timer_on'],
   dp_live_updates:     ['online_state'],
   dp_clear_energy:     ['clear_energy', 'energy_clear'],
