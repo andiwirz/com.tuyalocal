@@ -309,7 +309,25 @@ class TuyaLocalApp extends Homey.App {
     const accessSecret = this.homey.settings.get('cloud_access_secret');
     const region       = this.homey.settings.get('cloud_region');
     const cloudUsable  = includeCloud && !!(accessId && accessSecret && region);
-    out.push(`Cloud lookup: ${cloudUsable ? `configured (${region})` : 'not configured'}`);
+    // "configured" heisst nur, dass Zugangsdaten hinterlegt sind. In einem gemeldeten
+    // Fall wurde damit jeder einzelne Aufruf abgelehnt, und der Kopf sagte trotzdem
+    // nichts anderes als "configured (eu)" - woraufhin die Fehlersuche zu einem Knopf
+    // riet, der ohne Kontoliste gar nichts vergleichen kann.
+    if (!cloudUsable) {
+      out.push('Cloud lookup: not configured');
+    } else {
+      const zuletzt = this._cloudListLast;
+      let ausgang = ' — account listing not attempted since the app started';
+      if (zuletzt && zuletzt.ok) {
+        ausgang = ` — account listing ok, ${zuletzt.count} device(s)`
+          + ` (${new Date(zuletzt.when).toISOString()})`;
+      } else if (zuletzt) {
+        ausgang = ` — account listing FAILED: ${zuletzt.error}`
+          + ` (${new Date(zuletzt.when).toISOString()}). The per-device lookups below are`
+          + ' permissioned separately and may still answer.';
+      }
+      out.push(`Cloud lookup: configured (${region})${ausgang}`);
+    }
     out.push('='.repeat(72));
 
     // Flattened first so the total is known before the loop starts — a progress
@@ -579,6 +597,7 @@ class TuyaLocalApp extends Homey.App {
       ({ token, uid } = await this._tuyaGetToken(host, accessId, accessSecret));
       this.addLog('Cloud', `Token OK — uid: ${uid || '(none)'}`, 'info');
     } catch (e) {
+      this._cloudListLast = { ok: false, when: Date.now(), error: `token: ${e.message}` };
       this.addLog('Cloud', `Token failed: ${e.message}`, 'error');
       throw e;
     }
@@ -587,9 +606,14 @@ class TuyaLocalApp extends Homey.App {
     try {
       devices = await this._tuyaGetDevices(host, accessId, accessSecret, token, uid);
     } catch (e) {
+      // Gemerkt, nicht nur protokolliert: der Support-Bericht meldete "configured",
+      // waehrend jeder Aufruf abgelehnt wurde, und schickte die Fehlersuche damit zu
+      // einem Knopf, der ohne Kontoliste nichts vergleichen kann.
+      this._cloudListLast = { ok: false, when: Date.now(), error: e.message };
       this.addLog('Cloud', `Device list failed: ${e.message}`, 'error');
       throw e;
     }
+    this._cloudListLast = { ok: true, when: Date.now(), count: devices.length };
     this.addLog('Cloud', `Device list: ${devices.length} device(s) in ${Date.now() - t0} ms — enriching local keys…`, 'info');
 
     // Enrich local keys — two passes, matching cloudEnrich strategy:
@@ -695,6 +719,40 @@ class TuyaLocalApp extends Homey.App {
       }
     } catch (e) {
       this.addLog('Cloud', `v2.0 batch error: ${e.message}`, 'warn');
+    }
+
+    // Dieselbe Geraeteliste, aber nach Kennungen gefragt.
+    //
+    // Auf einem gemeldeten Konto war jeder Auflistungsweg gesperrt, waehrend die
+    // Einzelabfragen derselben Familie - /v1.0/iot-03/devices/{id}/specification und
+    // Geschwister - im selben Augenblick normal antworteten. Welchen Parameter dieser
+    // Pfad dort will, sagt Tuya selbst: ohne einen beantwortet er die Anfrage mit
+    // "device_ids param is illegal". Genau den haben wir.
+    const ohneKey = result.filter((d) => !d.local_key);
+    if (ohneKey.length > 0) {
+      try {
+        const res = await this._tuyaRequest(host,
+          `/v1.0/iot-03/devices?device_ids=${ohneKey.map((d) => d.id).join(',')}`,
+          accessId, accessSecret, token);
+        const liste = res.success
+          ? (res.result?.list || res.result?.devices || (Array.isArray(res.result) ? res.result : []))
+          : null;
+        if (Array.isArray(liste)) {
+          const found = liste.filter((r) => r && r.local_key).length;
+          this.addLog('Cloud',
+            `iot-03 by id: ${liste.length} returned, ${found} with local_key`, 'info');
+          for (const r of liste) {
+            const d = result.find((x) => x.id === r?.id);
+            if (!d) continue;
+            if (r.local_key) d.local_key = r.local_key;
+            if (!d.product && (r.product_name || r.name)) d.product = r.product_name || r.name;
+          }
+        } else {
+          this.addLog('Cloud', `iot-03 by id failed: code=${res.code} msg=${res.msg}`, 'warn');
+        }
+      } catch (e) {
+        this.addLog('Cloud', `iot-03 by id error: ${e.message}`, 'warn');
+      }
     }
 
     // factory-infos fallback for any still missing local_key
@@ -1050,11 +1108,30 @@ class TuyaLocalApp extends Homey.App {
 
     // One request for the whole account rather than one per device: the lookup already
     // returns every device with its key, and Tuya rate-limits per second.
+    //
+    // Scheitert sie, ist das kein Abbruch mehr. Gemeldet wurde ein Konto, in dem alle
+    // sieben Auflistungswege abgelehnt wurden - siebenmal permission deny -, waehrend
+    // dieselben Zugangsdaten Sekunden spaeter im selben Bericht die vollstaendige
+    // Spezifikation des Geraets lieferten. Die Liste war gesperrt, die Einzelabfrage
+    // nicht.
+    //
+    // Der Rueckfallweg weiter unten ist fuer genau diesen Fall geschrieben - sein
+    // Kommentar sagt es woertlich. Erreicht wurde er nie, weil dieser Wurf vorher alles
+    // abraeumte: der Melder hat den Knopf zweimal gedrueckt und zweimal nur die
+    // Fehlermeldung gesehen, ohne dass ein einziges Geraet verglichen worden waere.
+    //
+    // Also gilt eine gescheiterte Liste als leere Liste. Der Grund wird gemerkt und
+    // nachgereicht, falls auch ueber die Kennungen nichts zu finden ist.
     let cloudDevices = [];
+    let listenFehler = '';
     try {
       cloudDevices = await this.cloudLookup({ accessId, accessSecret, region }) || [];
     } catch (err) {
-      throw new Error(`Cloud Lookup failed: ${err.message}`);
+      listenFehler = err.message;
+      this.addLog('Cloud',
+        `Account listing failed (${err.message}) — asking for each device by its id `
+        + 'instead. The listing and the per-device endpoints are permissioned separately, '
+        + 'so one can be refused while the other answers.', 'warn');
     }
     const byId = new Map(cloudDevices.filter((d) => d && d.id).map((d) => [String(d.id), d]));
 
@@ -1120,6 +1197,14 @@ class TuyaLocalApp extends Homey.App {
       this.addLog('Cloud',
         `${missingIds.length} device(s) missing from the account listing — asked for by id, `
         + `${found} found`, found === missingIds.length ? 'info' : 'warn');
+    }
+
+    // Kam weder ueber die Liste noch ueber die Kennungen etwas zurueck, ist der
+    // urspruengliche Fehler die Antwort. Sonst staende hier ein leeres Ergebnis ohne
+    // Begruendung - und falsche Zugangsdaten saehen aus wie "alles auf dem neuesten
+    // Stand".
+    if (byId.size === 0 && listenFehler) {
+      throw new Error(`Cloud Lookup failed: ${listenFehler}`);
     }
 
     const short = (k) => {
