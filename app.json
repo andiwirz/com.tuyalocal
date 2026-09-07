@@ -2311,10 +2311,6 @@
       "setable": false,
       "uiComponent": "sensor",
       "insights": true,
-      "insightsTitleTrue": {
-        "en": "Smoke level",
-        "de": "Rauchdichte"
-      },
       "icon": "/assets/capabilities/smoke_level.svg"
     }
   },

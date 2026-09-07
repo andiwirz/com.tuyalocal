@@ -67,16 +67,22 @@ class SmokeDetectorDevice extends BaseTuyaDevice {
   // ── Value readers ─────────────────────────────────────────────────────────
 
   /**
-   * Ist das Rauchsignal ein Alarm?
+   * Ist dieses Signal ein Alarm?
    *
    * Zwei Bauarten, und das Geraet sagt selbst, welche es ist: ein Schalter oder ein
    * benannter Zustand. Bei den benannten steht die Liste in den Einstellungen, weil
    * "alarm" zwar der Normalfall ist, aber nicht der einzige.
    *
+   * Zwei Zweige teilen sich das - Rauch und Manipulation -, darum der Name als
+   * Argument. Ohne ihn haette eine Merkwuerdigkeit am Manipulations-DP eine Meldung
+   * ueber den Rauchsensor erzeugt und, ueber denselben Merker, die Meldung fuer den
+   * Rauchsensor verschluckt. Also gemerkt wird je Feld, nicht je Geraet.
+   *
    * @param {*} raw
+   * @param {string} [feld]  Wie das Signal in der Meldung heissen soll.
    * @returns {boolean}
    */
-  _istAlarm(raw) {
+  _istAlarm(raw, feld = 'Smoke sensor') {
     if (typeof raw === 'boolean') return raw;
     if (typeof raw === 'number')  return raw > 0;
     const wort = String(raw).trim().toLowerCase();
@@ -93,11 +99,12 @@ class SmokeDetectorDevice extends BaseTuyaDevice {
     // gemeldet und als Ruhe behandelt - ein Daueralarm aus einem Tippfehler waere
     // schlimmer als eine fehlende Meldung, denn er wuerde abgeschaltet.
     if (['normal', 'nornal', 'ok', 'none', 'no_smoke'].includes(wort)) return false;
-    if (!this._smokeWordWarned) {
-      this._smokeWordWarned = true;
+    this._wortGewarnt = this._wortGewarnt || new Set();
+    if (!this._wortGewarnt.has(feld)) {
+      this._wortGewarnt.add(feld);
       this._appLog(
-        `Smoke sensor reports "${raw}", which is neither in "Smoke alarm values" `
-        + `[${liste.join(', ')}] nor a known word for "no smoke". Treated as no smoke — `
+        `${feld} reports "${raw}", which is neither in "Smoke alarm values" `
+        + `[${liste.join(', ')}] nor a known word for "no alarm". Treated as no alarm — `
         + 'add the word to that setting if it means an alarm on your detector.', 'warn');
     }
     return false;
@@ -187,7 +194,7 @@ class SmokeDetectorDevice extends BaseTuyaDevice {
         case 'tamper':
           if (this.hasCapability('alarm_tamper')) {
             await this.setCapabilityValue('alarm_tamper',
-              this._istAlarm(rawValue)).catch(() => {});
+              this._istAlarm(rawValue, 'Tamper sensor')).catch(() => {});
           }
           break;
 
@@ -261,7 +268,7 @@ class SmokeDetectorDevice extends BaseTuyaDevice {
     }
     // Eine geaenderte Wortliste soll sich sofort zeigen, nicht erst beim naechsten
     // unbekannten Wort - sonst bleibt die Warnung stehen, obwohl sie erledigt ist.
-    if (changedKeys.includes('smoke_alarm_values')) this._smokeWordWarned = false;
+    if (changedKeys.includes('smoke_alarm_values')) this._wortGewarnt = new Set();
   }
 }
 
