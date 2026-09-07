@@ -212,6 +212,7 @@
       var rowDefs = [
         ['__hdr_sensor', null, null, 'Readings (read-only)'],
         ['smoke',       'dp_smoke',           s.dp_smoke           != null ? s.dp_smoke           : 1,  'Smoke alarm'],
+        ['smoke_ppm',   'dp_smoke_value',     s.dp_smoke_value     != null ? s.dp_smoke_value     : 2,  'Smoke level in ppm (0 = disabled)'],
         ['batt_pct',    'dp_battery_percent', s.dp_battery_percent != null ? s.dp_battery_percent : 15, 'Battery percentage (0 = disabled)'],
         ['batt_state',  'dp_battery_state',   s.dp_battery_state   != null ? s.dp_battery_state   : 14, 'Battery level: low / middle / high (0 = disabled)'],
         ['tamper',      'dp_tamper',          s.dp_tamper          != null ? s.dp_tamper          : 0,  'Tamper alarm (0 = disabled)'],

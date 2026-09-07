@@ -2295,6 +2295,27 @@
       "uiQuickAction": false,
       "insights": false,
       "icon": "/assets/capabilities/heat_pump_silent.svg"
+    },
+    "smoke_level": {
+      "type": "number",
+      "title": {
+        "en": "Smoke Level",
+        "de": "Rauchdichte"
+      },
+      "units": {
+        "en": "ppm",
+        "de": "ppm"
+      },
+      "decimals": 0,
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "insights": true,
+      "insightsTitleTrue": {
+        "en": "Smoke level",
+        "de": "Rauchdichte"
+      },
+      "icon": "/assets/capabilities/smoke_level.svg"
     }
   },
   "flow": {
@@ -5939,6 +5960,49 @@
             "example": "alarm"
           }
         ]
+      },
+      {
+        "id": "smoke_level_rose_above",
+        "title": {
+          "en": "Smoke level rose above",
+          "de": "Rauchdichte ist über einen Wert gestiegen"
+        },
+        "titleFormatted": {
+          "en": "Smoke level rose above [[level]] ppm",
+          "de": "Rauchdichte ist über [[level]] ppm gestiegen"
+        },
+        "hint": {
+          "en": "Fires the moment the reading crosses the threshold, not on every reading above it. An early warning: the concentration rises before the detector sounds.",
+          "de": "Wird in dem Moment ausgelöst, in dem der Wert die Schwelle überschreitet, nicht bei jedem Wert darüber. Eine Vorwarnung: die Dichte steigt, bevor der Melder losgeht."
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=smoke_detector"
+          },
+          {
+            "name": "level",
+            "type": "number",
+            "min": 0,
+            "max": 10000,
+            "step": 1,
+            "placeholder": {
+              "en": "Smoke level (ppm)",
+              "de": "Rauchdichte (ppm)"
+            }
+          }
+        ],
+        "tokens": [
+          {
+            "name": "level",
+            "type": "number",
+            "title": {
+              "en": "Smoke level",
+              "de": "Rauchdichte"
+            }
+          }
+        ]
       }
     ],
     "conditions": [
@@ -7788,6 +7852,35 @@
             "name": "device",
             "type": "device",
             "filter": "driver_id=smoke_detector"
+          }
+        ]
+      },
+      {
+        "id": "smoke_level_above",
+        "title": {
+          "en": "Smoke level !{{is|is not}} above",
+          "de": "Rauchdichte !{{ist|ist nicht}} über"
+        },
+        "titleFormatted": {
+          "en": "Smoke level !{{is|is not}} above [[level]] ppm",
+          "de": "Rauchdichte !{{ist|ist nicht}} über [[level]] ppm"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=smoke_detector"
+          },
+          {
+            "name": "level",
+            "type": "number",
+            "min": 0,
+            "max": 10000,
+            "step": 1,
+            "placeholder": {
+              "en": "Smoke level (ppm)",
+              "de": "Rauchdichte (ppm)"
+            }
           }
         ]
       }
@@ -24819,6 +24912,7 @@
       ],
       "capabilities": [
         "alarm_smoke",
+        "smoke_level",
         "measure_battery",
         "alarm_battery",
         "alarm_tamper",
@@ -24863,6 +24957,12 @@
           "insightsTitleFalse": {
             "en": "Self-test passed",
             "de": "Selbsttest bestanden"
+          }
+        },
+        "smoke_level": {
+          "title": {
+            "en": "Smoke Level",
+            "de": "Rauchdichte"
           }
         }
       },
@@ -25095,6 +25195,21 @@
               "hint": {
                 "en": "The data point that reports smoke. Read as an alarm whether the detector sends a switch or a word.",
                 "de": "Der Datenpunkt, der Rauch meldet. Wird als Alarm gelesen, ob der Melder einen Schalter oder ein Wort schickt."
+              }
+            },
+            {
+              "id": "dp_smoke_value",
+              "type": "number",
+              "label": {
+                "en": "DP Smoke Level",
+                "de": "DP Rauchdichte"
+              },
+              "value": 2,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "The smoke concentration in ppm, where the detector reports one. `0` = disabled. Useful as an early warning: the level rises before the alarm trips.",
+                "de": "Die Rauchdichte in ppm, sofern der Melder eine meldet. `0` = deaktiviert. Taugt als Vorwarnung: die Dichte steigt, bevor der Alarm auslöst."
               }
             },
             {

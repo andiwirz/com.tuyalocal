@@ -6,7 +6,7 @@ const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 //
 //   DP 1   enum   smoke_sensor_status: "alarm" | "normal"   (alarm_smoke)
 //                 Some firmware sends a boolean here instead — both are read.
-//   DP 2   int    smoke_sensor_value, concentration          (ignored)
+//   DP 2   int    smoke_sensor_value, concentration in ppm   (smoke_level)
 //   DP 8   bool   self_checking — write true to start a test (action card)
 //   DP 9   enum   checking_result: checking | check_success
 //                                  | check_failure | others  (alarm_generic)
@@ -22,6 +22,7 @@ const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 
 const DP_PROFILE = [
   { settingKey: 'dp_smoke',           capability: 'alarm_smoke',    type: 'smoke'   },
+  { settingKey: 'dp_smoke_value',     capability: 'smoke_level',    type: 'level'   },
   { settingKey: 'dp_battery_percent', capability: 'measure_battery', type: 'battery' },
   { settingKey: 'dp_battery_state',   capability: 'alarm_battery',  type: 'battery' },
   { settingKey: 'dp_tamper',          capability: 'alarm_tamper',   type: 'tamper'  },
@@ -29,6 +30,7 @@ const DP_PROFILE = [
 ];
 
 const OPTIONAL_CAPABILITIES = [
+  { setting: 'dp_smoke_value',     capability: 'smoke_level'     },
   { setting: 'dp_battery_percent', capability: 'measure_battery' },
   { setting: 'dp_battery_state',   capability: 'alarm_battery'   },
   { setting: 'dp_tamper',          capability: 'alarm_tamper'    },
@@ -52,6 +54,12 @@ class SmokeDetectorDevice extends BaseTuyaDevice {
     this._triggerDeviceDisconnected = this.homey.flow.getDeviceTriggerCard('smoke_device_disconnected');
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('smoke_dp_changed');
     this._triggerSelfTestFinished   = this.homey.flow.getDeviceTriggerCard('smoke_self_test_finished');
+    this._triggerLevelRoseAbove     = this.homey.flow.getDeviceTriggerCard('smoke_level_rose_above');
+    // Die Schwelle steht in der Karte, nicht im Geraet: es feuert in dem Moment, in dem
+    // der Wert sie ueberschreitet, und nicht bei jedem Wert darueber. Dasselbe Muster
+    // wie beim Fuellstandsensor.
+    this._triggerLevelRoseAbove.registerRunListener(
+      (args, state) => state.vorher <= args.level && state.jetzt > args.level);
 
     await this._connect();
   }
@@ -142,6 +150,20 @@ class SmokeDetectorDevice extends BaseTuyaDevice {
         case 'smoke':
           await this.setCapabilityValue('alarm_smoke', this._istAlarm(rawValue)).catch(() => {});
           break;
+
+        case 'level': {
+          const ppm = Number(rawValue);
+          if (!Number.isFinite(ppm) || !this.hasCapability('smoke_level')) break;
+          const vorher = this.getCapabilityValue('smoke_level');
+          await this.setCapabilityValue('smoke_level', ppm).catch(() => {});
+          // Der erste Wert nach dem Verbinden loest nicht aus: davor steht null, und
+          // das ist kein Uebergang, sondern der erste Blick.
+          if (typeof vorher === 'number' && vorher !== ppm) {
+            this._triggerLevelRoseAbove
+              .trigger(this, { level: ppm }, { vorher, jetzt: ppm }).catch(() => {});
+          }
+          break;
+        }
 
         case 'battery': {
           const { prozent, schwach } = this._leseBatterie(rawValue);

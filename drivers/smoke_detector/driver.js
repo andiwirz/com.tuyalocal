@@ -18,6 +18,7 @@ const { detectViaCloud, guessedDefaults } = require('../../lib/dpCodeMap');
 // have to be plausible, not right.
 const DEFAULT_DPS = {
   dp_smoke:           1,
+  dp_smoke_value:     2,
   dp_self_test_start: 8,
   dp_self_test:       9,
   dp_battery_state:   14,
@@ -28,6 +29,7 @@ const DEFAULT_DPS = {
 
 const CLOUD_CODE_MAP = {
   dp_smoke:           ['smoke_sensor_status', 'smoke_sensor_state', 'smoke_state'],
+  dp_smoke_value:     ['smoke_sensor_value', 'smoke_value'],
   dp_self_test_start: ['self_checking'],
   dp_self_test:       ['checking_result'],
   dp_battery_state:   ['battery_state'],
@@ -43,6 +45,12 @@ class SmokeDetectorDriver extends Homey.Driver {
     // ── Conditions ─────────────────────────────────────────────────────────
     this.homey.flow.getConditionCard('smoke_device_is_connected')
       .registerRunListener(async (args) => args.device._conn?.connected === true);
+
+    this.homey.flow.getConditionCard('smoke_level_above')
+      .registerRunListener(async (args) => {
+        const ppm = args.device.getCapabilityValue('smoke_level');
+        return typeof ppm === 'number' && ppm > Number(args.level);
+      });
 
     // ── Actions ─────────────────────────────────────────────────────────────
     this.homey.flow.getActionCard('smoke_silence_alarm')

@@ -930,6 +930,8 @@ Driver for Tuya WiFi smoke detectors (category `ywbj`). Read-only apart from two
 
 Polling defaults to **300 seconds** rather than the 30 the mains-powered drivers use. A detector pushes its alarm the moment it sounds, so the poll only refreshes the battery reading — and on a cell-powered detector every request answered is battery spent. Set it to `0` to switch polling off entirely.
 
+The concentration on `dp_smoke_value` rises before the alarm trips, which makes it the one reading you can build an early warning on — see the **Smoke level rose above** trigger. Reported in plain ppm; if a detector scales it differently the raw value shows in **DP Debug**.
+
 > **The battery data points are not settled.** Tuya's specification calls DP 14 the level and DP 15 the percentage; a reported implementation had them the other way round. So neither is trusted: the driver reads the *value* and decides. A number is a percentage, a word is a level. A swapped pair therefore still lands correctly, and the defaults only have to be plausible.
 
 #### Connection
@@ -948,6 +950,7 @@ Polling defaults to **300 seconds** rather than the 30 the mains-powered drivers
 | Setting | Icon | Capability | Type | Default DP | Notes |
 |---|:---:|---|---|---|---|
 | `dp_smoke` |  | `alarm_smoke` | enum / bool | 1 | Read as an alarm whether the detector sends a word or a switch |
+| `dp_smoke_value` | <img src="assets/capabilities/smoke_level.svg" height="24"> | `smoke_level` | number | 2 | Smoke concentration in ppm; `0` = disabled |
 | `dp_battery_percent` |  | `measure_battery` | number | 15 | `0` = disabled |
 | `dp_battery_state` |  | `alarm_battery` | enum | 14 | `low` / `middle` / `high`; `0` = disabled |
 | `dp_tamper` |  | `alarm_tamper` | enum / bool | 0 | Detector removed from its base; `0` = disabled |
@@ -2081,6 +2084,7 @@ Homey generates the smoke, battery, tamper and self-test alarm cards itself from
 
 | Trigger | Flow tokens | Notes |
 |---|---|---|
+| Smoke level rose above | `level` (number) | Fires the moment the reading crosses the threshold in the card, not on every reading above it. The early warning — the concentration rises before the detector sounds |
 | Self-test finished | `result` (string), `passed` (boolean) | Fires however the test was started — from a flow, or by pressing the button on the detector |
 | Detector connected | — | Device established a LAN connection |
 | Detector disconnected | — | Connection lost after offline grace period |
@@ -2090,6 +2094,7 @@ Homey generates the smoke, battery, tamper and self-test alarm cards itself from
 
 | Condition |
 |---|
+| Smoke level is / is not above [ppm] |
 | Detector is / is not connected |
 
 #### Actions
