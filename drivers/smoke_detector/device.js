@@ -72,6 +72,12 @@ class SmokeDetectorDevice extends BaseTuyaDevice {
     if (typeof raw === 'boolean') return raw;
     if (typeof raw === 'number')  return raw > 0;
     const wort = String(raw).trim().toLowerCase();
+    // Eine Zeichenkette, die nur Ziffern enthaelt, ist eine Zahl. Die einzige
+    // dokumentierte Konfiguration im tuya-local-Projekt fuehrt DP 1 als integer mit
+    // "1" fuer Alarm - als Wort gelesen stuende es in keiner Liste, und der Melder
+    // schwiege bei Rauch. Das ist der schlimmste Fehler, den dieser Treiber haben
+    // kann, also wird die Zahl vor dem Wort geprueft.
+    if (/^\d+$/.test(wort)) return Number(wort) > 0;
     const liste = String(this.getSetting('smoke_alarm_values') || 'alarm')
       .split(',').map((v) => v.trim().toLowerCase()).filter(Boolean);
     if (liste.includes(wort)) return true;
@@ -142,7 +148,15 @@ class SmokeDetectorDevice extends BaseTuyaDevice {
           if (prozent !== null && this.hasCapability('measure_battery')) {
             await this.setCapabilityValue('measure_battery', prozent).catch(() => {});
           }
-          if (schwach !== null && this.hasCapability('alarm_battery')) {
+          // Melden beide DPs, entscheidet der Prozentsatz - er ist die genauere
+          // Angabe, und die einzige dokumentierte Konfiguration haengt beide an
+          // dieselbe Groesse, den Prozentsatz als Wert und die Stufe als Anhaengsel.
+          // Ohne diese Regel entschiede die Reihenfolge, in der die Datenpunkte im
+          // Paket stehen, und dasselbe Paket koennte zweimal verschieden ausgehen.
+          const hatProzent = prozent !== null
+            || this.getCapabilityValue('measure_battery') != null;
+          if (schwach !== null && this.hasCapability('alarm_battery')
+              && (prozent !== null || !hatProzent)) {
             await this.setCapabilityValue('alarm_battery', schwach).catch(() => {});
           }
           break;
@@ -156,8 +170,14 @@ class SmokeDetectorDevice extends BaseTuyaDevice {
           break;
 
         case 'selftest': {
-          const wort  = String(rawValue).trim().toLowerCase();
-          const fehler = !SELFTEST_OK.has(wort);
+          // Zwei Bauarten. Manche Melder melden ein Wort ("check_success"), andere ein
+          // Bitfeld, in dem 0 "kein Fehler" heisst und jedes gesetzte Bit einen. Die
+          // einzige dokumentierte Konfiguration im tuya-local-Projekt legt auf DP 11
+          // ein solches Bitfeld; als Wort gelesen ergaebe die 0 einen Fehleralarm auf
+          // einem gesunden Geraet - genau die Umkehrung dessen, was sie bedeutet.
+          const wort   = String(rawValue).trim().toLowerCase();
+          const zahl   = /^\d+$/.test(wort) ? Number(wort) : null;
+          const fehler = zahl !== null ? zahl !== 0 : !SELFTEST_OK.has(wort);
           if (this.hasCapability('alarm_generic')) {
             await this.setCapabilityValue('alarm_generic', fehler).catch(() => {});
           }
