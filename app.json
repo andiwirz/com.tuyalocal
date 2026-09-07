@@ -5840,6 +5840,105 @@
             ]
           }
         ]
+      },
+      {
+        "id": "smoke_device_connected",
+        "title": {
+          "en": "Detector connected",
+          "de": "Melder verbunden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=smoke_detector"
+          }
+        ]
+      },
+      {
+        "id": "smoke_device_disconnected",
+        "title": {
+          "en": "Detector disconnected",
+          "de": "Melder getrennt"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=smoke_detector"
+          }
+        ]
+      },
+      {
+        "id": "smoke_self_test_finished",
+        "title": {
+          "en": "Self-test finished",
+          "de": "Selbsttest abgeschlossen"
+        },
+        "hint": {
+          "en": "Fires when the detector reports the outcome of a self-test, however it was started — from a flow, or by pressing the button on the detector itself.",
+          "de": "Wird ausgelöst, wenn der Melder das Ergebnis eines Selbsttests meldet, gleich wie er gestartet wurde — aus einem Flow oder durch Drücken der Taste am Gerät."
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=smoke_detector"
+          }
+        ],
+        "tokens": [
+          {
+            "name": "result",
+            "type": "string",
+            "title": {
+              "en": "Result",
+              "de": "Ergebnis"
+            },
+            "example": "check_success"
+          },
+          {
+            "name": "passed",
+            "type": "boolean",
+            "title": {
+              "en": "Passed",
+              "de": "Bestanden"
+            }
+          }
+        ]
+      },
+      {
+        "id": "smoke_dp_changed",
+        "title": {
+          "en": "Detector data point changed",
+          "de": "Melder-Datenpunkt geändert"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=smoke_detector"
+          }
+        ],
+        "tokens": [
+          {
+            "name": "dp",
+            "type": "string",
+            "title": {
+              "en": "Data point",
+              "de": "Datenpunkt"
+            },
+            "example": "1"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "title": {
+              "en": "Value",
+              "de": "Wert"
+            },
+            "example": "alarm"
+          }
+        ]
       }
     ],
     "conditions": [
@@ -7675,6 +7774,20 @@
                 }
               }
             ]
+          }
+        ]
+      },
+      {
+        "id": "smoke_device_is_connected",
+        "title": {
+          "en": "Detector !{{is|is not}} connected",
+          "de": "Melder !{{ist|ist nicht}} verbunden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=smoke_detector"
           }
         ]
       }
@@ -12672,6 +12785,70 @@
                 }
               }
             ]
+          }
+        ]
+      },
+      {
+        "id": "smoke_silence_alarm",
+        "title": {
+          "en": "Silence the alarm",
+          "de": "Alarm stummschalten"
+        },
+        "hint": {
+          "en": "Silences a sounding detector, where it offers a data point for it. It does not clear the smoke reading — the alarm returns if smoke is still present.",
+          "de": "Schaltet einen ausgelösten Melder stumm, sofern er einen Datenpunkt dafür anbietet. Der Rauchwert wird dadurch nicht zurückgesetzt — bei anhaltendem Rauch kommt der Alarm zurück."
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=smoke_detector"
+          }
+        ]
+      },
+      {
+        "id": "smoke_self_test",
+        "title": {
+          "en": "Run self-test",
+          "de": "Selbsttest starten"
+        },
+        "hint": {
+          "en": "Starts the detector’s own test. The outcome arrives on the \"Self-test finished\" trigger and on the Self-Test Failed alarm.",
+          "de": "Startet die geräteeigene Prüfung. Das Ergebnis kommt über den Auslöser „Selbsttest abgeschlossen\" und den Selbsttest-Alarm."
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=smoke_detector"
+          }
+        ]
+      },
+      {
+        "id": "smoke_force_reconnect",
+        "title": {
+          "en": "Force detector reconnect",
+          "de": "Melder-Neuverbindung erzwingen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=smoke_detector"
+          }
+        ]
+      },
+      {
+        "id": "smoke_refresh_device",
+        "title": {
+          "en": "Refresh detector values",
+          "de": "Melderwerte aktualisieren"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=smoke_detector"
           }
         ]
       }
@@ -24628,6 +24805,444 @@
         "small": "/drivers/ev_charger/assets/images/small.png",
         "large": "/drivers/ev_charger/assets/images/large.png",
         "xlarge": "/drivers/ev_charger/assets/images/xlarge.png"
+      }
+    },
+    {
+      "id": "smoke_detector",
+      "name": {
+        "en": "Smoke Detector",
+        "de": "Rauchmelder"
+      },
+      "class": "sensor",
+      "connectivity": [
+        "lan"
+      ],
+      "capabilities": [
+        "alarm_smoke",
+        "measure_battery",
+        "alarm_battery",
+        "alarm_tamper",
+        "alarm_generic"
+      ],
+      "capabilitiesOptions": {
+        "alarm_smoke": {
+          "title": {
+            "en": "Smoke",
+            "de": "Rauch"
+          },
+          "insightsTitleTrue": {
+            "en": "Smoke detected",
+            "de": "Rauch erkannt"
+          },
+          "insightsTitleFalse": {
+            "en": "No smoke",
+            "de": "Kein Rauch"
+          }
+        },
+        "alarm_battery": {
+          "title": {
+            "en": "Battery Low",
+            "de": "Batterie schwach"
+          }
+        },
+        "alarm_tamper": {
+          "title": {
+            "en": "Tampered",
+            "de": "Manipuliert"
+          }
+        },
+        "alarm_generic": {
+          "title": {
+            "en": "Self-Test Failed",
+            "de": "Selbsttest fehlgeschlagen"
+          },
+          "insightsTitleTrue": {
+            "en": "Self-test failed",
+            "de": "Selbsttest fehlgeschlagen"
+          },
+          "insightsTitleFalse": {
+            "en": "Self-test passed",
+            "de": "Selbsttest bestanden"
+          }
+        }
+      },
+      "settings": [
+        {
+          "type": "group",
+          "label": {
+            "en": "Connection",
+            "de": "Verbindung"
+          },
+          "children": [
+            {
+              "id": "ip",
+              "type": "text",
+              "label": {
+                "en": "IP Address",
+                "de": "IP-Adresse"
+              },
+              "value": "",
+              "hint": {
+                "en": "Local IP address of the detector.",
+                "de": "Lokale IP-Adresse des Melders."
+              }
+            },
+            {
+              "id": "device_id",
+              "type": "text",
+              "label": {
+                "en": "Device ID",
+                "de": "Geräte-ID"
+              },
+              "value": ""
+            },
+            {
+              "id": "local_key",
+              "type": "text",
+              "label": {
+                "en": "Local Key",
+                "de": "Lokaler Schlüssel"
+              },
+              "value": ""
+            },
+            {
+              "id": "version",
+              "type": "dropdown",
+              "label": {
+                "en": "Protocol Version",
+                "de": "Protokollversion"
+              },
+              "value": "3.3",
+              "values": [
+                {
+                  "id": "3.1",
+                  "label": {
+                    "en": "3.1 (legacy)",
+                    "de": "3.1 (veraltet)"
+                  }
+                },
+                {
+                  "id": "3.3",
+                  "label": {
+                    "en": "3.3",
+                    "de": "3.3"
+                  }
+                },
+                {
+                  "id": "3.4",
+                  "label": {
+                    "en": "3.4",
+                    "de": "3.4"
+                  }
+                },
+                {
+                  "id": "3.5",
+                  "label": {
+                    "en": "3.5",
+                    "de": "3.5"
+                  }
+                },
+                {
+                  "id": "3.2",
+                  "label": {
+                    "en": "3.2",
+                    "de": "3.2"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "lock_protocol",
+              "type": "checkbox",
+              "label": {
+                "en": "Lock protocol version",
+                "de": "Protokollversion festhalten"
+              },
+              "value": false,
+              "hint": {
+                "en": "Stops the app trying other protocol versions when the device keeps failing to connect. The rotation exists to find a version nobody knows; switch this on when you do know it, so a network outage cannot send the app wandering through versions you have already ruled out.",
+                "de": "Hält die App davon ab, andere Protokollversionen zu probieren, wenn die Verbindung wiederholt scheitert. Die Rotation ist dafür da, eine unbekannte Version zu finden — wer sie kennt, schaltet das hier ein, damit eine Netzstörung die App nicht durch Versionen schickt, die längst ausscheiden."
+              }
+            },
+            {
+              "id": "polling_interval",
+              "type": "number",
+              "label": {
+                "en": "Polling Interval (seconds)",
+                "de": "Abfrageintervall (Sekunden)"
+              },
+              "value": 300,
+              "min": 0,
+              "max": 3600,
+              "hint": {
+                "en": "A detector pushes its alarm the moment it sounds, so the poll only refreshes the battery reading. On a cell-powered detector every request answered is battery spent — five minutes is a good balance, 0 switches polling off entirely.",
+                "de": "Ein Melder schickt seinen Alarm von sich aus, sobald er losgeht; die Abfrage frischt nur den Batteriewert auf. Bei einem batteriebetriebenen Melder kostet jede beantwortete Abfrage Ladung — fünf Minuten sind ein guter Ausgleich, 0 schaltet die Abfrage ganz ab."
+              }
+            },
+            {
+              "id": "reconnect_interval",
+              "type": "number",
+              "label": {
+                "en": "Auto-Reconnect Interval (minutes)",
+                "de": "Auto-Reconnect-Intervall (Minuten)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 1440,
+              "step": 1,
+              "hint": {
+                "en": "If the device is offline, reconnect every N minutes. No effect while connected. 0 = disabled.",
+                "de": "Wenn offline, alle N Minuten erneut verbinden. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "command_gap_ms",
+              "type": "number",
+              "label": {
+                "en": "Minimum gap between commands (ms)",
+                "de": "Mindestabstand zwischen Befehlen (ms)"
+              },
+              "value": 100,
+              "min": 0,
+              "max": 10000,
+              "hint": {
+                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 100 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 100 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
+              }
+            },
+            {
+              "id": "offline_grace_seconds",
+              "type": "number",
+              "label": {
+                "en": "Offline Grace Period (seconds)",
+                "de": "Offline-Karenzzeit (Sekunden)"
+              },
+              "value": 60,
+              "min": 0,
+              "max": 600,
+              "hint": {
+                "en": "How long the sensor must be offline before the 'disconnected' flow trigger fires.",
+                "de": "Wie lange der Sensor offline sein muss, bevor der 'Getrennt'-Auslöser feuert."
+              }
+            },
+            {
+              "id": "fire_and_forget",
+              "type": "checkbox",
+              "label": {
+                "en": "Fire and forget",
+                "de": "Fire and forget"
+              },
+              "value": false,
+              "hint": {
+                "en": "Send commands without waiting for acknowledgement. Off by default on this device type. Switch it on if commands are not arriving, or the device drops the connection right after a command.",
+                "de": "Befehle ohne Warten auf Bestätigung senden. Bei diesem Gerätetyp standardmässig aus. Einschalten, wenn Befehle nicht ankommen oder das Gerät die Verbindung unmittelbar nach einem Befehl trennt."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Diagnostics",
+            "de": "Diagnose"
+          },
+          "children": [
+            {
+              "id": "connection_status",
+              "type": "text",
+              "label": {
+                "en": "Connection status",
+                "de": "Verbindungsstatus"
+              },
+              "value": "—",
+              "hint": {
+                "en": "Updated automatically.",
+                "de": "Wird automatisch aktualisiert."
+              }
+            },
+            {
+              "id": "last_seen",
+              "type": "text",
+              "label": {
+                "en": "Last data received",
+                "de": "Zuletzt Daten empfangen"
+              },
+              "value": "—",
+              "hint": {
+                "en": "Updated automatically.",
+                "de": "Wird automatisch aktualisiert."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Data Points",
+            "de": "Datenpunkte"
+          },
+          "children": [
+            {
+              "id": "dp_smoke",
+              "type": "number",
+              "label": {
+                "en": "DP Smoke Alarm",
+                "de": "DP Rauchalarm"
+              },
+              "value": 1,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "The data point that reports smoke. Read as an alarm whether the detector sends a switch or a word.",
+                "de": "Der Datenpunkt, der Rauch meldet. Wird als Alarm gelesen, ob der Melder einen Schalter oder ein Wort schickt."
+              }
+            },
+            {
+              "id": "dp_battery_percent",
+              "type": "number",
+              "label": {
+                "en": "DP Battery Percentage",
+                "de": "DP Batterie Prozent"
+              },
+              "value": 15,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "0 = disabled. Which of this and the next carries which is not settled — the app reads the value rather than the number, so a swapped pair still lands correctly.",
+                "de": "0 = deaktiviert. Welcher von diesem und dem nächsten was trägt, ist nicht einheitlich — die App liest den Wert statt der Nummer, ein vertauschtes Paar landet also trotzdem richtig."
+              }
+            },
+            {
+              "id": "dp_battery_state",
+              "type": "number",
+              "label": {
+                "en": "DP Battery Level",
+                "de": "DP Batteriestufe"
+              },
+              "value": 14,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "0 = disabled. Expects low / middle / high.",
+                "de": "0 = deaktiviert. Erwartet low / middle / high."
+              }
+            },
+            {
+              "id": "dp_tamper",
+              "type": "number",
+              "label": {
+                "en": "DP Tamper Alarm",
+                "de": "DP Manipulationsalarm"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "0 = disabled. Reports the detector being removed from its base.",
+                "de": "0 = deaktiviert. Meldet, dass der Melder vom Sockel genommen wurde."
+              }
+            },
+            {
+              "id": "dp_self_test",
+              "type": "number",
+              "label": {
+                "en": "DP Self-Test Result",
+                "de": "DP Selbsttest-Ergebnis"
+              },
+              "value": 9,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "0 = disabled. Anything other than a success word raises the Self-Test Failed alarm — on a smoke detector, erring towards a warning is the right direction.",
+                "de": "0 = deaktiviert. Alles ausser einem Erfolgswort löst den Selbsttest-Alarm aus — bei einem Rauchmelder ist die Warnung die richtige Richtung zu irren."
+              }
+            },
+            {
+              "id": "dp_self_test_start",
+              "type": "number",
+              "label": {
+                "en": "DP Self-Test Start",
+                "de": "DP Selbsttest starten"
+              },
+              "value": 8,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "0 = disabled. Written by the \"Run self-test\" flow card.",
+                "de": "0 = deaktiviert. Wird von der Flow-Karte „Selbsttest starten\" beschrieben."
+              }
+            },
+            {
+              "id": "dp_muffling",
+              "type": "number",
+              "label": {
+                "en": "DP Muffling",
+                "de": "DP Stummschaltung"
+              },
+              "value": 16,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "0 = disabled. Written by the \"Silence the alarm\" flow card.",
+                "de": "0 = deaktiviert. Wird von der Flow-Karte „Alarm stummschalten\" beschrieben."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Interpretation",
+            "de": "Auswertung"
+          },
+          "children": [
+            {
+              "id": "smoke_alarm_values",
+              "type": "text",
+              "label": {
+                "en": "Smoke alarm values",
+                "de": "Werte Rauchalarm"
+              },
+              "value": "alarm",
+              "hint": {
+                "en": "Comma-separated words that mean smoke, for detectors whose vocabulary differs. Ignored where the data point is a plain switch. A word that is neither in this list nor a known word for \"no smoke\" is reported once and treated as no smoke.",
+                "de": "Kommagetrennte Wörter, die Rauch bedeuten, für Melder mit abweichendem Wortschatz. Wird übergangen, wo der Datenpunkt ein blosser Schalter ist. Ein Wort, das weder hier steht noch als „kein Rauch\" bekannt ist, wird einmal gemeldet und als „kein Rauch\" behandelt."
+              }
+            },
+            {
+              "id": "battery_low_percent",
+              "type": "number",
+              "label": {
+                "en": "Battery low below (%)",
+                "de": "Batterie schwach unter (%)"
+              },
+              "value": 15,
+              "min": 1,
+              "max": 99,
+              "hint": {
+                "en": "Raises the Battery Low alarm at or below this percentage. Only used where the detector reports a percentage rather than a level.",
+                "de": "Löst den Batteriealarm bei diesem Prozentsatz oder darunter aus. Gilt nur, wo der Melder einen Prozentsatz statt einer Stufe meldet."
+              }
+            }
+          ]
+        }
+      ],
+      "pair": [
+        {
+          "id": "credentials"
+        },
+        {
+          "id": "list_devices"
+        }
+      ],
+      "images": {
+        "small": "/drivers/smoke_detector/assets/images/small.png",
+        "large": "/drivers/smoke_detector/assets/images/large.png"
+      },
+      "energy": {
+        "batteries": [
+          "OTHER"
+        ]
       }
     }
   ],

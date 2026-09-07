@@ -23,7 +23,8 @@
       "ev_charger": "EV Charger",
       "level_sensor": "Ultrasonic Level Sensor",
       "weather_station": "Weather Station",
-      "access_panel": "Face Access Panel"
+      "access_panel": "Face Access Panel",
+      "smoke_detector": "Smoke Detector"
     }
   },
   "notifications": {

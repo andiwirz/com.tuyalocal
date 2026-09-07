@@ -23,7 +23,8 @@
       "ev_charger": "Wallbox",
       "level_sensor": "Ultraschall-Füllstandsensor",
       "weather_station": "Wetterstation",
-      "access_panel": "Zutrittspanel"
+      "access_panel": "Zutrittspanel",
+      "smoke_detector": "Rauchmelder"
     }
   },
   "notifications": {

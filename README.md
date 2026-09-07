@@ -2,7 +2,7 @@
 
 **Version 1.0.229** · Local WiFi/LAN control of Tuya smart devices — no cloud, no Zigbee hub required.
 
-All communication happens over your local network via the Tuya LAN protocol. Twenty-one built-in drivers cover the most common device types; a fully generic driver handles anything else.
+All communication happens over your local network via the Tuya LAN protocol. Twenty-two built-in drivers cover the most common device types; a fully generic driver handles anything else.
 
 ---
 
@@ -27,6 +27,7 @@ All communication happens over your local network via the Tuya LAN protocol. Twe
 | [Wall Switch](#wall-switch-1) | 1/2/3/4-gang WiFi wall switches | Socket |
 | [Doorbell](#doorbell-1) | Tuya video doorbells (Marmitek Buzz LO, Bcom Majic IPBox, Cleverio CD-200 and compatible) | Doorbell |
 | [Presence Sensor](#presence-sensor-1) | mmWave radar presence sensors (ZY-M100-WIFI and compatible) | Sensor |
+| [Smoke Detector](#smoke-detector-1) | Tuya WiFi smoke detectors, category `ywbj` | Smoke Detector |
 | [Energy Meter](#energy-meter-1) | DIN-rail meters, clamp meters and metering breakers (`zndb`, `dlq`) | Sensor |
 | [Weather Station](#weather-station-1) | WiFi weather stations with outdoor sensors (temperature, humidity, pressure, wind, rain) | Sensor |
 | [Ultrasonic Level Sensor](#ultrasonic-level-sensor-1) | Tank and cistern level sensors with configurable alarm thresholds | Sensor |
@@ -920,6 +921,53 @@ These are device settings rather than tiles — they configure the radar itself.
 | `dp_far_detection` | Far detection limit, 0–1000 cm (step 10) | 4 |
 | `dp_detection_delay` | Seconds before presence is reported | 101 |
 | `dp_fading_time` | Seconds before presence clears after the room empties | 102 |
+
+---
+
+### Smoke Detector
+
+Driver for Tuya WiFi smoke detectors (category `ywbj`). Read-only apart from two commands: silencing a sounding alarm and starting the detector's own self-test.
+
+Polling defaults to **300 seconds** rather than the 30 the mains-powered drivers use. A detector pushes its alarm the moment it sounds, so the poll only refreshes the battery reading — and on a cell-powered detector every request answered is battery spent. Set it to `0` to switch polling off entirely.
+
+> **The battery data points are not settled.** Tuya's specification calls DP 14 the level and DP 15 the percentage; a reported implementation had them the other way round. So neither is trusted: the driver reads the *value* and decides. A number is a percentage, a word is a level. A swapped pair therefore still lands correctly, and the defaults only have to be plausible.
+
+#### Connection
+
+| Setting | Description | Default |
+|---|---|---|
+| `ip` | Device IP address | — |
+| `device_id` | Tuya Device ID | — |
+| `local_key` | Tuya Local Key (16 or 32 chars) | — |
+| `version` | Protocol version | Auto-detect |
+| `polling_interval` | Seconds between GET polls (`0` = push-only) | 300 |
+| `offline_grace_seconds` | Seconds without data before marking device offline | 60 |
+
+#### Data Points
+
+| Setting | Icon | Capability | Type | Default DP | Notes |
+|---|:---:|---|---|---|---|
+| `dp_smoke` |  | `alarm_smoke` | enum / bool | 1 | Read as an alarm whether the detector sends a word or a switch |
+| `dp_battery_percent` |  | `measure_battery` | number | 15 | `0` = disabled |
+| `dp_battery_state` |  | `alarm_battery` | enum | 14 | `low` / `middle` / `high`; `0` = disabled |
+| `dp_tamper` |  | `alarm_tamper` | enum / bool | 0 | Detector removed from its base; `0` = disabled |
+| `dp_self_test` |  | `alarm_generic` | enum | 9 | `checking_result`; anything other than a success word raises the alarm |
+
+#### Commands
+
+Written to, never read. Both are reachable from flow cards.
+
+| Setting | Description | Default DP |
+|---|---|---|
+| `dp_self_test_start` | Starts the detector's self-test | 8 |
+| `dp_muffling` | Silences a sounding alarm | 16 |
+
+#### Interpretation
+
+| Setting | Description | Default |
+|---|---|---|
+| `smoke_alarm_values` | Comma-separated words that mean smoke, for detectors with a different vocabulary. A word that is neither in this list nor a known word for "no smoke" is reported once and treated as no smoke — on a detector, a false alarm gets switched off, which is the worse way to be wrong | `alarm` |
+| `battery_low_percent` | Raises the battery alarm at or below this percentage. Only used where the detector reports a percentage | 15 |
 
 ---
 
@@ -2022,6 +2070,36 @@ fan: sub-capabilities (`onoff.fan`, `dim.fan`) and app-defined capabilities (`fa
 |---|---|
 | Force presence sensor reconnect | Drops and re-establishes the TCP connection |
 | Refresh presence sensor values | Triggers an immediate GET request |
+
+---
+
+### Smoke Detector
+
+Homey generates the smoke, battery, tamper and self-test alarm cards itself from the standard capabilities. The cards below are the driver's own additions.
+
+#### Triggers
+
+| Trigger | Flow tokens | Notes |
+|---|---|---|
+| Self-test finished | `result` (string), `passed` (boolean) | Fires however the test was started — from a flow, or by pressing the button on the detector |
+| Detector connected | — | Device established a LAN connection |
+| Detector disconnected | — | Connection lost after offline grace period |
+| Detector data point changed | `dp` (string), `value` (string) | Any raw DP change |
+
+#### Conditions
+
+| Condition |
+|---|
+| Detector is / is not connected |
+
+#### Actions
+
+| Action | Notes |
+|---|---|
+| Silence the alarm | Writes `dp_muffling`. Does not clear the smoke reading — the alarm returns while smoke is still present |
+| Run self-test | Writes `dp_self_test_start`; the outcome arrives on the trigger above |
+| Force detector reconnect | Drops and re-establishes the TCP connection |
+| Refresh detector values | Triggers an immediate GET request |
 
 ---
 

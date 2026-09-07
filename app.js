@@ -1221,6 +1221,28 @@ class TuyaLocalApp extends Homey.App {
         if (onlyDevice && name !== onlyDevice) continue;
         const note = (reason) => skipped.push({ name, driver: driver.id, reason });
 
+        // Ein Geraet, das verbunden ist und auf dieser Verbindung schon Daten
+        // empfangen hat, beweist damit, dass sein Schluessel stimmt. Ein Cloud-Wert,
+        // der davon abweicht, ist dann der veraltete - nicht umgekehrt.
+        //
+        // Gemeldet von Michel Helsdingen aus seiner eigenen Tuya-App: Tuya gibt bei
+        // manchen Ereignissen einen neuen lokalen Schluessel aus, und die Kopie in der
+        // Cloud ist nicht immer die, mit der das Geraet gerade arbeitet. Sein Import
+        // hat einen laufenden Schluessel durch einen aelteren ersetzt, und das Geraet
+        // verstummte. Er hat es mit einem bleibenden Kennzeichen geloest; hier genuegt
+        // der Live-Zustand, der nicht veralten kann.
+        //
+        // Das wiegt seit dem Rueckfallweg ueber die Kennung schwerer: der bringt die
+        // Pruefung auf Konten, deren Auflistung gesperrt ist - und deren Cloud-Stand
+        // ist am ehesten der aeltere.
+        const laeuft = device._conn?.connected === true
+          && device._conn?.stats?.everData === true;
+        if (laeuft) {
+          note('connected and receiving data — the stored key demonstrably works, so it '
+            + 'is left alone. Correct it by hand if you really mean to replace it.');
+          continue;
+        }
+
         const kennung = kennungen(device);
         if (kennung.ids.length === 0) { note('no device id'); continue; }
 
