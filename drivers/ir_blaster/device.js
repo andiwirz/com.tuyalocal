@@ -318,6 +318,23 @@ class IrBlasterDevice extends BaseTuyaDevice {
         continue;
       }
       if (!this.hasCapability(entry.capability)) continue;
+      // Ein Wahrheitswert ist keine Messung. Number(true) ist 1, und ohne diese
+      // Sperre stuende auf der Kachel 1 Grad. Der Fall ist nicht erfunden: der Woox
+      // R7246 fuehrt auf DP 101 den Displayschalter und seinen Sensor auf 2 und 12 -
+      // wer ihn ohne Cloud-Suche anlernt, bekommt genau unsere Vorgabe 101 auf einen
+      // Schalter gelegt.
+      if (typeof rawValue === 'boolean') {
+        this._boolGewarnt = this._boolGewarnt || new Set();
+        if (!this._boolGewarnt.has(entry.settingKey)) {
+          this._boolGewarnt.add(entry.settingKey);
+          this._appLog(`Data point ${dp} reports true/false, not a number, so it is not the `
+            + `${entry.capability.replace('measure_', '')} sensor. Left alone. Some blasters `
+            + 'put a display switch there and their sensor elsewhere — check the data point '
+            + 'numbers in this device\'s advanced settings, or run Cloud Lookup, which finds '
+            + 'them by name.', 'warn');
+        }
+        continue;
+      }
       const roh = Number(rawValue);
       if (!Number.isFinite(roh)) continue;
       await this.setCapabilityValue(entry.capability, roh / this._teiler(entry.teiler, roh))

@@ -323,6 +323,22 @@ class AirQualityDevice extends BaseTuyaDevice {
         this.log(`Unmapped DP ${dp}:`, rawValue);
         continue;
       }
+      // Ein Wahrheitswert ist keine Messung. Number(true) ist 1, und ohne diese Sperre
+      // stuende auf der Kachel 1 — als Temperatur, als ppm, als was auch immer der
+      // Datenpunkt gerade traegt. Auf diesen Geraeten liegen Schalter und Messwerte
+      // dicht beieinander, und eine falsch geratene Nummer soll auffallen statt eine
+      // Messung vorzutaeuschen.
+      if (typeof rawValue === 'boolean') {
+        this._boolGewarnt = this._boolGewarnt || new Set();
+        if (!this._boolGewarnt.has(entry.settingKey)) {
+          this._boolGewarnt.add(entry.settingKey);
+          this._appLog(`Data point ${dp} reports true/false, not a number, so it is not a `
+            + `reading. ${entry.capability} left alone — correct ${entry.settingKey} in this `
+            + 'device\'s advanced settings, or run Cloud Lookup, which finds the data points '
+            + 'by name.', 'warn');
+        }
+        continue;
+      }
       const roh = Number(rawValue);
       if (!Number.isFinite(roh)) continue;
       this._roh[entry.settingKey] = roh;
