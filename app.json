@@ -13476,6 +13476,48 @@
             "en": "Rain (last hour)",
             "de": "Regen (letzte Stunde)"
           }
+        },
+        "measure_humidity.extra": {
+          "title": {
+            "en": "Humidity Channel 2",
+            "de": "Feuchte Kanal 2"
+          }
+        },
+        "measure_temperature.ch3": {
+          "title": {
+            "en": "Temperature Channel 3",
+            "de": "Temperatur Kanal 3"
+          }
+        },
+        "measure_humidity.ch3": {
+          "title": {
+            "en": "Humidity Channel 3",
+            "de": "Feuchte Kanal 3"
+          }
+        },
+        "alarm_battery": {
+          "title": {
+            "en": "Indoor Sensor Battery",
+            "de": "Batterie Innensensor"
+          }
+        },
+        "alarm_battery.ch1": {
+          "title": {
+            "en": "Battery Channel 1",
+            "de": "Batterie Kanal 1"
+          }
+        },
+        "alarm_battery.ch2": {
+          "title": {
+            "en": "Battery Channel 2",
+            "de": "Batterie Kanal 2"
+          }
+        },
+        "alarm_battery.ch3": {
+          "title": {
+            "en": "Battery Channel 3",
+            "de": "Batterie Kanal 3"
+          }
         }
       },
       "platforms": [
@@ -13735,6 +13777,66 @@
               }
             },
             {
+              "id": "dp_hum_extra",
+              "type": "number",
+              "label": {
+                "en": "DP Humidity Channel 2",
+                "de": "DP Feuchte Kanal 2"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "The humidity of the same channel as DP Temperature Extra. `0` = disabled. On a three-channel station this is usually 106.",
+                "de": "Die Feuchte desselben Kanals wie DP Zusatztemperatur. `0` = deaktiviert. Auf einer Dreikanal-Station meist 106."
+              }
+            },
+            {
+              "id": "dp_temp_ch3",
+              "type": "number",
+              "label": {
+                "en": "DP Temperature Channel 3",
+                "de": "DP Temperatur Kanal 3"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "`0` = disabled. On a three-channel station usually 107.",
+                "de": "`0` = deaktiviert. Auf einer Dreikanal-Station meist 107."
+              }
+            },
+            {
+              "id": "dp_hum_ch3",
+              "type": "number",
+              "label": {
+                "en": "DP Humidity Channel 3",
+                "de": "DP Feuchte Kanal 3"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "`0` = disabled. On a three-channel station usually 108.",
+                "de": "`0` = deaktiviert. Auf einer Dreikanal-Station meist 108."
+              }
+            },
+            {
+              "id": "dp_sensor_battery",
+              "type": "number",
+              "label": {
+                "en": "DP Sensor Batteries",
+                "de": "DP Sensor-Batterien"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "The data point carrying the outdoor sensors’ battery states as one block, usually 130. `0` = disabled. A block the driver does not recognise is left alone and reported once.",
+                "de": "Der Datenpunkt, der die Batteriestände der Aussensensoren als einen Block trägt, meist 130. `0` = deaktiviert. Einen Block, den der Treiber nicht erkennt, lässt er unberührt und meldet es einmal."
+              }
+            },
+            {
               "id": "temp_divisor",
               "type": "dropdown",
               "label": {
@@ -13804,6 +13906,21 @@
               "hint": {
                 "en": "560 means 56.0 %, so the divisor is 10.",
                 "de": "560 bedeutet 56,0 %, der Teiler ist also 10."
+              }
+            },
+            {
+              "id": "sensor_battery_low_at",
+              "type": "number",
+              "label": {
+                "en": "Sensor battery low at or below",
+                "de": "Sensor-Batterie schwach ab"
+              },
+              "value": 1,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "Raises a channel’s battery alarm when its level is at or below this. The scale is the station’s own and is not published — the Logs tab prints the levels once, so you can see what your station counts in.",
+                "de": "Löst den Batteriealarm eines Kanals aus, wenn sein Stand diesen Wert erreicht oder unterschreitet. Die Skala gehört der Station und ist nicht veröffentlicht — im Protokoll stehen die Stände einmal ausgeschrieben, damit ersichtlich ist, worin sie zählt."
               }
             }
           ]

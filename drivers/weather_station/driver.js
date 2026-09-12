@@ -41,11 +41,15 @@ const DEFAULT_DPS = {
 // more than one outdoor probe repeat it as ch2temp and so on, which this driver
 // does not try to cover.
 const CLOUD_CODE_MAP = {
-  dp_temp_extra:  ['temp_current'],
+  dp_temp_extra:  ['ch2temp', 'temp_current'],
   dp_temp_in:     ['intemp', 'temp_indoor'],
   dp_hum_in:      ['inhum', 'humidity_indoor'],
   dp_temp_out:    ['ch1temp', 'temp_outdoor', 'outtemp'],
   dp_hum_out:     ['ch1hum', 'humidity_outdoor', 'outhum'],
+  dp_hum_extra:   ['ch2hum'],
+  dp_temp_ch3:    ['ch3temp'],
+  dp_hum_ch3:     ['ch3hum'],
+  dp_sensor_battery: ['battery'],
   dp_pressure:    ['pressure', 'atmospheric_pressture', 'atmospheric_pressure'],
   dp_wind:        ['windspeed', 'windspeed_avg'],
   dp_gust:        ['gustwind', 'windspeed_gust'],

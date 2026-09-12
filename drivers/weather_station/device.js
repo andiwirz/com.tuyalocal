@@ -13,6 +13,9 @@ const NUMERIC_PROFILE = [
   { settingKey: 'dp_temp_extra', capability: 'measure_temperature.extra',    divisor: 'temp_divisor'     },
   { settingKey: 'dp_hum_in',     capability: 'measure_humidity',             divisor: 'humidity_divisor' },
   { settingKey: 'dp_hum_out',    capability: 'measure_humidity.outdoor',     divisor: 'humidity_divisor' },
+  { settingKey: 'dp_hum_extra',   capability: 'measure_humidity.extra',       divisor: 'humidity_divisor' },
+  { settingKey: 'dp_temp_ch3',    capability: 'measure_temperature.ch3',      divisor: 'temp_divisor'     },
+  { settingKey: 'dp_hum_ch3',     capability: 'measure_humidity.ch3',         divisor: 'humidity_divisor' },
   { settingKey: 'dp_pressure',   capability: 'measure_pressure',             divisor: 'pressure_divisor' },
   { settingKey: 'dp_wind',       capability: 'measure_wind_strength',        divisor: 'wind_divisor'     },
   { settingKey: 'dp_gust',       capability: 'measure_gust_strength',        divisor: 'wind_divisor'     },
@@ -20,6 +23,19 @@ const NUMERIC_PROFILE = [
   { settingKey: 'dp_rain_24h',   capability: 'measure_rain',                 divisor: 'rain_divisor'     },
   { settingKey: 'dp_rain_total', capability: 'measure_rain.total',           divisor: 'rain_divisor'     },
 ];
+
+// Ab wann eine Temperatur kein Messwert mehr ist.
+//
+// Ein Kanal ohne angemeldeten Sensor meldet den unteren Rand seines Bereichs. Auf der
+// gemeldeten Station sind das -500 auf den Kanaelen und -200 auf temp_current, also
+// -50 und -20 Grad. Der zweite ist das Problem: -20 Grad ist in Skandinavien eine
+// Messung, kein Platzhalter. Also faengt die Schwelle nur, was kein Sensor fuer den
+// Hausgebrauch je liefern kann - unter -40 ist keiner von ihnen spezifiziert.
+const SENSOR_ABSENT_BELOW_C = -40;
+
+// 0xff auf dem Stand eines Kanals heisst "kein Sensor dahinter" - dieselbe Aussage
+// wie der Temperatur-Anschlag, nur im Batterieblock.
+const BATTERIE_FEHLT = 0xff;
 
 const OPTIONAL_CAPABILITIES = [
   ...NUMERIC_PROFILE.map(({ settingKey, capability }) => ({ setting: settingKey, capability })),
@@ -31,6 +47,12 @@ const OPTIONAL_CAPABILITIES = [
   { setting: 'dp_wind_dir', capability: 'wind_direction'     },
   { setting: 'dp_wind_dir', capability: 'measure_wind_angle' },
   { setting: 'dp_comfort',  capability: 'comfort_level'      },
+  // Vier Kanaele aus einem Datenpunkt: der Block nennt sie alle, und welche davon
+  // besetzt sind, sagt er selbst.
+  { setting: 'dp_sensor_battery', capability: 'alarm_battery'     },
+  { setting: 'dp_sensor_battery', capability: 'alarm_battery.ch1' },
+  { setting: 'dp_sensor_battery', capability: 'alarm_battery.ch2' },
+  { setting: 'dp_sensor_battery', capability: 'alarm_battery.ch3' },
 ];
 
 class WeatherStationDevice extends BaseTuyaDevice {
@@ -93,6 +115,36 @@ class WeatherStationDevice extends BaseTuyaDevice {
     return diff <= 45;
   }
 
+  /**
+   * Liest den Batterieblock der Aussensensoren.
+   *
+   * Der gemeldete Block AAIBBAL/A/8= zerfaellt in Paare aus Kanalnummer und Stand:
+   *
+   *     00 02 | 01 04 | 02 ff | 03 ff
+   *
+   * und das deckt sich mit den Messwerten derselben Aufnahme - genau die beiden
+   * Kanaele mit ff sind die, deren Temperatur auf dem Anschlag steht. Ein Muster aus
+   * einer Aufnahme ist aber kein Format, darum wird nichts erzwungen: was nicht als
+   * aufsteigende Paare mit kleinen Kanalnummern zerfaellt, gilt als unbekannt und
+   * wird verworfen, statt eine Warnung aus Zufallsbytes zu bauen.
+   *
+   * @param {*} roh
+   * @returns {Array<{kanal: number, stand: number, fehlt: boolean}>|null}
+   */
+  _leseSensorBatterien(roh) {
+    let bytes;
+    try { bytes = Buffer.from(String(roh), 'base64'); } catch (e) { return null; }
+    if (bytes.length < 2 || bytes.length % 2 !== 0 || bytes.length > 16) return null;
+    const paare = [];
+    for (let i = 0; i < bytes.length; i += 2) paare.push([bytes[i], bytes[i + 1]]);
+    // Die Kanaele muessen bei 0 anfangen und lueckenlos aufsteigen. Ein Block, der
+    // etwas anderes traegt, wuerde sonst als Batteriestand gelesen.
+    if (!paare.every(([kanal], i) => kanal === i)) return null;
+    return paare.map(([kanal, stand]) => ({
+      kanal, stand, fehlt: stand === BATTERIE_FEHLT,
+    }));
+  }
+
   _divisor(settingKey) {
     const d = parseInt(this.getSetting(settingKey), 10);
     return Number.isFinite(d) && d > 0 ? d : 1;
@@ -150,6 +202,38 @@ class WeatherStationDevice extends BaseTuyaDevice {
         continue;
       }
 
+      // ── Sensor batteries ──────────────────────────────────────────────────
+      if (settings.dp_sensor_battery > 0 && dp === settings.dp_sensor_battery) {
+        const staende = this._leseSensorBatterien(value);
+        if (!staende) {
+          if (!this._batterieBlockGemeldet) {
+            this._batterieBlockGemeldet = true;
+            this._appLog(`Sensor battery data point ${dp} sent "${value}", which is not `
+              + 'the channel/level pairs this driver knows. Left alone — set DP Sensor '
+              + 'Batteries to 0 if your station puts something else there.', 'warn');
+          }
+          continue;
+        }
+        // Einmal ausgeschrieben, damit ein Support-Bericht das Muster bestaetigen
+        // oder widerlegen kann. Es stammt aus einer einzigen Aufnahme.
+        if (!this._batterieGelesen) {
+          this._batterieGelesen = true;
+          this._appLog('Sensor batteries read from DP ' + dp + ': '
+            + staende.map((x) => `ch${x.kanal}=${x.fehlt ? 'absent' : x.stand}`).join(', '),
+          'info');
+        }
+        const grenze = Number(this.getSetting('sensor_battery_low_at') ?? 1);
+        for (const { kanal, stand, fehlt } of staende) {
+          const cap = kanal === 0 ? 'alarm_battery' : `alarm_battery.ch${kanal}`;
+          if (!this.hasCapability(cap)) continue;
+          // Ein Kanal ohne Sensor bekommt keine Warnung und keine Entwarnung -
+          // beides waere eine Aussage ueber eine Batterie, die es nicht gibt.
+          await this.setCapabilityValue(cap, fehlt ? null : stand <= grenze)
+            .catch(() => {});
+        }
+        continue;
+      }
+
       // ── Everything numeric ────────────────────────────────────────────────
       const entry = NUMERIC_PROFILE.find((e) => settings[e.settingKey] > 0
         && dp === settings[e.settingKey]);
@@ -164,6 +248,13 @@ class WeatherStationDevice extends BaseTuyaDevice {
       if (!this.hasCapability(entry.capability)) continue;
       const scaled = Number(value) / this._divisor(entry.divisor);
       if (!Number.isFinite(scaled)) continue;
+      // Der Anschlag ist kein Messwert: ein Kanal ohne Sensor meldet den unteren Rand
+      // seines Bereichs, und eine Kachel mit -50 Grad sieht aus wie eine Messung.
+      // Leer ist ehrlicher.
+      if (entry.divisor === 'temp_divisor' && scaled < SENSOR_ABSENT_BELOW_C) {
+        await this.setCapabilityValue(entry.capability, null).catch(() => {});
+        continue;
+      }
       await this.setCapabilityValue(entry.capability, scaled).catch(() => {});
     }
 

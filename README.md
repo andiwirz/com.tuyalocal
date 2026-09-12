@@ -1150,8 +1150,38 @@ own schedule and nothing is gained by asking more often.
 | `dp_temp_out` |  | `measure_temperature.outdoor` | 103 |
 | `dp_hum_out` |  | `measure_humidity.outdoor` | 104 |
 | `dp_temp_extra` |  | `measure_temperature.extra` | 0 |
+| `dp_hum_extra` |  | `measure_humidity.extra` | 0 |
+| `dp_temp_ch3` |  | `measure_temperature.ch3` | 0 |
+| `dp_hum_ch3` |  | `measure_humidity.ch3` | 0 |
 
 `temp_divisor` and `humidity_divisor` default to `10` — these stations send tenths.
+
+Stations with several outdoor sensors number their channels. A three-channel one usually
+puts channel 1 on 103/104 (which the defaults already cover as *outdoor*), channel 2 on
+105/106 and channel 3 on 107/108. Those last four default to `0` so a single-sensor station
+does not get four empty tiles; with Cloud Lookup set up they are filled in by name at pairing.
+
+> **A channel with no sensor paired to it reports the bottom of its own range**, not nothing —
+> −500 on these channels, −200 on `temp_current`. Divided by ten that is −50 °C and −20 °C, and
+> only the first of those is impossible: −20 °C is an ordinary winter reading in the north. So
+> the driver discards a temperature below **−40 °C** and leaves the tile empty, which is what an
+> unpaired channel actually is. Anything warmer is treated as a measurement.
+
+#### Sensor Batteries
+
+| Setting | Icon | Capability | Default DP |
+|---|:---:|---|---|
+| `dp_sensor_battery` |  | `alarm_battery` + `.ch1` … `.ch3` | 0 |
+
+These stations pack every channel's battery state into one raw data point, usually **130**. The
+block decodes as pairs of channel number and level, with `0xff` for a channel that has no sensor —
+a channel marked absent gets neither a warning nor an all-clear, because there is no battery to
+report on. `sensor_battery_low_at` (default `1`) sets when a level counts as low.
+
+The level's scale is the station's own and Tuya does not publish it, so no percentage is invented.
+The first successful read is written to the **Logs** tab in full, so you can see what your station
+counts in before choosing a threshold. A block that does not decode as ascending channel pairs is
+left alone and reported once.
 
 #### Pressure, Wind and Rain
 
