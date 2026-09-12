@@ -2312,6 +2312,116 @@
       "uiComponent": "sensor",
       "insights": true,
       "icon": "/assets/capabilities/smoke_level.svg"
+    },
+    "pm03_level": {
+      "type": "number",
+      "title": {
+        "en": "PM0.3",
+        "de": "PM0.3"
+      },
+      "units": {
+        "en": "µg/m³",
+        "de": "µg/m³"
+      },
+      "decimals": 0,
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "uiQuickAction": false,
+      "insights": true,
+      "icon": "/assets/capabilities/pm03_level.svg"
+    },
+    "alarm_volume": {
+      "type": "enum",
+      "title": {
+        "en": "Alarm Volume",
+        "de": "Alarmlautstärke"
+      },
+      "values": [
+        {
+          "id": "mute",
+          "title": {
+            "en": "Mute",
+            "de": "Stumm"
+          }
+        },
+        {
+          "id": "low",
+          "title": {
+            "en": "Low",
+            "de": "Leise"
+          }
+        },
+        {
+          "id": "middle",
+          "title": {
+            "en": "Middle",
+            "de": "Mittel"
+          }
+        },
+        {
+          "id": "high",
+          "title": {
+            "en": "High",
+            "de": "Laut"
+          }
+        }
+      ],
+      "getable": true,
+      "setable": true,
+      "uiComponent": "picker",
+      "uiQuickAction": false,
+      "insights": false,
+      "icon": "/assets/capabilities/alarm_volume.svg"
+    },
+    "backlight_level": {
+      "type": "enum",
+      "title": {
+        "en": "Display Backlight",
+        "de": "Displayhelligkeit"
+      },
+      "values": [
+        {
+          "id": "level1",
+          "title": {
+            "en": "Level 1",
+            "de": "Stufe 1"
+          }
+        },
+        {
+          "id": "level2",
+          "title": {
+            "en": "Level 2",
+            "de": "Stufe 2"
+          }
+        },
+        {
+          "id": "level3",
+          "title": {
+            "en": "Level 3",
+            "de": "Stufe 3"
+          }
+        }
+      ],
+      "getable": true,
+      "setable": true,
+      "uiComponent": "picker",
+      "uiQuickAction": false,
+      "insights": false,
+      "icon": "/assets/capabilities/backlight_level.svg"
+    },
+    "buzzer": {
+      "type": "boolean",
+      "title": {
+        "en": "Buzzer",
+        "de": "Summer"
+      },
+      "getable": true,
+      "setable": true,
+      "uiComponent": "toggle",
+      "uiQuickAction": false,
+      "insights": false,
+      "icon": "/assets/capabilities/buzzer.svg"
     }
   },
   "flow": {
@@ -5999,6 +6109,363 @@
             }
           }
         ]
+      },
+      {
+        "id": "air_quality_device_connected",
+        "title": {
+          "en": "Monitor connected",
+          "de": "Monitor verbunden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_quality"
+          }
+        ]
+      },
+      {
+        "id": "air_quality_device_disconnected",
+        "title": {
+          "en": "Monitor disconnected",
+          "de": "Monitor getrennt"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_quality"
+          }
+        ]
+      },
+      {
+        "id": "air_quality_dp_changed",
+        "title": {
+          "en": "Monitor data point changed",
+          "de": "Monitor-Datenpunkt geändert"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_quality"
+          }
+        ],
+        "tokens": [
+          {
+            "name": "dp",
+            "type": "string",
+            "title": {
+              "en": "Data point",
+              "de": "Datenpunkt"
+            },
+            "example": "1"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "title": {
+              "en": "Value",
+              "de": "Wert"
+            },
+            "example": "level_2"
+          }
+        ]
+      },
+      {
+        "id": "air_quality_level_changed",
+        "title": {
+          "en": "Air quality level changed",
+          "de": "Luftgütestufe geändert"
+        },
+        "hint": {
+          "en": "Fires when the monitor’s own overall verdict moves to another step — not on every changed measurement. The step it came from is a token, so a flow can tell getting better from getting worse.",
+          "de": "Wird ausgelöst, wenn das Gesamturteil des Monitors auf eine andere Stufe wechselt — nicht bei jedem geänderten Messwert. Die vorherige Stufe steht als Token bereit, damit ein Flow Besserung von Verschlechterung unterscheiden kann."
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_quality"
+          }
+        ],
+        "tokens": [
+          {
+            "name": "level",
+            "type": "string",
+            "title": {
+              "en": "Level",
+              "de": "Stufe"
+            },
+            "example": "moderate"
+          },
+          {
+            "name": "previous_level",
+            "type": "string",
+            "title": {
+              "en": "Previous level",
+              "de": "Vorherige Stufe"
+            },
+            "example": "good"
+          }
+        ]
+      },
+      {
+        "id": "ir_device_connected",
+        "title": {
+          "en": "Blaster connected",
+          "de": "Blaster verbunden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=ir_blaster"
+          }
+        ]
+      },
+      {
+        "id": "ir_device_disconnected",
+        "title": {
+          "en": "Blaster disconnected",
+          "de": "Blaster getrennt"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=ir_blaster"
+          }
+        ]
+      },
+      {
+        "id": "ir_dp_changed",
+        "title": {
+          "en": "Blaster data point changed",
+          "de": "Blaster-Datenpunkt geändert"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=ir_blaster"
+          }
+        ],
+        "tokens": [
+          {
+            "name": "dp",
+            "type": "string",
+            "title": {
+              "en": "Data point",
+              "de": "Datenpunkt"
+            },
+            "example": "1"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "title": {
+              "en": "Value",
+              "de": "Wert"
+            },
+            "example": "level_2"
+          }
+        ]
+      },
+      {
+        "id": "ir_code_learned",
+        "title": {
+          "en": "An IR code was learned",
+          "de": "Ein IR-Code wurde angelernt"
+        },
+        "hint": {
+          "en": "Fires when a code arrives from the blaster, however learning was started — from a flow, or by putting the blaster into learning mode yourself. The code is a token, so it can be handed straight to \"Send a raw IR code\" on another blaster.",
+          "de": "Wird ausgelöst, wenn ein Code vom Blaster ankommt, gleich wie das Anlernen gestartet wurde — aus einem Flow oder von Hand am Gerät. Der Code steht als Token bereit und kann so direkt an „Rohen IR-Code senden\" eines anderen Blasters weitergereicht werden."
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=ir_blaster"
+          }
+        ],
+        "tokens": [
+          {
+            "name": "name",
+            "type": "string",
+            "title": {
+              "en": "Name",
+              "de": "Name"
+            },
+            "example": "TV power"
+          },
+          {
+            "name": "code",
+            "type": "string",
+            "title": {
+              "en": "IR code",
+              "de": "IR-Code"
+            },
+            "example": "BYUBhgM…"
+          }
+        ]
+      },
+      {
+        "id": "air_quality_pm03_rose_above",
+        "title": {
+          "en": "PM0.3 rose above",
+          "de": "PM0.3 ist über einen Wert gestiegen"
+        },
+        "titleFormatted": {
+          "en": "PM0.3 rose above [[level]] µg/m³",
+          "de": "PM0.3 ist über [[level]] µg/m³ gestiegen"
+        },
+        "hint": {
+          "en": "Fires the moment the reading crosses the threshold in the card, not on every reading above it. PM0.3 is the one measurement Homey has no card of its own for.",
+          "de": "Wird in dem Moment ausgelöst, in dem der Wert die Schwelle in der Karte überschreitet, nicht bei jedem Wert darüber. PM0.3 ist der eine Messwert, für den Homey keine eigene Karte erzeugt."
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_quality"
+          },
+          {
+            "name": "level",
+            "type": "number",
+            "min": 0,
+            "max": 100000,
+            "step": 1,
+            "placeholder": {
+              "en": "PM0.3 (µg/m³)",
+              "de": "PM0.3 (µg/m³)"
+            }
+          }
+        ],
+        "tokens": [
+          {
+            "name": "level",
+            "type": "number",
+            "title": {
+              "en": "PM0.3",
+              "de": "PM0.3"
+            }
+          }
+        ]
+      },
+      {
+        "id": "air_quality_volume_changed",
+        "title": {
+          "en": "Alarm volume changed",
+          "de": "Alarmlautstärke geändert"
+        },
+        "hint": {
+          "en": "Fires when the monitor reports a different alarm volume — whether it was changed from Homey or on the monitor itself.",
+          "de": "Wird ausgelöst, wenn der Monitor eine andere Alarmlautstärke meldet — gleich ob sie von Homey oder am Gerät umgestellt wurde."
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_quality"
+          }
+        ],
+        "tokens": [
+          {
+            "name": "volume",
+            "type": "string",
+            "title": {
+              "en": "Volume",
+              "de": "Lautstärke"
+            },
+            "example": "mute"
+          },
+          {
+            "name": "previous_volume",
+            "type": "string",
+            "title": {
+              "en": "Previous volume",
+              "de": "Vorherige Lautstärke"
+            },
+            "example": "high"
+          }
+        ]
+      },
+      {
+        "id": "air_quality_backlight_changed",
+        "title": {
+          "en": "Display backlight changed",
+          "de": "Displayhelligkeit geändert"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_quality"
+          }
+        ],
+        "tokens": [
+          {
+            "name": "level",
+            "type": "string",
+            "title": {
+              "en": "Level",
+              "de": "Stufe"
+            },
+            "example": "level2"
+          },
+          {
+            "name": "previous_level",
+            "type": "string",
+            "title": {
+              "en": "Previous level",
+              "de": "Vorherige Stufe"
+            },
+            "example": "level3"
+          }
+        ]
+      },
+      {
+        "id": "air_quality_buzzer_changed",
+        "title": {
+          "en": "Buzzer switched",
+          "de": "Summer umgeschaltet"
+        },
+        "titleFormatted": {
+          "en": "Buzzer was [[enabled]]",
+          "de": "Summer [[enabled]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_quality"
+          },
+          {
+            "name": "enabled",
+            "type": "dropdown",
+            "title": {
+              "en": "Buzzer",
+              "de": "Summer"
+            },
+            "values": [
+              {
+                "id": "true",
+                "label": {
+                  "en": "turned on",
+                  "de": "eingeschaltet"
+                }
+              },
+              {
+                "id": "false",
+                "label": {
+                  "en": "turned off",
+                  "de": "ausgeschaltet"
+                }
+              }
+            ]
+          }
+        ]
       }
     ],
     "conditions": [
@@ -7877,6 +8344,186 @@
               "en": "Smoke level (ppm)",
               "de": "Rauchdichte (ppm)"
             }
+          }
+        ]
+      },
+      {
+        "id": "air_quality_device_is_connected",
+        "title": {
+          "en": "Monitor !{{is|is not}} connected",
+          "de": "Monitor !{{ist|ist nicht}} verbunden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_quality"
+          }
+        ]
+      },
+      {
+        "id": "air_quality_pm03_above",
+        "title": {
+          "en": "PM0.3 !{{is|is not}} above",
+          "de": "PM0.3 !{{ist|ist nicht}} über"
+        },
+        "titleFormatted": {
+          "en": "PM0.3 !{{is|is not}} above [[level]] µg/m³",
+          "de": "PM0.3 !{{ist|ist nicht}} über [[level]] µg/m³"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_quality"
+          },
+          {
+            "name": "level",
+            "type": "number",
+            "min": 0,
+            "max": 100000,
+            "step": 1,
+            "placeholder": {
+              "en": "PM0.3",
+              "de": "PM0.3"
+            }
+          }
+        ]
+      },
+      {
+        "id": "ir_device_is_connected",
+        "title": {
+          "en": "Blaster !{{is|is not}} connected",
+          "de": "Blaster !{{ist|ist nicht}} verbunden"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=ir_blaster"
+          }
+        ]
+      },
+      {
+        "id": "air_quality_volume_is",
+        "title": {
+          "en": "Alarm volume !{{is|is not}}",
+          "de": "Alarmlautstärke !{{ist|ist nicht}}"
+        },
+        "titleFormatted": {
+          "en": "Alarm volume !{{is|is not}} [[volume]]",
+          "de": "Alarmlautstärke !{{ist|ist nicht}} [[volume]]"
+        },
+        "hint": {
+          "en": "Worth checking before a flow relies on the monitor to wake somebody: a monitor left on mute measures exactly as well and says nothing.",
+          "de": "Lohnt sich, bevor ein Flow darauf baut, dass der Monitor jemanden weckt: ein stumm geschalteter misst genauso gut und sagt nichts."
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_quality"
+          },
+          {
+            "name": "volume",
+            "type": "dropdown",
+            "title": {
+              "en": "Volume",
+              "de": "Lautstärke"
+            },
+            "values": [
+              {
+                "id": "mute",
+                "label": {
+                  "en": "Mute",
+                  "de": "Stumm"
+                }
+              },
+              {
+                "id": "low",
+                "label": {
+                  "en": "Low",
+                  "de": "Leise"
+                }
+              },
+              {
+                "id": "middle",
+                "label": {
+                  "en": "Middle",
+                  "de": "Mittel"
+                }
+              },
+              {
+                "id": "high",
+                "label": {
+                  "en": "High",
+                  "de": "Laut"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "air_quality_backlight_is",
+        "title": {
+          "en": "Display backlight !{{is|is not}}",
+          "de": "Displayhelligkeit !{{ist|ist nicht}}"
+        },
+        "titleFormatted": {
+          "en": "Display backlight !{{is|is not}} [[level]]",
+          "de": "Displayhelligkeit !{{ist|ist nicht}} [[level]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_quality"
+          },
+          {
+            "name": "level",
+            "type": "dropdown",
+            "title": {
+              "en": "Level",
+              "de": "Stufe"
+            },
+            "values": [
+              {
+                "id": "level1",
+                "label": {
+                  "en": "Level 1",
+                  "de": "Stufe 1"
+                }
+              },
+              {
+                "id": "level2",
+                "label": {
+                  "en": "Level 2",
+                  "de": "Stufe 2"
+                }
+              },
+              {
+                "id": "level3",
+                "label": {
+                  "en": "Level 3",
+                  "de": "Stufe 3"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "air_quality_buzzer_is_on",
+        "title": {
+          "en": "Buzzer !{{is|is not}} on",
+          "de": "Summer !{{ist|ist nicht}} an"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_quality"
           }
         ]
       }
@@ -12938,6 +13585,389 @@
             "name": "device",
             "type": "device",
             "filter": "driver_id=smoke_detector"
+          }
+        ]
+      },
+      {
+        "id": "air_quality_set_volume",
+        "title": {
+          "en": "Set alarm volume",
+          "de": "Alarmlautstärke setzen"
+        },
+        "titleFormatted": {
+          "en": "Set alarm volume to [[volume]]",
+          "de": "Alarmlautstärke auf [[volume]] setzen"
+        },
+        "hint": {
+          "en": "Mute is the one to reach for at night. It silences the monitor’s own buzzer, not Homey — the readings and the alarms in this app carry on.",
+          "de": "Stumm ist die Stellung für die Nacht. Sie schaltet den Summer des Monitors ab, nicht Homey — Messwerte und Alarme dieser App laufen weiter."
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_quality"
+          },
+          {
+            "name": "volume",
+            "type": "dropdown",
+            "title": {
+              "en": "Volume",
+              "de": "Lautstärke"
+            },
+            "values": [
+              {
+                "id": "mute",
+                "label": {
+                  "en": "Mute",
+                  "de": "Stumm"
+                }
+              },
+              {
+                "id": "low",
+                "label": {
+                  "en": "Low",
+                  "de": "Leise"
+                }
+              },
+              {
+                "id": "middle",
+                "label": {
+                  "en": "Middle",
+                  "de": "Mittel"
+                }
+              },
+              {
+                "id": "high",
+                "label": {
+                  "en": "High",
+                  "de": "Laut"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "air_quality_set_backlight",
+        "title": {
+          "en": "Set display backlight",
+          "de": "Displayhelligkeit setzen"
+        },
+        "titleFormatted": {
+          "en": "Set display backlight to [[level]]",
+          "de": "Displayhelligkeit auf [[level]] setzen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_quality"
+          },
+          {
+            "name": "level",
+            "type": "dropdown",
+            "title": {
+              "en": "Level",
+              "de": "Stufe"
+            },
+            "values": [
+              {
+                "id": "level1",
+                "label": {
+                  "en": "Level 1",
+                  "de": "Stufe 1"
+                }
+              },
+              {
+                "id": "level2",
+                "label": {
+                  "en": "Level 2",
+                  "de": "Stufe 2"
+                }
+              },
+              {
+                "id": "level3",
+                "label": {
+                  "en": "Level 3",
+                  "de": "Stufe 3"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "air_quality_set_buzzer",
+        "title": {
+          "en": "Turn the buzzer on or off",
+          "de": "Summer ein- oder ausschalten"
+        },
+        "titleFormatted": {
+          "en": "Turn the buzzer [[state]]",
+          "de": "Summer [[state]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_quality"
+          },
+          {
+            "name": "state",
+            "type": "dropdown",
+            "title": {
+              "en": "State",
+              "de": "Zustand"
+            },
+            "values": [
+              {
+                "id": "on",
+                "label": {
+                  "en": "on",
+                  "de": "einschalten"
+                }
+              },
+              {
+                "id": "off",
+                "label": {
+                  "en": "off",
+                  "de": "ausschalten"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "air_quality_force_reconnect",
+        "title": {
+          "en": "Force monitor reconnect",
+          "de": "Monitor-Neuverbindung erzwingen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_quality"
+          }
+        ]
+      },
+      {
+        "id": "air_quality_refresh_device",
+        "title": {
+          "en": "Refresh monitor values",
+          "de": "Monitorwerte aktualisieren"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=air_quality"
+          }
+        ]
+      },
+      {
+        "id": "ir_send_code",
+        "title": {
+          "en": "Send an IR code",
+          "de": "IR-Code senden"
+        },
+        "titleFormatted": {
+          "en": "Send the IR code [[code]]",
+          "de": "IR-Code [[code]] senden"
+        },
+        "hint": {
+          "en": "Sends a code this blaster learned earlier. The list is the blaster’s own — a code learned on one is not on another until it is learned there too, or copied across with \"Send a raw IR code\".",
+          "de": "Sendet einen Code, den dieser Blaster früher angelernt hat. Die Liste gehört ihm — ein auf einem Gerät angelernter Code steht auf einem zweiten erst, wenn er dort ebenfalls angelernt oder mit „Rohen IR-Code senden\" hinübergetragen wurde."
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=ir_blaster"
+          },
+          {
+            "name": "code",
+            "type": "autocomplete",
+            "placeholder": {
+              "en": "Saved code",
+              "de": "Gespeicherter Code"
+            }
+          }
+        ]
+      },
+      {
+        "id": "ir_send_raw",
+        "title": {
+          "en": "Send a raw IR code",
+          "de": "Rohen IR-Code senden"
+        },
+        "titleFormatted": {
+          "en": "Send the raw IR code [[code]]",
+          "de": "Rohen IR-Code [[code]] senden"
+        },
+        "hint": {
+          "en": "For a code from somewhere else — another blaster’s \"An IR code was learned\" token, or one written down earlier. Paste it exactly as it was learned, without the leading format character some tools add.",
+          "de": "Für einen Code von anderswo — das Token „Ein IR-Code wurde angelernt\" eines anderen Blasters oder ein früher notierter. Genau so einsetzen, wie er angelernt wurde, ohne das führende Formatzeichen, das manche Werkzeuge davorsetzen."
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=ir_blaster"
+          },
+          {
+            "name": "code",
+            "type": "text",
+            "title": {
+              "en": "IR code",
+              "de": "IR-Code"
+            },
+            "placeholder": {
+              "en": "Base64 code",
+              "de": "Base64-Code"
+            }
+          }
+        ]
+      },
+      {
+        "id": "ir_learn_code",
+        "title": {
+          "en": "Learn an IR code",
+          "de": "IR-Code anlernen"
+        },
+        "titleFormatted": {
+          "en": "Learn an IR code and save it as [[name]]",
+          "de": "IR-Code anlernen und als [[name]] speichern"
+        },
+        "hint": {
+          "en": "Puts the blaster into learning mode and returns straight away — it does not wait for the button press. Point the remote at the blaster from close up and press once. The code arrives on the \"An IR code was learned\" trigger and is saved under this name, ready for \"Send an IR code\".",
+          "de": "Schaltet den Blaster in den Lernmodus und kehrt sofort zurück — er wartet nicht auf den Tastendruck. Die Fernbedienung aus der Nähe auf den Blaster richten und einmal drücken. Der Code kommt über den Auslöser „Ein IR-Code wurde angelernt\" und wird unter diesem Namen gespeichert, bereit für „IR-Code senden\"."
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=ir_blaster"
+          },
+          {
+            "name": "name",
+            "type": "text",
+            "title": {
+              "en": "Name",
+              "de": "Name"
+            },
+            "placeholder": {
+              "en": "TV power",
+              "de": "TV Ein/Aus"
+            }
+          }
+        ]
+      },
+      {
+        "id": "ir_stop_learning",
+        "title": {
+          "en": "Stop learning",
+          "de": "Anlernen beenden"
+        },
+        "hint": {
+          "en": "Leaves learning mode. Worth running once if a blaster stops responding to learn requests: one left in learning mode will not enter it again.",
+          "de": "Verlässt den Lernmodus. Einmal auszuführen lohnt sich, wenn ein Blaster keine Lernwünsche mehr annimmt — einer, der im Lernmodus stehen geblieben ist, geht nicht noch einmal hinein."
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=ir_blaster"
+          }
+        ]
+      },
+      {
+        "id": "ir_forget_code",
+        "title": {
+          "en": "Forget an IR code",
+          "de": "IR-Code vergessen"
+        },
+        "titleFormatted": {
+          "en": "Forget the IR code [[code]]",
+          "de": "IR-Code [[code]] vergessen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=ir_blaster"
+          },
+          {
+            "name": "code",
+            "type": "autocomplete",
+            "placeholder": {
+              "en": "Saved code",
+              "de": "Gespeicherter Code"
+            }
+          }
+        ]
+      },
+      {
+        "id": "ir_force_reconnect",
+        "title": {
+          "en": "Force blaster reconnect",
+          "de": "Blaster-Neuverbindung erzwingen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=ir_blaster"
+          }
+        ]
+      },
+      {
+        "id": "ir_refresh_device",
+        "title": {
+          "en": "Refresh blaster values",
+          "de": "Blasterwerte aktualisieren"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=ir_blaster"
+          }
+        ]
+      },
+      {
+        "id": "ir_send_named_code",
+        "title": {
+          "en": "Send an IR code by name",
+          "de": "IR-Code nach Namen senden"
+        },
+        "titleFormatted": {
+          "en": "Send the IR code named [[name]]",
+          "de": "IR-Code namens [[name]] senden"
+        },
+        "hint": {
+          "en": "The same as \"Send an IR code\", but with the name typed in rather than picked from a list — a dropdown cannot be filled from a tag, so this is the one to use when the flow works out which button to press. An unknown name fails the card and lists the names this blaster does know.",
+          "de": "Dasselbe wie „IR-Code senden\", nur mit getipptem statt ausgewähltem Namen — ein Auswahlfeld lässt sich nicht aus einem Token füllen, und wer im Flow ausrechnet, welche Taste es sein soll, braucht darum diese Karte. Ein unbekannter Name lässt die Karte fehlschlagen und nennt die Namen, die dieser Blaster kennt."
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=ir_blaster"
+          },
+          {
+            "name": "name",
+            "type": "text",
+            "title": {
+              "en": "Name",
+              "de": "Name"
+            },
+            "placeholder": {
+              "en": "TV power",
+              "de": "TV Ein/Aus"
+            }
           }
         ]
       }
@@ -25472,6 +26502,1114 @@
           "OTHER"
         ]
       }
+    },
+    {
+      "id": "air_quality",
+      "name": {
+        "en": "Air Quality Monitor",
+        "de": "Luftgütemonitor"
+      },
+      "class": "sensor",
+      "connectivity": [
+        "lan"
+      ],
+      "capabilities": [
+        "level_aqi",
+        "measure_pm25",
+        "measure_pm1",
+        "measure_pm10",
+        "pm03_level",
+        "measure_co2",
+        "measure_co",
+        "measure_ch2o",
+        "measure_tvoc",
+        "measure_temperature",
+        "measure_humidity",
+        "measure_battery",
+        "alarm_battery",
+        "battery_charging_state",
+        "alarm_co2",
+        "alarm_co",
+        "alarm_pm25",
+        "alarm_volume",
+        "backlight_level",
+        "buzzer"
+      ],
+      "capabilitiesOptions": {
+        "alarm_battery": {
+          "title": {
+            "en": "Battery Low",
+            "de": "Batterie schwach"
+          }
+        },
+        "alarm_co2": {
+          "title": {
+            "en": "CO₂ Alarm",
+            "de": "CO₂-Alarm"
+          },
+          "insightsTitleTrue": {
+            "en": "CO₂ above the limit",
+            "de": "CO₂ über dem Grenzwert"
+          },
+          "insightsTitleFalse": {
+            "en": "CO₂ below the limit",
+            "de": "CO₂ unter dem Grenzwert"
+          }
+        },
+        "alarm_co": {
+          "title": {
+            "en": "CO Alarm",
+            "de": "CO-Alarm"
+          },
+          "insightsTitleTrue": {
+            "en": "CO above the limit",
+            "de": "CO über dem Grenzwert"
+          },
+          "insightsTitleFalse": {
+            "en": "CO below the limit",
+            "de": "CO unter dem Grenzwert"
+          }
+        },
+        "alarm_pm25": {
+          "title": {
+            "en": "PM2.5 Alarm",
+            "de": "PM2.5-Alarm"
+          },
+          "insightsTitleTrue": {
+            "en": "PM2.5 above the limit",
+            "de": "PM2.5 über dem Grenzwert"
+          },
+          "insightsTitleFalse": {
+            "en": "PM2.5 below the limit",
+            "de": "PM2.5 unter dem Grenzwert"
+          }
+        }
+      },
+      "energy": {
+        "batteries": [
+          "INTERNAL"
+        ]
+      },
+      "images": {
+        "small": "/drivers/air_quality/assets/images/small.png",
+        "large": "/drivers/air_quality/assets/images/large.png"
+      },
+      "pair": [
+        {
+          "id": "credentials"
+        },
+        {
+          "id": "list_devices"
+        }
+      ],
+      "settings": [
+        {
+          "type": "group",
+          "label": {
+            "en": "Connection",
+            "de": "Verbindung"
+          },
+          "children": [
+            {
+              "id": "ip",
+              "type": "text",
+              "label": {
+                "en": "IP Address",
+                "de": "IP-Adresse"
+              },
+              "value": ""
+            },
+            {
+              "id": "device_id",
+              "type": "text",
+              "label": {
+                "en": "Device ID",
+                "de": "Geräte-ID"
+              },
+              "value": ""
+            },
+            {
+              "id": "local_key",
+              "type": "text",
+              "label": {
+                "en": "Local Key",
+                "de": "Local Key"
+              },
+              "value": ""
+            },
+            {
+              "id": "version",
+              "type": "dropdown",
+              "label": {
+                "en": "Protocol Version",
+                "de": "Protokollversion"
+              },
+              "value": "3.3",
+              "values": [
+                {
+                  "id": "3.1",
+                  "label": {
+                    "en": "3.1",
+                    "de": "3.1"
+                  }
+                },
+                {
+                  "id": "3.2",
+                  "label": {
+                    "en": "3.2",
+                    "de": "3.2"
+                  }
+                },
+                {
+                  "id": "3.3",
+                  "label": {
+                    "en": "3.3",
+                    "de": "3.3"
+                  }
+                },
+                {
+                  "id": "3.4",
+                  "label": {
+                    "en": "3.4",
+                    "de": "3.4"
+                  }
+                },
+                {
+                  "id": "3.5",
+                  "label": {
+                    "en": "3.5",
+                    "de": "3.5"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "lock_protocol",
+              "type": "checkbox",
+              "label": {
+                "en": "Lock protocol version",
+                "de": "Protokollversion festhalten"
+              },
+              "value": false,
+              "hint": {
+                "en": "Stops the app trying other protocol versions when the device keeps failing to connect. The rotation exists to find a version nobody knows; switch this on when you do know it, so a network outage cannot send the app wandering through versions you have already ruled out.",
+                "de": "Hält die App davon ab, andere Protokollversionen zu probieren, wenn die Verbindung wiederholt scheitert. Die Rotation ist dafür da, eine unbekannte Version zu finden — wer sie kennt, schaltet das hier ein, damit eine Netzstörung die App nicht durch Versionen schickt, die längst ausscheiden."
+              }
+            },
+            {
+              "id": "polling_interval",
+              "type": "number",
+              "label": {
+                "en": "Polling Interval (seconds)",
+                "de": "Abfrageintervall (Sekunden)"
+              },
+              "value": 60,
+              "min": 0,
+              "max": 3600,
+              "hint": {
+                "en": "A monitor reports a changed reading by itself, so the poll is only there to notice a silent one. 0 disables polling.",
+                "de": "Ein Monitor meldet einen geänderten Wert von selbst; die Abfrage ist nur dazu da, ein stilles Gerät zu bemerken. 0 schaltet sie ab."
+              }
+            },
+            {
+              "id": "reconnect_interval",
+              "type": "number",
+              "label": {
+                "en": "Auto-Reconnect Interval (minutes)",
+                "de": "Auto-Reconnect-Intervall (Minuten)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 1440,
+              "hint": {
+                "en": "0 = off. Rebuilds the connection periodically while the device is offline.",
+                "de": "0 = aus. Baut die Verbindung regelmäßig neu auf, solange das Gerät offline ist."
+              }
+            },
+            {
+              "id": "command_gap_ms",
+              "type": "number",
+              "label": {
+                "en": "Minimum gap between commands (ms)",
+                "de": "Mindestabstand zwischen Befehlen (ms)"
+              },
+              "value": 100,
+              "min": 0,
+              "max": 10000,
+              "hint": {
+                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 100 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 100 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
+              }
+            },
+            {
+              "id": "offline_grace_seconds",
+              "type": "number",
+              "label": {
+                "en": "Offline Grace Period (seconds)",
+                "de": "Offline-Karenzzeit (Sekunden)"
+              },
+              "value": 60,
+              "min": 0,
+              "max": 3600
+            },
+            {
+              "id": "fire_and_forget",
+              "type": "checkbox",
+              "label": {
+                "en": "Fire and forget",
+                "de": "Fire and forget"
+              },
+              "value": false,
+              "hint": {
+                "en": "Send commands without waiting for acknowledgement. Off by default on this device type. Switch it on if commands are not arriving, or the device drops the connection right after a command.",
+                "de": "Befehle ohne Warten auf Bestätigung senden. Bei diesem Gerätetyp standardmässig aus. Einschalten, wenn Befehle nicht ankommen oder das Gerät die Verbindung unmittelbar nach einem Befehl trennt."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Data Points",
+            "de": "Datenpunkte"
+          },
+          "children": [
+            {
+              "id": "dp_aqi",
+              "type": "number",
+              "label": {
+                "en": "DP Air Quality Level",
+                "de": "DP Luftgütestufe"
+              },
+              "value": 1,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "0 switches this reading off — the tile disappears with it.",
+                "de": "0 schaltet diesen Messwert ab — die Kachel verschwindet mit ihm."
+              }
+            },
+            {
+              "id": "dp_temperature",
+              "type": "number",
+              "label": {
+                "en": "DP Temperature",
+                "de": "DP Temperatur"
+              },
+              "value": 2,
+              "min": 0,
+              "max": 255
+            },
+            {
+              "id": "dp_humidity",
+              "type": "number",
+              "label": {
+                "en": "DP Humidity",
+                "de": "DP Luftfeuchtigkeit"
+              },
+              "value": 3,
+              "min": 0,
+              "max": 255
+            },
+            {
+              "id": "dp_co2",
+              "type": "number",
+              "label": {
+                "en": "DP CO₂",
+                "de": "DP CO₂"
+              },
+              "value": 4,
+              "min": 0,
+              "max": 255
+            },
+            {
+              "id": "dp_ch2o",
+              "type": "number",
+              "label": {
+                "en": "DP Formaldehyde",
+                "de": "DP Formaldehyd"
+              },
+              "value": 5,
+              "min": 0,
+              "max": 255
+            },
+            {
+              "id": "dp_pm25",
+              "type": "number",
+              "label": {
+                "en": "DP PM2.5",
+                "de": "DP PM2.5"
+              },
+              "value": 7,
+              "min": 0,
+              "max": 255
+            },
+            {
+              "id": "dp_pm1",
+              "type": "number",
+              "label": {
+                "en": "DP PM1",
+                "de": "DP PM1"
+              },
+              "value": 8,
+              "min": 0,
+              "max": 255
+            },
+            {
+              "id": "dp_pm10",
+              "type": "number",
+              "label": {
+                "en": "DP PM10",
+                "de": "DP PM10"
+              },
+              "value": 9,
+              "min": 0,
+              "max": 255
+            },
+            {
+              "id": "dp_pm03",
+              "type": "number",
+              "label": {
+                "en": "DP PM0.3",
+                "de": "DP PM0.3"
+              },
+              "value": 107,
+              "min": 0,
+              "max": 255
+            },
+            {
+              "id": "dp_tvoc",
+              "type": "number",
+              "label": {
+                "en": "DP TVOC",
+                "de": "DP TVOC"
+              },
+              "value": 101,
+              "min": 0,
+              "max": 255
+            },
+            {
+              "id": "dp_co",
+              "type": "number",
+              "label": {
+                "en": "DP CO",
+                "de": "DP CO"
+              },
+              "value": 102,
+              "min": 0,
+              "max": 255
+            },
+            {
+              "id": "dp_battery",
+              "type": "number",
+              "label": {
+                "en": "DP Battery Percentage",
+                "de": "DP Batteriestand"
+              },
+              "value": 22,
+              "min": 0,
+              "max": 255
+            },
+            {
+              "id": "dp_charging",
+              "type": "number",
+              "label": {
+                "en": "DP Charging",
+                "de": "DP Lädt"
+              },
+              "value": 23,
+              "min": 0,
+              "max": 255
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "The monitor’s own alarm limits",
+            "de": "Die Grenzwerte des Monitors"
+          },
+          "children": [
+            {
+              "id": "dp_co2_alarm",
+              "type": "number",
+              "label": {
+                "en": "DP CO₂ Limit",
+                "de": "DP CO₂-Grenzwert"
+              },
+              "value": 104,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "These monitors carry their own alarm thresholds, set on the device itself. Where one is readable, the matching alarm compares the measurement against it, so the limit stays the one you set on the monitor rather than a second one kept here. 0 switches the alarm off.",
+                "de": "Diese Monitore führen ihre Alarmgrenzen selbst, eingestellt am Gerät. Wo eine davon lesbar ist, vergleicht der zugehörige Alarm den Messwert damit — der Grenzwert bleibt also der am Monitor eingestellte und nicht ein zweiter hier. 0 schaltet den Alarm ab."
+              }
+            },
+            {
+              "id": "dp_co_alarm",
+              "type": "number",
+              "label": {
+                "en": "DP CO Limit",
+                "de": "DP CO-Grenzwert"
+              },
+              "value": 113,
+              "min": 0,
+              "max": 255
+            },
+            {
+              "id": "dp_pm25_alarm",
+              "type": "number",
+              "label": {
+                "en": "DP PM2.5 Limit",
+                "de": "DP PM2.5-Grenzwert"
+              },
+              "value": 114,
+              "min": 0,
+              "max": 255
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Interpretation",
+            "de": "Auswertung"
+          },
+          "children": [
+            {
+              "id": "temp_scale",
+              "type": "dropdown",
+              "label": {
+                "en": "Temperature scale",
+                "de": "Temperaturskala"
+              },
+              "value": "auto",
+              "values": [
+                {
+                  "id": "auto",
+                  "label": {
+                    "en": "Automatic",
+                    "de": "Automatisch"
+                  }
+                },
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "As sent",
+                    "de": "Wie gesendet"
+                  }
+                },
+                {
+                  "id": "10",
+                  "label": {
+                    "en": "Tenths (÷ 10)",
+                    "de": "Zehntel (÷ 10)"
+                  }
+                }
+              ],
+              "hint": {
+                "en": "Tuya specifies these monitors as sending tenths, and the reported one sends whole degrees anyway. Automatic decides per reading: what cannot be a room temperature as a whole number is one in tenths.",
+                "de": "Tuya führt diese Monitore als Zehntel, und der gemeldete schickt trotzdem ganze Grad. Automatisch entscheidet am Wert: was als ganze Zahl keine Zimmertemperatur sein kann, ist eine in Zehnteln."
+              }
+            },
+            {
+              "id": "humidity_scale",
+              "type": "dropdown",
+              "label": {
+                "en": "Humidity scale",
+                "de": "Feuchteskala"
+              },
+              "value": "auto",
+              "values": [
+                {
+                  "id": "auto",
+                  "label": {
+                    "en": "Automatic",
+                    "de": "Automatisch"
+                  }
+                },
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "As sent",
+                    "de": "Wie gesendet"
+                  }
+                },
+                {
+                  "id": "10",
+                  "label": {
+                    "en": "Tenths (÷ 10)",
+                    "de": "Zehntel (÷ 10)"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "ch2o_scale",
+              "type": "dropdown",
+              "label": {
+                "en": "Formaldehyde scale",
+                "de": "Formaldehydskala"
+              },
+              "value": "1",
+              "values": [
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "As sent (µg/m³)",
+                    "de": "Wie gesendet (µg/m³)"
+                  }
+                },
+                {
+                  "id": "0.1",
+                  "label": {
+                    "en": "Hundredths of mg/m³ (× 10)",
+                    "de": "Hundertstel mg/m³ (× 10)"
+                  }
+                },
+                {
+                  "id": "0.001",
+                  "label": {
+                    "en": "mg/m³ (× 1000)",
+                    "de": "mg/m³ (× 1000)"
+                  }
+                }
+              ],
+              "hint": {
+                "en": "Homey charts formaldehyde in µg/m³. Which unit the monitor sends is not published, so nothing is converted until you say so: compare the tile against the monitor’s own display and pick the factor that makes the two agree.",
+                "de": "Homey führt Formaldehyd in µg/m³. In welcher Einheit der Monitor sendet, ist nicht veröffentlicht — darum wird nichts umgerechnet, bis Sie es sagen: Kachel und Geräteanzeige vergleichen und den Faktor wählen, der beide zur Deckung bringt."
+              }
+            },
+            {
+              "id": "tvoc_scale",
+              "type": "dropdown",
+              "label": {
+                "en": "TVOC scale",
+                "de": "TVOC-Skala"
+              },
+              "value": "1",
+              "values": [
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "As sent (µg/m³)",
+                    "de": "Wie gesendet (µg/m³)"
+                  }
+                },
+                {
+                  "id": "0.1",
+                  "label": {
+                    "en": "Hundredths of mg/m³ (× 10)",
+                    "de": "Hundertstel mg/m³ (× 10)"
+                  }
+                },
+                {
+                  "id": "0.001",
+                  "label": {
+                    "en": "mg/m³ (× 1000)",
+                    "de": "mg/m³ (× 1000)"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "aqi_levels",
+              "type": "number",
+              "label": {
+                "en": "Air quality levels",
+                "de": "Stufen der Luftgüte"
+              },
+              "value": 3,
+              "min": 2,
+              "max": 6,
+              "hint": {
+                "en": "How many steps the monitor’s own scale has. It reports \"level_2\" without saying level 2 of how many, and the second of three is not the second of six.",
+                "de": "Wie viele Stufen die geräteeigene Skala hat. Es meldet „level_2\", ohne zu sagen, von wie vielen — und die zweite von dreien ist nicht die zweite von sechs."
+              }
+            },
+            {
+              "id": "battery_low_percent",
+              "type": "number",
+              "label": {
+                "en": "Battery low below (%)",
+                "de": "Batterie schwach unter (%)"
+              },
+              "value": 15,
+              "min": 0,
+              "max": 100
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Controls",
+            "de": "Bedienung"
+          },
+          "children": [
+            {
+              "id": "dp_volume",
+              "type": "number",
+              "label": {
+                "en": "DP Alarm Volume",
+                "de": "DP Alarmlautstärke"
+              },
+              "value": 28,
+              "min": 0,
+              "max": 255
+            },
+            {
+              "id": "volume_values",
+              "type": "text",
+              "label": {
+                "en": "Alarm volume values",
+                "de": "Werte der Alarmlautstärke"
+              },
+              "value": "mute,low,middle,high",
+              "hint": {
+                "en": "The words this monitor uses, in its own spelling. A command sent with a word the device does not know is discarded without an error.",
+                "de": "Die Wörter, die dieser Monitor benutzt, in seiner Schreibweise. Ein Befehl mit einem unbekannten Wort wird ohne Fehlermeldung verworfen."
+              }
+            },
+            {
+              "id": "dp_backlight",
+              "type": "number",
+              "label": {
+                "en": "DP Display Backlight",
+                "de": "DP Displayhelligkeit"
+              },
+              "value": 103,
+              "min": 0,
+              "max": 255
+            },
+            {
+              "id": "backlight_values",
+              "type": "text",
+              "label": {
+                "en": "Backlight values",
+                "de": "Werte der Displayhelligkeit"
+              },
+              "value": "level1,level2,level3"
+            },
+            {
+              "id": "dp_buzzer",
+              "type": "number",
+              "label": {
+                "en": "DP Buzzer",
+                "de": "DP Summer"
+              },
+              "value": 106,
+              "min": 0,
+              "max": 255
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Status",
+            "de": "Status"
+          },
+          "children": [
+            {
+              "id": "connection_status",
+              "type": "text",
+              "label": {
+                "en": "Connection",
+                "de": "Verbindung"
+              },
+              "value": "—"
+            },
+            {
+              "id": "last_seen",
+              "type": "text",
+              "label": {
+                "en": "Last data received",
+                "de": "Letzte Daten empfangen"
+              },
+              "value": "—"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ir_blaster",
+      "name": {
+        "en": "IR Blaster",
+        "de": "IR-Blaster"
+      },
+      "class": "remote",
+      "connectivity": [
+        "lan"
+      ],
+      "capabilities": [
+        "measure_temperature",
+        "measure_humidity"
+      ],
+      "capabilitiesOptions": {},
+      "images": {
+        "small": "/drivers/ir_blaster/assets/images/small.png",
+        "large": "/drivers/ir_blaster/assets/images/large.png"
+      },
+      "pair": [
+        {
+          "id": "credentials"
+        },
+        {
+          "id": "list_devices"
+        }
+      ],
+      "settings": [
+        {
+          "type": "group",
+          "label": {
+            "en": "Connection",
+            "de": "Verbindung"
+          },
+          "children": [
+            {
+              "id": "ip",
+              "type": "text",
+              "label": {
+                "en": "IP Address",
+                "de": "IP-Adresse"
+              },
+              "value": ""
+            },
+            {
+              "id": "device_id",
+              "type": "text",
+              "label": {
+                "en": "Device ID",
+                "de": "Geräte-ID"
+              },
+              "value": ""
+            },
+            {
+              "id": "local_key",
+              "type": "text",
+              "label": {
+                "en": "Local Key",
+                "de": "Local Key"
+              },
+              "value": ""
+            },
+            {
+              "id": "version",
+              "type": "dropdown",
+              "label": {
+                "en": "Protocol Version",
+                "de": "Protokollversion"
+              },
+              "value": "3.3",
+              "values": [
+                {
+                  "id": "3.1",
+                  "label": {
+                    "en": "3.1",
+                    "de": "3.1"
+                  }
+                },
+                {
+                  "id": "3.2",
+                  "label": {
+                    "en": "3.2",
+                    "de": "3.2"
+                  }
+                },
+                {
+                  "id": "3.3",
+                  "label": {
+                    "en": "3.3",
+                    "de": "3.3"
+                  }
+                },
+                {
+                  "id": "3.4",
+                  "label": {
+                    "en": "3.4",
+                    "de": "3.4"
+                  }
+                },
+                {
+                  "id": "3.5",
+                  "label": {
+                    "en": "3.5",
+                    "de": "3.5"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "lock_protocol",
+              "type": "checkbox",
+              "label": {
+                "en": "Lock protocol version",
+                "de": "Protokollversion festhalten"
+              },
+              "value": false,
+              "hint": {
+                "en": "Stops the app trying other protocol versions when the device keeps failing to connect. The rotation exists to find a version nobody knows; switch this on when you do know it, so a network outage cannot send the app wandering through versions you have already ruled out.",
+                "de": "Hält die App davon ab, andere Protokollversionen zu probieren, wenn die Verbindung wiederholt scheitert. Die Rotation ist dafür da, eine unbekannte Version zu finden — wer sie kennt, schaltet das hier ein, damit eine Netzstörung die App nicht durch Versionen schickt, die längst ausscheiden."
+              }
+            },
+            {
+              "id": "polling_interval",
+              "type": "number",
+              "label": {
+                "en": "Polling Interval (seconds)",
+                "de": "Abfrageintervall (Sekunden)"
+              },
+              "value": 60,
+              "min": 0,
+              "max": 3600,
+              "hint": {
+                "en": "A blaster reports by itself when something changes; the poll is there so a silent failure shows up and so the built-in sensor does not freeze. 0 disables polling.",
+                "de": "Ein Blaster meldet von sich aus, wenn sich etwas ändert; abgefragt wird, damit ein stiller Ausfall auffällt und der eingebaute Sensor nicht einfriert. 0 schaltet die Abfrage ab."
+              }
+            },
+            {
+              "id": "reconnect_interval",
+              "type": "number",
+              "label": {
+                "en": "Auto-Reconnect Interval (minutes)",
+                "de": "Auto-Reconnect-Intervall (Minuten)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 1440,
+              "hint": {
+                "en": "0 = off. Rebuilds the connection periodically while the device is offline.",
+                "de": "0 = aus. Baut die Verbindung regelmäßig neu auf, solange das Gerät offline ist."
+              }
+            },
+            {
+              "id": "command_gap_ms",
+              "type": "number",
+              "label": {
+                "en": "Minimum gap between commands (ms)",
+                "de": "Mindestabstand zwischen Befehlen (ms)"
+              },
+              "value": 100,
+              "min": 0,
+              "max": 10000,
+              "hint": {
+                "en": "Some devices drop a command that arrives too soon after the previous one, and drop it silently — on protocol 3.4/3.5 nothing answers a command, so there is no error to see, only an action that did not happen. 100 ms suits almost everything. If a flow that changes two things at once still only applies the first, raise it; a few devices need up to 2000. 0 switches the wait off. Only the gap between one command and the next is enforced, so a device that has been idle longer than this never waits.",
+                "de": "Manche Geräte verwerfen einen Befehl, der zu kurz nach dem vorherigen eintrifft — und zwar stillschweigend: Bei Protokoll 3.4/3.5 wird ein Befehl gar nicht beantwortet, es gibt also keinen Fehler zu sehen, nur eine Aktion, die ausblieb. 100 ms passen fast überall. Führt ein Flow, der zwei Dinge auf einmal ändert, weiterhin nur das erste aus, den Wert erhöhen; einzelne Geräte brauchen bis zu 2000. 0 schaltet das Warten ab. Nur der Abstand zwischen zwei Befehlen zählt — ein Gerät, das länger als das still war, wartet nie."
+              }
+            },
+            {
+              "id": "offline_grace_seconds",
+              "type": "number",
+              "label": {
+                "en": "Offline Grace Period (seconds)",
+                "de": "Offline-Karenzzeit (Sekunden)"
+              },
+              "value": 60,
+              "min": 0,
+              "max": 3600
+            },
+            {
+              "id": "fire_and_forget",
+              "type": "checkbox",
+              "label": {
+                "en": "Fire and forget",
+                "de": "Fire and forget"
+              },
+              "value": true,
+              "hint": {
+                "en": "Send commands without waiting for acknowledgement. On by default here: these blasters answer a command inconsistently, and every known implementation sends to them this way. Switch it off only if codes are arriving twice.",
+                "de": "Befehle ohne Warten auf Bestätigung senden. Hier ab Werk an: diese Blaster antworten uneinheitlich auf einen Befehl, und jede bekannte Umsetzung schickt ihnen so. Nur ausschalten, wenn Codes doppelt ankommen."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Data Points",
+            "de": "Datenpunkte"
+          },
+          "children": [
+            {
+              "id": "dp_ir_send",
+              "type": "number",
+              "label": {
+                "en": "DP IR Send",
+                "de": "DP IR senden"
+              },
+              "value": 201,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "Everything this driver sends goes through this one data point — codes, and the two commands that switch learning mode on and off. It is 201 on the blasters that can learn. Without it the device can still read its sensor, but it cannot send.",
+                "de": "Alles, was dieser Treiber sendet, geht über diesen einen Datenpunkt — Codes und die zwei Befehle, die den Lernmodus ein- und ausschalten. Bei den lernfähigen Blastern ist es 201. Ohne ihn liest das Gerät noch seinen Sensor, senden kann es nicht."
+              }
+            },
+            {
+              "id": "dp_ir_study",
+              "type": "number",
+              "label": {
+                "en": "DP Learned Code",
+                "de": "DP Angelernter Code"
+              },
+              "value": 202,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "Where a freshly learned code arrives. 0 switches learning off.",
+                "de": "Wo ein frisch angelernter Code ankommt. 0 schaltet das Anlernen ab."
+              }
+            },
+            {
+              "id": "dp_temperature",
+              "type": "number",
+              "label": {
+                "en": "DP Temperature",
+                "de": "DP Temperatur"
+              },
+              "value": 101,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "0 switches this reading off — the tile disappears with it.",
+                "de": "0 schaltet diesen Messwert ab — die Kachel verschwindet mit ihm."
+              }
+            },
+            {
+              "id": "dp_humidity",
+              "type": "number",
+              "label": {
+                "en": "DP Humidity",
+                "de": "DP Luftfeuchtigkeit"
+              },
+              "value": 102,
+              "min": 0,
+              "max": 255
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Learning and sensor",
+            "de": "Anlernen und Sensor"
+          },
+          "children": [
+            {
+              "id": "learn_timeout",
+              "type": "number",
+              "label": {
+                "en": "Learning timeout (seconds)",
+                "de": "Lernfrist (Sekunden)"
+              },
+              "value": 30,
+              "min": 5,
+              "max": 300,
+              "hint": {
+                "en": "How long the blaster stays in learning mode waiting for a button press. When the time is up it leaves learning mode by itself, because a blaster left in it will not accept the next attempt.",
+                "de": "Wie lange der Blaster im Lernmodus auf einen Tastendruck wartet. Läuft die Zeit ab, verlässt er ihn von selbst — ein Blaster, der darin stehen bleibt, nimmt den nächsten Versuch nicht an."
+              }
+            },
+            {
+              "id": "temp_scale",
+              "type": "dropdown",
+              "label": {
+                "en": "Temperature scale",
+                "de": "Temperaturskala"
+              },
+              "value": "auto",
+              "values": [
+                {
+                  "id": "auto",
+                  "label": {
+                    "en": "Automatic",
+                    "de": "Automatisch"
+                  }
+                },
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "As sent",
+                    "de": "Wie gesendet"
+                  }
+                },
+                {
+                  "id": "10",
+                  "label": {
+                    "en": "Tenths (÷ 10)",
+                    "de": "Zehntel (÷ 10)"
+                  }
+                }
+              ],
+              "hint": {
+                "en": "The reported blaster sends 238 for 23.8 °C and 63 for 63 %, so one fixed scale for both would be wrong on one of them. Automatic decides per reading.",
+                "de": "Der gemeldete Blaster schickt 238 für 23,8 °C und 63 für 63 % — eine feste Skala für beide wäre bei einem von beiden falsch. Automatisch entscheidet am Wert."
+              }
+            },
+            {
+              "id": "humidity_scale",
+              "type": "dropdown",
+              "label": {
+                "en": "Humidity scale",
+                "de": "Feuchteskala"
+              },
+              "value": "auto",
+              "values": [
+                {
+                  "id": "auto",
+                  "label": {
+                    "en": "Automatic",
+                    "de": "Automatisch"
+                  }
+                },
+                {
+                  "id": "1",
+                  "label": {
+                    "en": "As sent",
+                    "de": "Wie gesendet"
+                  }
+                },
+                {
+                  "id": "10",
+                  "label": {
+                    "en": "Tenths (÷ 10)",
+                    "de": "Zehntel (÷ 10)"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Status",
+            "de": "Status"
+          },
+          "children": [
+            {
+              "id": "connection_status",
+              "type": "text",
+              "label": {
+                "en": "Connection",
+                "de": "Verbindung"
+              },
+              "value": "—"
+            },
+            {
+              "id": "last_seen",
+              "type": "text",
+              "label": {
+                "en": "Last data received",
+                "de": "Letzte Daten empfangen"
+              },
+              "value": "—"
+            }
+          ]
+        }
+      ]
     }
   ],
   "brandColor": "#ED5308",

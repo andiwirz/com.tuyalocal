@@ -2,7 +2,7 @@
 
 **Version 1.0.230** · Local WiFi/LAN control of Tuya smart devices — no cloud, no Zigbee hub required.
 
-All communication happens over your local network via the Tuya LAN protocol. Twenty-two built-in drivers cover the most common device types; a fully generic driver handles anything else.
+All communication happens over your local network via the Tuya LAN protocol. Twenty-four built-in drivers cover the most common device types; a fully generic driver handles anything else.
 
 ---
 
@@ -27,11 +27,13 @@ All communication happens over your local network via the Tuya LAN protocol. Twe
 | [Wall Switch](#wall-switch-1) | 1/2/3/4-gang WiFi wall switches | Socket |
 | [Doorbell](#doorbell-1) | Tuya video doorbells (Marmitek Buzz LO, Bcom Majic IPBox, Cleverio CD-200 and compatible) | Doorbell |
 | [Presence Sensor](#presence-sensor-1) | mmWave radar presence sensors (ZY-M100-WIFI and compatible) | Sensor |
+| [Air Quality Monitor](#air-quality-monitor-1) | Desk monitors for CO2, particulates, formaldehyde and TVOC (`hjjcy`, `pm25`) | Sensor |
 | [Smoke Detector](#smoke-detector-1) | Tuya WiFi smoke detectors, category `ywbj` | Smoke Detector |
 | [Energy Meter](#energy-meter-1) | DIN-rail meters, clamp meters and metering breakers (`zndb`, `dlq`) | Sensor |
 | [Weather Station](#weather-station-1) | WiFi weather stations with outdoor sensors (temperature, humidity, pressure, wind, rain) | Sensor |
 | [Ultrasonic Level Sensor](#ultrasonic-level-sensor-1) | Tank and cistern level sensors with configurable alarm thresholds | Sensor |
 | [EV Charger](#ev-charger-1) | Tuya EV chargers, category `qccdz` (Vevor, Nine, Tera, Emini, Aimiler, Ecopoint, Dowell, Feyree, AfyeEV, Junsun, Zencar, iPengen, Suntree, Immax, Voldt, Wadapower and other rebrands) | EV Charger |
+| [IR Blaster](#ir-blaster-1) | WiFi infrared remote blasters that learn codes (`wnykq`), most with a built-in sensor | Remote |
 | [Generic Tuya Device](#generic-tuya-device-1) | Any Tuya device not covered above | Other |
 
 A **Face Access Panel** driver also exists but is **deprecated**: these panels keep their user
@@ -1275,6 +1277,132 @@ statement; the alarms are where Homey's judgement belongs.
 
 ---
 
+### Air Quality Monitor
+
+Driver for Tuya WiFi air quality monitors (category `hjjcy` / `pm25`) — the desk-sized boxes that show CO2, particulates and formaldehyde on a small display. Read-only apart from three controls: the alarm volume, the display backlight and the buzzer.
+
+Every reading has its own data point setting, and `0` switches one off — the tile disappears with it. A monitor that measures four of these ten things therefore ends up with four tiles rather than six empty ones, and with **Cloud Lookup** set up that sorting happens by itself at pairing.
+
+> **The monitor carries its own alarm limits.** Three of them are readable — CO2, CO and PM2.5 — and where one is, the matching alarm compares the measurement against it. The threshold stays the one set on the monitor itself rather than a second one kept in Homey, so changing it on the device changes it here too.
+
+> **Two scales are not settled, in opposite directions.** Tuya specifies temperature and humidity on these monitors in tenths, and the reported one sends whole degrees anyway. Both default to **Automatic**, which decides per reading: what cannot be a room temperature as a whole number is one in tenths, and a humidity above 100 can only be tenths of a percent. Formaldehyde and TVOC are the other way round — Homey charts them in µg/m³, the unit the monitor sends is not published, and so nothing is converted until you say so. Compare the tile against the monitor's own display and pick the factor that brings the two together.
+
+#### Connection
+
+| Setting | Description | Default |
+|---|---|---|
+| `ip` | Device IP address | — |
+| `device_id` | Tuya Device ID | — |
+| `local_key` | Tuya Local Key (16 or 32 chars) | — |
+| `version` | Protocol version | Auto-detect |
+| `polling_interval` | Seconds between GET polls (`0` = push-only) | 60 |
+| `offline_grace_seconds` | Seconds without data before marking device offline | 60 |
+| `fire_and_forget` | Send commands without waiting for acknowledgement | Off |
+
+#### Data Points
+
+| Setting | Icon | Capability | Type | Default DP | Notes |
+|---|:---:|---|---|---|---|
+| `dp_aqi` |  | `level_aqi` | enum | 1 | The monitor's overall verdict, mapped onto Homey's six steps — see `aqi_levels` |
+| `dp_temperature` |  | `measure_temperature` | number | 2 | Scaled by `temp_scale` |
+| `dp_humidity` |  | `measure_humidity` | number | 3 | Scaled by `humidity_scale` |
+| `dp_co2` |  | `measure_co2` | number | 4 | ppm |
+| `dp_ch2o` |  | `measure_ch2o` | number | 5 | Formaldehyde; scaled by `ch2o_scale` |
+| `dp_pm25` |  | `measure_pm25` | number | 7 | µg/m³ |
+| `dp_pm1` |  | `measure_pm1` | number | 8 | µg/m³ |
+| `dp_pm10` |  | `measure_pm10` | number | 9 | µg/m³ |
+| `dp_pm03` | <img src="assets/capabilities/pm03_level.svg" height="24"> | `pm03_level` | number | 107 | The one reading Homey has no capability of its own for |
+| `dp_tvoc` |  | `measure_tvoc` | number | 101 | Scaled by `tvoc_scale` |
+| `dp_co` |  | `measure_co` | number | 102 | ppm |
+| `dp_battery` |  | `measure_battery` | number | 22 | Also raises `alarm_battery` below `battery_low_percent` |
+| `dp_charging` |  | `battery_charging_state` | bool | 23 | `charging` or `discharging`; the monitor does not report a third state |
+
+#### The monitor's own alarm limits
+
+| Setting | Icon | Capability | Default DP | Notes |
+|---|:---:|---|---|---|
+| `dp_co2_alarm` |  | `alarm_co2` | 104 | Alarm while the CO2 reading is above this limit |
+| `dp_co_alarm` |  | `alarm_co` | 113 | Alarm while the CO reading is above this limit |
+| `dp_pm25_alarm` |  | `alarm_pm25` | 114 | Alarm while the PM2.5 reading is above this limit |
+
+Each needs its own measurement as well: the limit alone says nothing. `0` switches that alarm off.
+
+#### Interpretation
+
+| Setting | Description | Default |
+|---|---|---|
+| `temp_scale` | `auto`, as sent, or tenths | `auto` |
+| `humidity_scale` | `auto`, as sent, or tenths | `auto` |
+| `ch2o_scale` | Factor from what the monitor sends to µg/m³ | as sent |
+| `tvoc_scale` | Factor from what the monitor sends to µg/m³ | as sent |
+| `aqi_levels` | How many steps the monitor's own scale has. It reports `level_2` without saying level 2 of how many, and the second of three is not the second of six | 3 |
+| `battery_low_percent` | Raises the battery alarm at or below this percentage | 15 |
+
+#### Controls
+
+| Setting | Icon | Capability | Type | Default DP | Notes |
+|---|:---:|---|---|---|---|
+| `dp_volume` | <img src="assets/capabilities/alarm_volume.svg" height="24"> | `alarm_volume` | enum | 28 | Words listed in `volume_values` |
+| `dp_backlight` | <img src="assets/capabilities/backlight_level.svg" height="24"> | `backlight_level` | enum | 103 | Words listed in `backlight_values` |
+| `dp_buzzer` | <img src="assets/capabilities/buzzer.svg" height="24"> | `buzzer` | bool | 106 | — |
+
+| Setting | Description | Default |
+|---|---|---|
+| `volume_values` | The words this monitor uses, in its own spelling. A command sent with a word it does not know is discarded without an error | `mute,low,middle,high` |
+| `backlight_values` | Same, for the display backlight. A monitor that spells them `level_1` instead has its list corrected automatically on the first reading | `level1,level2,level3` |
+
+---
+
+### IR Blaster
+
+Driver for Tuya WiFi infrared blasters (category `wnykq`) — the pucks that learn a code from a remote control and replay it on request. Most of them carry a temperature and humidity sensor as well, and that is read too.
+
+There are two families of these boxes. This driver serves the one that keeps its command channel on DP 201 and reports a learned code on DP 202, which is the family that can learn from any remote at all. The other drives a fixed air-conditioner layout from DP 1 upwards; an air conditioner behind one of those is better served by the [Air Conditioner](#air-conditioner-1) driver, which already speaks that layout.
+
+> **The driver has no codec, and does not need one.** A learned code is a base64 container of microsecond durations. The blaster replays exactly what it recorded, so the app only has to hand the same string back — decoding and re-encoding it would be a second place to get the timings wrong and would buy nothing.
+
+#### Learning a code
+
+1. Run **Learn an IR code** with a name for the button. The card returns straight away — it does not wait for the press.
+2. Point the remote at the blaster from close up and press the button once.
+3. The code arrives, is saved under that name, and fires **An IR code was learned**.
+4. From then on, **Send an IR code** offers that name in a dropdown.
+
+The full code also goes to the **Logs** tab, so it can be carried over to a second blaster through **Send a raw IR code** without learning it there as well. If nothing arrives within `learn_timeout` the blaster is taken back out of learning mode — one left sitting in it will not accept the next attempt, which is the usual reason a second try appears to do nothing at all.
+
+Saved codes belong to the device they were learned on, and there is room for 100 of them.
+
+#### Connection
+
+| Setting | Description | Default |
+|---|---|---|
+| `ip` | Device IP address | — |
+| `device_id` | Tuya Device ID | — |
+| `local_key` | Tuya Local Key (16 or 32 chars) | — |
+| `version` | Protocol version | Auto-detect |
+| `polling_interval` | Seconds between GET polls (`0` = push-only) | 60 |
+| `offline_grace_seconds` | Seconds without data before marking device offline | 60 |
+| `fire_and_forget` | Send commands without waiting for acknowledgement. **On** here: these blasters answer a command inconsistently, and every known implementation sends to them this way | On |
+
+#### Data Points
+
+| Setting | Icon | Capability | Type | Default DP | Notes |
+|---|:---:|---|---|---|---|
+| `dp_ir_send` |  | — | string | 201 | Everything the driver sends goes through this one: codes, and the two commands that switch learning on and off |
+| `dp_ir_study` |  | — | raw | 202 | Where a freshly learned code arrives; `0` = disabled |
+| `dp_temperature` |  | `measure_temperature` | number | 101 | Scaled by `temp_scale`; `0` = disabled |
+| `dp_humidity` |  | `measure_humidity` | number | 102 | Scaled by `humidity_scale`; `0` = disabled |
+
+#### Learning and sensor
+
+| Setting | Description | Default |
+|---|---|---|
+| `learn_timeout` | Seconds the blaster waits for a button press before leaving learning mode on its own | 30 |
+| `temp_scale` | `auto`, as sent, or tenths. The reported blaster sends 238 for 23.8 °C and 63 for 63 % in the same packet, so one fixed scale for both would be wrong on one of them | `auto` |
+| `humidity_scale` | Same, for humidity | `auto` |
+
+---
+
 ### Generic Tuya Device
 
 Maps any Tuya DP to any Homey capability. The mapping is built visually during pairing — no manual JSON editing required.
@@ -2264,6 +2392,77 @@ additions.
 | Enable or disable a level alarm | Writes `dp_upper_switch` / `dp_lower_switch` |
 | Force level sensor reconnect | Drops and re-establishes the TCP connection |
 | Refresh level sensor values | Triggers an immediate GET request |
+
+---
+
+### Air Quality Monitor
+
+Homey generates the cards for the measurements and the three alarms itself. The cards below are the driver's own additions.
+
+#### Triggers
+
+| Trigger | Flow tokens | Notes |
+|---|---|---|
+| Air quality level changed | `level` (string), `previous_level` (string) | The monitor's overall verdict moved to another step. The previous one is a token, so a flow can tell getting better from getting worse |
+| PM0.3 rose above | `level` (number) | Fires the moment the reading crosses the threshold in the card, not on every reading above it |
+| Alarm volume changed | `volume` (string), `previous_volume` (string) | Fires whether it was changed from Homey or on the monitor itself |
+| Display backlight changed | `level` (string), `previous_level` (string) | Same |
+| Buzzer switched | — | Carries a turned on / turned off choice in the card |
+| Monitor connected | — | Device established a LAN connection |
+| Monitor disconnected | — | Connection lost after offline grace period |
+| Monitor data point changed | `dp` (string), `value` (string) | Any raw DP change |
+
+#### Conditions
+
+| Condition | Notes |
+|---|---|
+| PM0.3 is / is not above [µg/m³] | The one reading with no card of Homey's own |
+| Alarm volume is / is not [volume] | Worth checking before a flow relies on the monitor to wake somebody: one left on mute measures exactly as well and says nothing |
+| Display backlight is / is not [level] | |
+| Buzzer is / is not on | |
+| Monitor is / is not connected | |
+
+#### Actions
+
+| Action | Notes |
+|---|---|
+| Set alarm volume | `mute` silences the monitor's own buzzer, not Homey — the readings and this app's alarms carry on |
+| Set display backlight | Writes `dp_backlight` |
+| Turn the buzzer on or off | Writes `dp_buzzer` |
+| Force monitor reconnect | Drops and re-establishes the TCP connection |
+| Refresh monitor values | Triggers an immediate GET request |
+
+---
+
+### IR Blaster
+
+#### Triggers
+
+| Trigger | Flow tokens | Notes |
+|---|---|---|
+| An IR code was learned | `name` (string), `code` (string) | Fires however learning was started — from a flow, or by putting the blaster into learning mode by hand. The code token can be handed straight to **Send a raw IR code** on another blaster |
+| Blaster connected | — | Device established a LAN connection |
+| Blaster disconnected | — | Connection lost after offline grace period |
+| Blaster data point changed | `dp` (string), `value` (string) | Any raw DP change |
+
+#### Conditions
+
+| Condition |
+|---|
+| Blaster is / is not connected |
+
+#### Actions
+
+| Action | Notes |
+|---|---|
+| Send an IR code | Picks from the codes this blaster has learned |
+| Send an IR code by name | The same, with the name typed in rather than picked. A dropdown cannot be filled from a tag, so this is the one to use when the flow works out which button to press |
+| Send a raw IR code | For a code from somewhere else. Paste it exactly as it was learned, without the leading format character some tools put in front |
+| Learn an IR code | Starts learning and returns at once; the code arrives on the trigger above |
+| Stop learning | Leaves learning mode. Worth running once if a blaster stops accepting learn requests |
+| Forget an IR code | Removes one saved code |
+| Force blaster reconnect | Drops and re-establishes the TCP connection |
+| Refresh blaster values | Triggers an immediate GET request |
 
 ---
 

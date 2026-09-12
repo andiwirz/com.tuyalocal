@@ -24,7 +24,9 @@
       "level_sensor": "Ultrasonic Level Sensor",
       "weather_station": "Weather Station",
       "access_panel": "Face Access Panel",
-      "smoke_detector": "Smoke Detector"
+      "smoke_detector": "Smoke Detector",
+      "air_quality": "Air Quality Monitor",
+      "ir_blaster": "IR Blaster"
     }
   },
   "notifications": {

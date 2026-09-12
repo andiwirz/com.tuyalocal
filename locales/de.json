@@ -24,7 +24,9 @@
       "level_sensor": "Ultraschall-Füllstandsensor",
       "weather_station": "Wetterstation",
       "access_panel": "Zutrittspanel",
-      "smoke_detector": "Rauchmelder"
+      "smoke_detector": "Rauchmelder",
+      "air_quality": "Luftgütemonitor",
+      "ir_blaster": "IR-Blaster"
     }
   },
   "notifications": {
