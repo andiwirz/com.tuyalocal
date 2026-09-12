@@ -1327,6 +1327,10 @@ Every reading has its own data point setting, and `0` switches one off — the t
 
 Each needs its own measurement as well: the limit alone says nothing. `0` switches that alarm off.
 
+A data point that reports true/false is never read as a measurement — a wrongly guessed
+number lands on a switch often enough, and `1` on a CO2 tile looks like a reading. It is
+left alone and reported once instead.
+
 #### Interpretation
 
 | Setting | Description | Default |
@@ -1403,6 +1407,19 @@ Saved codes belong to the device they were learned on, and there is room for 100
 | `dp_ir_study` |  | — | raw | 202 | Where a freshly learned code arrives; `0` = disabled |
 | `dp_temperature` |  | `measure_temperature` | number | 101 | Scaled by `temp_scale`; `0` = disabled |
 | `dp_humidity` |  | `measure_humidity` | number | 102 | Scaled by `humidity_scale`; `0` = disabled |
+
+> **The sensor is not always on 101 and 102.** Some models put a display switch on
+> DP 101 and their sensor elsewhere — the Woox R7246 uses DP 2 and DP 12. A true/false
+> value on a reading's data point is ignored rather than read as `1`, and reported once
+> in the log, so a wrong guess shows up instead of appearing as a plausible one degree.
+> Cloud Lookup finds the right numbers by name at pairing.
+
+> **RF is not supported yet.** The IR+RF models (Moes S11+, Avatto S16Pro and similar)
+> send radio codes through the same data point but with a different command set, and a
+> learned RF code is a different container — so this driver reads one as "not a usable
+> IR code". It is a bounded piece of work, but there is no RF device here to test it
+> against. If you have one, please report it: with one real capture it can be built
+> properly rather than blind.
 
 #### Learning and sensor
 

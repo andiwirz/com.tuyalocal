@@ -404,6 +404,9 @@
         <option value="sec-access">Face Access Panel (deprecated)</option>
         <option value="sec-level">Ultrasonic Level Sensor</option>
         <option value="sec-weather">Weather Station</option>
+        <option value="sec-smoke">Smoke Detector</option>
+        <option value="sec-airquality">Air Quality Monitor</option>
+        <option value="sec-irblaster">IR Blaster</option>
         <option value="sec-trouble">Troubleshooting</option>
       </select>
     </div>
@@ -629,8 +632,8 @@
           <tr><td>dp_oscillate</td>        <td>0</td>  <td>Oscillate / swing</td>      <td><span class="help-badge badge-rw">R/W</span></td></tr>
           <tr><td>dp_self_clean</td>       <td>0</td>  <td>Self-Clean (internal drying)</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
           <tr><td>dp_pump</td>             <td>0</td>  <td>Water Pump</td>             <td><span class="help-badge badge-rw">R/W</span></td></tr>
-                    <tr><td>dp_countdown_left_minutes</td> <td>off</td> <td>Timer unit</td> <td>Checkbox, not a DP. Enable when the remaining-timer DP reports minutes (0–1440) rather than hours; the value is divided by 60 for display</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
-            <tr><td>dp_countdown_timer_numeric</td> <td>off</td> <td>Timer format</td> <td>Checkbox, not a DP. Enable when the timer DP sends plain numbers (0, 1, 2 … 24) instead of <code>cancel</code> / <code>1h</code> … <code>24h</code></td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_countdown_left_minutes</td> <td>off</td> <td>Timer unit — checkbox, not a DP. Enable when the remaining-timer DP reports minutes (0–1440) rather than hours; the value is divided by 60 for display</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_countdown_timer_numeric</td> <td>off</td> <td>Timer format — checkbox, not a DP. Enable when the timer DP sends plain numbers (0, 1, 2 … 24) instead of <code>cancel</code> / <code>1h</code> … <code>24h</code></td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
           </tbody>
       </table>
       <p>Set any optional DP to <strong>0</strong> to hide the tile. Use the <strong>DP Debug</strong> tab to find the correct DP numbers for your device.</p>
@@ -1220,6 +1223,130 @@
       &mdash; are proprietary binary blobs with no published format. They appear in the
       <a href="#" onclick="showTab('debug'); return false;" class="help-link">DP Debug</a> tab
       and are otherwise ignored. This model has no UV or light sensor at all.</div>
+    </div>
+
+    <div class="section" id="sec-smoke">
+      <h2>Smoke Detector &mdash; DP reference</h2>
+      <p>Driver for Tuya WiFi smoke detectors (category <code>ywbj</code>). Read-only apart
+      from two commands: silencing a sounding alarm, and starting the detector's own test.</p>
+      <table class="help-table">
+        <thead><tr><th>Setting</th><th>Default DP</th><th>Capability / Use</th><th>Notes</th><th>R/W</th></tr></thead>
+        <tbody>
+          <tr><td>dp_smoke</td>           <td>1</td>  <td>alarm_smoke</td>      <td>Read as an alarm whether the detector sends a word, a switch or a number</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_smoke_value</td>     <td>2</td>  <td>smoke_level</td>      <td>Concentration in ppm. Rises before the alarm sounds &mdash; the one reading an early warning can be built on. 0 = disabled</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_battery_percent</td> <td>15</td> <td>measure_battery</td>  <td>0 = disabled</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_battery_state</td>   <td>14</td> <td>alarm_battery</td>    <td><code>low</code> / <code>middle</code> / <code>high</code>. 0 = disabled</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_tamper</td>          <td>0</td>  <td>alarm_tamper</td>     <td>Detector removed from its base. 0 = disabled</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_self_test</td>       <td>9</td>  <td>alarm_generic</td>    <td>Result of the self-test. A word, or a bitmap where 0 means healthy &mdash; both are read</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_self_test_start</td> <td>8</td>  <td>Run self-test</td>    <td>Written by the flow action</td> <td><span class="help-badge badge-rw">Write</span></td></tr>
+          <tr><td>dp_muffling</td>        <td>16</td> <td>Silence the alarm</td> <td>Written by the flow action</td> <td><span class="help-badge badge-rw">Write</span></td></tr>
+          <tr><td>smoke_alarm_values</td> <td>&mdash;</td> <td>Alarm words</td> <td>For detectors with a different vocabulary. A word that is in neither list is reported once and treated as no smoke</td> <td><span class="help-badge badge-rw">Setting</span></td></tr>
+          <tr><td>battery_low_percent</td> <td>15</td> <td>Battery warning</td> <td>Only used where the detector reports a percentage</td> <td><span class="help-badge badge-rw">Setting</span></td></tr>
+        </tbody>
+      </table>
+      <div class="note"><strong>The battery data points are not settled.</strong> Tuya's
+      specification calls DP&nbsp;14 the level and DP&nbsp;15 the percentage; a reported
+      implementation had them the other way round. So neither is trusted: the driver reads the
+      <em>value</em> and decides &mdash; a number is a percentage, a word is a level. A swapped
+      pair still lands correctly, and the defaults only have to be plausible.</div>
+      <div class="note"><strong>Polling is five minutes, not thirty seconds.</strong> A detector
+      pushes its alarm the moment it sounds, so the poll only refreshes the battery reading, and
+      on a cell-powered detector every request answered is battery spent.</div>
+    </div>
+
+    <div class="section" id="sec-airquality">
+      <h2>Air Quality Monitor &mdash; DP reference</h2>
+      <p>Driver for Tuya air quality monitors (categories <code>hjjcy</code> and
+      <code>pm25</code>) &mdash; the desk-sized boxes that show CO2, particulates and
+      formaldehyde on a small display. Every reading has its own data point setting, and 0
+      switches one off together with its tile, so a monitor that measures four of these ten
+      things shows four tiles rather than six empty ones.</p>
+      <table class="help-table">
+        <thead><tr><th>Setting</th><th>Default DP</th><th>Capability / Use</th><th>Notes</th><th>R/W</th></tr></thead>
+        <tbody>
+          <tr><td>dp_aqi</td>         <td>1</td>   <td>level_aqi</td>              <td>The monitor's overall verdict, mapped onto Homey's six steps &mdash; see <em>aqi_levels</em></td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_temperature</td> <td>2</td>   <td>measure_temperature</td>    <td>Scaled by <em>temp_scale</em></td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_humidity</td>    <td>3</td>   <td>measure_humidity</td>       <td>Scaled by <em>humidity_scale</em></td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_co2</td>         <td>4</td>   <td>measure_co2</td>            <td>ppm</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_ch2o</td>        <td>5</td>   <td>measure_ch2o</td>           <td>Formaldehyde, scaled by <em>ch2o_scale</em></td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_pm25 / dp_pm1 / dp_pm10</td> <td>7 / 8 / 9</td> <td>measure_pm25, measure_pm1, measure_pm10</td> <td>&micro;g/m&sup3;</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_pm03</td>        <td>107</td> <td>pm03_level</td>             <td>The one reading Homey has no capability of its own for</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_tvoc</td>        <td>101</td> <td>measure_tvoc</td>           <td>Scaled by <em>tvoc_scale</em></td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_co</td>          <td>102</td> <td>measure_co</td>             <td>ppm</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_battery</td>     <td>22</td>  <td>measure_battery</td>        <td>Also raises the battery warning below <em>battery_low_percent</em></td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_charging</td>    <td>23</td>  <td>battery_charging_state</td> <td><code>charging</code> or <code>discharging</code> &mdash; the monitor does not report a third state</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_co2_alarm</td>   <td>104</td> <td>alarm_co2</td>              <td>The monitor's own CO2 limit &mdash; see note below</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_co_alarm</td>    <td>113</td> <td>alarm_co</td>               <td>Its own CO limit</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_pm25_alarm</td>  <td>114</td> <td>alarm_pm25</td>             <td>Its own PM2.5 limit</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_volume</td>      <td>28</td>  <td>alarm_volume</td>           <td>Words listed in <em>volume_values</em></td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_backlight</td>   <td>103</td> <td>backlight_level</td>        <td>Words listed in <em>backlight_values</em></td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>dp_buzzer</td>      <td>106</td> <td>buzzer</td>                 <td>&mdash;</td> <td><span class="help-badge badge-rw">R/W</span></td></tr>
+          <tr><td>aqi_levels</td>     <td>3</td>   <td>Steps on the monitor's scale</td> <td>It reports <code>level_2</code> without saying level 2 of how many, and the second of three is not the second of six</td> <td><span class="help-badge badge-rw">Setting</span></td></tr>
+        </tbody>
+      </table>
+      <div class="note"><strong>The alarms use the monitor's own limits.</strong> Three of them
+      are readable &mdash; CO2, CO and PM2.5 &mdash; and where one is, the matching alarm compares
+      the measurement against it. The threshold stays the one set on the device rather than a
+      second one kept in Homey, so changing it on the monitor changes it here too. Each needs its
+      own measurement as well: the limit alone says nothing.</div>
+      <div class="note"><strong>Two scales are unsettled, in opposite directions.</strong> Tuya
+      specifies temperature and humidity on these monitors in tenths, and the reported one sends
+      whole degrees anyway &mdash; so both default to <em>Automatic</em>, which decides per
+      reading: what cannot be a room temperature as a whole number is one in tenths, and a
+      humidity above 100 can only be tenths of a percent. Formaldehyde and TVOC go the other way:
+      Homey charts them in &micro;g/m&sup3;, the unit the monitor sends is not published, and so
+      nothing is converted until you say so. Compare the tile against the monitor's own display
+      and pick the factor that brings the two together.</div>
+      <div class="note"><strong>Not read:</strong> the three alarm clocks and their switches, the
+      sleep timer, the calibration counter, the display's own temperature unit, and the
+      formaldehyde limit &mdash; Homey has no formaldehyde alarm to hang it on. They are all
+      visible in <strong>DP Debug</strong>.</div>
+    </div>
+
+    <div class="section" id="sec-irblaster">
+      <h2>IR Blaster &mdash; DP reference</h2>
+      <p>Driver for Tuya WiFi infrared blasters (category <code>wnykq</code>) &mdash; the pucks
+      that learn a code from a remote control and replay it on request. Most of them carry a
+      temperature and humidity sensor as well, and that is read too.</p>
+      <table class="help-table">
+        <thead><tr><th>Setting</th><th>Default DP</th><th>Capability / Use</th><th>Notes</th><th>R/W</th></tr></thead>
+        <tbody>
+          <tr><td>dp_ir_send</td>     <td>201</td> <td>Everything the driver sends</td> <td>Codes, and the two commands that switch learning on and off. Without it the device still reads its sensor but cannot send</td> <td><span class="help-badge badge-rw">Write</span></td></tr>
+          <tr><td>dp_ir_study</td>    <td>202</td> <td>Learned code arrives here</td>   <td>0 = learning disabled</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_temperature</td> <td>101</td> <td>measure_temperature</td>         <td>Scaled by <em>temp_scale</em>. 0 = disabled</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>dp_humidity</td>    <td>102</td> <td>measure_humidity</td>            <td>Scaled by <em>humidity_scale</em>. 0 = disabled</td> <td><span class="help-badge badge-ro">Read</span></td></tr>
+          <tr><td>learn_timeout</td>  <td>30</td>  <td>Seconds to wait for a press</td> <td>When it runs out the blaster is taken back out of learning mode by itself</td> <td><span class="help-badge badge-rw">Setting</span></td></tr>
+          <tr><td>fire_and_forget</td> <td>On</td> <td>Send without waiting</td>        <td>On by default here: these blasters answer a command inconsistently, and every known implementation sends to them this way</td> <td><span class="help-badge badge-rw">Setting</span></td></tr>
+        </tbody>
+      </table>
+      <div class="note"><strong>How learning works.</strong> Run <em>Learn an IR code</em> with a
+      name; the card returns straight away rather than holding the flow open. Point the remote at
+      the blaster from close up and press once. The code arrives, is saved under that name, and
+      fires <em>An IR code was learned</em> &mdash; from then on <em>Send an IR code</em> offers
+      it in a dropdown. A blaster left sitting in learning mode will not accept the next attempt,
+      which is the usual reason a second try appears to do nothing; the driver leaves learning
+      mode before entering it, so that repairs itself.</div>
+      <div class="note"><strong>A damaged capture is not saved.</strong> A weak signal, a
+      half-pressed button or a tired battery in the remote produce a code that stores perfectly
+      well and never works. The container is checked instead &mdash; and learning stays on when
+      one is refused, so pressing the button again is enough. What is kept gets a line in the
+      <strong>Logs</strong> tab describing its shape, which needs no decoder and says a
+      surprising amount: <code>160 durations, 431.7 ms, timing classes ~901 &micro;s &times;96,
+      ~1814 &micro;s &times;56, ~30462 &micro;s &times;8</code>. Two short classes at 1:2 are
+      Manchester coding, so RC5 or RC6; a long lead-in then two short classes is NEC; the long
+      class at the end is the gap between repeats of the frame.</div>
+      <div class="note"><strong>The sensor is not always on 101 and 102.</strong> Some models put
+      a display switch on DP&nbsp;101 and their sensor elsewhere &mdash; the Woox R7246 uses
+      DP&nbsp;2 and DP&nbsp;12. A true/false value on a reading's data point is ignored rather
+      than read as 1, and reported once in the log, so a wrong guess shows up instead of
+      appearing as a plausible one degree. <strong>Cloud Lookup</strong> finds the right numbers
+      by name at pairing.</div>
+      <div class="note"><strong>RF is not supported yet.</strong> The IR+RF models (Moes S11+,
+      Avatto S16Pro and similar) send radio codes through the same data point but with a
+      different command set, and a learned RF code is a different container &mdash; so this
+      driver reads one as "not a usable IR code". It is a bounded piece of work, but there is no
+      RF device here to test it against. If you have one, please report it: with one real capture
+      it can be built properly rather than blind.</div>
     </div>
 
     <div class="section" id="sec-access">
@@ -2210,13 +2337,17 @@
       // be authored by the developer rather than the person who can answer
       // questions about the device.
       var DRIVER_LABELS = {
-        air_conditioner: 'Air Conditioner', curtain_motor: 'Curtain Motor',
-        dehumidifier: 'Dehumidifier', doorbell: 'Doorbell', ev_charger: 'EV Charger',
-        fan: 'Fan', garage_door: 'Garage Door', heat_pump: 'Heat Pump',
-        heater: 'Heater', humidifier: 'Humidifier', light: 'Light',
-        pet_feeder: 'Pet Feeder', presence_sensor: 'Presence Sensor',
-        kettle: 'Smart Kettle', smart_plug: 'Smart Plug', thermostat: 'Thermostat',
-        wall_switch: 'Wall Switch', generic: 'Generic Tuya Device',
+        air_conditioner: 'Air Conditioner', air_quality: 'Air Quality Monitor',
+        curtain_motor: 'Curtain Motor', dehumidifier: 'Dehumidifier',
+        doorbell: 'Doorbell', energy_meter: 'Energy Meter', ev_charger: 'EV Charger',
+        fan: 'Fan', fan_light: 'Ceiling Fan Light', garage_door: 'Garage Door',
+        heat_pump: 'Heat Pump', heater: 'Heater', humidifier: 'Humidifier',
+        ir_blaster: 'IR Blaster', level_sensor: 'Ultrasonic Level Sensor',
+        light: 'Light', pet_feeder: 'Pet Feeder', presence_sensor: 'Presence Sensor',
+        kettle: 'Smart Kettle', smart_plug: 'Smart Plug',
+        smoke_detector: 'Smoke Detector', thermostat: 'Thermostat',
+        wall_switch: 'Wall Switch', weather_station: 'Weather Station',
+        access_panel: 'Face Access Panel', generic: 'Generic Tuya Device',
       };
       // These two fields used to be dropdowns in the issue form. GitHub can only
       // prefill text fields from a URL, so they were converted — which is why the
