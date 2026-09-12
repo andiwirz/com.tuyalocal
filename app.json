@@ -13970,6 +13970,58 @@
             }
           }
         ]
+      },
+      {
+        "id": "ir_send_repeatedly",
+        "title": {
+          "en": "Send an IR code repeatedly",
+          "de": "IR-Code mehrfach senden"
+        },
+        "titleFormatted": {
+          "en": "Send the IR code [[code]] [[repeats]] times, [[gap]] ms apart",
+          "de": "IR-Code [[code]] [[repeats]]-mal senden, [[gap]] ms auseinander"
+        },
+        "hint": {
+          "en": "For the buttons nobody presses once — volume and channel. The gap is the pause between sends; leave it at 0 and they go out back to back, which some receivers read as one long press and others miss entirely. At most 10 sends a second apart, because the flow waits for the last one.",
+          "de": "Für die Tasten, die niemand einmal drückt — Lautstärke und Programmplatz. Der Abstand ist die Pause zwischen den Sendungen; bei 0 gehen sie unmittelbar hintereinander hinaus, was manche Empfänger als langen Tastendruck lesen und andere gar nicht. Höchstens 10 Sendungen im Abstand von einer Sekunde, denn die Flow-Karte wartet auf die letzte."
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=ir_blaster"
+          },
+          {
+            "name": "code",
+            "type": "autocomplete",
+            "placeholder": {
+              "en": "Saved code",
+              "de": "Gespeicherter Code"
+            }
+          },
+          {
+            "name": "repeats",
+            "type": "number",
+            "min": 1,
+            "max": 10,
+            "step": 1,
+            "placeholder": {
+              "en": "Times",
+              "de": "Male"
+            }
+          },
+          {
+            "name": "gap",
+            "type": "number",
+            "min": 0,
+            "max": 1000,
+            "step": 10,
+            "placeholder": {
+              "en": "Gap (ms)",
+              "de": "Abstand (ms)"
+            }
+          }
+        ]
       }
     ]
   },

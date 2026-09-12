@@ -1,6 +1,7 @@
 'use strict';
 
 const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
+const { lesePulse, beschreibePulse } = require('../../lib/irPulses');
 
 // ── Tuya IR blaster (category wnykq) DP map ─────────────────────────────────
 //
@@ -41,6 +42,13 @@ const OPTIONAL_CAPABILITIES = SENSOR_PROFILE.map(({ settingKey, capability }) =>
 // vollschreibt. Wer hundert Tasten angelernt hat, hat eine Fernbedienung
 // nachgebaut; wer mehr braucht, legt ein zweites Geraet an.
 const MAX_CODES = 100;
+
+// Wie oft und wie dicht eine Taste hoechstens wiederholt werden darf. Die Grenzen
+// stehen nicht da, weil mehr schaedlich waere, sondern weil eine Flow-Karte
+// zurueckkehren muss: zehn Sendungen mit je einer Sekunde Abstand sind zehn
+// Sekunden, in denen der Flow steht, und das ist das Aeusserste, was vertretbar ist.
+const MAX_WIEDERHOLUNGEN = 10;
+const MAX_ABSTAND_MS     = 1000;
 
 class IrBlasterDevice extends BaseTuyaDevice {
   async onInit() {
@@ -128,21 +136,48 @@ class IrBlasterDevice extends BaseTuyaDevice {
     return JSON.stringify({ control: 'send_ir', type: 0, head: '', key1: `1${code}` });
   }
 
-  /** Sends a code that was learned earlier and saved under a name. */
-  async sendSavedCode(name) {
+  /**
+   * Sends a code that was learned earlier and saved under a name.
+   *
+   * @param {string} name
+   * @param {{wiederholungen?: number, abstandMs?: number}} [opts]
+   */
+  async sendSavedCode(name, opts = {}) {
     const code = this._codes()[name];
     if (!code) {
       throw new Error(`No IR code saved as "${name}" on this blaster. `
         + `Saved codes: ${this.codeNames().join(', ') || 'none yet'}.`);
     }
-    await this.sendRawCode(code);
+    await this.sendRawCode(code, opts);
   }
 
-  /** Sends a code verbatim — for a code pasted in from somewhere else. */
-  async sendRawCode(code) {
+  /**
+   * Sends a code verbatim — for a code pasted in from somewhere else.
+   *
+   * @param {string} code
+   * @param {{wiederholungen?: number, abstandMs?: number}} [opts]
+   */
+  async sendRawCode(code, opts = {}) {
     const sauber = String(code || '').trim();
     if (!sauber) throw new Error('No IR code given.');
-    await this._set(this._sendeDp(), IrBlasterDevice.sendePaket(sauber));
+
+    // Geprueft, bevor es hinausgeht. Ein Code, der sich nicht als Aufnahme lesen
+    // laesst, kann auch der Blaster nicht senden - er verwirft ihn wortlos, und der
+    // Flow meldet Erfolg. Lieber hier ein Fehler mit dem Grund.
+    const { fehler } = lesePulse(sauber);
+    if (fehler) throw new Error(`That is not a usable IR code: ${fehler}.`);
+
+    const dp   = this._sendeDp();
+    const paket = IrBlasterDevice.sendePaket(sauber);
+    const wdh  = Math.max(1, Math.min(MAX_WIEDERHOLUNGEN,
+      Math.round(Number(opts.wiederholungen) || 1)));
+    const gap  = Math.max(0, Math.min(MAX_ABSTAND_MS,
+      Math.round(Number(opts.abstandMs) || 0)));
+
+    for (let i = 0; i < wdh; i++) {
+      await this._set(dp, paket);
+      if (i < wdh - 1 && gap > 0) await new Promise((r) => setTimeout(r, gap));
+    }
   }
 
   // ── Learning ──────────────────────────────────────────────────────────────
@@ -195,6 +230,18 @@ class IrBlasterDevice extends BaseTuyaDevice {
    * @param {string} code
    */
   async _codeAngekommen(code) {
+    const { pulse, fehler, warnung } = lesePulse(code);
+
+    // Eine kaputte Aufnahme wird nicht gespeichert — und der Lernmodus bleibt an.
+    // Wer zu schwach gedrueckt hat, drueckt einfach nochmal, statt den Flow erneut
+    // auszuloesen; die Frist laeuft ja weiter und holt den Blaster notfalls heraus.
+    if (fehler) {
+      this._appLog(`The IR code that arrived is unusable — ${fehler}. Still listening: `
+        + 'press the button again, holding the remote closer and pressing firmly. If it '
+        + "keeps arriving damaged, the remote's batteries are the usual cause.", 'warn');
+      return;
+    }
+
     const lief = this._lernTimer !== null;
     const name = this._lernName
       || `code_${Object.keys(this._codes()).length + 1}`;
@@ -213,9 +260,11 @@ class IrBlasterDevice extends BaseTuyaDevice {
 
     // Immer ausgeschrieben. Wer den Code anderswo braucht - in einem zweiten Flow,
     // in einer anderen App -, findet ihn so im Protokoll, ohne dass ein Auslöser
-    // laufen musste.
-    this._appLog(`IR code received${gespeichert ? ` and saved as "${name}"` : ''}: ${code}`,
-      'info', true);
+    // laufen musste. Dazu die Gestalt der Aufnahme: sie sagt ohne Decoder, was fuer
+    // eine Fernbedienung das war, und steht damit in jedem Fehlerbericht.
+    this._appLog(`IR code received${gespeichert ? ` and saved as "${name}"` : ''} — `
+      + `${beschreibePulse(pulse)}${warnung ? `. Careful: ${warnung}` : ''}: ${code}`,
+    'info', true);
 
     this._triggerCodeLearned.trigger(this, { name, code }).catch(() => {});
 

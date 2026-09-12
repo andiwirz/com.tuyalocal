@@ -41,6 +41,17 @@ class IrBlasterDriver extends Homey.Driver {
     senden.registerArgumentAutocompleteListener('code',
       async (query, args) => (args.device ? args.device.codeAutocomplete(query) : []));
 
+    // Lautstaerke und Programmplatz sind die Tasten, die man nicht einmal drueckt.
+    // Als eigene Karte statt als zwei weitere Felder an der Karte oben: der haeufige
+    // Fall bleibt damit zweifeldrig, und wer wiederholen will, findet sie im Menue.
+    const mehrfach = this.homey.flow.getActionCard('ir_send_repeatedly');
+    mehrfach.registerRunListener(async (args) => args.device.sendSavedCode(args.code.name, {
+      wiederholungen: args.repeats,
+      abstandMs:      args.gap,
+    }));
+    mehrfach.registerArgumentAutocompleteListener('code',
+      async (query, args) => (args.device ? args.device.codeAutocomplete(query) : []));
+
     // Dasselbe wie oben, nur mit getipptem Namen. Ein Auswahlfeld laesst sich in Homey
     // nicht aus einer Variablen fuellen — wer den Knopf im Flow ausrechnet, statt ihn
     // beim Bauen zu wissen, braucht diese Karte.

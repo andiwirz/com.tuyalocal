@@ -1370,6 +1370,17 @@ There are two families of these boxes. This driver serves the one that keeps its
 
 The full code also goes to the **Logs** tab, so it can be carried over to a second blaster through **Send a raw IR code** without learning it there as well. If nothing arrives within `learn_timeout` the blaster is taken back out of learning mode — one left sitting in it will not accept the next attempt, which is the usual reason a second try appears to do nothing at all.
 
+A capture that arrives damaged is **not** saved. A weak signal, a half-pressed button or a tired battery in the remote produce a code that stores perfectly well and never works, and the driver would rather say so at the moment it happens than let it fail silently weeks later. Learning stays on when that happens, so pressing the button again is enough — no need to start the flow over.
+
+What is saved gets a line in the log describing its shape, which needs no protocol decoder and says a surprising amount:
+
+```
+IR code received and saved as "TV power" — 160 durations, 431.7 ms,
+timing classes ~901 µs ×96, ~1814 µs ×56, ~30462 µs ×8
+```
+
+Two short classes at a ratio of 1:2 are Manchester coding, so RC5 or RC6; a long lead-in followed by two short classes is NEC; the long class at the end is the gap between repeats of the same frame. In a support report that is the difference between "it does not work" and a lead.
+
 Saved codes belong to the device they were learned on, and there is room for 100 of them.
 
 #### Connection
@@ -2456,6 +2467,7 @@ Homey generates the cards for the measurements and the three alarms itself. The 
 | Action | Notes |
 |---|---|
 | Send an IR code | Picks from the codes this blaster has learned |
+| Send an IR code repeatedly | For volume and channel. Up to 10 sends with a gap of up to a second between them — the flow waits for the last one |
 | Send an IR code by name | The same, with the name typed in rather than picked. A dropdown cannot be filled from a tag, so this is the one to use when the flow works out which button to press |
 | Send a raw IR code | For a code from somewhere else. Paste it exactly as it was learned, without the leading format character some tools put in front |
 | Learn an IR code | Starts learning and returns at once; the code arrives on the trigger above |
