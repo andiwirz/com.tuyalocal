@@ -27137,8 +27137,8 @@
                 }
               ],
               "hint": {
-                "en": "Homey charts formaldehyde in µg/m³. Which unit the monitor sends is not published, so nothing is converted until you say so: compare the tile against the monitor’s own display and pick the factor that makes the two agree.",
-                "de": "Homey führt Formaldehyd in µg/m³. In welcher Einheit der Monitor sendet, ist nicht veröffentlicht — darum wird nichts umgerechnet, bis Sie es sagen: Kachel und Geräteanzeige vergleichen und den Faktor wählen, der beide zur Deckung bringt."
+                "en": "Homey charts formaldehyde in µg/m³. The one monitor read against its own display sends exactly that: the display showed 0.003 mg/m³ while the data point carried 3, so the raw value is already µg/m³ and nothing needs converting. That is the default. If your monitor disagrees with its own display, this is where to correct it — Tuya does not publish the unit, so another family may well send something else.",
+                "de": "Homey führt Formaldehyd in µg/m³. Der eine Monitor, der gegen seine eigene Anzeige gelesen wurde, sendet genau das: die Anzeige stand auf 0,003 mg/m³, während der Datenpunkt 3 trug — der Rohwert ist also bereits µg/m³ und braucht keine Umrechnung. So steht es ab Werk. Weicht Ihr Monitor von seiner eigenen Anzeige ab, wird es hier berichtigt: Tuya veröffentlicht die Einheit nicht, und eine andere Baureihe kann durchaus etwas anderes schicken."
               }
             },
             {
@@ -27171,7 +27171,11 @@
                     "de": "mg/m³ (× 1000)"
                   }
                 }
-              ]
+              ],
+              "hint": {
+                "en": "Same question as formaldehyde, and on the reported monitor the same answer: the display reads TVOC in mg/m³ and the data point carries the thousandth part of it, which is µg/m³ — what Homey wants. Left as sent unless your monitor says otherwise.",
+                "de": "Dieselbe Frage wie beim Formaldehyd, und auf dem gemeldeten Monitor dieselbe Antwort: die Anzeige führt TVOC in mg/m³, der Datenpunkt trägt den tausendsten Teil davon, also µg/m³ — das, was Homey erwartet. Bleibt unverändert, solange Ihr Monitor nichts anderes sagt."
+              }
             },
             {
               "id": "aqi_levels",

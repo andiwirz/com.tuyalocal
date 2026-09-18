@@ -1285,7 +1285,9 @@ Every reading has its own data point setting, and `0` switches one off — the t
 
 > **The monitor carries its own alarm limits.** Three of them are readable — CO2, CO and PM2.5 — and where one is, the matching alarm compares the measurement against it. The threshold stays the one set on the monitor itself rather than a second one kept in Homey, so changing it on the device changes it here too.
 
-> **Two scales are not settled, in opposite directions.** Tuya specifies temperature and humidity on these monitors in tenths, and the reported one sends whole degrees anyway. Both default to **Automatic**, which decides per reading: what cannot be a room temperature as a whole number is one in tenths, and a humidity above 100 can only be tenths of a percent. Formaldehyde and TVOC are the other way round — Homey charts them in µg/m³, the unit the monitor sends is not published, and so nothing is converted until you say so. Compare the tile against the monitor's own display and pick the factor that brings the two together.
+> **Temperature and humidity default to Automatic.** Tuya specifies these monitors in tenths and the reported one sends whole degrees anyway, so the driver decides per reading: what cannot be a room temperature as a whole number is one in tenths, and a humidity above 100 can only be tenths of a percent. The monitor's own display, read alongside, shows whole degrees too.
+
+> **Formaldehyde and TVOC are sent as µg/m³ and passed through untouched.** That is settled by reading one monitor against its own display: the display stood at `0.003 mg/m³` while the data point carried `3`. A thousandth of a milligram is a microgram, which is the unit Homey charts, so no conversion is needed and none is made. Tuya still does not publish the unit, so `ch2o_scale` and `tvoc_scale` remain there for a monitor that disagrees with its own display.
 
 #### Connection
 

@@ -1499,14 +1499,16 @@
       the measurement against it. The threshold stays the one set on the device rather than a
       second one kept in Homey, so changing it on the monitor changes it here too. Each needs its
       own measurement as well: the limit alone says nothing.</div>
-      <div class="note"><strong>Two scales are unsettled, in opposite directions.</strong> Tuya
-      specifies temperature and humidity on these monitors in tenths, and the reported one sends
-      whole degrees anyway &mdash; so both default to <em>Automatic</em>, which decides per
-      reading: what cannot be a room temperature as a whole number is one in tenths, and a
-      humidity above 100 can only be tenths of a percent. Formaldehyde and TVOC go the other way:
-      Homey charts them in &micro;g/m&sup3;, the unit the monitor sends is not published, and so
-      nothing is converted until you say so. Compare the tile against the monitor's own display
-      and pick the factor that brings the two together.</div>
+      <div class="note"><strong>Temperature and humidity default to Automatic.</strong> Tuya
+      specifies these monitors in tenths and the reported one sends whole degrees anyway, so the
+      driver decides per reading: what cannot be a room temperature as a whole number is one in
+      tenths, and a humidity above 100 can only be tenths of a percent.</div>
+      <div class="note"><strong>Formaldehyde and TVOC are sent as &micro;g/m&sup3;.</strong>
+      Settled by reading one monitor against its own display: the display stood at
+      <code>0.003 mg/m&sup3;</code> while the data point carried <code>3</code>. A thousandth of a
+      milligram is a microgram, which is the unit Homey charts &mdash; so nothing is converted, and
+      nothing needs to be. Tuya still does not publish the unit, so the two scale settings stay for
+      a monitor that disagrees with its own display.</div>
       <div class="note"><strong>Not read:</strong> the three alarm clocks and their switches, the
       sleep timer, the calibration counter, the display's own temperature unit, and the
       formaldehyde limit &mdash; Homey has no formaldehyde alarm to hang it on. They are all
