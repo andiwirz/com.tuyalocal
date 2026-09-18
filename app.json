@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.232",
+  "version": "1.0.233",
   "compatibility": ">=12.13.0",
   "sdk": 3,
   "platforms": [
