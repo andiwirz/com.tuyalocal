@@ -64,14 +64,18 @@
        immer — und alle fuenf Namen bleiben ausgeschrieben, worauf der
        Hilfetext an rund 25 Stellen verweist. */
     .tab-bar {
-      /* Raster statt Flexbox, und zwar wegen der letzten Zeile: Flexbox streckt
-         das uebrig gebliebene Segment ueber die ganze Breite, ein Raster gibt ihm
-         eine Spalte wie allen anderen. auto-fit nimmt so viele Spalten, wie bei
-         96 Punkt Mindestbreite hineinpassen — fuenf auf einer breiten Ansicht,
-         vier oder drei auf einem Telefon, und die Segmente bleiben ueberall
-         gleich breit. */
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+      /* Die Segmente sind so breit wie ihre Beschriftung, nicht breiter.
+         Vorher standen sie in gleich breiten Rasterspalten und streckten sich auf
+         die volle Zeile — "Help" bekam 110 Punkt fuer 28 Punkt Text, und weil
+         jede Spalte so breit war wie die laengste Beschriftung, passten nur vier
+         in eine Zeile. Zusammen brauchen alle fuenf 227 Punkt Text; mit der
+         Polsterung sind es rund 335, und damit stehen sie selbst auf 375 Punkt
+         nebeneinander.
+         flex-grow bleibt bei 0: sobald eines waechst, ist die letzte Zeile wieder
+         ein einzelnes Segment ueber die ganze Breite. */
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
       gap: 2px;
       background: var(--ios-card);
       padding: 6px 8px;
@@ -85,17 +89,10 @@
          auf, und die Breite der Leiste wird unvorhersehbar. */
       -webkit-text-size-adjust: 100%;
       text-size-adjust: 100%;
-      /* Gleichmaessig verteilte Segmente statt natuerlicher Breiten: das
-         Mindestmass entscheidet, wie viele in eine Zeile passen — bei 375 Punkt
-         sind es drei, dann zwei, beide Zeilen gefuellt. Mit einem kleineren Mass
-         passten vier in die erste Zeile und das fuenfte streckte sich allein
-         ueber die ganze zweite. Auf einer breiten Ansicht stehen weiterhin alle
-         fuenf nebeneinander. */
-      flex: 1 1 auto;
-      min-width: 96px;
+      flex: 0 0 auto;
       /* 34 Punkt ist die Hoehe der Segmentleiste in iOS. */
       min-height: 34px;
-      padding: 7px 10px;
+      padding: 8px 12px;
       white-space: nowrap;
       border: none;
       background: var(--ios-fill);
