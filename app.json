@@ -26567,16 +26567,16 @@
       ],
       "capabilities": [
         "level_aqi",
-        "measure_pm25",
-        "measure_pm1",
-        "measure_pm10",
-        "pm03_level",
-        "measure_co2",
-        "measure_co",
-        "measure_ch2o",
-        "measure_tvoc",
         "measure_temperature",
         "measure_humidity",
+        "measure_pm10",
+        "measure_pm25",
+        "measure_pm1",
+        "pm03_level",
+        "measure_co2",
+        "measure_ch2o",
+        "measure_tvoc",
+        "measure_co",
         "measure_battery",
         "alarm_battery",
         "battery_charging_state",
@@ -26635,6 +26635,15 @@
             "en": "PM2.5 below the limit",
             "de": "PM2.5 unter dem Grenzwert"
           }
+        },
+        "measure_pm10": {
+          "icon": "/assets/capabilities/pm03_level.svg"
+        },
+        "measure_pm25": {
+          "icon": "/assets/capabilities/pm03_level.svg"
+        },
+        "measure_pm1": {
+          "icon": "/assets/capabilities/pm03_level.svg"
         }
       },
       "energy": {

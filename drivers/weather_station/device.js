@@ -7,15 +7,22 @@ const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 // Homey expects. On the reported station all of them are tenths, but a divisor per
 // quantity rather than one for the whole device means a model that scales its
 // pressure differently from its temperatures does not need a code change.
+// Die Reihenfolge hier ist die Reihenfolge der Kacheln: das Manifest fuehrt nur
+// measure_temperature, alles andere entsteht zur Laufzeit und wird in genau dieser
+// Folge angelegt.
+//
+// Nach Ort gepaart, nicht nach Groesse gruppiert — innen Temperatur und Feuchte
+// nebeneinander, dann Kanal fuer Kanal draussen. So liest man eine Station ab, und
+// so hat es der erste Besitzer, der beides sah, auch vorgeschlagen.
 const NUMERIC_PROFILE = [
   { settingKey: 'dp_temp_in',    capability: 'measure_temperature',          divisor: 'temp_divisor'     },
-  { settingKey: 'dp_temp_out',   capability: 'measure_temperature.outdoor',  divisor: 'temp_divisor'     },
-  { settingKey: 'dp_temp_extra', capability: 'measure_temperature.extra',    divisor: 'temp_divisor'     },
   { settingKey: 'dp_hum_in',     capability: 'measure_humidity',             divisor: 'humidity_divisor' },
+  { settingKey: 'dp_temp_out',   capability: 'measure_temperature.outdoor',  divisor: 'temp_divisor'     },
   { settingKey: 'dp_hum_out',    capability: 'measure_humidity.outdoor',     divisor: 'humidity_divisor' },
-  { settingKey: 'dp_hum_extra',   capability: 'measure_humidity.extra',       divisor: 'humidity_divisor' },
-  { settingKey: 'dp_temp_ch3',    capability: 'measure_temperature.ch3',      divisor: 'temp_divisor'     },
-  { settingKey: 'dp_hum_ch3',     capability: 'measure_humidity.ch3',         divisor: 'humidity_divisor' },
+  { settingKey: 'dp_temp_extra', capability: 'measure_temperature.extra',    divisor: 'temp_divisor'     },
+  { settingKey: 'dp_hum_extra',  capability: 'measure_humidity.extra',       divisor: 'humidity_divisor' },
+  { settingKey: 'dp_temp_ch3',   capability: 'measure_temperature.ch3',      divisor: 'temp_divisor'     },
+  { settingKey: 'dp_hum_ch3',    capability: 'measure_humidity.ch3',         divisor: 'humidity_divisor' },
   { settingKey: 'dp_pressure',   capability: 'measure_pressure',             divisor: 'pressure_divisor' },
   { settingKey: 'dp_wind',       capability: 'measure_wind_strength',        divisor: 'wind_divisor'     },
   { settingKey: 'dp_gust',       capability: 'measure_gust_strength',        divisor: 'wind_divisor'     },
