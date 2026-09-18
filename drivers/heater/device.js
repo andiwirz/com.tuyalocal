@@ -25,16 +25,22 @@ const ENUM_VALUE_SETTINGS = {
   mode:       'mode_values',
 };
 
+// Diese Reihenfolge ist die Reihenfolge der Kacheln: das Manifest fuehrt nur onoff
+// und die Zieltemperatur, alles andere wird hier angehaengt.
+//
+// Gemessene Temperatur und "heizt gerade" stehen darum vorn, gleich hinter dem Ziel.
+// Das ist, wonach man bei einer Heizung schaut; vorher stand die gemessene
+// Temperatur als zehnte von elf Kacheln, hinter dem Alarm.
 const OPTIONAL_CAPABILITIES = [
+  { setting: 'dp_current_temp',    capability: 'measure_temperature' },
+  { setting: 'dp_work_state',      capability: 'heater_active'   },
   { setting: 'dp_mode',            capability: 'mode'            },
   { setting: 'dp_level',           capability: 'heat_level'      },
   { setting: 'dp_oscillate',       capability: 'oscillate'       },
   { setting: 'dp_child_lock',      capability: 'child_lock'      },
-  { setting: 'dp_fault',           capability: 'alarm_generic'   },
   { setting: 'dp_countdown_timer', capability: 'countdown_timer' },
   { setting: 'dp_countdown_left',  capability: 'countdown_left'  },
-  { setting: 'dp_current_temp',    capability: 'measure_temperature' },
-  { setting: 'dp_work_state',      capability: 'heater_active'   },
+  { setting: 'dp_fault',           capability: 'alarm_generic'   },
 ];
 
 class HeaterDevice extends BaseTuyaDevice {

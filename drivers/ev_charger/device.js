@@ -74,15 +74,16 @@ const STATE_MAP = {
 // "charger_end" for the whole session (observed on SS_V1.x firmware).
 const CP_CHARGING = new Set(['controlpi_9v_pwm', 'controlpi_6v_pwm']);
 
+// Die Eintraege, die nicht schon im Manifest stehen, werden in dieser Reihenfolge
+// angehaengt — und das ist die Reihenfolge der Kacheln.
+//
+// Darum stehen die Phasen B und C hier oben: auf einer Dreiphasenanlage folgen sie
+// damit unmittelbar auf Phase A statt hinter sechs Diagnosewerten. Und alle drei
+// Phasen stehen in derselben Folge — Leistung, Spannung, Strom, wie Phase A es im
+// Manifest tut. Vorher las sich B und C andersherum als A, dieselben drei Werte in
+// zweierlei Ordnung untereinander.
 const OPTIONAL_CAPABILITIES = [
   { setting: 'dp_charge_current',   capability: 'target_power'          },
-  { setting: 'dp_fault',            capability: 'alarm_generic'         },
-  { setting: 'dp_fault',            capability: 'fault_code'            },
-  { setting: 'dp_connection_state', capability: 'ev_connection_state'   },
-  { setting: 'dp_work_mode',        capability: 'ev_work_mode'          },
-  { setting: 'dp_temperature',      capability: 'measure_temperature'   },
-  { setting: 'dp_session_energy',   capability: 'charge_session_energy' },
-  { setting: 'dp_timer_on',         capability: 'charge_delay_hours'    },
   // Voltage and current arrive one of two ways, and either justifies the capability:
   // the packed phase DP, or a plain numeric DP per quantity. The array form of
   // `setting` is what _syncOptionalCapabilities takes for exactly this case.
@@ -91,15 +92,22 @@ const OPTIONAL_CAPABILITIES = [
   // and the "estimate" energy source can populate it without a power DP.
   { setting: ['dp_phase_a', 'dp_voltage_a'], capability: 'measure_voltage'   },
   { setting: ['dp_phase_a', 'dp_current_a'], capability: 'measure_current'   },
-  // Phase B / C — only present on three-phase chargers
-  { setting: ['dp_phase_b', 'dp_voltage_b'], capability: 'measure_voltage.b' },
-  { setting: ['dp_phase_b', 'dp_current_b'], capability: 'measure_current.b' },
+  // Phase B / C — only present on three-phase chargers.
   // Per-phase power stays tied to the packed DP: a charger that reports voltage and
   // current separately gives no per-phase power to show, only a total.
   { setting: 'dp_phase_b',          capability: 'measure_power.b'       },
+  { setting: ['dp_phase_b', 'dp_voltage_b'], capability: 'measure_voltage.b' },
+  { setting: ['dp_phase_b', 'dp_current_b'], capability: 'measure_current.b' },
+  { setting: 'dp_phase_c',          capability: 'measure_power.c'       },
   { setting: ['dp_phase_c', 'dp_voltage_c'], capability: 'measure_voltage.c' },
   { setting: ['dp_phase_c', 'dp_current_c'], capability: 'measure_current.c' },
-  { setting: 'dp_phase_c',          capability: 'measure_power.c'       },
+  { setting: 'dp_temperature',      capability: 'measure_temperature'   },
+  { setting: 'dp_session_energy',   capability: 'charge_session_energy' },
+  { setting: 'dp_connection_state', capability: 'ev_connection_state'   },
+  { setting: 'dp_work_mode',        capability: 'ev_work_mode'          },
+  { setting: 'dp_timer_on',         capability: 'charge_delay_hours'    },
+  { setting: 'dp_fault',            capability: 'alarm_generic'         },
+  { setting: 'dp_fault',            capability: 'fault_code'            },
 ];
 
 class EvChargerDevice extends BaseTuyaDevice {
