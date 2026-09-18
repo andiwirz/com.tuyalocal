@@ -92,13 +92,21 @@
       flex: 0 0 auto;
       /* 34 Punkt ist die Hoehe der Segmentleiste in iOS. */
       min-height: 34px;
-      padding: 8px 12px;
+      /* Mit !important, und zwar aus demselben Grund wie beim aktiven Segment:
+         diese Seite laeuft im Dokument von Homeys Einstellungsansicht, deren
+         Stylesheet ebenfalls auf blanke <button> zielt und eine eigene Polsterung
+         mitbringt. Im Browser passten alle fuenf Segmente auf 452 Punkt in eine
+         Zeile, in Homey nicht — die Differenz war die fremde Polsterung. Schrift
+         und Polsterung stehen darum fest, damit die Breite dieselbe ist, wo immer
+         die Seite laeuft. */
+      padding: 7px 10px !important;
+      font-size: 12px !important;
+      line-height: 1.25 !important;
       white-space: nowrap;
       border: none;
       background: var(--ios-fill);
       border-radius: 8px;
       font-family: inherit;
-      font-size: 13px;
       font-weight: 500;
       letter-spacing: -0.08px;
       color: var(--ios-label);
