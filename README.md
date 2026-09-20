@@ -1006,6 +1006,7 @@ Uses Homey's native EV charger capabilities, so the built-in **Start charging** 
 | `dp_current_a` / `_b` / `_c` |  | `measure_current` (+`.b` `.c`) | number | 0 | Plain numeric current, one DP per phase |
 | `dp_phase_b` |  | `measure_*.b` (L2) | raw | 0 | Three-phase only, typically 7 |
 | `dp_phase_c` |  | `measure_*.c` (L3) | raw | 0 | Three-phase only, typically 8 |
+| `dp_phase_json` |  | all of the above at once | JSON | 0 | For chargers that send every measurement in one data point instead of three packed blocks — see below |
 | `dp_power_total` |  | `measure_power` | number | 0 | Plain watts, typically 9 (or 5 on some single-phase units). Takes priority over the power decoded from Phase A |
 | `dp_session_energy` | <img src="assets/capabilities/bolt.svg" height="24"> | `charge_session_energy` | number | 25 | Energy of current / last session |
 | `dp_energy_total` |  | `meter_power.charged` | number | 0 | Charger's own lifetime counter, typically 1 — see below |
@@ -1057,6 +1058,29 @@ Tuya reports eight states, Homey has five:
 The exact Tuya state stays available through the **Detailed charger state changed** trigger and its matching condition, which can tell *waiting* from *finished*.
 
 #### Notes
+
+> **Some chargers send everything as JSON in one data point.** Instead of three
+> packed phase blocks they write, on data point 102:
+>
+> ```
+> {"L1":[2320,55,12],"L2":[2320,58,13],"L3":[2320,56,13],
+>  "t":370,"p":39,"d":54150,"e":113}
+> ```
+>
+> Each phase is voltage, current and power in tenths of its unit, `t` is the
+> temperature, `p` the total power and `e` the session energy. The reading checks
+> out against the charger itself: 232.0 V × 5.5 A comes to 1.28 kW against the
+> 1.2 kW reported, the three phases add up to 3.8 kW against the stated 3.9, and the
+> vehicle reported 4.1 kW at the same moment. `e` of 113 matches the `e=11.263kWh`
+> the same charger writes out in full on another data point.
+>
+> Set **DP Phase JSON** to 102 and leave **DP Phase A / B / C** at 0 — the packed
+> reader cannot make sense of JSON and would produce obviously wrong readings.
+>
+> `d` is deliberately not mapped. 54150 is either 54.15 kWh counted in watt-hours or
+> 541.50 kWh counted in hundredths, and two readings cannot tell which — so the
+> driver writes both readings to the **Logs** tab once and leaves the tile alone
+> rather than inventing a lifetime counter.
 
 > **Total energy:** many chargers expose a lifetime counter (DP 1) that reports a plausible value but never updates over the local connection. Because one reading cannot distinguish a working counter from a frozen one, `dp_energy_total` defaults to `0` and the total is accumulated from the session counter instead — which works on every model tested. Set it to `1` if your charger's own counter does update.
 

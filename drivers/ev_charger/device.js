@@ -90,19 +90,19 @@ const OPTIONAL_CAPABILITIES = [
   //
   // measure_power is deliberately not optional — the SDK expects it on an EV charger,
   // and the "estimate" energy source can populate it without a power DP.
-  { setting: ['dp_phase_a', 'dp_voltage_a'], capability: 'measure_voltage'   },
-  { setting: ['dp_phase_a', 'dp_current_a'], capability: 'measure_current'   },
+  { setting: ['dp_phase_a', 'dp_voltage_a', 'dp_phase_json'], capability: 'measure_voltage'   },
+  { setting: ['dp_phase_a', 'dp_current_a', 'dp_phase_json'], capability: 'measure_current'   },
   // Phase B / C — only present on three-phase chargers.
   // Per-phase power stays tied to the packed DP: a charger that reports voltage and
   // current separately gives no per-phase power to show, only a total.
-  { setting: 'dp_phase_b',          capability: 'measure_power.b'       },
-  { setting: ['dp_phase_b', 'dp_voltage_b'], capability: 'measure_voltage.b' },
-  { setting: ['dp_phase_b', 'dp_current_b'], capability: 'measure_current.b' },
-  { setting: 'dp_phase_c',          capability: 'measure_power.c'       },
-  { setting: ['dp_phase_c', 'dp_voltage_c'], capability: 'measure_voltage.c' },
-  { setting: ['dp_phase_c', 'dp_current_c'], capability: 'measure_current.c' },
-  { setting: 'dp_temperature',      capability: 'measure_temperature'   },
-  { setting: 'dp_session_energy',   capability: 'charge_session_energy' },
+  { setting: ['dp_phase_b', 'dp_phase_json'], capability: 'measure_power.b' },
+  { setting: ['dp_phase_b', 'dp_voltage_b', 'dp_phase_json'], capability: 'measure_voltage.b' },
+  { setting: ['dp_phase_b', 'dp_current_b', 'dp_phase_json'], capability: 'measure_current.b' },
+  { setting: ['dp_phase_c', 'dp_phase_json'], capability: 'measure_power.c' },
+  { setting: ['dp_phase_c', 'dp_voltage_c', 'dp_phase_json'], capability: 'measure_voltage.c' },
+  { setting: ['dp_phase_c', 'dp_current_c', 'dp_phase_json'], capability: 'measure_current.c' },
+  { setting: ['dp_temperature', 'dp_phase_json'], capability: 'measure_temperature' },
+  { setting: ['dp_session_energy', 'dp_phase_json'], capability: 'charge_session_energy' },
   { setting: 'dp_connection_state', capability: 'ev_connection_state'   },
   { setting: 'dp_work_mode',        capability: 'ev_work_mode'          },
   { setting: 'dp_timer_on',         capability: 'charge_delay_hours'    },
@@ -380,6 +380,101 @@ class EvChargerDevice extends BaseTuyaDevice {
     }
   }
 
+  // ── Alle drei Phasen in einem JSON-Datenpunkt ───────────────────────────────
+
+  /**
+   * Liest den JSON-Block, in dem manche Lader saemtliche Messwerte auf einmal
+   * schicken, statt drei gepackte Phasenpakete zu senden.
+   *
+   *   {"L1":[2320,55,12],"L2":[2320,58,13],"L3":[2320,56,13],
+   *    "t":370,"p":39,"d":54150,"e":113}
+   *
+   * Jede Phase ist ein Dreier: Spannung, Strom, Leistung, alle in Zehnteln ihrer
+   * Einheit — 2320 sind 232,0 V, 55 sind 5,5 A, 12 sind 1,2 kW. Das laesst sich
+   * nachrechnen statt glauben: 232,0 × 5,5 ergibt 1,28 kW, und die Summe der drei
+   * Phasenleistungen trifft mit 3,8 kW das p von 3,9 kW. t sind 37,0 °C, was der
+   * Meldende an seinem Geraet ablas, und e von 113 trifft die 11,263 kWh, die
+   * derselbe Lader auf einem anderen Datenpunkt ausschreibt.
+   *
+   * Offen bleibt d. 54150 kann 54,15 kWh in Wattstunden sein oder 541,50 kWh in
+   * Hundertstel — zwei Aufnahmen entscheiden das nicht, und darum wird d nicht
+   * zugeordnet, sondern einmal ins Protokoll geschrieben.
+   *
+   * @param {*} value
+   * @returns {{phasen: Object, gesamt: number|null, temperatur: number|null,
+   *            sitzung: number|null, zaehler: number|null}|null}
+   */
+  _parsePhaseJson(value) {
+    let roh = value;
+    if (typeof roh === 'string') {
+      try { roh = JSON.parse(roh); } catch (e) { return null; }
+    }
+    if (!roh || typeof roh !== 'object' || Array.isArray(roh)) return null;
+
+    const teiler = (schluessel, vorgabe) => {
+      const n = Number(this.getSetting(schluessel));
+      return Number.isFinite(n) && n !== 0 ? n : vorgabe;
+    };
+    const uTeiler = teiler('json_voltage_divisor', 10);
+    const iTeiler = teiler('json_current_divisor', 10);
+    // Homey rechnet Leistung in Watt. Der Block zaehlt in Zehnteln eines Kilowatts,
+    // also ist ein Punkt hundert Watt.
+    const pFaktor = teiler('json_power_factor', 100);
+
+    const phasen = {};
+    for (const name of ['L1', 'L2', 'L3']) {
+      const v = roh[name];
+      if (!Array.isArray(v) || v.length < 2) continue;
+      const [u, i, p] = v.map(Number);
+      if (!Number.isFinite(u) || !Number.isFinite(i)) continue;
+      phasen[name] = {
+        voltage: u / uTeiler,
+        current: i / iTeiler,
+        power:   Number.isFinite(p) ? p * pFaktor : 0,
+      };
+    }
+    if (Object.keys(phasen).length === 0) return null;
+
+    const zahl = (x) => (Number.isFinite(Number(x)) ? Number(x) : null);
+    return {
+      phasen,
+      gesamt:     zahl(roh.p) === null ? null : zahl(roh.p) * pFaktor,
+      temperatur: zahl(roh.t) === null ? null : zahl(roh.t) / teiler('json_temp_divisor', 10),
+      sitzung:    zahl(roh.e) === null ? null : zahl(roh.e) / teiler('json_energy_divisor', 10),
+      zaehler:    zahl(roh.d),
+    };
+  }
+
+  /** Traegt einen gelesenen JSON-Block in die Kacheln ein. */
+  async _applyPhaseJson(block) {
+    for (const [name, suffix] of [['L1', ''], ['L2', '.b'], ['L3', '.c']]) {
+      if (block.phasen[name]) await this._applyPhase(block.phasen[name], suffix);
+    }
+
+    // Die Gesamtleistung schlaegt die der ersten Phase — dieselbe Vorrangregel wie
+    // beim gepackten Weg, wo der Gesamt-DP die Phase A ueberstimmt. Homeys
+    // Energieuebersicht braucht die Summe, nicht ein Drittel davon.
+    if (block.gesamt !== null && this.hasCapability('measure_power')) {
+      await this.setCapabilityValue('measure_power', Math.round(block.gesamt)).catch(() => {});
+    }
+    if (block.temperatur !== null && this.hasCapability('measure_temperature')) {
+      await this.setCapabilityValue('measure_temperature',
+        Math.round(block.temperatur * 10) / 10).catch(() => {});
+    }
+    if (block.sitzung !== null) await this._handleSessionEnergy(block.sitzung);
+
+    // d einmal ausschreiben, statt es zu raten. Wer den Bericht liest, sieht beide
+    // Lesarten nebeneinander und kann am eigenen Zaehler entscheiden, welche stimmt.
+    if (block.zaehler !== null && !this._zaehlerGemeldet) {
+      this._zaehlerGemeldet = true;
+      this._appLog(`The phase JSON carries d=${block.zaehler}, which this driver does not `
+        + `map: it is either ${(block.zaehler / 1000).toFixed(2)} kWh counted in watt-hours `
+        + `or ${(block.zaehler / 100).toFixed(2)} kWh counted in hundredths, and two readings `
+        + 'cannot tell which. Compare it against your charger\'s own lifetime counter and '
+        + 'report it, and it can be mapped properly.', 'info', true);
+    }
+  }
+
   // ── Session → lifetime energy ───────────────────────────────────────────────
 
   /**
@@ -499,7 +594,8 @@ class EvChargerDevice extends BaseTuyaDevice {
   /** True when no DP supplies real power readings, so an estimate is the only option. */
   _hasNoPowerDp() {
     return (this.getSetting('dp_power_total') ?? 0) <= 0
-        && (this.getSetting('dp_phase_a') ?? 0) <= 0;
+        && (this.getSetting('dp_phase_a') ?? 0) <= 0
+        && (this.getSetting('dp_phase_json') ?? 0) <= 0;
   }
 
   /**
@@ -513,7 +609,8 @@ class EvChargerDevice extends BaseTuyaDevice {
     // between a full query and a refresh, which would halve the update rate for
     // exactly those values — so ask for a refresh on every tick as well. Overlapping
     // requests are suppressed by the connection's own in-flight guard.
-    if ((this.getSetting('dp_phase_a') ?? 0) > 0) {
+    if ((this.getSetting('dp_phase_a') ?? 0) > 0
+        || (this.getSetting('dp_phase_json') ?? 0) > 0) {
       this.refreshDps().catch(() => {});
     }
 
@@ -634,6 +731,20 @@ class EvChargerDevice extends BaseTuyaDevice {
         // without a factor that showed up as 110 W.
         const watt = Number(value) * this._scaleOf('power_scale', 1);
         await this.setCapabilityValue('measure_power', Math.round(watt)).catch(() => {});
+        continue;
+      }
+
+      // ── Alle Phasen in einem JSON-Block ──────────────────────────────────
+      if (settings.dp_phase_json > 0 && dp === settings.dp_phase_json) {
+        const block = this._parsePhaseJson(value);
+        if (block) { await this._applyPhaseJson(block); continue; }
+        if (!this._jsonHinted) {
+          this._jsonHinted = true;
+          this._appLog(`Data point ${dp} is set as the phase JSON block, but what arrived is `
+            + `not one: ${JSON.stringify(value).slice(0, 80)}. Expected an object with L1, L2 `
+            + 'and L3, each a list of voltage, current and power. Set DP Phase JSON back to 0 '
+            + 'if this charger puts something else there.', 'warn');
+        }
         continue;
       }
 

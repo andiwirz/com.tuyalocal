@@ -25685,6 +25685,88 @@
               }
             },
             {
+              "id": "dp_phase_json",
+              "type": "number",
+              "label": {
+                "en": "DP Phase JSON",
+                "de": "DP Phasen-JSON"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "For chargers that send every measurement in one JSON data point instead of three packed phase blocks — reported on 102. The block looks like {\"L1\":[2320,55,12],\"L2\":[…],\"L3\":[…],\"t\":370,\"p\":39,\"d\":54150,\"e\":113}: each phase is voltage, current and power in tenths of their unit, t is the temperature, p the total power and e the session energy. Set this and leave DP Phase A, B and C at 0 — the packed reader cannot make sense of JSON and would produce nonsense readings. 0 = off.",
+                "de": "Für Ladegeräte, die sämtliche Messwerte in einem JSON-Datenpunkt schicken statt in drei gepackten Phasenblöcken — gemeldet auf 102. Der Block sieht so aus: {\"L1\":[2320,55,12],\"L2\":[…],\"L3\":[…],\"t\":370,\"p\":39,\"d\":54150,\"e\":113}: jede Phase ist Spannung, Strom und Leistung in Zehnteln ihrer Einheit, t die Temperatur, p die Gesamtleistung und e die Sitzungsenergie. Diesen setzen und DP Phase A, B und C auf 0 lassen — der gepackte Leser kann mit JSON nichts anfangen und liefert Unsinn. 0 = aus."
+              }
+            },
+            {
+              "id": "json_voltage_divisor",
+              "type": "number",
+              "label": {
+                "en": "JSON voltage divisor",
+                "de": "JSON-Teiler Spannung"
+              },
+              "value": 10,
+              "min": 1,
+              "max": 1000,
+              "hint": {
+                "en": "The block counts in tenths on the reported charger: 2320 is 232.0 V. Change this only if your charger disagrees with its own display.",
+                "de": "Der Block zählt beim gemeldeten Ladegerät in Zehnteln: 2320 sind 232,0 V. Nur ändern, wenn Ihr Gerät von seiner eigenen Anzeige abweicht."
+              }
+            },
+            {
+              "id": "json_current_divisor",
+              "type": "number",
+              "label": {
+                "en": "JSON current divisor",
+                "de": "JSON-Teiler Strom"
+              },
+              "value": 10,
+              "min": 1,
+              "max": 1000
+            },
+            {
+              "id": "json_power_factor",
+              "type": "number",
+              "label": {
+                "en": "JSON power factor (to watts)",
+                "de": "JSON-Faktor Leistung (auf Watt)"
+              },
+              "value": 100,
+              "min": 1,
+              "max": 10000,
+              "hint": {
+                "en": "Homey counts power in watts, the block in tenths of a kilowatt — so one point is a hundred watts, and 39 becomes 3900 W. That checks out against the charger itself: voltage times current on the three phases comes to 3.8 kW, and the vehicle reported 4.1 kW at the same moment.",
+                "de": "Homey zählt Leistung in Watt, der Block in Zehnteln eines Kilowatts — ein Punkt sind also hundert Watt, und aus 39 werden 3900 W. Das geht am Gerät selbst auf: Spannung mal Strom der drei Phasen ergibt 3,8 kW, und das Auto meldete im selben Moment 4,1 kW."
+              }
+            },
+            {
+              "id": "json_temp_divisor",
+              "type": "number",
+              "label": {
+                "en": "JSON temperature divisor",
+                "de": "JSON-Teiler Temperatur"
+              },
+              "value": 10,
+              "min": 1,
+              "max": 1000
+            },
+            {
+              "id": "json_energy_divisor",
+              "type": "number",
+              "label": {
+                "en": "JSON session energy divisor",
+                "de": "JSON-Teiler Sitzungsenergie"
+              },
+              "value": 10,
+              "min": 1,
+              "max": 1000,
+              "hint": {
+                "en": "e is the session energy in tenths of a kilowatt-hour: 113 is 11.3 kWh. The same charger writes \"e=11.263kWh\" out in full on another data point, which is what settles it.",
+                "de": "e ist die Sitzungsenergie in Zehnteln einer Kilowattstunde: 113 sind 11,3 kWh. Dasselbe Gerät schreibt auf einem anderen Datenpunkt „e=11.263kWh\" aus — das entscheidet es."
+              }
+            },
+            {
               "id": "dp_voltage_a",
               "type": "number",
               "label": {
