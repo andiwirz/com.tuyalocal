@@ -40,6 +40,9 @@ const WORK_STATES = [
   'charger_charging', 'charger_pause', 'charger_end', 'charger_fault',
   // Reported by some models (Emini, Zencar) in addition to the eight above.
   'charger_start_wait', 'charger_stop_wait',
+  // Ein Lader mit durchweg eigenen Datenpunkten (gxrtu5vljdthtd3g) schreibt statt
+  // der Tuya-Namen diese Grosskuerzel aus.
+  'IDLE', 'IDLEINS', 'WORKING', 'PAUSE', 'SLEEP',
 ];
 
 // Tuya's 8 work_state values → Homey's 5 standard evcharger_charging_state
@@ -65,6 +68,17 @@ const STATE_MAP = {
   charger_charging:   'plugged_in_charging',
   charger_pause:      'plugged_in_paused',
   charger_stop_wait:  'plugged_in_paused',
+
+  // Dieselben fuenf Zustaende in der Schreibweise des oben genannten Laders. Dass
+  // IDLEINS das eingesteckte Ruhen meint, steht in keiner Beschreibung — es steht
+  // im Geraet selbst: derselbe Lader schreibt seine Wechsel auf einen Textdatenpunkt
+  // aus, und dort stand "state: WORKING → IDLEINS", waehrend das Auto angesteckt
+  // blieb und die Leistung auf null fiel. IDLE ohne Anhaengsel ist der leere Zustand.
+  IDLE:     'plugged_out',
+  SLEEP:    'plugged_out',
+  IDLEINS:  'plugged_in',
+  WORKING:  'plugged_in_charging',
+  PAUSE:    'plugged_in_paused',
 };
 
 // Control-pilot states that mean the charger is actively supplying current.
@@ -102,7 +116,8 @@ const OPTIONAL_CAPABILITIES = [
   { setting: ['dp_phase_c', 'dp_voltage_c', 'dp_phase_json'], capability: 'measure_voltage.c' },
   { setting: ['dp_phase_c', 'dp_current_c', 'dp_phase_json'], capability: 'measure_current.c' },
   { setting: ['dp_temperature', 'dp_phase_json'], capability: 'measure_temperature' },
-  { setting: ['dp_session_energy', 'dp_phase_json'], capability: 'charge_session_energy' },
+  { setting: ['dp_session_energy', 'dp_phase_json', 'dp_charge_history'],
+    capability: 'charge_session_energy' },
   { setting: 'dp_connection_state', capability: 'ev_connection_state'   },
   { setting: 'dp_work_mode',        capability: 'ev_work_mode'          },
   { setting: 'dp_timer_on',         capability: 'charge_delay_hours'    },
@@ -131,6 +146,7 @@ class EvChargerDevice extends BaseTuyaDevice {
     // total_energy_source setting — see _handleSessionEnergy and _onPollTick.
     this._energyAccum    = 0;
     this._lastSessionKwh = null;
+    this._letzteLadung   = null;
     // Deliberately not persisted: after a restart the elapsed time is unknown, so
     // the first reading re-establishes the baseline rather than being judged.
     this._lastSessionTime = null;
@@ -139,6 +155,10 @@ class EvChargerDevice extends BaseTuyaDevice {
       if (typeof stored === 'number' && stored > 0) this._energyAccum = stored;
       const storedSession = this.getStoreValue('lastSessionKwh');
       if (typeof storedSession === 'number') this._lastSessionKwh = storedSession;
+      // Welcher abgeschlossene Ladevorgang zuletzt aufaddiert wurde. Ohne dieses
+      // Merkmal zaehlt jede Neuverbindung dieselbe Ladung noch einmal dazu: das
+      // Geraet schickt seinen Verlaufsdatensatz unveraendert erneut.
+      this._letzteLadung = this.getStoreValue('lastHistoryId') ?? null;
     } catch (e) {}
 
     // Power integration state (total_energy_source = power | estimate)
@@ -393,12 +413,21 @@ class EvChargerDevice extends BaseTuyaDevice {
    * Einheit — 2320 sind 232,0 V, 55 sind 5,5 A, 12 sind 1,2 kW. Das laesst sich
    * nachrechnen statt glauben: 232,0 × 5,5 ergibt 1,28 kW, und die Summe der drei
    * Phasenleistungen trifft mit 3,8 kW das p von 3,9 kW. t sind 37,0 °C, was der
-   * Meldende an seinem Geraet ablas, und e von 113 trifft die 11,263 kWh, die
-   * derselbe Lader auf einem anderen Datenpunkt ausschreibt.
+   * Meldende an seinem Geraet ablas.
    *
-   * Offen bleibt d. 54150 kann 54,15 kWh in Wattstunden sein oder 541,50 kWh in
-   * Hundertstel — zwei Aufnahmen entscheiden das nicht, und darum wird d nicht
-   * zugeordnet, sondern einmal ins Protokoll geschrieben.
+   * Offen bleiben d und e, und sie bleiben es mit Absicht. Ich habe sie zweimal
+   * zugeordnet und mich zweimal geirrt: erst e, weil 113 die 11,263 kWh traf, die
+   * derselbe Lader auf einem Textdatenpunkt ausschreibt; dann d, weil 9010 und
+   * 11410 auf eine Ladung zuliefen, die bei 12,1 kWh endete. Beides waren
+   * Einzeltreffer. Die dritte Aufnahme schlaegt beide: im Leerlauf, nach genau
+   * jener 12,1-kWh-Ladung, stand d auf 16800 und e auf 37, und zwischen zwei
+   * Ablesungen sieben Minuten auseinander wuchs d um 3000 — mehr, als ein Lader
+   * mit 16 A in dieser Zeit liefern kann, und zu schnell fuer Sekunden.
+   *
+   * Unter keiner Einheit sind diese Zahlen widerspruchsfrei. Also wird nichts mehr
+   * geraten: beide Felder werden einmal ins Protokoll geschrieben, und wer sein
+   * Geraet dagegen halten kann, waehlt selbst. Die belastbare Sitzungsenergie
+   * steht ohnehin woanders — siehe _parseChargeHistory.
    *
    * @param {*} value
    * @returns {{phasen: Object, gesamt: number|null, temperatur: number|null,
@@ -437,30 +466,21 @@ class EvChargerDevice extends BaseTuyaDevice {
 
     const zahl = (x) => (Number.isFinite(Number(x)) ? Number(x) : null);
 
-    // Welches Feld die Sitzungsenergie traegt, ist an einem Geraet nachgemessen und
-    // an einem zweiten widerlegt worden — darum steht es in den Einstellungen.
-    //
-    // Die Messung, die zaehlt: waehrend einer Sitzung, die laut Hersteller-App bei
-    // 12,1 kWh endete, stand d auf 9010 und kurz darauf auf 11410. Als Wattstunden
-    // gelesen sind das 9,01 und 11,41 kWh — der Weg auf 12,1 zu. e stand zur selben
-    // Zeit auf 14 und 21; als Zehntel-Kilowattstunden waeren das 1,4 und 2,1, und
-    // die hatte die Sitzung laengst hinter sich.
-    //
-    // Die erste Aufnahme desselben Ladegeraets sagte das Gegenteil: dort traf e die
-    // 11,263 kWh, die das Geraet auf einem Textdatenpunkt ausschrieb, und d lag mit
-    // 54,15 kWh weit daneben. Ich habe daraus zu frueh geschlossen, dass e die
-    // Sitzung traegt. Ein Treffer aus einer Aufnahme ist kein Beleg; zwei Punkte
-    // innerhalb einer Sitzung gegen die App des Herstellers sind einer.
-    const feld = String(this.getSetting('json_session_field') || 'd');
-    const sitzungRoh = feld === 'none' ? null : zahl(roh[feld]);
+    // Vorgabe ist jetzt "keins". Wer sein Geraet gegen die Hersteller-App halten
+    // kann, waehlt d oder e selbst; alle anderen bekommen lieber keine Zahl als
+    // eine falsche, die wie eine gemessene aussieht.
+    const feld = String(this.getSetting('json_session_field') ?? 'none');
+    const sitzungRoh = (feld === 'none' || feld === '') ? null : zahl(roh[feld]);
 
     return {
       phasen,
       gesamt:     zahl(roh.p) === null ? null : zahl(roh.p) * pFaktor,
       temperatur: zahl(roh.t) === null ? null : zahl(roh.t) / teiler('json_temp_divisor', 10),
       sitzung:    sitzungRoh === null ? null : sitzungRoh / teiler('json_energy_divisor', 1000),
-      // Das jeweils andere Feld bleibt unzugeordnet und wird nur berichtet.
-      offen:      { name: feld === 'd' ? 'e' : 'd', wert: zahl(roh[feld === 'd' ? 'e' : 'd']) },
+      // Was nicht zugeordnet ist, wird berichtet — beide Felder, wenn keines gewaehlt ist.
+      offen: ['d', 'e']
+        .filter((n) => n !== feld && zahl(roh[n]) !== null)
+        .map((n) => ({ name: n, wert: zahl(roh[n]) })),
     };
   }
 
@@ -482,16 +502,106 @@ class EvChargerDevice extends BaseTuyaDevice {
     }
     if (block.sitzung !== null) await this._handleSessionEnergy(block.sitzung);
 
-    // Das nicht zugeordnete Feld einmal ausschreiben, statt es zu raten. Wer den
-    // Bericht liest, sieht den Rohwert und kann ihn gegen sein Geraet halten.
-    if (block.offen && block.offen.wert !== null && !this._offenGemeldet) {
+    // Die nicht zugeordneten Felder einmal ausschreiben, statt sie zu raten. Wer den
+    // Bericht liest, sieht die Rohwerte und kann sie gegen sein Geraet halten.
+    if (block.offen.length && !this._offenGemeldet) {
       this._offenGemeldet = true;
-      this._appLog(`The phase JSON also carries ${block.offen.name}=${block.offen.wert}, which `
-        + 'this driver does not map. On the one charger measured against its own app the '
-        + 'session energy sat in the other field; what this one counts is not settled. If you '
-        + 'can read your charger\'s app at the start and at the end of one session and report '
-        + 'both values with it, it can be mapped properly.', 'info', true);
+      const werte = block.offen.map((o) => `${o.name}=${o.wert}`).join(' and ');
+      this._appLog(`The phase JSON carries ${werte}, which this driver deliberately does not `
+        + 'map. Both fields have been tried as the session energy on one charger and both were '
+        + 'contradicted by a later reading, so neither is guessed at any more. If your charger '
+        + 'writes a record after each charge — a JSON block with a start time, an end time and '
+        + 'a total — point "Charge History DP" at it instead: that value is exact. To settle d '
+        + 'and e, report these raw numbers together with what your charger\'s own app shows at '
+        + 'the same moment.', 'info', true);
     }
+  }
+
+  // ── Abgeschlossene Ladungen ─────────────────────────────────────────────────
+
+  /** Ein Teiler aus den Einstellungen; null und Unsinn fallen auf die Vorgabe zurueck. */
+  _teilerVon(schluessel, vorgabe) {
+    const n = Number(this.getSetting(schluessel));
+    return Number.isFinite(n) && n !== 0 ? n : vorgabe;
+  }
+
+  /**
+   * Liest den Datensatz, den manche Lader nach jeder beendeten Ladung ausschreiben.
+   *
+   *   {"t":"2026-09-20 15:09:32","s":"15:09","e":"17:42","d":9159,"c":121}
+   *
+   * Dies ist der einzige Wert am ganzen Geraet, der sich ohne Raten nachpruefen
+   * laesst, und er geht dreifach auf: s und e spannen 15:09 bis 17:42, also 9148
+   * Sekunden; d zaehlt 9159, dieselbe Spanne auf die Sekunde statt auf die Minute
+   * gerundet; und c von 121 sind die 12,1 kWh, die die Hersteller-App fuer genau
+   * diese Ladung zeigte — zusammen mit den 2 h 32 min, die d bestaetigt.
+   *
+   * Daraus folgt zweierlei. Erstens hat dieser Lader eine genaue Sitzungsenergie,
+   * die niemand zu erraten braucht. Zweitens heisst d in der Sprache dieser Firmware
+   * Dauer und nicht Energie — was das d im Messblock nebenan fragwuerdig macht,
+   * siehe dort.
+   *
+   * @param {*} value
+   * @returns {{kwh: number, sekunden: number|null, kennung: string}|null}
+   */
+  _parseChargeHistory(value) {
+    let roh = value;
+    if (typeof roh === 'string') {
+      try { roh = JSON.parse(roh); } catch (e) { return null; }
+    }
+    if (!roh || typeof roh !== 'object' || Array.isArray(roh)) return null;
+
+    const c = Number(roh.c);
+    if (!Number.isFinite(c)) return null;
+
+    const d = Number(roh.d);
+    return {
+      kwh:      c / this._teilerVon('history_energy_divisor', 10),
+      sekunden: Number.isFinite(d) ? d : null,
+      // Ein Datensatz ist derselbe, solange sein Zeitstempel derselbe ist. Fehlt er,
+      // muessen Dauer und Menge zusammen herhalten.
+      kennung:  String(roh.t ?? `${roh.s}-${roh.e}-${d}-${c}`),
+    };
+  }
+
+  /**
+   * Traegt eine beendete Ladung ein.
+   *
+   * Der laufende Zaehler und der Verlaufsdatensatz brauchen verschiedene
+   * Buchhaltung: beim laufenden Zaehler ist nur der Zuwachs neu, beim Verlauf die
+   * ganze Ladung. Der Zuwachs-Weg wuerde hier falsch rechnen, sobald eine Ladung
+   * kleiner ausfaellt als die davor — zwoelf kWh, dann acht, und die acht zaehlen
+   * gar nicht. Darum wird der Datensatz an seinem Zeitstempel erkannt und einmal
+   * vollstaendig addiert.
+   */
+  async _handleChargeHistory(rec) {
+    if (this.hasCapability('charge_session_energy')) {
+      await this.setCapabilityValue('charge_session_energy',
+        Math.round(rec.kwh * 100) / 100).catch(() => {});
+    }
+    this._lastSessionKwh = rec.kwh;
+
+    if (rec.kennung === this._letzteLadung) return;
+    const erste = this._letzteLadung === null;
+    this._letzteLadung = rec.kennung;
+    await this.setStoreValue('lastHistoryId', rec.kennung).catch(() => {});
+
+    // Abgerundet, nicht gerundet: 9159 Sekunden sind 2 h 32 min, und genau so
+    // schreibt das Geraet selbst sie an. Aufgerundet waeren es 2 h 33 und der
+    // Nutzer haette eine Minute, die er nirgends wiederfindet.
+    const dauer = rec.sekunden === null ? ''
+      : `, ${Math.floor(rec.sekunden / 3600)}h ${Math.floor((rec.sekunden % 3600) / 60)}m`;
+    this._appLog(`Charge finished: ${Math.round(rec.kwh * 100) / 100} kWh${dauer}`, 'info');
+
+    // Beim allerersten Datensatz steht nicht fest, ob er neu ist oder nur der, den
+    // das Geraet seit Tagen vorhaelt. Ihn mitzuzaehlen hiesse, eine fremde Ladung
+    // dem Gesamtzaehler anzulasten; also wird er nur gemerkt.
+    if (erste) return;
+    if (this._energySource() !== 'session' || this.getSetting('dp_energy_total') > 0) return;
+    if (!(rec.kwh > 0) || rec.kwh > 200) return;
+
+    this._energyAccum += rec.kwh;
+    await this._writeTotalEnergy();
   }
 
   // ── Session → lifetime energy ───────────────────────────────────────────────
@@ -706,10 +816,17 @@ class EvChargerDevice extends BaseTuyaDevice {
       // ── Work state ───────────────────────────────────────────────────────
       if (settings.dp_work_state > 0 && dp === settings.dp_work_state) {
         const state = String(value);
-        const mapped = STATE_MAP[state];
-        if (!mapped) {
-          this._appLog(`work_state: unknown value "${state}" — expected one of ${WORK_STATES.join(', ')}`, 'warn');
-          continue;
+        // Ein unbekannter Zustand kostete bisher den ganzen Datenpunkt: gemeldet und
+        // verworfen, womit auch der Auslöser ausblieb. Dabei ist gerade er das, was
+        // bei fremder Firmware noch nutzbar ist — der Rohwert steht im Flow zur
+        // Verfügung, auch wenn die Kachel ihn nicht darstellen kann. Also nur die
+        // Zuordnung überspringen, nicht den Rest. Gemeldet wird je Wert einmal,
+        // statt siebzehnmal wie im Bericht, der das ans Licht brachte.
+        if (!STATE_MAP[state] && !this._wsGemeldet?.has(state)) {
+          (this._wsGemeldet = this._wsGemeldet || new Set()).add(state);
+          this._appLog(`work_state: unknown value "${state}" — expected one of `
+            + `${WORK_STATES.join(', ')}. The state tile keeps its last value; flows on `
+            + '"EV state changed" still receive this text.', 'warn');
         }
         // prevRaw comes from _lastDps, which was already updated above — so read
         // the value captured before this loop iteration overwrote it.
@@ -720,8 +837,11 @@ class EvChargerDevice extends BaseTuyaDevice {
 
         if (prevRaw !== null && prevRaw !== state) {
           this._triggerStateChanged.trigger(this, { state, prev_state: prevRaw }).catch(() => {});
-          if (prevRaw === 'charger_charging'
-              && ['charger_end', 'charger_pause', 'charger_free'].includes(state)) {
+          // Das Ende einer Ladung an den zugeordneten Zustaenden festmachen, nicht an
+          // den Tuya-Namen: der Lader, der WORKING statt charger_charging schreibt,
+          // haette sonst nie ein Ende gemeldet.
+          if (STATE_MAP[prevRaw] === 'plugged_in_charging'
+              && STATE_MAP[state] && STATE_MAP[state] !== 'plugged_in_charging') {
             const kwh = this.getCapabilityValue('charge_session_energy') ?? 0;
             this._triggerChargingEnded.trigger(this, { energy: kwh }).catch(() => {});
           }
@@ -763,6 +883,21 @@ class EvChargerDevice extends BaseTuyaDevice {
             + `not one: ${JSON.stringify(value).slice(0, 80)}. Expected an object with L1, L2 `
             + 'and L3, each a list of voltage, current and power. Set DP Phase JSON back to 0 '
             + 'if this charger puts something else there.', 'warn');
+        }
+        continue;
+      }
+
+      // ── Verlaufsdatensatz der letzten beendeten Ladung ───────────────────
+      if (settings.dp_charge_history > 0 && dp === settings.dp_charge_history) {
+        const rec = this._parseChargeHistory(value);
+        if (rec) { await this._handleChargeHistory(rec); continue; }
+        if (!this._verlaufGemeldet) {
+          this._verlaufGemeldet = true;
+          this._appLog(`Data point ${dp} is set as the charge history, but what arrived is not `
+            + `a record this driver can read: ${JSON.stringify(value).slice(0, 80)}. Expected `
+            + 'an object with a total under "c", such as {"t":"…","s":"15:09","e":"17:42",'
+            + '"d":9159,"c":121}. Set Charge History DP back to 0 if this charger puts '
+            + 'something else there.', 'warn');
         }
         continue;
       }

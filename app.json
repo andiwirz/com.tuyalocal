@@ -1,6 +1,6 @@
 {
   "id": "com.tuyalocal",
-  "version": "1.0.236",
+  "version": "1.0.237",
   "compatibility": ">=12.13.0",
   "sdk": 3,
   "platforms": [
@@ -25758,13 +25758,20 @@
                 "en": "JSON session energy field",
                 "de": "JSON-Feld der Sitzungsenergie"
               },
-              "value": "d",
+              "value": "none",
               "values": [
+                {
+                  "id": "none",
+                  "label": {
+                    "en": "none (default) — leave the tile empty",
+                    "de": "keines (Vorgabe) — Kachel leer lassen"
+                  }
+                },
                 {
                   "id": "d",
                   "label": {
-                    "en": "d (default)",
-                    "de": "d (Vorgabe)"
+                    "en": "d",
+                    "de": "d"
                   }
                 },
                 {
@@ -25773,18 +25780,11 @@
                     "en": "e",
                     "de": "e"
                   }
-                },
-                {
-                  "id": "none",
-                  "label": {
-                    "en": "none — leave the tile empty",
-                    "de": "keines — Kachel leer lassen"
-                  }
                 }
               ],
               "hint": {
-                "en": "Which field of the block carries the energy of the running session. On the one charger measured against its own app this is d; the same charger had earlier suggested e, which turned out to be a coincidence of a single reading. If your session tile disagrees with your charger app, try the other field — and please report which one was right.",
-                "de": "Welches Feld des Blocks die Energie der laufenden Sitzung trägt. Bei dem einen Ladegerät, das gegen seine eigene App gemessen wurde, ist es d; dasselbe Gerät hatte zuvor e nahegelegt, was sich als Zufall einer einzelnen Aufnahme erwies. Weicht Ihre Sitzungskachel von der App des Ladegeräts ab, probieren Sie das andere Feld — und melden Sie bitte, welches stimmte."
+                "en": "Which field of the block carries the energy of the running session — if any does. Both d and e have been tried on the one charger that could be measured against its own app, and a later reading contradicted each of them: idle, just after a charge that ended at 12.1 kWh, the block read d=16800 and e=37, and d had grown by 3000 in seven minutes, which is more than the charger can deliver. So nothing is guessed here any more. If your charger writes a record after each charge, use Charge History DP below instead — that value is exact. Pick d or e only if you have compared it against your own charger app, and please report what you find.",
+                "de": "Welches Feld des Blocks die Energie der laufenden Sitzung trägt — falls überhaupt eines. Bei dem einen Ladegerät, das sich gegen seine eigene App messen liess, wurden d und e beide versucht, und jedes wurde von einer späteren Ablesung widerlegt: im Leerlauf, kurz nach einer Ladung, die bei 12,1 kWh endete, stand d auf 16800 und e auf 37, und d war in sieben Minuten um 3000 gewachsen — mehr, als das Gerät liefern kann. Hier wird deshalb nichts mehr geraten. Schreibt Ihr Ladegerät nach jeder Ladung einen Datensatz, nehmen Sie stattdessen den Verlaufs-DP weiter unten; dieser Wert ist exakt. Wählen Sie d oder e nur, wenn Sie es gegen die App Ihres Ladegeräts geprüft haben — und melden Sie bitte, was dabei herauskam."
               }
             },
             {
@@ -25798,8 +25798,38 @@
               "min": 1,
               "max": 1000,
               "hint": {
-                "en": "The session energy is counted in watt-hours on the charger measured against its own app: during a session that ended at 12.1 kWh the field read 9010 and then 11410, which is 9.01 and 11.41 kWh. Set 10 if your charger counts in tenths of a kilowatt-hour instead.",
-                "de": "Die Sitzungsenergie wird bei dem Ladegerät, das gegen seine eigene App gemessen wurde, in Wattstunden gezählt: während einer Sitzung, die bei 12,1 kWh endete, stand das Feld auf 9010 und dann auf 11410 — also 9,01 und 11,41 kWh. Auf 10 setzen, wenn Ihr Gerät stattdessen in Zehntel-Kilowattstunden zählt."
+                "en": "Only used when a field is chosen above. Watt-hours means 1000, tenths of a kilowatt-hour means 10. Which one applies is not settled for any charger — compare the session tile against your charger app before trusting it.",
+                "de": "Wird nur benutzt, wenn oben ein Feld gewählt ist. Wattstunden heisst 1000, Zehntel-Kilowattstunden heisst 10. Welches gilt, ist für kein Ladegerät geklärt — halten Sie die Sitzungskachel gegen die App Ihres Ladegeräts, bevor Sie ihr glauben."
+              }
+            },
+            {
+              "id": "dp_charge_history",
+              "type": "number",
+              "label": {
+                "en": "Charge History DP",
+                "de": "Verlaufs-DP"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "DP of the record some chargers write after each completed charge, as JSON with a start time, an end time, a duration and a total — for example {\"t\":\"2026-09-20 15:09:32\",\"s\":\"15:09\",\"e\":\"17:42\",\"d\":9159,\"c\":121}. The total \"c\" becomes the session energy, and unlike the live block this value can be checked: on the charger it was read from, c=121 was the 12.1 kWh its own app showed, and d=9159 seconds the 2 h 32 min it reported. Look for it in DP Debug right after a charge ends. 0 = not used.",
+                "de": "DP des Datensatzes, den manche Ladegeräte nach jeder beendeten Ladung schreiben — JSON mit Start, Ende, Dauer und Summe, etwa {\"t\":\"2026-09-20 15:09:32\",\"s\":\"15:09\",\"e\":\"17:42\",\"d\":9159,\"c\":121}. Die Summe \"c\" wird zur Sitzungsenergie, und anders als der laufende Block lässt sich dieser Wert nachprüfen: bei dem Gerät, von dem er stammt, waren c=121 die 12,1 kWh, die dessen eigene App zeigte, und d=9159 Sekunden die gemeldeten 2 h 32 min. Nach dem Ende einer Ladung in DP Debug danach suchen. 0 = nicht benutzt."
+              }
+            },
+            {
+              "id": "history_energy_divisor",
+              "type": "number",
+              "label": {
+                "en": "Charge history divisor",
+                "de": "Teiler des Verlaufs"
+              },
+              "value": 10,
+              "min": 1,
+              "max": 1000,
+              "hint": {
+                "en": "What the total in the history record counts in. 10 means tenths of a kilowatt-hour, which is what the measured charger uses: 121 is 12.1 kWh.",
+                "de": "Worin die Summe im Verlaufsdatensatz zählt. 10 heisst Zehntel-Kilowattstunden, so wie es das nachgemessene Gerät hält: 121 sind 12,1 kWh."
               }
             },
             {

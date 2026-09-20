@@ -1,6 +1,6 @@
 # Tuya Local — Homey App
 
-**Version 1.0.236** · Local WiFi/LAN control of Tuya smart devices — no cloud, no Zigbee hub required.
+**Version 1.0.237** · Local WiFi/LAN control of Tuya smart devices — no cloud, no Zigbee hub required.
 
 All communication happens over your local network via the Tuya LAN protocol. Twenty-four built-in drivers cover the most common device types; a fully generic driver handles anything else.
 
@@ -1068,25 +1068,47 @@ The exact Tuya state stays available through the **Detailed charger state change
 > ```
 >
 > Each phase is voltage, current and power in tenths of its unit, `t` is the
-> temperature, `p` the total power and `e` the session energy. The reading checks
+> temperature and `p` the total power. The reading checks
 > out against the charger itself: 232.0 V × 5.5 A comes to 1.28 kW against the
 > 1.2 kW reported, the three phases add up to 3.8 kW against the stated 3.9, and the
-> vehicle reported 4.1 kW at the same moment. `e` of 113 matches the `e=11.263kWh`
-> the same charger writes out in full on another data point.
+> vehicle reported 4.1 kW at the same moment.
 >
 > Set **DP Phase JSON** to 102 and leave **DP Phase A / B / C** at 0 — the packed
 > reader cannot make sense of JSON and would produce obviously wrong readings.
 >
-> `d` carries the energy of the running session, in watt-hours. That was settled by
-> reading one charger against its own app: during a session that ended at 12.1 kWh the
-> field read 9010 and then 11410 — 9.01 and 11.41 kWh, on the way there. `e` stood at
-> 14 and 21 at the same moments, which as tenths of a kilowatt-hour would be 1.4 and
-> 2.1, long past. **An earlier reading of the same charger said the opposite** and cost
-> one wrong release: there `e` matched the 11.263 kWh the charger wrote out on a text
-> data point while `d` sat at 54.15. One coincidence is not evidence; two points inside
-> one session against the manufacturer's own figure are. `json_session_field` is there
-> for a charger that counts the other way round, and whichever field is not used is
-> reported once in the **Logs** tab instead of being guessed at.
+> **`d` and `e` are not mapped, on purpose.** Both have been tried as the session
+> energy on the one charger that could be measured against its own app, and both were
+> contradicted by a later reading. First `e`, because 113 matched the `e=11.263kWh`
+> the charger writes out on a text data point. Then `d`, because 9010 and 11410 as
+> watt-hours ran towards a session that ended at 12.1 kWh. The third reading breaks
+> both: idle, minutes after that same 12.1 kWh charge, the block read `d=16800` and
+> `e=37`, and across seven minutes `d` had grown by 3000 — more energy than a 16 A
+> charger can deliver in that time, and far too fast to be seconds. Under no unit are
+> these numbers consistent, so `json_session_field` now defaults to **none**. Pick `d`
+> or `e` only after comparing against your own charger's app; both raw values are
+> written to the **Logs** tab once so they can be compared.
+>
+> **Where the session energy really is.** The same charger writes a record after every
+> completed charge, on DP 105:
+>
+> ```json
+> {"t":"2026-09-20 15:09:32","s":"15:09","e":"17:42","d":9159,"c":121}
+> ```
+>
+> This one block is the only value on the device that can be checked rather than
+> guessed, and it checks out three ways: `s` to `e` spans 9148 seconds, `d` counts
+> 9159 — the same span to the second instead of the minute — and `c` of 121 is the
+> 12.1 kWh the manufacturer's app showed for exactly that charge, after the 2 h 32 min
+> `d` confirms. Set **Charge History DP** to 105 and the session tile is exact.
+>
+> It also settles the vocabulary: in this firmware `d` means *duration*, not energy —
+> which is reason enough not to read the `d` next door as kilowatt-hours.
+>
+> Each record is counted into the lifetime total once, identified by its timestamp, so
+> a reconnect does not count the same charge twice. The whole charge is added rather
+> than a delta: a 12 kWh session followed by an 8 kWh one must add 8, and the
+> rising-counter arithmetic would have added nothing. The first record seen after
+> pairing is remembered but not counted — it may be days old.
 
 > **Total energy:** many chargers expose a lifetime counter (DP 1) that reports a plausible value but never updates over the local connection. Because one reading cannot distinguish a working counter from a frozen one, `dp_energy_total` defaults to `0` and the total is accumulated from the session counter instead — which works on every model tested. Set it to `1` if your charger's own counter does update.
 
