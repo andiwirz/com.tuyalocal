@@ -1077,10 +1077,16 @@ The exact Tuya state stays available through the **Detailed charger state change
 > Set **DP Phase JSON** to 102 and leave **DP Phase A / B / C** at 0 — the packed
 > reader cannot make sense of JSON and would produce obviously wrong readings.
 >
-> `d` is deliberately not mapped. 54150 is either 54.15 kWh counted in watt-hours or
-> 541.50 kWh counted in hundredths, and two readings cannot tell which — so the
-> driver writes both readings to the **Logs** tab once and leaves the tile alone
-> rather than inventing a lifetime counter.
+> `d` carries the energy of the running session, in watt-hours. That was settled by
+> reading one charger against its own app: during a session that ended at 12.1 kWh the
+> field read 9010 and then 11410 — 9.01 and 11.41 kWh, on the way there. `e` stood at
+> 14 and 21 at the same moments, which as tenths of a kilowatt-hour would be 1.4 and
+> 2.1, long past. **An earlier reading of the same charger said the opposite** and cost
+> one wrong release: there `e` matched the 11.263 kWh the charger wrote out on a text
+> data point while `d` sat at 54.15. One coincidence is not evidence; two points inside
+> one session against the manufacturer's own figure are. `json_session_field` is there
+> for a charger that counts the other way round, and whichever field is not used is
+> reported once in the **Logs** tab instead of being guessed at.
 
 > **Total energy:** many chargers expose a lifetime counter (DP 1) that reports a plausible value but never updates over the local connection. Because one reading cannot distinguish a working counter from a frozen one, `dp_energy_total` defaults to `0` and the total is accumulated from the session counter instead — which works on every model tested. Set it to `1` if your charger's own counter does update.
 

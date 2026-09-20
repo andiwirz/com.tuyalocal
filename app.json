@@ -25752,18 +25752,54 @@
               "max": 1000
             },
             {
+              "id": "json_session_field",
+              "type": "dropdown",
+              "label": {
+                "en": "JSON session energy field",
+                "de": "JSON-Feld der Sitzungsenergie"
+              },
+              "value": "d",
+              "values": [
+                {
+                  "id": "d",
+                  "label": {
+                    "en": "d (default)",
+                    "de": "d (Vorgabe)"
+                  }
+                },
+                {
+                  "id": "e",
+                  "label": {
+                    "en": "e",
+                    "de": "e"
+                  }
+                },
+                {
+                  "id": "none",
+                  "label": {
+                    "en": "none — leave the tile empty",
+                    "de": "keines — Kachel leer lassen"
+                  }
+                }
+              ],
+              "hint": {
+                "en": "Which field of the block carries the energy of the running session. On the one charger measured against its own app this is d; the same charger had earlier suggested e, which turned out to be a coincidence of a single reading. If your session tile disagrees with your charger app, try the other field — and please report which one was right.",
+                "de": "Welches Feld des Blocks die Energie der laufenden Sitzung trägt. Bei dem einen Ladegerät, das gegen seine eigene App gemessen wurde, ist es d; dasselbe Gerät hatte zuvor e nahegelegt, was sich als Zufall einer einzelnen Aufnahme erwies. Weicht Ihre Sitzungskachel von der App des Ladegeräts ab, probieren Sie das andere Feld — und melden Sie bitte, welches stimmte."
+              }
+            },
+            {
               "id": "json_energy_divisor",
               "type": "number",
               "label": {
                 "en": "JSON session energy divisor",
                 "de": "JSON-Teiler Sitzungsenergie"
               },
-              "value": 10,
+              "value": 1000,
               "min": 1,
               "max": 1000,
               "hint": {
-                "en": "e is the session energy in tenths of a kilowatt-hour: 113 is 11.3 kWh. The same charger writes \"e=11.263kWh\" out in full on another data point, which is what settles it.",
-                "de": "e ist die Sitzungsenergie in Zehnteln einer Kilowattstunde: 113 sind 11,3 kWh. Dasselbe Gerät schreibt auf einem anderen Datenpunkt „e=11.263kWh\" aus — das entscheidet es."
+                "en": "The session energy is counted in watt-hours on the charger measured against its own app: during a session that ended at 12.1 kWh the field read 9010 and then 11410, which is 9.01 and 11.41 kWh. Set 10 if your charger counts in tenths of a kilowatt-hour instead.",
+                "de": "Die Sitzungsenergie wird bei dem Ladegerät, das gegen seine eigene App gemessen wurde, in Wattstunden gezählt: während einer Sitzung, die bei 12,1 kWh endete, stand das Feld auf 9010 und dann auf 11410 — also 9,01 und 11,41 kWh. Auf 10 setzen, wenn Ihr Gerät stattdessen in Zehntel-Kilowattstunden zählt."
               }
             },
             {

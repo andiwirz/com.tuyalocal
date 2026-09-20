@@ -436,12 +436,31 @@ class EvChargerDevice extends BaseTuyaDevice {
     if (Object.keys(phasen).length === 0) return null;
 
     const zahl = (x) => (Number.isFinite(Number(x)) ? Number(x) : null);
+
+    // Welches Feld die Sitzungsenergie traegt, ist an einem Geraet nachgemessen und
+    // an einem zweiten widerlegt worden — darum steht es in den Einstellungen.
+    //
+    // Die Messung, die zaehlt: waehrend einer Sitzung, die laut Hersteller-App bei
+    // 12,1 kWh endete, stand d auf 9010 und kurz darauf auf 11410. Als Wattstunden
+    // gelesen sind das 9,01 und 11,41 kWh — der Weg auf 12,1 zu. e stand zur selben
+    // Zeit auf 14 und 21; als Zehntel-Kilowattstunden waeren das 1,4 und 2,1, und
+    // die hatte die Sitzung laengst hinter sich.
+    //
+    // Die erste Aufnahme desselben Ladegeraets sagte das Gegenteil: dort traf e die
+    // 11,263 kWh, die das Geraet auf einem Textdatenpunkt ausschrieb, und d lag mit
+    // 54,15 kWh weit daneben. Ich habe daraus zu frueh geschlossen, dass e die
+    // Sitzung traegt. Ein Treffer aus einer Aufnahme ist kein Beleg; zwei Punkte
+    // innerhalb einer Sitzung gegen die App des Herstellers sind einer.
+    const feld = String(this.getSetting('json_session_field') || 'd');
+    const sitzungRoh = feld === 'none' ? null : zahl(roh[feld]);
+
     return {
       phasen,
       gesamt:     zahl(roh.p) === null ? null : zahl(roh.p) * pFaktor,
       temperatur: zahl(roh.t) === null ? null : zahl(roh.t) / teiler('json_temp_divisor', 10),
-      sitzung:    zahl(roh.e) === null ? null : zahl(roh.e) / teiler('json_energy_divisor', 10),
-      zaehler:    zahl(roh.d),
+      sitzung:    sitzungRoh === null ? null : sitzungRoh / teiler('json_energy_divisor', 1000),
+      // Das jeweils andere Feld bleibt unzugeordnet und wird nur berichtet.
+      offen:      { name: feld === 'd' ? 'e' : 'd', wert: zahl(roh[feld === 'd' ? 'e' : 'd']) },
     };
   }
 
@@ -463,15 +482,15 @@ class EvChargerDevice extends BaseTuyaDevice {
     }
     if (block.sitzung !== null) await this._handleSessionEnergy(block.sitzung);
 
-    // d einmal ausschreiben, statt es zu raten. Wer den Bericht liest, sieht beide
-    // Lesarten nebeneinander und kann am eigenen Zaehler entscheiden, welche stimmt.
-    if (block.zaehler !== null && !this._zaehlerGemeldet) {
-      this._zaehlerGemeldet = true;
-      this._appLog(`The phase JSON carries d=${block.zaehler}, which this driver does not `
-        + `map: it is either ${(block.zaehler / 1000).toFixed(2)} kWh counted in watt-hours `
-        + `or ${(block.zaehler / 100).toFixed(2)} kWh counted in hundredths, and two readings `
-        + 'cannot tell which. Compare it against your charger\'s own lifetime counter and '
-        + 'report it, and it can be mapped properly.', 'info', true);
+    // Das nicht zugeordnete Feld einmal ausschreiben, statt es zu raten. Wer den
+    // Bericht liest, sieht den Rohwert und kann ihn gegen sein Geraet halten.
+    if (block.offen && block.offen.wert !== null && !this._offenGemeldet) {
+      this._offenGemeldet = true;
+      this._appLog(`The phase JSON also carries ${block.offen.name}=${block.offen.wert}, which `
+        + 'this driver does not map. On the one charger measured against its own app the '
+        + 'session energy sat in the other field; what this one counts is not settled. If you '
+        + 'can read your charger\'s app at the start and at the end of one session and report '
+        + 'both values with it, it can be mapped properly.', 'info', true);
     }
   }
 
