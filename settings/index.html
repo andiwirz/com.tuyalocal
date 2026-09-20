@@ -511,14 +511,16 @@
   <div class="modal-overlay" id="bundle-modal" onclick="closeBundle(event)">
     <div class="modal">
       <div class="modal-header">
-        <h3>Support bundle</h3>
+        <h3 data-lang="en">Support bundle</h3>
+      <h3 data-lang="de">Supportpaket</h3>
         <span id="bundleHint" style="font-size:11px;color:#1e6a34"></span>
         <button class="primary" onclick="copyBundle(this)">&#128203; Copy all</button>
         <button onclick="copyBundleForum(this)">&#128172; Copy for forum</button>
         <button onclick="closeBundle()">Close</button>
       </div>
       <div class="modal-body">
-        <p style="margin:0 0 8px">Everything needed to diagnose a device problem: driver, data point mapping, live values, the cloud specification where available, and the warnings and errors from the log. Local keys are removed and device IDs shortened, so this is safe to post publicly.</p>
+        <p style="margin:0 0 8px" data-lang="en">Everything needed to diagnose a device problem: driver, data point mapping, live values, the cloud specification where available, and the warnings and errors from the log. Local keys are removed and device IDs shortened, so this is safe to post publicly.</p>
+      <p style="margin:0 0 8px" data-lang="de">Alles, was zur Beurteilung eines Geräteproblems nötig ist: Treiber, Datenpunkt-Zuordnung, aktuelle Werte, die Cloud-Spezifikation, soweit vorhanden, und die Warnungen und Fehler aus dem Protokoll. Lokale Schlüssel sind entfernt und Geräte-IDs gekürzt — das lässt sich also gefahrlos öffentlich einstellen.</p>
         <textarea id="bundleText" readonly spellcheck="false"></textarea>
       </div>
     </div>
@@ -650,34 +652,52 @@
       <p data-lang="de">Zwei Minuten, die sich lohnen, bevor Sie einen Abend in Einstellungen stecken. Lokale Steuerung setzt voraus, dass das Gerät auf <strong>TCP 6668</strong> lauscht (gelegentlich 6667). Richten Sie irgendeinen Portscanner — <em>Advanced Port Scanner</em>, eine Netzwerk-App auf dem Telefon, <code>nmap</code> — auf die IP des Geräts und prüfen Sie diese zwei Ports.</p>
       <p style="font-size:12px;color:#666" data-lang="en"><strong>Open</strong> means the device speaks the local protocol and any failure from here is a matter of key, protocol version or DP mapping. <strong>Both closed</strong> means it does not, and nothing in this app can change that — some devices sold as Tuya are Matter or cloud-only under the hood and simply have no local port. Users have chased such a device for weeks before running this check.</p>
       <p style="font-size:12px;color:#666" data-lang="de"><strong>Offen</strong> heisst: das Gerät spricht das lokale Protokoll, und jeder Fehlschlag von hier an ist eine Frage des Schlüssels, der Protokollversion oder der Datenpunkt-Zuordnung. <strong>Beide geschlossen</strong> heisst: es spricht es nicht, und daran kann diese App nichts ändern — manches, was als Tuya verkauft wird, ist unter der Haube Matter oder reines Cloud-Gerät und hat schlicht keinen lokalen Port. Es hat Benutzer gegeben, die wochenlang hinter einem solchen Gerät her waren, bevor sie diese Prüfung machten.</p>
-      <div class="note"><strong>Known to be impossible locally,</strong> whatever the settings say:
+      <div class="note" data-lang="en"><strong>Known to be impossible locally,</strong> whatever the settings say:
         <ul style="margin:6px 0 0;padding-left:18px;line-height:1.6">
           <li><strong>Battery sensors in deep sleep</strong> — door, motion, smoke, temperature/humidity sensors switch their radio off between reports. There is no window in which to connect, and the cloud sees them only because the device pushes to Tuya itself.</li>
           <li><strong>Bluetooth devices behind a Tuya gateway</strong> — the gateway proxies them to the cloud, not over the local protocol, and most models accept only one to three connections in total.</li>
           <li><strong>Cameras and video doorbells</strong> — the video stream is a proprietary peer-to-peer protocol. Ring and motion events over the local connection can work; the picture cannot. For the stream, use an ONVIF app if the device supports it.</li>
         </ul>
       </div>
+      <div class="note" data-lang="de"><strong>Lokal erwiesenermassen unmöglich,</strong> was auch immer die Einstellungen sagen:
+        <ul style="margin:6px 0 0;padding-left:18px;line-height:1.6">
+          <li><strong>Batteriesensoren im Tiefschlaf</strong> — Tür-, Bewegungs-, Rauch- sowie Temperatur- und Feuchtesensoren schalten ihren Funk zwischen zwei Meldungen ab. Es gibt kein Zeitfenster, in dem man sich verbinden könnte, und die Cloud sieht sie nur, weil das Gerät von sich aus zu Tuya sendet.</li>
+          <li><strong>Bluetooth-Geräte hinter einem Tuya-Gateway</strong> — das Gateway reicht sie an die Cloud weiter, nicht über das lokale Protokoll, und die meisten Modelle nehmen insgesamt nur ein bis drei Verbindungen an.</li>
+          <li><strong>Kameras und Video-Türklingeln</strong> — der Videostrom läuft über ein herstellereigenes Peer-to-Peer-Protokoll. Klingel- und Bewegungsereignisse über die lokale Verbindung können gehen, das Bild nicht. Für den Strom eine ONVIF-App benutzen, sofern das Gerät es unterstützt.</li>
+        </ul>
+      </div>
     </div>
 
     <div class="section" id="sec-report">
-      <h2>Reporting device issues</h2>
-      <p>If a device does not work as expected or a DP mapping is incorrect, the fastest route is the button below: it collects everything in one go — for every device the driver, the data point mapping, the live values and, where cloud credentials are stored, the manufacturer's specification, followed by the warnings and errors from the log.</p>
+      <h2 data-lang="en">Reporting device issues</h2>
+      <h2 data-lang="de">Gerätefehler melden</h2>
+      <p data-lang="en">If a device does not work as expected or a DP mapping is incorrect, the fastest route is the button below: it collects everything in one go — for every device the driver, the data point mapping, the live values and, where cloud credentials are stored, the manufacturer's specification, followed by the warnings and errors from the log.</p>
+      <p data-lang="de">Wenn ein Gerät nicht tut, was es soll, oder eine Datenpunkt-Zuordnung nicht stimmt, ist der Knopf unten der kürzeste Weg: er sammelt alles auf einmal ein — je Gerät den Treiber, die Datenpunkt-Zuordnung, die aktuellen Werte und, sofern Cloud-Zugangsdaten hinterlegt sind, die Spezifikation des Herstellers, gefolgt von den Warnungen und Fehlern aus dem Protokoll.</p>
       <div class="bar">
         <button class="primary" id="btnBundle">&#128203; Create support bundle</button>
         <span id="bundleStatus" style="font-size:12px;color:#888"></span>
       </div>
-      <div class="note"><strong>Which route to use.</strong> In the <strong>DP Debug</strong> tab, with a device selected, two buttons do the work for you. <strong>Report on GitHub</strong> opens a bug report with driver, versions, protocol and both data point tables already filled in — use it for a reproducible fault that needs fixing. <strong>Copy for forum</strong> puts a forum-ready post on the clipboard, folded into a collapsible block so it does not bury the thread, and opens the topic — use it for a question where other users may well know the answer, as several regulars there do. Pick one: the same report in both places splits the conversation.</div>
-      <p style="font-size:12px;color:#666">Collected by hand, the same information comes from three places — one per tab. Useful to know if you only want to send part of it: the first two belong together and neither replaces the other, since one shows what the device does and the other what its data points mean.</p>
-      <ol style="font-size:12px;line-height:1.8;color:#333">
+      <div class="note" data-lang="en"><strong>Which route to use.</strong> In the <strong>DP Debug</strong> tab, with a device selected, two buttons do the work for you. <strong>Report on GitHub</strong> opens a bug report with driver, versions, protocol and both data point tables already filled in — use it for a reproducible fault that needs fixing. <strong>Copy for forum</strong> puts a forum-ready post on the clipboard, folded into a collapsible block so it does not bury the thread, and opens the topic — use it for a question where other users may well know the answer, as several regulars there do. Pick one: the same report in both places splits the conversation.</div>
+      <div class="note" data-lang="de"><strong>Welchen Weg nehmen.</strong> Im Reiter <strong>DP-Debug</strong> nehmen Ihnen zwei Knöpfe die Arbeit ab, sobald ein Gerät gewählt ist. <strong>Auf GitHub melden</strong> öffnet einen Fehlerbericht, in dem Treiber, Versionen, Protokoll und beide Datenpunkt-Tabellen schon eingetragen sind — für einen nachstellbaren Fehler, der behoben gehört. <strong>Für das Forum kopieren</strong> legt einen fertigen Beitrag in die Zwischenablage, zusammengeklappt, damit er den Faden nicht zuschüttet, und öffnet das Thema — für eine Frage, auf die andere Benutzer die Antwort wissen könnten, und mehrere dort wissen sie. Nehmen Sie einen von beiden: derselbe Bericht an zwei Orten zerteilt das Gespräch.</div>
+      <p style="font-size:12px;color:#666" data-lang="en">Collected by hand, the same information comes from three places — one per tab. Useful to know if you only want to send part of it: the first two belong together and neither replaces the other, since one shows what the device does and the other what its data points mean.</p>
+      <p style="font-size:12px;color:#666" data-lang="de">Von Hand gesammelt stammen dieselben Angaben aus drei Quellen — je eine pro Reiter. Gut zu wissen, wenn Sie nur einen Teil schicken wollen: die ersten beiden gehören zusammen und ersetzen einander nicht, denn die eine zeigt, was das Gerät tut, und die andere, was seine Datenpunkte bedeuten.</p>
+      <ol style="font-size:12px;line-height:1.8;color:#333" data-lang="en">
         <li><strong>The DP specification — from Cloud Lookup.</strong> <strong>Cloud Lookup</strong> tab → <strong>Fetch Devices</strong> → <strong>Show DPs</strong> on the device's row → <strong>Copy Cloud DP Table</strong>. Gives the manufacturer's own name, the declared type and the allowed range for every data point. This is the only place that information exists — the local connection never transmits it.</li>
         <li><strong>The live DP data — from DP Debug.</strong> <strong>DP Debug</strong> tab → select the device → <strong>Copy Local DP Table</strong>. This is what the device actually reports over the local connection. Operating the device with its own buttons or remote while watching the table shows which DP belongs to which function.</li>
         <li><strong>The diagnostic log — from Logs.</strong> <strong>Logs</strong> tab → filter <em>Warnings &amp; Errors</em> → <strong>Copy</strong>. Needed whenever a device disconnects, refuses commands or never connects at all; it distinguishes a network problem from a wrong DP mapping.</li>
       </ol>
-      <p>Together these give the DP numbers, types and value ranges of your specific model, plus what happened on the wire — enough to correct a mapping without owning the device. Post them on the <a href="#" onclick="openUrl('https://community.homey.app/t/app-pro-tuya-local/154077/last'); return false;" class="help-link">community forum</a> or as a <a href="#" onclick="openUrl('https://github.com/andiwirz/com.tuyalocal/issues'); return false;" class="help-link">GitHub issue</a>, and please state the device brand and model plus what you expected to happen instead.</p>
-      <div class="note"><strong>Safe to post publicly:</strong> none of these three copies identifies you. The DP tables carry the device name but no device ID, the log is labelled with device names only, and none of the three ever contains the Local Key. The support bundle is safe the same way: it shortens the device ID to six characters and replaces the key with asterisks.<br><br><strong>One clipboard that is not safe:</strong> the <strong>Copy</strong> button on a row in <strong>Cloud Lookup</strong> deliberately copies the device ID and the Local Key, because that is what you need when adding a device by hand. Never paste that one into a forum post or a bug report — the key is the credential for the device.</div>
+      <ol style="font-size:12px;line-height:1.8;color:#333" data-lang="de">
+        <li><strong>Die DP-Spezifikation — aus der Cloud-Suche.</strong> Reiter <strong>Cloud-Suche</strong> → <strong>Geräte abrufen</strong> → <strong>DPs zeigen</strong> in der Zeile des Geräts → <strong>Cloud-DP-Tabelle kopieren</strong>. Liefert den Namen des Herstellers, den erklärten Typ und den erlaubten Bereich je Datenpunkt. Nur dort gibt es diese Angaben — die lokale Verbindung überträgt sie nie.</li>
+        <li><strong>Die tatsächlichen Werte — aus dem DP-Debug.</strong> Reiter <strong>DP-Debug</strong> → Gerät wählen → <strong>Lokale DP-Tabelle kopieren</strong>. Das ist, was das Gerät über die lokale Verbindung wirklich meldet. Bedienen Sie es mit seinen eigenen Tasten oder der Fernbedienung, während Sie die Tabelle beobachten — dann sehen Sie, welcher Datenpunkt zu welcher Funktion gehört.</li>
+        <li><strong>Das Diagnoseprotokoll — aus dem Protokoll.</strong> Reiter <strong>Protokoll</strong> → Filter <em>Warnungen &amp; Fehler</em> → <strong>Kopieren</strong>. Wird gebraucht, sobald ein Gerät die Verbindung verliert, Befehle abweist oder gar nicht erst verbindet; es unterscheidet ein Netzproblem von einer falschen Datenpunkt-Zuordnung.</li>
+      </ol>
+      <p data-lang="en">Together these give the DP numbers, types and value ranges of your specific model, plus what happened on the wire — enough to correct a mapping without owning the device. Post them on the <a href="#" onclick="openUrl('https://community.homey.app/t/app-pro-tuya-local/154077/last'); return false;" class="help-link">community forum</a> or as a <a href="#" onclick="openUrl('https://github.com/andiwirz/com.tuyalocal/issues'); return false;" class="help-link">GitHub issue</a>, and please state the device brand and model plus what you expected to happen instead.</p>
+      <p data-lang="de">Zusammen ergeben sie die Datenpunktnummern, Typen und Wertebereiche genau Ihres Modells und dazu, was auf der Leitung geschah — genug, um eine Zuordnung zu berichtigen, ohne das Gerät zu besitzen. Stellen Sie das ins <a href="#" onclick="openUrl('https://community.homey.app/t/app-pro-tuya-local/154077/last'); return false;" class="help-link">Community-Forum</a> oder als <a href="#" onclick="openUrl('https://github.com/andiwirz/com.tuyalocal/issues'); return false;" class="help-link">GitHub-Meldung</a>, und nennen Sie bitte Marke und Modell des Geräts sowie das, was Sie stattdessen erwartet hätten.</p>
+      <div class="note" data-lang="en"><strong>Safe to post publicly:</strong> none of these three copies identifies you. The DP tables carry the device name but no device ID, the log is labelled with device names only, and none of the three ever contains the Local Key. The support bundle is safe the same way: it shortens the device ID to six characters and replaces the key with asterisks.<br><br><strong>One clipboard that is not safe:</strong> the <strong>Copy</strong> button on a row in <strong>Cloud Lookup</strong> deliberately copies the device ID and the Local Key, because that is what you need when adding a device by hand. Never paste that one into a forum post or a bug report — the key is the credential for the device.</div>
+      <div class="note" data-lang="de"><strong>Öffentlich unbedenklich:</strong> keine dieser drei Kopien verrät, wer Sie sind. Die DP-Tabellen tragen den Gerätenamen, aber keine Geräte-ID, das Protokoll ist nur mit Gerätenamen beschriftet, und in keiner der drei steht je der lokale Schlüssel. Das Supportpaket ist auf dieselbe Weise unbedenklich: es kürzt die Geräte-ID auf sechs Zeichen und ersetzt den Schlüssel durch Sternchen.<br><br><strong>Eine Zwischenablage, die es nicht ist:</strong> der Knopf <strong>Kopieren</strong> in einer Zeile der <strong>Cloud-Suche</strong> kopiert absichtlich Geräte-ID und lokalen Schlüssel, denn genau das brauchen Sie, um ein Gerät von Hand anzulegen. Fügen Sie das nie in einen Forumsbeitrag oder einen Fehlerbericht ein — der Schlüssel ist der Zugang zum Gerät.</div>
     </div>
 
-      <div class="note"><strong>Three settings every device has.</strong>
+      <div class="note" data-lang="en"><strong>Three settings every device has.</strong>
       <em>Auto-Reconnect Interval</em> retries a device that is offline every N minutes
       (0 = off; the app reconnects on its own anyway, this is the safety net).
       <em>Offline Grace</em> is how long a device may be gone before the "disconnected" flow
@@ -687,20 +707,42 @@
       and off on thermostats, kettles, wall switches, doorbells and presence sensors, which
       never had the switch. Turn it on there if commands do not arrive, or if the device drops
       the connection immediately after one.</div>
+      <div class="note" data-lang="de"><strong>Drei Einstellungen, die jedes Gerät hat.</strong>
+      <em>Neuverbindungsintervall</em> versucht es bei einem Gerät, das offline ist, alle N
+      Minuten erneut (0 = aus; die App verbindet sich ohnehin von selbst wieder, dies ist das
+      Netz darunter). <em>Offline-Karenz</em> ist die Zeit, die ein Gerät fehlen darf, bevor die
+      Flow-Karte „getrennt“ auslöst — ab Werk 60 Sekunden, denn viele dieser Geräte lassen die
+      Verbindung kurz fallen und kommen von allein zurück. <em>Fire and forget</em> schickt
+      Befehle, ohne auf eine Bestätigung des Geräts zu warten; es ist dort eingeschaltet, wo es
+      immer schon angeboten wurde, und ausgeschaltet bei Thermostaten, Wasserkochern,
+      Wandschaltern, Türklingeln und Präsenzmeldern, die den Schalter nie hatten. Dort
+      einschalten, wenn Befehle nicht ankommen oder das Gerät die Verbindung unmittelbar nach
+      einem Befehl fallen lässt.</div>
 
     <div class="section" id="sec-fixit">
-      <h2>Fix It — automatic checks</h2>
-      <p>Most of what goes wrong with these devices is not a fault in the app but a setting
+      <h2 data-lang="en">Fix It — automatic checks</h2>
+      <h2 data-lang="de">Fix It — automatische Prüfungen</h2>
+      <p data-lang="en">Most of what goes wrong with these devices is not a fault in the app but a setting
       that no longer matches the device: a local key that changed, a data point number written
       for a different model, a reading that is a hundred times off. Tuya publishes what each
       device actually has, so the
       <a href="#" onclick="showTab('fix'); return false;" class="help-link">Fix It</a> tab
       compares your paired devices against that and offers to correct the differences.</p>
+      <p data-lang="de">Das meiste, was bei diesen Geräten schiefgeht, ist kein Fehler der App, sondern eine
+      Einstellung, die nicht mehr zum Gerät passt: ein lokaler Schlüssel, der sich geändert hat,
+      eine Datenpunktnummer, die für ein anderes Modell geschrieben wurde, ein Messwert, der um
+      das Hundertfache danebenliegt. Tuya veröffentlicht, was jedes Gerät tatsächlich hat —
+      der Reiter <a href="#" onclick="showTab('fix'); return false;" class="help-link">Fix It</a>
+      vergleicht Ihre angelernten Geräte damit und bietet an, die Unterschiede zu berichtigen.</p>
 
-      <div class="note"><strong>Nothing is saved until you confirm.</strong> Every check runs
+      <div class="note" data-lang="en"><strong>Nothing is saved until you confirm.</strong> Every check runs
       as a preview first and lists exactly what it would change, device by device, old value to
       new value — and tells you why it left a device alone. Only then does a second button
       write anything.</div>
+      <div class="note" data-lang="de"><strong>Gespeichert wird erst, wenn Sie bestätigen.</strong> Jede
+      Prüfung läuft zuerst als Vorschau und führt genau auf, was sie ändern würde, Gerät für
+      Gerät, alter Wert zu neuem — und sagt, warum sie ein Gerät unangetastet liess. Erst
+      danach schreibt ein zweiter Knopf etwas.</div>
 
       <div class="table-scroll">
 
@@ -743,40 +785,65 @@
 
       </div>
 
-      <div class="note"><strong>Two things it will not do.</strong> It never invents a value a
+      <div class="note" data-lang="en"><strong>Two things it will not do.</strong> It never invents a value a
       setting does not accept — a divisor outside the offered range is named, not stored. And
       it leaves a data point alone when the specification omits it but your device has reported
       it: Tuya specifications are occasionally incomplete, and a value seen on the network
       outranks a specification that fails to mention it.</div>
+      <div class="note" data-lang="de"><strong>Zwei Dinge tut sie nicht.</strong> Sie erfindet nie einen Wert,
+      den eine Einstellung nicht annimmt — ein Teiler ausserhalb des angebotenen Bereichs wird
+      genannt, nicht gespeichert. Und sie lässt einen Datenpunkt in Ruhe, wenn die Spezifikation
+      ihn auslässt, Ihr Gerät ihn aber gemeldet hat: Tuyas Spezifikationen sind gelegentlich
+      unvollständig, und ein Wert, der auf dem Netz zu sehen war, wiegt schwerer als eine
+      Spezifikation, die ihn verschweigt.</div>
 
-      <p style="font-size:11px;color:#888;line-height:1.5">Four of the five need Cloud Lookup
+      <p style="font-size:11px;color:#888;line-height:1.5" data-lang="en">Four of the five need Cloud Lookup
       credentials — set them up under <strong>Cloud Lookup</strong> first, which is a one-time
       job on iot.tuya.com described in
       <a href="#" onclick="jumpToSection('sec-start'); return false;" class="help-link">Getting
       started</a>. If a check proposes something that looks wrong, do not apply it: copy the
       preview text into a forum post instead. It names the device, the setting and both values,
       which is everything needed to judge it.</p>
+      <p style="font-size:11px;color:#888;line-height:1.5" data-lang="de">Vier der fünf brauchen die
+      Zugangsdaten der Cloud-Suche — richten Sie sie zuerst unter <strong>Cloud-Suche</strong>
+      ein, eine einmalige Sache auf iot.tuya.com, beschrieben unter
+      <a href="#" onclick="jumpToSection('sec-start'); return false;" class="help-link">Erste
+      Schritte</a>. Schlägt eine Prüfung etwas vor, das falsch aussieht, wenden Sie es nicht an:
+      kopieren Sie stattdessen den Vorschautext in einen Forumsbeitrag. Er nennt Gerät,
+      Einstellung und beide Werte — alles, was zur Beurteilung nötig ist.</p>
     </div>
 
     <div class="section" id="sec-dpmode">
-      <h2>DP Instruction Mode</h2>
-      <p>Tuya devices use the <strong>Standard Instruction Set</strong> by default, which translates commands into readable codes such as <code>"switch_led"</code>. That works well for simple devices, but on more complex models it often gets in the way.</p>
-      <p><strong>DP Instruction Mode</strong> switches to more direct, hardware-level communication. Three things it gives you:</p>
+      <h2 data-lang="en">DP Instruction Mode</h2>
+      <h2 data-lang="de">DP-Instruction-Modus</h2>
+      <p data-lang="en">Tuya devices use the <strong>Standard Instruction Set</strong> by default, which translates commands into readable codes such as <code>"switch_led"</code>. That works well for simple devices, but on more complex models it often gets in the way.</p>
+      <p data-lang="de">Tuya-Geräte benutzen ab Werk den <strong>Standard Instruction Set</strong>, der Befehle in lesbare Bezeichner wie <code>"switch_led"</code> übersetzt. Bei einfachen Geräten geht das gut auf, bei komplexeren steht es oft im Weg.</p>
+      <p data-lang="en"><strong>DP Instruction Mode</strong> switches to more direct, hardware-level communication. Three things it gives you:</p>
+      <p data-lang="de">Der <strong>DP-Instruction-Modus</strong> stellt auf die direktere Verständigung auf Geräteebene um. Drei Dinge bringt er:</p>
 
-      <h3>Makes every function visible</h3>
-      <p>Many Tuya devices have extra modes, timers, scenes or sensor readings that the standard mode never exposes. DP mode unlocks all available DPs — ideal for Tuya Local, because you can then map every function cleanly.</p>
+      <h3 data-lang="en">Makes every function visible</h3>
+      <h3 data-lang="de">Er macht jede Funktion sichtbar</h3>
+      <p data-lang="en">Many Tuya devices have extra modes, timers, scenes or sensor readings that the standard mode never exposes. DP mode unlocks all available DPs — ideal for Tuya Local, because you can then map every function cleanly.</p>
+      <p data-lang="de">Viele Tuya-Geräte haben zusätzliche Betriebsarten, Zeitschaltungen, Szenen oder Messwerte, die der Standardmodus nie herausgibt. Der DP-Modus gibt alle vorhandenen Datenpunkte frei — für Tuya Local ideal, denn dann lässt sich jede Funktion sauber zuordnen.</p>
 
-      <h3>Fixes third-party integrations</h3>
-      <p>When a device is recognised in Homey, Home Assistant or TinyTuya but does not respond to anything, the standard mode is a frequent cause. Switching to DP Instruction Mode regularly resolves it.</p>
+      <h3 data-lang="en">Fixes third-party integrations</h3>
+      <h3 data-lang="de">Er repariert fremde Anbindungen</h3>
+      <p data-lang="en">When a device is recognised in Homey, Home Assistant or TinyTuya but does not respond to anything, the standard mode is a frequent cause. Switching to DP Instruction Mode regularly resolves it.</p>
+      <p data-lang="de">Wenn ein Gerät in Homey, Home Assistant oder TinyTuya erkannt wird, aber auf nichts reagiert, ist der Standardmodus eine häufige Ursache. Die Umstellung auf den DP-Instruction-Modus löst das regelmässig.</p>
 
-      <h3>Direct hardware control</h3>
-      <p>Instead of textual commands, plain DP numbers and values are sent:</p>
+      <h3 data-lang="en">Direct hardware control</h3>
+      <h3 data-lang="de">Steuerung direkt auf Geräteebene</h3>
+      <p data-lang="en">Instead of textual commands, plain DP numbers and values are sent:</p>
+      <p data-lang="de">Statt Befehlen in Worten gehen blosse Datenpunktnummern und Werte hinaus:</p>
       <pre style="font-size:11px">{"21": "scene"}</pre>
-      <p>That is more robust on devices which do not follow the Tuya standard exactly.</p>
+      <p data-lang="en">That is more robust on devices which do not follow the Tuya standard exactly.</p>
+      <p data-lang="de">Bei Geräten, die sich nicht genau an Tuyas Standard halten, ist das verlässlicher.</p>
 
-      <h3>🔧 How to enable it</h3>
-      <p>The change is made on the Tuya IoT Developer Platform, not in Homey:</p>
-      <ol style="font-size:12px;line-height:1.8;color:#333">
+      <h3 data-lang="en">🔧 How to enable it</h3>
+      <h3 data-lang="de">🔧 Wie man ihn einschaltet</h3>
+      <p data-lang="en">The change is made on the Tuya IoT Developer Platform, not in Homey:</p>
+      <p data-lang="de">Umgestellt wird auf der Tuya-IoT-Entwicklerplattform, nicht in Homey:</p>
+      <ol style="font-size:12px;line-height:1.8;color:#333" data-lang="en">
         <li>Sign in to the <a href="#" onclick="openUrl('https://iot.tuya.com');return false" class="help-link">Tuya Developer Platform</a></li>
         <li><strong>Cloud</strong> → <strong>Development</strong> in the left menu, then open your project</li>
         <li>Open the project's <strong>Devices</strong> tab and stay on <strong>All Devices</strong></li>
@@ -784,9 +851,20 @@
         <li>Hover that card and click the <strong>pencil</strong> icon; its tooltip reads <em>Change Control Instruction Mode</em></li>
         <li>On the <strong>Configure Control Instruction Mode</strong> screen pick the <strong>DP Instruction</strong> card, then press <strong>Save Configuration</strong> — the choice is not applied until you save</li>
       </ol>
-      <p style="font-size:12px;color:#666">That screen also carries the <em>Table of Instructions</em>, listing the DP instructions against the standard ones side by side. It is worth a look before saving: the difference in length is exactly what you gain.</p>
-      <div class="note"><strong>The warning Tuya shows is real.</strong> Saving asks you to confirm that the devices under the project “might not be able to be controlled by the original standard instructions”. Anything that drives these devices through standard instructions can stop working — the official Tuya cloud app, or voice assistants wired up that way. Users have switched a curtain motor to DP Instruction and found it dead in the cloud integration while the Smart Life app kept working. Local control through this app is unaffected, and the switch is reversible on the same screen.</div>
-      <div class="note">Scope: the setting applies to one <strong>product</strong> within one <strong>project</strong> — every device of that product in that project switches with it, other products do not. Because it changes what the cloud exposes, re-run <strong>Fetch Devices</strong> in the Cloud Lookup tab afterwards to see the full DP list.</div>
+      <ol style="font-size:12px;line-height:1.8;color:#333" data-lang="de">
+        <li>Bei der <a href="#" onclick="openUrl('https://iot.tuya.com');return false" class="help-link">Tuya Developer Platform</a> anmelden</li>
+        <li><strong>Cloud</strong> → <strong>Development</strong> im linken Menü, dann Ihr Projekt öffnen</li>
+        <li>Den Reiter <strong>Devices</strong> des Projekts öffnen und auf <strong>All Devices</strong> bleiben</li>
+        <li>Unter <em>View Devices by Product</em> die Karte für das <strong>Produkt</strong> Ihres Geräts suchen — sie zeigt die Gerätezahl und den gerade geltenden Modus, üblicherweise <em>Standard Instruction</em></li>
+        <li>Mit der Maus über die Karte fahren und auf das <strong>Stift</strong>-Symbol klicken; sein Hinweis lautet <em>Change Control Instruction Mode</em></li>
+        <li>Auf dem Schirm <strong>Configure Control Instruction Mode</strong> die Karte <strong>DP Instruction</strong> wählen, dann <strong>Save Configuration</strong> drücken — vor dem Speichern gilt die Wahl nicht</li>
+      </ol>
+      <p style="font-size:12px;color:#666" data-lang="en">That screen also carries the <em>Table of Instructions</em>, listing the DP instructions against the standard ones side by side. It is worth a look before saving: the difference in length is exactly what you gain.</p>
+      <p style="font-size:12px;color:#666" data-lang="de">Auf demselben Schirm steht auch die <em>Table of Instructions</em>, die DP-Befehle und Standardbefehle nebeneinanderstellt. Ein Blick darauf lohnt sich vor dem Speichern: der Längenunterschied ist genau das, was Sie gewinnen.</p>
+      <div class="note" data-lang="en"><strong>The warning Tuya shows is real.</strong> Saving asks you to confirm that the devices under the project “might not be able to be controlled by the original standard instructions”. Anything that drives these devices through standard instructions can stop working — the official Tuya cloud app, or voice assistants wired up that way. Users have switched a curtain motor to DP Instruction and found it dead in the cloud integration while the Smart Life app kept working. Local control through this app is unaffected, and the switch is reversible on the same screen.</div>
+      <div class="note" data-lang="de"><strong>Tuyas Warnung meint es ernst.</strong> Beim Speichern werden Sie gebeten zu bestätigen, dass die Geräte des Projekts „might not be able to be controlled by the original standard instructions“. Alles, was diese Geräte über Standardbefehle steuert, kann aufhören zu funktionieren — die offizielle Tuya-Cloud-App oder ein so angebundener Sprachassistent. Es hat Benutzer gegeben, die einen Vorhangmotor auf DP Instruction umgestellt haben und ihn danach in der Cloud-Anbindung tot vorfanden, während die Smart-Life-App weiterlief. Die lokale Steuerung durch diese App ist davon nicht betroffen, und die Umstellung lässt sich auf demselben Schirm zurücknehmen.</div>
+      <div class="note" data-lang="en">Scope: the setting applies to one <strong>product</strong> within one <strong>project</strong> — every device of that product in that project switches with it, other products do not. Because it changes what the cloud exposes, re-run <strong>Fetch Devices</strong> in the Cloud Lookup tab afterwards to see the full DP list.</div>
+      <div class="note" data-lang="de">Geltungsbereich: die Einstellung gilt für ein <strong>Produkt</strong> innerhalb eines <strong>Projekts</strong> — jedes Gerät dieses Produkts in diesem Projekt wechselt mit, andere Produkte nicht. Weil sich ändert, was die Cloud herausgibt, danach im Reiter Cloud-Suche noch einmal <strong>Geräte abrufen</strong> drücken, um die vollständige Datenpunktliste zu sehen.</div>
     </div>
 
     <div class="section" id="sec-plug">
@@ -1780,7 +1858,7 @@
       eingeschalteter Selbstaktualisierung. Schalten Sie sie ein, bevor Sie das Gerät
       bedienen, sonst kann ein Datenpunkt sich zwischen zwei Blicken ändern und wieder
       zurückfallen.</p>
-      <div class="note">
+      <div class="note" data-lang="en">
         Shows what the device really <em>does</em>: which DP carries which value, in which type, and
         which DP moves when. Operate the device with its own buttons or remote while watching this
         table — the DP that changes is the one the setting needs to point at. What it cannot show is
@@ -1788,6 +1866,17 @@
         allowed range. Use <strong>Copy Local DP Table</strong> to attach it to a bug report:
         <a href="#" onclick="openHelpSection('sec-report'); return false;" class="help-link">Reporting device issues</a>
         explains what else to send.
+      </div>
+      <div class="note" data-lang="de">
+        Zeigt, was das Gerät wirklich <em>tut</em>: welcher Datenpunkt welchen Wert trägt, in welchem
+        Typ, und welcher sich wann bewegt. Bedienen Sie das Gerät mit seinen eigenen Tasten oder der
+        Fernbedienung, während Sie diese Tabelle beobachten — der Datenpunkt, der sich ändert, ist
+        der, auf den die Einstellung zeigen muss. Was sie nicht zeigen kann, ist, was diese Zahlen
+        <em>bedeuten</em>; die lokale Verbindung überträgt weder Namen noch Typ noch erlaubten
+        Bereich. Mit <strong>Lokale DP-Tabelle kopieren</strong> hängen Sie sie an einen
+        Fehlerbericht:
+        <a href="#" onclick="openHelpSection('sec-report'); return false;" class="help-link">Gerätefehler melden</a>
+        erklärt, was sonst noch dazugehört.
       </div>
       <div class="bar">
         <select id="deviceSelect"><option value="">— select device —</option></select>
@@ -1949,7 +2038,8 @@
           <button class="primary" id="btnBundleFix">&#128203; Create support bundle</button>
           <span id="bundleFixStatus" style="font-size:12px;color:#888"></span>
         </div>
-        <div class="note">Where to send it: <a href="#" onclick="showTab('help'); jumpToSection('sec-report'); return false;" class="help-link">Help → Reporting device issues</a>.</div>
+        <div class="note" data-lang="en">Where to send it: <a href="#" onclick="showTab('help'); jumpToSection('sec-report'); return false;" class="help-link">Help → Reporting device issues</a>.</div>
+      <div class="note" data-lang="de">Wohin damit: <a href="#" onclick="showTab('help'); jumpToSection('sec-report'); return false;" class="help-link">Hilfe → Gerätefehler melden</a>.</div>
       </div>
 
       <!-- First of the checks: a wrong key is the one fault that stops a device working
