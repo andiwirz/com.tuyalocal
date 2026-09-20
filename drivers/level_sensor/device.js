@@ -319,7 +319,7 @@ class LevelSensorDevice extends BaseTuyaDevice {
     }
     if (changedKeys.includes('polling_interval'))   this._startPolling();
     if (changedKeys.includes('reconnect_interval')) this._startAutoReconnect();
-    if (changedKeys.some((k) => OPTIONAL_CAPABILITIES.map((o) => o.setting).includes(k))) {
+    if (this._touchesOptional(changedKeys, OPTIONAL_CAPABILITIES)) {
       await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
     }
     if (changedKeys.includes('state_values')) {

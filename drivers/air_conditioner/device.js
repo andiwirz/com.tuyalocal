@@ -266,7 +266,7 @@ class AirConditionerDevice extends BaseTuyaDevice {
       this._startPolling();
     }
     if (changedKeys.includes('reconnect_interval')) this._startAutoReconnect();
-    if (changedKeys.some((k) => OPTIONAL_CAPABILITIES.map((o) => o.setting).includes(k))) {
+    if (this._touchesOptional(changedKeys, OPTIONAL_CAPABILITIES)) {
       await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
       this._registerListeners(); // newly added capabilities need listeners immediately
     }
