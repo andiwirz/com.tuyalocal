@@ -587,15 +587,22 @@
     </div>
 
     <div class="section" id="sec-start">
-      <h2>Getting started</h2>
-      <p>You need three things from each device: <strong>IP address</strong>, <strong>Device ID</strong>, and <strong>Local Key</strong>.</p>
-      <div class="note">
+      <h2 data-lang="en">Getting started</h2>
+      <h2 data-lang="de">Erste Schritte</h2>
+      <p data-lang="en">You need three things from each device: <strong>IP address</strong>, <strong>Device ID</strong>, and <strong>Local Key</strong>.</p>
+      <p data-lang="de">Von jedem Gerät brauchen Sie drei Dinge: <strong>IP-Adresse</strong>, <strong>Geräte-ID</strong> und <strong>lokalen Schlüssel</strong>.</p>
+      <div class="note" data-lang="en">
         The Local Key changes every time you reset or re-pair a device in the Tuya / Smart Life app. If a device stops connecting, get the new key.
       </div>
+      <div class="note" data-lang="de">
+        Der lokale Schlüssel ändert sich jedes Mal, wenn Sie ein Gerät in der Tuya- oder Smart-Life-App zurücksetzen oder neu anlernen. Verbindet sich ein Gerät plötzlich nicht mehr, holen Sie den neuen Schlüssel.
+      </div>
 
-      <h3>Getting the Device ID and Local Key</h3>
-      <p>Use the <strong>Cloud Lookup</strong> tab (above) to fetch both directly from the Tuya IoT Platform — no CLI tools needed. Everything below is a one-time setup on Tuya's side; afterwards the tab lists every device in your Tuya account at the press of a button.</p>
-      <ol style="font-size:12px;line-height:1.8;color:#333">
+      <h3 data-lang="en">Getting the Device ID and Local Key</h3>
+      <h3 data-lang="de">Geräte-ID und lokalen Schlüssel beschaffen</h3>
+      <p data-lang="en">Use the <strong>Cloud Lookup</strong> tab (above) to fetch both directly from the Tuya IoT Platform — no CLI tools needed. Everything below is a one-time setup on Tuya's side; afterwards the tab lists every device in your Tuya account at the press of a button.</p>
+      <p data-lang="de">Der Reiter <strong>Cloud-Suche</strong> (oben) holt beides direkt von der Tuya-IoT-Plattform — ohne Kommandozeilenwerkzeuge. Alles Folgende ist einmalige Einrichtung auf Tuyas Seite; danach listet der Reiter auf Knopfdruck jedes Gerät Ihres Tuya-Kontos auf.</p>
+      <ol style="font-size:12px;line-height:1.8;color:#333" data-lang="en">
         <li>On <strong>iot.tuya.com</strong>, create a free account, then <strong>Cloud</strong> → <strong>Create Cloud Project</strong> (Trial Edition is enough)</li>
         <li>In the project, <strong>Service API</strong> → <strong>Authorize</strong>: <strong>IoT Core</strong> and <strong>Authorization</strong> must be listed, otherwise every request fails with <em>permission deny</em></li>
         <li>Link your devices: <strong>Devices</strong> → <strong>Link Tuya App Account</strong> → <strong>Add App Account</strong> → scan the QR code in the Tuya Smart / Smart Life app under <strong>Me</strong> → scan icon, top right</li>
@@ -603,24 +610,46 @@
         <li>Switch to the <strong>Cloud Lookup</strong> tab, paste your credentials, select the data center your Tuya account is registered in, and click <strong>Fetch Devices</strong></li>
         <li>Use the <strong>Copy</strong> button to copy Device ID and Local Key</li>
       </ol>
-      <div class="note"><strong>If lookup used to work and now fails,</strong> the free IoT Core trial has probably run out — it lasts about a month. Tuya reports this as <em>No permissions. Your subscription to cloud development plan has expired</em>. Extending is free but is an application, not a button: on iot.tuya.com go to <strong>Cloud</strong> → <strong>Cloud Services</strong>, find <strong>IoT Core</strong> in the list (its status reads <em>Alerting</em> shortly before it lapses) → <strong>View Details</strong> → <strong>My Subscriptions</strong>, then press <strong>Extend Trial Period</strong> next to the expiration date. The form asks for an extension period — <strong>pick 6 months</strong>, the longest offered — plus your developer identity, the estimated number of devices, a short project description and contact details. <strong>Tuya states that applications are approved within one to two working days</strong>, so lookup keeps failing until then. Nothing in Homey needs changing afterwards.</div>
-      <div class="note"><strong>The data center trap.</strong> A free Tuya account is locked to <strong>one</strong> data center: whichever you pick for your first project applies to every project on that account, and changing it means deleting all projects and starting over. Worse, the choice is partly made for you — accounts registered in some countries (the UK among them) are assigned Western Europe and cannot select Central Europe at all, however the region is set. If your Smart Life account sits in a region your project cannot reach, no combination of settings here will find your devices. The way out reported by users who hit this: create a fresh Tuya account registered in a region where all data centers are offered, then link Smart Life to a project under that account. If you are starting over anyway, deleting the old empty projects first avoids inheriting the locked choice.</div>
+      <ol style="font-size:12px;line-height:1.8;color:#333" data-lang="de">
+        <li>Auf <strong>iot.tuya.com</strong> ein kostenloses Konto anlegen, dann <strong>Cloud</strong> → <strong>Create Cloud Project</strong> (die Trial Edition genügt)</li>
+        <li>Im Projekt unter <strong>Service API</strong> → <strong>Authorize</strong> müssen <strong>IoT Core</strong> und <strong>Authorization</strong> aufgeführt sein — sonst scheitert jede Anfrage mit <em>permission deny</em></li>
+        <li>Geräte verknüpfen: <strong>Devices</strong> → <strong>Link Tuya App Account</strong> → <strong>Add App Account</strong> → den QR-Code in der Tuya-Smart- oder Smart-Life-App scannen, unter <strong>Ich</strong> → Scan-Symbol oben rechts</li>
+        <li><strong>Overview</strong>: <strong>Access ID / Client ID</strong> und <strong>Access Secret / Client Secret</strong> kopieren</li>
+        <li>Zum Reiter <strong>Cloud-Suche</strong> wechseln, die Zugangsdaten einsetzen, das Rechenzentrum wählen, in dem Ihr Tuya-Konto registriert ist, und auf <strong>Geräte abrufen</strong> drücken</li>
+        <li>Mit dem Knopf <strong>Kopieren</strong> Geräte-ID und lokalen Schlüssel übernehmen</li>
+      </ol>
+      <div class="note" data-lang="en"><strong>If lookup used to work and now fails,</strong> the free IoT Core trial has probably run out — it lasts about a month. Tuya reports this as <em>No permissions. Your subscription to cloud development plan has expired</em>. Extending is free but is an application, not a button: on iot.tuya.com go to <strong>Cloud</strong> → <strong>Cloud Services</strong>, find <strong>IoT Core</strong> in the list (its status reads <em>Alerting</em> shortly before it lapses) → <strong>View Details</strong> → <strong>My Subscriptions</strong>, then press <strong>Extend Trial Period</strong> next to the expiration date. The form asks for an extension period — <strong>pick 6 months</strong>, the longest offered — plus your developer identity, the estimated number of devices, a short project description and contact details. <strong>Tuya states that applications are approved within one to two working days</strong>, so lookup keeps failing until then. Nothing in Homey needs changing afterwards.</div>
+      <div class="note" data-lang="de"><strong>Wenn die Suche früher lief und jetzt scheitert,</strong> ist vermutlich die kostenlose IoT-Core-Testphase abgelaufen — sie hält etwa einen Monat. Tuya meldet das als <em>No permissions. Your subscription to cloud development plan has expired</em>. Die Verlängerung kostet nichts, ist aber ein Antrag und kein Knopfdruck: auf iot.tuya.com unter <strong>Cloud</strong> → <strong>Cloud Services</strong> den Eintrag <strong>IoT Core</strong> suchen (kurz vor Ablauf steht er auf <em>Alerting</em>) → <strong>View Details</strong> → <strong>My Subscriptions</strong>, dann neben dem Ablaufdatum auf <strong>Extend Trial Period</strong> drücken. Das Formular fragt nach der Verlängerungsdauer — <strong>wählen Sie 6 Monate</strong>, das Längste, was angeboten wird —, dazu nach Ihrer Entwicklerkennung, der geschätzten Gerätezahl, einer kurzen Projektbeschreibung und Kontaktdaten. <strong>Tuya nennt ein bis zwei Arbeitstage bis zur Freigabe</strong>, und bis dahin scheitert die Suche weiter. In Homey ist danach nichts zu ändern.</div>
+      <div class="note" data-lang="en"><strong>The data center trap.</strong> A free Tuya account is locked to <strong>one</strong> data center: whichever you pick for your first project applies to every project on that account, and changing it means deleting all projects and starting over. Worse, the choice is partly made for you — accounts registered in some countries (the UK among them) are assigned Western Europe and cannot select Central Europe at all, however the region is set. If your Smart Life account sits in a region your project cannot reach, no combination of settings here will find your devices. The way out reported by users who hit this: create a fresh Tuya account registered in a region where all data centers are offered, then link Smart Life to a project under that account. If you are starting over anyway, deleting the old empty projects first avoids inheriting the locked choice.</div>
+      <div class="note" data-lang="de"><strong>Die Rechenzentrums-Falle.</strong> Ein kostenloses Tuya-Konto ist auf <strong>ein</strong> Rechenzentrum festgelegt: was Sie für Ihr erstes Projekt wählen, gilt für jedes weitere Projekt desselben Kontos, und eine Änderung bedeutet, alle Projekte zu löschen und von vorn zu beginnen. Schlimmer noch: die Wahl wird Ihnen teilweise abgenommen — Konten, die in bestimmten Ländern registriert sind (darunter das Vereinigte Königreich), bekommen Westeuropa zugewiesen und können Zentraleuropa gar nicht wählen, wie auch immer die Region eingestellt ist. Liegt Ihr Smart-Life-Konto in einer Region, die Ihr Projekt nicht erreicht, findet keine Einstellung hier Ihre Geräte. Der Ausweg, den betroffene Benutzer berichten: ein neues Tuya-Konto in einer Region anlegen, in der alle Rechenzentren angeboten werden, und Smart Life dann mit einem Projekt dieses Kontos verknüpfen. Wer ohnehin neu anfängt, löscht die alten leeren Projekte zuerst — sonst erbt das neue die festgelegte Wahl.</div>
 
-      <h3>Cloud-assisted DP detection</h3>
-      <p>Once your Cloud Lookup credentials have been saved here, pairing gets noticeably more accurate. The local connection only ever sees raw DP numbers and values, so the app has to guess what each one means from the value shape. The cloud specification instead supplies the manufacturer's own name per DP — <code>envhumid</code>, <code>windspeed</code>, <code>work_state</code>, <code>bright_value</code> and so on — which is matched directly.</p>
-      <p style="font-size:12px;color:#666">This mainly helps devices whose enums use plain numbers (<code>0</code> / <code>1</code>) instead of names, where value-shape guessing has nothing to go on, and it reads the <em>full</em> list of allowed values for mode and fan-speed pickers rather than just the one value the device happens to be reporting at that moment. It is entirely optional — pairing works without it, you may just have to correct a few DP numbers by hand afterwards.</p>
+      <h3 data-lang="en">Cloud-assisted DP detection</h3>
+      <h3 data-lang="de">Datenpunkte mit Hilfe der Cloud erkennen</h3>
+      <p data-lang="en">Once your Cloud Lookup credentials have been saved here, pairing gets noticeably more accurate. The local connection only ever sees raw DP numbers and values, so the app has to guess what each one means from the value shape. The cloud specification instead supplies the manufacturer's own name per DP — <code>envhumid</code>, <code>windspeed</code>, <code>work_state</code>, <code>bright_value</code> and so on — which is matched directly.</p>
+      <p data-lang="de">Sobald Ihre Zugangsdaten für die Cloud-Suche hier gespeichert sind, wird das Anlernen merklich genauer. Die lokale Verbindung sieht immer nur rohe Datenpunktnummern und Werte, also muss die App aus der Gestalt des Werts erraten, was er bedeutet. Die Cloud-Spezifikation liefert stattdessen den Namen, den der Hersteller selbst vergeben hat — <code>envhumid</code>, <code>windspeed</code>, <code>work_state</code>, <code>bright_value</code> und so fort —, und der wird direkt zugeordnet.</p>
+      <p style="font-size:12px;color:#666" data-lang="en">This mainly helps devices whose enums use plain numbers (<code>0</code> / <code>1</code>) instead of names, where value-shape guessing has nothing to go on, and it reads the <em>full</em> list of allowed values for mode and fan-speed pickers rather than just the one value the device happens to be reporting at that moment. It is entirely optional — pairing works without it, you may just have to correct a few DP numbers by hand afterwards.</p>
+      <p style="font-size:12px;color:#666" data-lang="de">Das hilft vor allem Geräten, deren Aufzählungen blosse Zahlen benutzen (<code>0</code> / <code>1</code>) statt Namen — dort hat das Raten an der Gestalt nichts, woran es sich halten könnte. Ausserdem liest es die <em>vollständige</em> Liste der erlaubten Werte für Betriebsart und Lüfterstufe aus, statt nur den einen Wert, den das Gerät gerade meldet. Es ist völlig freiwillig: Anlernen geht auch ohne, nur müssen Sie danach vielleicht ein paar Datenpunktnummern von Hand richtigstellen.</p>
 
-      <h3>Enum values are matched exactly</h3>
-      <p>Mode and fan-speed settings hold the tokens the device itself uses, and the comparison is literal — <strong>case included</strong>. A device whose modes are <code>Heat,Cool,Auto</code> rejects <code>heat,cool,auto</code>, and the symptom is deceptive: the command appears to go through, then the device snaps straight back to its previous mode. Devices seen in the wild use <code>cold,wet,wind,hot</code> instead of cool/dry/fan/heat, or <code>bheat,eheat,sheat,bcool,ecool,scool,auto</code> for boost/eco/silent variants. Read the exact tokens from the <strong>DP specification</strong> in Cloud Lookup and copy them verbatim into <em>mode_values</em> / <em>fan_speed_values</em>. With Cloud Lookup credentials saved this is filled in automatically at pairing.</p>
+      <h3 data-lang="en">Enum values are matched exactly</h3>
+      <h3 data-lang="de">Aufzählungswerte werden genau verglichen</h3>
+      <p data-lang="en">Mode and fan-speed settings hold the tokens the device itself uses, and the comparison is literal — <strong>case included</strong>. A device whose modes are <code>Heat,Cool,Auto</code> rejects <code>heat,cool,auto</code>, and the symptom is deceptive: the command appears to go through, then the device snaps straight back to its previous mode. Devices seen in the wild use <code>cold,wet,wind,hot</code> instead of cool/dry/fan/heat, or <code>bheat,eheat,sheat,bcool,ecool,scool,auto</code> for boost/eco/silent variants. Read the exact tokens from the <strong>DP specification</strong> in Cloud Lookup and copy them verbatim into <em>mode_values</em> / <em>fan_speed_values</em>. With Cloud Lookup credentials saved this is filled in automatically at pairing.</p>
+      <p data-lang="de">In den Einstellungen für Betriebsart und Lüfterstufe stehen die Wörter, die das Gerät selbst benutzt, und verglichen wird wörtlich — <strong>samt Gross- und Kleinschreibung</strong>. Ein Gerät mit den Betriebsarten <code>Heat,Cool,Auto</code> weist <code>heat,cool,auto</code> zurück, und das Symptom führt in die Irre: der Befehl scheint durchzugehen, dann springt das Gerät sofort in seine vorherige Betriebsart zurück. Geräte aus der Praxis benutzen <code>cold,wet,wind,hot</code> statt cool/dry/fan/heat, oder <code>bheat,eheat,sheat,bcool,ecool,scool,auto</code> für die Boost-, Eco- und Leise-Varianten. Lesen Sie die genauen Wörter in der <strong>DP-Spezifikation</strong> der Cloud-Suche ab und übertragen Sie sie wortgetreu nach <em>mode_values</em> / <em>fan_speed_values</em>. Sind die Zugangsdaten der Cloud-Suche gespeichert, geschieht das beim Anlernen von selbst.</p>
 
-      <h3>Find the IP address</h3>
-      <p>Use <strong>Scan Network</strong> in the pairing wizard, or check your router's DHCP table. Either way, assign a static IP / DHCP reservation so it never changes.</p>
-      <div class="note"><strong>Matching an IP to the right device</strong> is the harder half. Tuya devices report almost no hostname: older ESP-based ones appear as <code>ESP_</code> plus the last six characters of their MAC, newer ones as <code>wlan0</code>, and the newest as <code>lwip1</code> — so eight devices show up as eight identical <code>wlan0</code> entries. Take the MAC address from the Tuya / Smart Life app under the device's <strong>Device info</strong> and match on that. Assigning the wrong IP produces a device that connects to something and then never responds.</div>
-      <p style="font-size:12px;color:#666">The scan works in two passes: it first listens six seconds for the announcements Tuya devices broadcast by themselves (UDP 6666/6667), then probes every address in your subnet on TCP 6668. On a normal home network that takes around ten seconds. The second pass is skipped on subnets larger than 2046 addresses, where probing every host would take minutes — devices there are only found if they announce themselves.</p>
+      <h3 data-lang="en">Find the IP address</h3>
+      <h3 data-lang="de">Die IP-Adresse finden</h3>
+      <p data-lang="en">Use <strong>Scan Network</strong> in the pairing wizard, or check your router's DHCP table. Either way, assign a static IP / DHCP reservation so it never changes.</p>
+      <p data-lang="de">Im Anlern-Assistenten <strong>Netzwerk durchsuchen</strong> benutzen oder in der DHCP-Tabelle Ihres Routers nachsehen. In beiden Fällen sollten Sie eine feste IP oder eine DHCP-Reservierung vergeben, damit sie sich nie ändert.</p>
+      <div class="note" data-lang="en"><strong>Matching an IP to the right device</strong> is the harder half. Tuya devices report almost no hostname: older ESP-based ones appear as <code>ESP_</code> plus the last six characters of their MAC, newer ones as <code>wlan0</code>, and the newest as <code>lwip1</code> — so eight devices show up as eight identical <code>wlan0</code> entries. Take the MAC address from the Tuya / Smart Life app under the device's <strong>Device info</strong> and match on that. Assigning the wrong IP produces a device that connects to something and then never responds.</div>
+      <div class="note" data-lang="de"><strong>Die IP dem richtigen Gerät zuzuordnen</strong> ist die schwierigere Hälfte. Tuya-Geräte melden fast keinen Rechnernamen: ältere auf ESP-Basis erscheinen als <code>ESP_</code> plus die letzten sechs Zeichen ihrer MAC-Adresse, neuere als <code>wlan0</code>, die neuesten als <code>lwip1</code> — acht Geräte stehen also als acht gleichlautende <code>wlan0</code> da. Nehmen Sie die MAC-Adresse aus der Tuya- oder Smart-Life-App unter <strong>Geräteinformationen</strong> und ordnen Sie danach zu. Eine falsch vergebene IP ergibt ein Gerät, das sich mit irgendetwas verbindet und dann nie antwortet.</div>
+      <p style="font-size:12px;color:#666" data-lang="en">The scan works in two passes: it first listens six seconds for the announcements Tuya devices broadcast by themselves (UDP 6666/6667), then probes every address in your subnet on TCP 6668. On a normal home network that takes around ten seconds. The second pass is skipped on subnets larger than 2046 addresses, where probing every host would take minutes — devices there are only found if they announce themselves.</p>
+      <p style="font-size:12px;color:#666" data-lang="de">Die Suche läuft in zwei Durchgängen: sechs Sekunden lang hört sie auf die Rundrufe, die Tuya-Geräte von selbst aussenden (UDP 6666/6667), dann klopft sie jede Adresse Ihres Teilnetzes auf TCP 6668 ab. In einem gewöhnlichen Heimnetz dauert das rund zehn Sekunden. Der zweite Durchgang entfällt bei Teilnetzen mit mehr als 2046 Adressen, wo das Abklopfen jedes Rechners Minuten bräuchte — dort werden nur Geräte gefunden, die sich selbst melden.</p>
 
-      <h3>Can this device be controlled locally at all?</h3>
-      <p>Worth two minutes before spending an evening on settings. Local control needs the device to be listening on <strong>TCP 6668</strong> (occasionally 6667). Point any port scanner — <em>Advanced Port Scanner</em>, a phone network-analyser app, <code>nmap</code> — at the device's IP and check those two ports.</p>
-      <p style="font-size:12px;color:#666"><strong>Open</strong> means the device speaks the local protocol and any failure from here is a matter of key, protocol version or DP mapping. <strong>Both closed</strong> means it does not, and nothing in this app can change that — some devices sold as Tuya are Matter or cloud-only under the hood and simply have no local port. Users have chased such a device for weeks before running this check.</p>
+      <h3 data-lang="en">Can this device be controlled locally at all?</h3>
+      <h3 data-lang="de">Lässt sich dieses Gerät überhaupt lokal steuern?</h3>
+      <p data-lang="en">Worth two minutes before spending an evening on settings. Local control needs the device to be listening on <strong>TCP 6668</strong> (occasionally 6667). Point any port scanner — <em>Advanced Port Scanner</em>, a phone network-analyser app, <code>nmap</code> — at the device's IP and check those two ports.</p>
+      <p data-lang="de">Zwei Minuten, die sich lohnen, bevor Sie einen Abend in Einstellungen stecken. Lokale Steuerung setzt voraus, dass das Gerät auf <strong>TCP 6668</strong> lauscht (gelegentlich 6667). Richten Sie irgendeinen Portscanner — <em>Advanced Port Scanner</em>, eine Netzwerk-App auf dem Telefon, <code>nmap</code> — auf die IP des Geräts und prüfen Sie diese zwei Ports.</p>
+      <p style="font-size:12px;color:#666" data-lang="en"><strong>Open</strong> means the device speaks the local protocol and any failure from here is a matter of key, protocol version or DP mapping. <strong>Both closed</strong> means it does not, and nothing in this app can change that — some devices sold as Tuya are Matter or cloud-only under the hood and simply have no local port. Users have chased such a device for weeks before running this check.</p>
+      <p style="font-size:12px;color:#666" data-lang="de"><strong>Offen</strong> heisst: das Gerät spricht das lokale Protokoll, und jeder Fehlschlag von hier an ist eine Frage des Schlüssels, der Protokollversion oder der Datenpunkt-Zuordnung. <strong>Beide geschlossen</strong> heisst: es spricht es nicht, und daran kann diese App nichts ändern — manches, was als Tuya verkauft wird, ist unter der Haube Matter oder reines Cloud-Gerät und hat schlicht keinen lokalen Port. Es hat Benutzer gegeben, die wochenlang hinter einem solchen Gerät her waren, bevor sie diese Prüfung machten.</p>
       <div class="note"><strong>Known to be impossible locally,</strong> whatever the settings say:
         <ul style="margin:6px 0 0;padding-left:18px;line-height:1.6">
           <li><strong>Battery sensors in deep sleep</strong> — door, motion, smoke, temperature/humidity sensors switch their radio off between reports. There is no window in which to connect, and the cloud sees them only because the device pushes to Tuya itself.</li>
@@ -1701,14 +1730,24 @@
   <!-- ── Logs ─────────────────────────────────────────────────────────── -->
   <div class="tab-panel" id="tab-logs">
     <div class="section">
-      <h2>Diagnostic Logs</h2>
-      <p>Persistent log buffer — max 500 entries, newest first.</p>
-      <div class="note">
+      <h2 data-lang="en">Diagnostic Logs</h2>
+<h2 data-lang="de">Diagnoseprotokoll</h2>
+      <p data-lang="en">Persistent log buffer — max 500 entries, newest first.</p>
+<p data-lang="de">Dauerhafter Ringpuffer — höchstens 500 Einträge, neueste zuerst.</p>
+      <div class="note" data-lang="en">
         Records connection attempts, protocol switches and rejected values — what distinguishes a
         network problem from a wrong DP mapping. Set the filter to <em>Warnings &amp; Errors</em> and
         press <strong>Copy</strong> to attach it to a bug report:
         <a href="#" onclick="openHelpSection('sec-report'); return false;" class="help-link">Reporting device issues</a>
         explains what else to send.
+      </div>
+<div class="note" data-lang="de">
+        Hält Verbindungsversuche, Protokollwechsel und abgewiesene Werte fest — also das, was ein
+        Netzproblem von einer falschen DP-Zuordnung unterscheidet. Den Filter auf
+        <em>Warnungen &amp; Fehler</em> stellen und auf <strong>Kopieren</strong> drücken, um es an
+        einen Fehlerbericht zu hängen:
+        <a href="#" onclick="openHelpSection('sec-report'); return false;" class="help-link">Gerätefehler melden</a>
+        erklärt, was sonst noch dazugehört.
       </div>
       <div class="bar">
         <button id="btnRefresh" class="primary">&#8635; Refresh</button>
@@ -1728,12 +1767,19 @@
   <!-- ── DP Debug ──────────────────────────────────────────────────────── -->
   <div class="tab-panel" id="tab-dp">
     <div class="section">
-      <h2>DP Debug</h2>
-      <p>Data points received from each device. The app records every push as it arrives, but
+      <h2 data-lang="en">DP Debug</h2>
+<h2 data-lang="de">DP-Debug</h2>
+      <p data-lang="en">Data points received from each device. The app records every push as it arrives, but
       this table does not follow along on its own — it is re-read when you press
       <strong>Refresh</strong>, or every 5 seconds with auto-refresh switched on. Turn
       auto-refresh on before operating the device, otherwise a data point can change and
       change back between two looks.</p>
+      <p data-lang="de">Die Datenpunkte, die von den Geräten eintreffen. Die App hält jede Meldung fest,
+      sobald sie ankommt — diese Tabelle folgt dem aber nicht von selbst: sie wird neu
+      gelesen, wenn Sie auf <strong>Aktualisieren</strong> drücken, oder alle 5 Sekunden bei
+      eingeschalteter Selbstaktualisierung. Schalten Sie sie ein, bevor Sie das Gerät
+      bedienen, sonst kann ein Datenpunkt sich zwischen zwei Blicken ändern und wieder
+      zurückfallen.</p>
       <div class="note">
         Shows what the device really <em>does</em>: which DP carries which value, in which type, and
         which DP moves when. Operate the device with its own buttons or remote while watching this
@@ -1764,19 +1810,29 @@
   <!-- ── Cloud Lookup ──────────────────────────────────────────────── -->
   <div class="tab-panel" id="tab-cloud">
     <div class="section">
-      <h2>Cloud Lookup</h2>
-      <p style="margin-bottom:6px">Fetch Device ID and Local Key directly from the Tuya IoT Platform — no CLI tools needed.</p>
-      <p style="font-size:11px;color:#888;line-height:1.5">Just as important for debugging: press <strong>Show DPs</strong> on a device's row to open its <strong>DP specification</strong> — the manufacturer's own name, declared type and allowed range per data point. This is the only place that information exists; the local connection transmits bare numbers and never says what they mean. <a href="#" onclick="openHelpSection('sec-report'); return false;" class="help-link">Reporting device issues</a> explains what to send with a bug report.</p>
+      <h2 data-lang="en">Cloud Lookup</h2>
+      <h2 data-lang="de">Cloud-Suche</h2>
+      <p style="margin-bottom:6px" data-lang="en">Fetch Device ID and Local Key directly from the Tuya IoT Platform — no CLI tools needed.</p>
+      <p style="margin-bottom:6px" data-lang="de">Holt Geräte-ID und lokalen Schlüssel direkt von der Tuya-IoT-Plattform — ohne Kommandozeilenwerkzeuge.</p>
+      <p style="font-size:11px;color:#888;line-height:1.5" data-lang="en">Just as important for debugging: press <strong>Show DPs</strong> on a device's row to open its <strong>DP specification</strong> — the manufacturer's own name, declared type and allowed range per data point. This is the only place that information exists; the local connection transmits bare numbers and never says what they mean. <a href="#" onclick="openHelpSection('sec-report'); return false;" class="help-link">Reporting device issues</a> explains what to send with a bug report.</p>
+      <p style="font-size:11px;color:#888;line-height:1.5" data-lang="de">Für die Fehlersuche ebenso wichtig: <strong>DPs zeigen</strong> in der Zeile eines Geräts öffnet dessen <strong>DP-Spezifikation</strong> — den Namen des Herstellers, den erklärten Typ und den erlaubten Bereich je Datenpunkt. Nur dort gibt es diese Angaben; die lokale Verbindung überträgt blosse Zahlen und sagt nie, was sie bedeuten. <a href="#" onclick="openHelpSection('sec-report'); return false;" class="help-link">Gerätefehler melden</a> erklärt, was in einen Fehlerbericht gehört.</p>
       <!-- Collapsed once credentials are saved: it is a one-time setup, and after that
            it is a wall of text above the fields you actually came for. Opened by
            onHomeyReady when no Access ID is stored, i.e. exactly when it is needed. -->
       <details class="note" id="cloudSetup">
-        <summary>One-time setup on the Tuya IoT platform</summary>
-        <ol style="margin:6px 0 0;padding-left:18px;line-height:1.7">
+        <summary data-lang="en">One-time setup on the Tuya IoT platform</summary>
+      <summary data-lang="de">Einmalige Einrichtung auf der Tuya-IoT-Plattform</summary>
+        <ol style="margin:6px 0 0;padding-left:18px;line-height:1.7" data-lang="en">
           <li>On <a href="#" onclick="openUrl('https://iot.tuya.com');return false" style="color:#1a73e8">iot.tuya.com</a>, create a free account, then <strong>Cloud</strong> → <strong>Create Cloud Project</strong>. Trial Edition is enough.</li>
           <li>In the project, open <strong>Service API</strong> → <strong>Authorize</strong> and make sure <strong>IoT Core</strong> and <strong>Authorization</strong> are listed. Without them every request fails with <em>permission deny</em>.</li>
           <li><strong>Devices</strong> → <strong>Link Tuya App Account</strong> → <strong>Add App Account</strong>, then scan the QR code in the Tuya Smart / Smart Life app under <strong>Me</strong> → scan icon, top right.</li>
           <li><strong>Overview</strong>: copy <strong>Access ID / Client ID</strong> and <strong>Access Secret / Client Secret</strong> into the fields below.</li>
+        </ol>
+      <ol style="margin:6px 0 0;padding-left:18px;line-height:1.7" data-lang="de">
+          <li>Auf <a href="#" onclick="openUrl('https://iot.tuya.com');return false" style="color:#1a73e8">iot.tuya.com</a> ein kostenloses Konto anlegen, dann <strong>Cloud</strong> → <strong>Create Cloud Project</strong>. Die Trial Edition genügt.</li>
+          <li>Im Projekt <strong>Service API</strong> → <strong>Authorize</strong> öffnen und sicherstellen, dass <strong>IoT Core</strong> und <strong>Authorization</strong> aufgeführt sind. Ohne sie scheitert jede Anfrage mit <em>permission deny</em>.</li>
+          <li><strong>Devices</strong> → <strong>Link Tuya App Account</strong> → <strong>Add App Account</strong>, dann den QR-Code in der Tuya-Smart- oder Smart-Life-App scannen, unter <strong>Ich</strong> → Scan-Symbol oben rechts.</li>
+          <li><strong>Overview</strong>: <strong>Access ID / Client ID</strong> und <strong>Access Secret / Client Secret</strong> in die Felder unten kopieren.</li>
         </ol>
         <div style="margin-top:7px">The free IoT Core trial lasts about a month. Extending it is free, but it is an application form under <strong>Cloud</strong> → <strong>Cloud Services</strong> → <strong>IoT Core</strong> → <strong>View Details</strong> → <strong>Extend Trial Period</strong>, and Tuya approves it within one to two working days — so plan ahead rather than waiting for it to lapse. Check this first if lookup used to work and suddenly stopped.</div>
       </details>
@@ -1868,9 +1924,12 @@
 
   <div class="tab-panel" id="tab-fix">
     <div class="section">
-      <h2>Fix It</h2>
-      <p style="margin-bottom:6px">Checks your paired devices against the manufacturer's own specification and offers to correct what does not match.</p>
-      <p style="font-size:11px;color:#888;line-height:1.5">Nothing here saves anything until you confirm: each check shows exactly what it would change, per device, and says why a device was left alone. All except <strong>protocol versions</strong> need Cloud Lookup credentials — enter them under <strong>Cloud Lookup</strong> first.</p>
+      <h2 data-lang="en">Fix It</h2>
+      <h2 data-lang="de">Fix It</h2>
+      <p style="margin-bottom:6px" data-lang="en">Checks your paired devices against the manufacturer's own specification and offers to correct what does not match.</p>
+      <p style="margin-bottom:6px" data-lang="de">Prüft Ihre angelernten Geräte gegen die Spezifikation des Herstellers und bietet an, zu berichtigen, was nicht zusammenpasst.</p>
+      <p style="font-size:11px;color:#888;line-height:1.5" data-lang="en">Nothing here saves anything until you confirm: each check shows exactly what it would change, per device, and says why a device was left alone. All except <strong>protocol versions</strong> need Cloud Lookup credentials — enter them under <strong>Cloud Lookup</strong> first.</p>
+      <p style="font-size:11px;color:#888;line-height:1.5" data-lang="de">Hier wird nichts gespeichert, bevor Sie bestätigen: jede Prüfung zeigt genau, was sie ändern würde, Gerät für Gerät, und sagt, warum ein Gerät unangetastet blieb. Alle ausser <strong>Protokollversionen</strong> brauchen die Zugangsdaten der Cloud-Suche — tragen Sie sie zuerst unter <strong>Cloud-Suche</strong> ein.</p>
 
       <!-- Above the checks, because it is the one thing that helps whatever the fault
            turns out to be. The same button sits under Help, but nobody with a device
@@ -2008,6 +2067,108 @@
       </div>
     </div>
   </div>
+
+  <script type="text/javascript">
+    // ══ SPRACHE ══════════════════════════════════════════════════════════════
+    // Diese Seite war als einzige der App einsprachig: 3224 Textfelder im Manifest
+    // sind zweisprachig gepflegt, die Pairing-Seiten rufen 37 und 21 mal die
+    // Uebersetzung — und ausgerechnet die Seite, die man aufschlaegt, wenn etwas
+    // nicht geht, stand nur auf Englisch da.
+    //
+    // Welche Sprache gilt, sagt die Sprachdatei selbst: settings.pageLang steht in
+    // en.json auf "en" und in de.json auf "de". Kein Raten am Browser, keine zweite
+    // Quelle, die auseinanderlaufen kann.
+    var LANG = 'en';
+    try {
+      if (typeof Homey !== 'undefined' && typeof Homey.__ === 'function') {
+        var gemeldet = Homey.__('settings.pageLang');
+        if (gemeldet === 'de') LANG = 'de';
+      }
+    } catch (e) { /* bleibt Englisch */ }
+    document.documentElement.lang = LANG;
+
+    // Den Text der anderen Sprache entfernen, nicht verbergen: zwei Bloecke mit
+    // derselben id waeren ein Fehler, den man erst bemerkt, wenn eine Sprungmarke
+    // ins Leere zeigt. Laeuft vor allem anderen, damit niemand die Doppelten sieht.
+    (function entferneFremdsprache() {
+      var alle = document.querySelectorAll('[data-lang]');
+      for (var i = 0; i < alle.length; i++) {
+        if (alle[i].getAttribute('data-lang') !== LANG) alle[i].parentNode.removeChild(alle[i]);
+      }
+    }());
+
+    // Beschriftungen fuer alles, was eine id traegt und darum nicht gedoppelt
+    // werden darf. Leer lassen heisst: bleibt englisch.
+    var BESCHRIFTUNG = {
+      de: {
+        // Reiter
+        'tab:help': 'Hilfe', 'tab:logs': 'Protokoll', 'tab:dp': 'DP-Debug',
+        'tab:cloud': 'Cloud-Suche', 'tab:fix': 'Fix It',
+        // Protokoll
+        btnRefresh: '\u21bb Aktualisieren', btnCopyLog: '\ud83d\udccb Kopieren',
+        btnClear: '\ud83d\uddd1 Leeren',
+        'opt:all': 'Alle Stufen', 'opt:warn': 'Warnungen & Fehler', 'opt:error': 'Nur Fehler',
+        // DP-Debug
+        btnDpRefresh: '\u21bb Aktualisieren',
+        btnCopyDp: '\ud83d\udccb Lokale DP-Tabelle kopieren',
+        btnReportDevice: '\ud83d\udc1b Auf GitHub melden',
+        btnForumDevice: '\ud83d\udcac F\u00fcr das Forum kopieren',
+        // Cloud-Suche
+        btnCloudFetch: 'Ger\u00e4te abrufen',
+        btnCopyDetail: '\ud83d\udccb Cloud-DP-Tabelle kopieren',
+        // Fix It
+        btnBundle: '\ud83d\udccb Supportpaket erstellen',
+        btnBundleFix: '\ud83d\udccb Supportpaket erstellen',
+        btnStaleKeys: '\ud83d\udd0d Lokale Schl\u00fcssel pr\u00fcfen',
+        btnStaleKeysConfirm: '\u2713 Diese Schl\u00fcssel \u00fcbernehmen',
+        btnProtocol: '\ud83d\udd0d Protokollversionen pr\u00fcfen',
+        btnProtocolConfirm: '\u2713 Diese Versionen speichern',
+        btnScale: '\ud83d\udd0d Skalierung pr\u00fcfen',
+        btnScaleConfirm: '\u2713 Diese Faktoren speichern',
+        btnApplyValues: '\ud83d\udd0d \u00c4nderungen ansehen',
+        btnApplyValuesConfirm: '\u2713 \u00c4nderungen anwenden',
+        btnPhantom: '\ud83d\udd0d Datenpunkte pr\u00fcfen',
+        btnPhantomConfirm: '\u2713 Diese abschalten',
+        btnStaleKeysCancel: 'Abbrechen', btnProtocolCancel: 'Abbrechen',
+        btnScaleCancel: 'Abbrechen', btnApplyValuesCancel: 'Abbrechen',
+        btnPhantomCancel: 'Abbrechen',
+        // Auswahllisten
+        'opt:sec': '\u2014 Abschnitt w\u00e4hlen \u2014',
+        'opt:dev': '\u2014 Ger\u00e4t w\u00e4hlen \u2014',
+        'label:jump': 'Springe zu:',
+      },
+    };
+
+    (function beschrifte() {
+      var tabelle = BESCHRIFTUNG[LANG];
+      if (!tabelle) return;
+      for (var schluessel in tabelle) {
+        if (!Object.prototype.hasOwnProperty.call(tabelle, schluessel)) continue;
+        var text = tabelle[schluessel];
+        if (schluessel.indexOf('tab:') === 0) {
+          var reiter = document.querySelector('.tab-btn[data-tab="' + schluessel.slice(4) + '"]');
+          if (reiter) reiter.textContent = text;
+        } else if (schluessel.indexOf('opt:') === 0) {
+          // Auswahleintraege ueber ihren Wert, nicht ueber eine id - sie haben keine.
+          var wert = schluessel.slice(4);
+          var listen = document.querySelectorAll('option');
+          for (var j = 0; j < listen.length; j++) {
+            var v = listen[j].value;
+            if (v === wert || (wert === 'sec' && v === '' && listen[j].parentNode.id === 'helpJump')
+                || (wert === 'dev' && v === '' && listen[j].parentNode.id !== 'helpJump')) {
+              listen[j].textContent = text;
+            }
+          }
+        } else if (schluessel.indexOf('label:') === 0) {
+          var marke = document.querySelector('.help-nav label');
+          if (marke) marke.innerHTML = '\u25b8 ' + text;
+        } else {
+          var el = document.getElementById(schluessel);
+          if (el) el.innerHTML = text;
+        }
+      }
+    }());
+  </script>
 
   <script type="text/javascript">
     // ── Help nav — jump-to dropdown ───────────────────────────────────

@@ -222,6 +222,7 @@
       "confirmClear": "Alle Protokolleinträge löschen?"
     },
     "on": "ein",
-    "off": "aus"
+    "off": "aus",
+    "pageLang": "de"
   }
 }
