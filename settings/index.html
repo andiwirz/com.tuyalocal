@@ -354,6 +354,64 @@
     .table-scroll > .help-table,
     .table-scroll > .dp-debug-table { min-width: 560px; margin-bottom: 0; }
 
+    /* ── Gefundene Cloud-Geraete ────────────────────────────────────────── */
+    /* Als Tabelle war das hier vier Spalten breit: Name, Geraete-ID, lokaler
+       Schluessel und die Knoepfe. Auf dem Telefon schob das die ganze Seite
+       nach rechts, und was hinausfiel, waren ausgerechnet die Knoepfe. Eine
+       Karte je Geraet stapelt dieselben Felder untereinander: nichts wird
+       abgeschnitten, und der Schluessel darf umbrechen, statt zu draengen. */
+    .cloud-card {
+      background: var(--ios-card);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+    }
+    .cloud-card-name {
+      color: var(--ios-blue);
+      font-weight: 600;
+      font-size: 15px;
+      text-decoration: none;
+    }
+    .cloud-card-sub {
+      font-size: 11px;
+      color: var(--ios-label2);
+      margin-top: 2px;
+    }
+    .cloud-field { margin-top: 10px; }
+    .cloud-field-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--ios-label2);
+    }
+    .cloud-field-value {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+      line-height: 1.45;
+      /* Eine Geraete-ID hat keine Leerzeichen, an denen ein Umbruch ansetzen
+         koennte — ohne diese Zeile schiebt sie die Karte wieder auf. */
+      word-break: break-all;
+      -webkit-user-select: text;
+      user-select: text;
+    }
+    .cloud-field-value.leer { color: var(--ios-label3); font-family: inherit; }
+    .cloud-card-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .cloud-card-actions button {
+      /* Auf dem Telefon teilen sich die beiden die Breite, auf einem breiten
+         Fenster hoeren sie bei 180 px auf — sonst stehen zwei halbe Bildschirme
+         breite Knoepfe unter einer Karte, die nur vier Zeilen hoch ist. */
+      flex: 1 1 0;
+      max-width: 180px;
+      font-size: 13px;
+      padding: 7px 10px;
+      white-space: nowrap;
+    }
+
     /* ── Hinweise ───────────────────────────────────────────────────────── */
     /* Statt des Balkens links eine getoente Karte: iOS setzt Hinweise als
        eigene Flaeche ab, nicht als zitierten Absatz. */
@@ -1978,17 +2036,8 @@
 
 
       <div id="cloudResults" style="display:none;margin-top:12px">
-        <table class="dp-debug-table" id="cloudTable">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Device ID</th>
-              <th>Local Key</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="cloudTbody"></tbody>
-        </table>
+        <!-- Eine Karte je Geraet statt einer vierspaltigen Tabelle — siehe .cloud-card. -->
+        <div id="cloudTbody"></div>
         <p id="cloudCount" style="margin-top:6px;font-size:11px;color:#888"></p>
       </div>
 
@@ -1999,19 +2048,24 @@
         <div class="bar">
           <button id="btnCopyDetail" style="font-size:12px">&#128203; Copy Cloud DP Table</button>
         </div>
-        <table class="dp-debug-table" id="cloudDetailTable">
-          <thead>
-            <tr>
-              <th>Code</th>
-              <th>DP</th>
-              <th>Type</th>
-              <th>Current Value</th>
-              <th>Allowed Values / Range</th>
-              <th>R/W</th>
-            </tr>
-          </thead>
-          <tbody id="cloudDetailTbody"></tbody>
-        </table>
+        <!-- Sechs Spalten passen auf kein Telefon. In der Scrollhuelle bleibt die
+             Tabelle eine Tabelle und schiebt trotzdem nicht die Seite mit sich —
+             dieselbe Loesung wie bei den 29 anderen Tabellen dieser Seite. -->
+        <div class="table-scroll">
+          <table class="dp-debug-table" id="cloudDetailTable">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>DP</th>
+                <th>Type</th>
+                <th>Current Value</th>
+                <th>Allowed Values / Range</th>
+                <th>R/W</th>
+              </tr>
+            </thead>
+            <tbody id="cloudDetailTbody"></tbody>
+          </table>
+        </div>
       </div>
 
     </div>
@@ -3326,26 +3380,27 @@
           tbody.innerHTML = '';
 
           devices.forEach(function(d) {
-            var tr = document.createElement('tr');
-            tr.setAttribute('data-id', d.id);
+            var tr = document.createElement('div');
+            tr.className = 'cloud-card';
             var primaryName = d.custom_name || d.name || '—';
             var subName     = (d.custom_name && d.name && d.custom_name !== d.name) ? d.name : '';
-            var keyText  = d.local_key ? escHtml(d.local_key) : '—';
-            var keyStyle = d.local_key ? '' : 'color:#aaa';
+            var zusatz      = [subName, d.product || d.category].filter(Boolean);
+            var hatKey      = !!d.local_key;
+            // Die beiden Knoepfe stehen jetzt nebeneinander unter den Feldern statt
+            // gestapelt in einer vierten Spalte. Der Name oeffnet die Spezifikation
+            // weiterhin — aber seit es den Knopf gibt, muss das niemand mehr raten.
             tr.innerHTML =
-              '<td><a href="#" class="cloud-name-link" style="color:#1a73e8;text-decoration:none;font-weight:500">' + escHtml(primaryName) + '</a>' +
-              (subName ? '<br><span style="font-size:10px;color:#555">' + escHtml(subName) + '</span>' : '') +
-              ((d.product || d.category) ? '<br><span style="font-size:10px;color:#aaa">' + escHtml(d.product || d.category) + '</span>' : '') + '</td>' +
-              '<td style="font-family:monospace;font-size:11px">' + escHtml(d.id) + '</td>' +
-              '<td class="key-cell" style="font-family:monospace;font-size:11px;' + keyStyle + '">' + keyText + '</td>' +
-              // The device name has always opened the DP specification, but nothing
-              // said so and most people never discovered it. An explicit button does.
-              // Stacked rather than side by side: the pane is too narrow for both in
-              // one row, and stacking costs height, which this table has to spare.
-              '<td><div style="display:flex;flex-direction:column;gap:4px;align-items:stretch">' +
-                '<button class="cloud-copy-btn" style="padding:3px 8px;font-size:11px">Copy</button>' +
-                '<button class="cloud-dp-btn" style="padding:3px 8px;font-size:11px;white-space:nowrap">Show DPs</button>' +
-              '</div></td>';
+              '<a href="#" class="cloud-card-name">' + escHtml(primaryName) + '</a>' +
+              (zusatz.length ? '<div class="cloud-card-sub">' + escHtml(zusatz.join(' · ')) + '</div>' : '') +
+              '<div class="cloud-field"><div class="cloud-field-label">Device ID</div>' +
+                '<div class="cloud-field-value">' + escHtml(d.id) + '</div></div>' +
+              '<div class="cloud-field"><div class="cloud-field-label">Local Key</div>' +
+                '<div class="cloud-field-value' + (hatKey ? '' : ' leer') + '">' +
+                (hatKey ? escHtml(d.local_key) : '—') + '</div></div>' +
+              '<div class="cloud-card-actions">' +
+                '<button class="cloud-copy-btn">Copy</button>' +
+                '<button class="cloud-dp-btn">Show DPs</button>' +
+              '</div>';
             tbody.appendChild(tr);
 
             tr.querySelector('.cloud-copy-btn').addEventListener('click', function() {
@@ -3360,7 +3415,7 @@
               copyText(lines.join('\n'), this);
             });
 
-            tr.querySelector('.cloud-name-link').addEventListener('click', function(e) {
+            tr.querySelector('.cloud-card-name').addEventListener('click', function(e) {
               e.preventDefault();
               loadDeviceDetail(d);
             });
