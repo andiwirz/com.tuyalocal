@@ -7,6 +7,7 @@ const { describeConnectFailure } = require('../../lib/connectFailure');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
 const { detectViaCloud, guessedDefaults } = require('../../lib/dpCodeMap');
+const { fehlertext } = require('../../lib/utils.js');
 
 // The wnykq (IR remote) layout. There are two families of these boxes: one puts
 // its command channel on 201/202, the other drives a fixed air-conditioner layout
@@ -120,7 +121,7 @@ class IrBlasterDriver extends Homey.Driver {
             issueGetOnConnect: true,
           });
           pairingDevice = device;
-          device.on('error', (err) => { this.log('Connection test error:', err.message); });
+          device.on('error', (err) => { this.log('Connection test error:', fehlertext(err)); });
           const tmpDps = {};
           device.on('data', (payload) => {
             if (payload?.dps) Object.assign(tmpDps, payload.dps);

@@ -7,6 +7,7 @@ const { describeConnectFailure } = require('../../lib/connectFailure');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
 const { detectViaCloud, guessedDefaults } = require('../../lib/dpCodeMap');
+const { fehlertext } = require('../../lib/utils.js');
 
 // The ywbj (smoke detector) layout as Tuya documents it. Every number here is a
 // written-in guess: a detector from another family can put them elsewhere, which
@@ -104,7 +105,7 @@ class SmokeDetectorDriver extends Homey.Driver {
             issueGetOnConnect: true,
           });
           pairingDevice = device;
-          device.on('error', (err) => { this.log('Connection test error:', err.message); });
+          device.on('error', (err) => { this.log('Connection test error:', fehlertext(err)); });
           const tmpDps = {};
           device.on('data', (payload) => {
             if (payload?.dps) Object.assign(tmpDps, payload.dps);

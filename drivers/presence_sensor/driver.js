@@ -7,6 +7,7 @@ const { describeConnectFailure } = require('../../lib/connectFailure');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
 const { detectViaCloud, guessedDefaults } = require('../../lib/dpCodeMap');
+const { fehlertext } = require('../../lib/utils.js');
 
 // This driver has no local value heuristic — every DP number below is a written-in
 // guess matching the ZY-M100-WIFI mmWave sensor's layout. On a radar sensor from
@@ -98,7 +99,7 @@ class PresenceSensorDriver extends Homey.Driver {
             issueGetOnConnect: true,
           });
           pairingDevice = device;
-          device.on('error', (err) => { this.log('Connection test error:', err.message); });
+          device.on('error', (err) => { this.log('Connection test error:', fehlertext(err)); });
           const tmpDps = {};
           device.on('data', (payload) => {
             if (payload?.dps) Object.assign(tmpDps, payload.dps);

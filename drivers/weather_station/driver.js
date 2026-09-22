@@ -7,6 +7,7 @@ const { describeConnectFailure } = require('../../lib/connectFailure');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
 const { detectViaCloud, guessedDefaults } = require('../../lib/dpCodeMap');
+const { fehlertext } = require('../../lib/utils.js');
 
 // A weather station is nothing but a row of integers, and there is no local value
 // heuristic here for exactly that reason: temperature, humidity, pressure, wind and
@@ -146,7 +147,7 @@ class WeatherStationDriver extends Homey.Driver {
             id: deviceId, key: localKey, ip, version: actualVersion, issueGetOnConnect: true,
           });
           pairingDevice = device;
-          device.on('error', (err) => { this.log('Connection test error:', err.message); });
+          device.on('error', (err) => { this.log('Connection test error:', fehlertext(err)); });
           const tmpDps = {};
           device.on('data',       (p) => { if (p?.dps) Object.assign(tmpDps, p.dps); });
           device.on('dp-refresh', (p) => { if (p?.dps) Object.assign(tmpDps, p.dps); });

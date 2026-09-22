@@ -6,6 +6,7 @@ const { setupCloudLookup } = require('../../lib/pairCloudLookup');
 const { describeConnectFailure } = require('../../lib/connectFailure');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
+const { fehlertext } = require('../../lib/utils.js');
 
 class GenericDriver extends Homey.Driver {
   async onInit() {
@@ -107,7 +108,7 @@ class GenericDriver extends Homey.Driver {
             version: actualVersion,
             issueGetOnConnect: true,
           });
-          device.on('error', (err) => { this.log('Connection test error:', err.message); });
+          device.on('error', (err) => { this.log('Connection test error:', fehlertext(err)); });
           const tmpDps = {};
           device.on('data', (payload) => {
             if (payload?.dps) Object.assign(tmpDps, payload.dps);

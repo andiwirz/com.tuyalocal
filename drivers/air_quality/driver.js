@@ -7,6 +7,7 @@ const { describeConnectFailure } = require('../../lib/connectFailure');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
 const { detectViaCloud, guessedDefaults } = require('../../lib/dpCodeMap');
+const { fehlertext } = require('../../lib/utils.js');
 
 // The hjjcy (air quality monitor) layout as Tuya documents it, and as the reported
 // monitor confirms it. Every number is a written-in guess: a monitor from another
@@ -142,7 +143,7 @@ class AirQualityDriver extends Homey.Driver {
             issueGetOnConnect: true,
           });
           pairingDevice = device;
-          device.on('error', (err) => { this.log('Connection test error:', err.message); });
+          device.on('error', (err) => { this.log('Connection test error:', fehlertext(err)); });
           const tmpDps = {};
           device.on('data', (payload) => {
             if (payload?.dps) Object.assign(tmpDps, payload.dps);
