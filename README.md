@@ -1076,17 +1076,25 @@ The exact Tuya state stays available through the **Detailed charger state change
 > Set **DP Phase JSON** to 102 and leave **DP Phase A / B / C** at 0 — the packed
 > reader cannot make sense of JSON and would produce obviously wrong readings.
 >
-> **`d` and `e` are not mapped, on purpose.** Both have been tried as the session
-> energy on the one charger that could be measured against its own app, and both were
-> contradicted by a later reading. First `e`, because 113 matched the `e=11.263kWh`
-> the charger writes out on a text data point. Then `d`, because 9010 and 11410 as
-> watt-hours ran towards a session that ended at 12.1 kWh. The third reading breaks
-> both: idle, minutes after that same 12.1 kWh charge, the block read `d=16800` and
-> `e=37`, and across seven minutes `d` had grown by 3000 — more energy than a 16 A
-> charger can deliver in that time, and far too fast to be seconds. Under no unit are
-> these numbers consistent, so `json_session_field` now defaults to **none**. Pick `d`
-> or `e` only after comparing against your own charger's app; both raw values are
-> written to the **Logs** tab once so they can be compared.
+> **`e` is the session energy, in tenths of a kilowatt-hour.** That was finally settled
+> by measurement rather than inference: the reporter held the block against his
+> charger's own app at the same moment, three times — `e=28` against 2.8 kWh, `e=12`
+> against 1.2, `e=14` against 1.4. It is also the same convention as the rest of the
+> block, where 2320 is 232.0 V, 55 is 5.5 A and 370 is 37.0 °C, and as the charge
+> history record, which writes 12.1 kWh as `121`.
+>
+> **The detour in between was my mistake, and it is worth recording.** One version
+> pointed at `d` instead, because 9010 and 11410 read as watt-hours ran towards a
+> session that ended at 12.1 kWh, while `e` stood at 14 and 21 — "long past", I wrote.
+> But that the session was nearly finished at those moments I knew only from `d`
+> itself. I put the assumption I was testing into the test. Read early in a session,
+> 1.4 and 2.1 kWh are unremarkable.
+>
+> `d` is not energy under any unit: it does not run monotonically (54150, then 9010,
+> then 16800), it stood at 16800 while idle after a charge that ended at 12.1 kWh, and
+> it once grew by 3000 in seven minutes — more than a 16 A charger can deliver, and
+> too fast to be seconds. Probably a running time. It is reported to the **Logs** tab
+> once rather than mapped.
 >
 > **Where the session energy really is.** The same charger writes a record after every
 > completed charge, on DP 105:

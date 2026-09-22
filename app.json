@@ -7960,6 +7960,41 @@
                   "en": "Fault",
                   "de": "Fehler"
                 }
+              },
+              {
+                "id": "WORKING",
+                "label": {
+                  "en": "Charging (WORKING)",
+                  "de": "Lädt (WORKING)"
+                }
+              },
+              {
+                "id": "IDLEINS",
+                "label": {
+                  "en": "Plugged in, idle (IDLEINS)",
+                  "de": "Angesteckt, im Ruhen (IDLEINS)"
+                }
+              },
+              {
+                "id": "PAUSE",
+                "label": {
+                  "en": "Paused (PAUSE)",
+                  "de": "Pausiert (PAUSE)"
+                }
+              },
+              {
+                "id": "IDLE",
+                "label": {
+                  "en": "Idle (IDLE)",
+                  "de": "Im Ruhen (IDLE)"
+                }
+              },
+              {
+                "id": "SLEEP",
+                "label": {
+                  "en": "Asleep (SLEEP)",
+                  "de": "Schlafend (SLEEP)"
+                }
               }
             ]
           }
@@ -25758,13 +25793,13 @@
                 "en": "JSON session energy field",
                 "de": "JSON-Feld der Sitzungsenergie"
               },
-              "value": "none",
+              "value": "e",
               "values": [
                 {
-                  "id": "none",
+                  "id": "e",
                   "label": {
-                    "en": "none (default) — leave the tile empty",
-                    "de": "keines (Vorgabe) — Kachel leer lassen"
+                    "en": "e (default)",
+                    "de": "e (Vorgabe)"
                   }
                 },
                 {
@@ -25775,16 +25810,16 @@
                   }
                 },
                 {
-                  "id": "e",
+                  "id": "none",
                   "label": {
-                    "en": "e",
-                    "de": "e"
+                    "en": "none — leave the tile empty",
+                    "de": "keines — Kachel leer lassen"
                   }
                 }
               ],
               "hint": {
-                "en": "Which field of the block carries the energy of the running session — if any does. Both d and e have been tried on the one charger that could be measured against its own app, and a later reading contradicted each of them: idle, just after a charge that ended at 12.1 kWh, the block read d=16800 and e=37, and d had grown by 3000 in seven minutes, which is more than the charger can deliver. So nothing is guessed here any more. If your charger writes a record after each charge, use Charge History DP below instead — that value is exact. Pick d or e only if you have compared it against your own charger app, and please report what you find.",
-                "de": "Welches Feld des Blocks die Energie der laufenden Sitzung trägt — falls überhaupt eines. Bei dem einen Ladegerät, das sich gegen seine eigene App messen liess, wurden d und e beide versucht, und jedes wurde von einer späteren Ablesung widerlegt: im Leerlauf, kurz nach einer Ladung, die bei 12,1 kWh endete, stand d auf 16800 und e auf 37, und d war in sieben Minuten um 3000 gewachsen — mehr, als das Gerät liefern kann. Hier wird deshalb nichts mehr geraten. Schreibt Ihr Ladegerät nach jeder Ladung einen Datensatz, nehmen Sie stattdessen den Verlaufs-DP weiter unten; dieser Wert ist exakt. Wählen Sie d oder e nur, wenn Sie es gegen die App Ihres Ladegeräts geprüft haben — und melden Sie bitte, was dabei herauskam."
+                "en": "Which field of the block carries the energy of the running session. It is e, counted in tenths of a kilowatt-hour, measured against a charger's own app at the same moment three times over: e=28 against 2.8 kWh, e=12 against 1.2, e=14 against 1.4. It also matches the rest of the block, where every value counts in tenths of its unit. This setting exists because an earlier version pointed at d instead, which was wrong — d is not energy in any unit. Leave it on e unless your own charger app says otherwise.",
+                "de": "Welches Feld des Blocks die Energie der laufenden Sitzung trägt. Es ist e, gezählt in Zehntel-Kilowattstunden, dreimal im selben Augenblick gegen die App eines Ladegeräts gemessen: e=28 gegen 2,8 kWh, e=12 gegen 1,2, e=14 gegen 1,4. Es passt auch zum Rest des Blocks, in dem jeder Wert in Zehnteln seiner Einheit zählt. Diese Einstellung gibt es, weil eine frühere Fassung stattdessen auf d zeigte — das war falsch, d ist unter keiner Einheit eine Energie. Auf e stehen lassen, sofern die App Ihres Geräts nichts anderes sagt."
               }
             },
             {
@@ -25794,12 +25829,12 @@
                 "en": "JSON session energy divisor",
                 "de": "JSON-Teiler Sitzungsenergie"
               },
-              "value": 1000,
+              "value": 10,
               "min": 1,
               "max": 1000,
               "hint": {
-                "en": "Only used when a field is chosen above. Watt-hours means 1000, tenths of a kilowatt-hour means 10. Which one applies is not settled for any charger — compare the session tile against your charger app before trusting it.",
-                "de": "Wird nur benutzt, wenn oben ein Feld gewählt ist. Wattstunden heisst 1000, Zehntel-Kilowattstunden heisst 10. Welches gilt, ist für kein Ladegerät geklärt — halten Sie die Sitzungskachel gegen die App Ihres Ladegeräts, bevor Sie ihr glauben."
+                "en": "Tenths of a kilowatt-hour, which is what the measured charger uses: 28 is 2.8 kWh. A stored 1000 from the previous version is corrected to 10 on startup, because that value was never read by anything and so could never have been verified.",
+                "de": "Zehntel-Kilowattstunden, so wie es das nachgemessene Gerät hält: 28 sind 2,8 kWh. Eine gespeicherte 1000 aus der vorigen Fassung wird beim Start auf 10 berichtigt — dieser Wert wurde von nichts gelesen und konnte daher nie geprüft werden."
               }
             },
             {

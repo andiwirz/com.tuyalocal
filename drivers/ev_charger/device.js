@@ -182,6 +182,8 @@ class EvChargerDevice extends BaseTuyaDevice {
       this.setCapabilityValue('meter_power.charged', Math.round(this._energyAccum * 100) / 100).catch(() => {});
     }
 
+    this._raeumeTeilerAuf();
+
     // ── Flow trigger cards ──────────────────────────────────────────────────
     this._triggerDeviceConnected    = this.homey.flow.getDeviceTriggerCard('ev_device_connected');
     this._triggerDeviceDisconnected = this.homey.flow.getDeviceTriggerCard('ev_device_disconnected');
@@ -415,19 +417,27 @@ class EvChargerDevice extends BaseTuyaDevice {
    * Phasenleistungen trifft mit 3,8 kW das p von 3,9 kW. t sind 37,0 °C, was der
    * Meldende an seinem Geraet ablas.
    *
-   * Offen bleiben d und e, und sie bleiben es mit Absicht. Ich habe sie zweimal
-   * zugeordnet und mich zweimal geirrt: erst e, weil 113 die 11,263 kWh traf, die
-   * derselbe Lader auf einem Textdatenpunkt ausschreibt; dann d, weil 9010 und
-   * 11410 auf eine Ladung zuliefen, die bei 12,1 kWh endete. Beides waren
-   * Einzeltreffer. Die dritte Aufnahme schlaegt beide: im Leerlauf, nach genau
-   * jener 12,1-kWh-Ladung, stand d auf 16800 und e auf 37, und zwischen zwei
-   * Ablesungen sieben Minuten auseinander wuchs d um 3000 — mehr, als ein Lader
-   * mit 16 A in dieser Zeit liefern kann, und zu schnell fuer Sekunden.
+   * e ist die Sitzungsenergie, in Zehnteln einer Kilowattstunde. Das steht hier zum
+   * dritten Mal, und diesmal gemessen statt geschlossen: der Meldende hat den Block
+   * gegen die Hersteller-App gehalten, im selben Augenblick, dreimal — e=28 gegen
+   * 2,8 kWh, e=12 gegen 1,2, e=14 gegen 1,4.
    *
-   * Unter keiner Einheit sind diese Zahlen widerspruchsfrei. Also wird nichts mehr
-   * geraten: beide Felder werden einmal ins Protokoll geschrieben, und wer sein
-   * Geraet dagegen halten kann, waehlt selbst. Die belastbare Sitzungsenergie
-   * steht ohnehin woanders — siehe _parseChargeHistory.
+   * Der Umweg dazwischen war mein Fehler, und es lohnt, ihn aufzuschreiben. Ich hatte
+   * auf d umgestellt, weil 9010 und 11410 als Wattstunden auf eine Ladung zuliefen,
+   * die bei 12,1 kWh endete — und e mit 1,4 und 2,1 "laengst darueber hinaus" war.
+   * Dass die Sitzung zu diesem Zeitpunkt schon fast fertig war, wusste ich aber nur
+   * aus d selbst. Ich habe die Annahme, die ich pruefen wollte, in die Pruefung
+   * eingesetzt. Fruh in der Sitzung gemessen passen 1,4 und 2,1 zwanglos.
+   *
+   * d ist keine Energie, unter keiner Einheit: es laeuft nicht monoton (54150, dann
+   * 9010, dann 16800), es stand im Leerlauf auf 16800, nachdem eine Ladung bei 12,1
+   * kWh geendet hatte, und es wuchs einmal um 3000 in sieben Minuten — mehr, als ein
+   * Lader mit 16 A liefern kann, und zu schnell fuer Sekunden. Vermutlich eine
+   * Laufzeit; der Verlaufsdatensatz nebenan nennt sein d ausdruecklich in Sekunden.
+   *
+   * Dass e Zehntel zaehlt, sagt ausserdem der Block selbst: 2320 sind 232,0 V, 55
+   * sind 5,5 A, 370 sind 37,0 °C, 39 sind 3,9 kW — und der Verlaufsdatensatz schreibt
+   * dieselben 12,1 kWh als 121.
    *
    * @param {*} value
    * @returns {{phasen: Object, gesamt: number|null, temperatur: number|null,
@@ -466,17 +476,18 @@ class EvChargerDevice extends BaseTuyaDevice {
 
     const zahl = (x) => (Number.isFinite(Number(x)) ? Number(x) : null);
 
-    // Vorgabe ist jetzt "keins". Wer sein Geraet gegen die Hersteller-App halten
-    // kann, waehlt d oder e selbst; alle anderen bekommen lieber keine Zahl als
-    // eine falsche, die wie eine gemessene aussieht.
-    const feld = String(this.getSetting('json_session_field') ?? 'none');
+    // Vorgabe e, wie im Manifest. Beide muessen dasselbe sagen: eine Einstellung, die
+    // eine spaetere Fassung hinzufuegt, bekommt ihre Manifestvorgabe nur beim
+    // Einrichten eines Geraets — auf allem, was schon bestand, liefert getSetting
+    // null, und dann entscheidet allein diese Zeile.
+    const feld = String(this.getSetting('json_session_field') ?? 'e');
     const sitzungRoh = (feld === 'none' || feld === '') ? null : zahl(roh[feld]);
 
     return {
       phasen,
       gesamt:     zahl(roh.p) === null ? null : zahl(roh.p) * pFaktor,
       temperatur: zahl(roh.t) === null ? null : zahl(roh.t) / teiler('json_temp_divisor', 10),
-      sitzung:    sitzungRoh === null ? null : sitzungRoh / teiler('json_energy_divisor', 1000),
+      sitzung:    sitzungRoh === null ? null : sitzungRoh / teiler('json_energy_divisor', 10),
       // Was nicht zugeordnet ist, wird berichtet — beide Felder, wenn keines gewaehlt ist.
       offen: ['d', 'e']
         .filter((n) => n !== feld && zahl(roh[n]) !== null)
@@ -515,6 +526,32 @@ class EvChargerDevice extends BaseTuyaDevice {
         + 'and e, report these raw numbers together with what your charger\'s own app shows at '
         + 'the same moment.', 'info', true);
     }
+  }
+
+  /**
+   * Nimmt einen Teiler zurueck, den niemand gemessen haben kann.
+   *
+   * Eine Fassung lang stand die Vorgabe des Teilers auf 1000, waehrend das Feld
+   * daneben auf "keins" stand — der Teiler wurde also von nichts benutzt, und wer in
+   * dieser Zeit ein Geraet einrichtete, hat die 1000 gespeichert, ohne sie je gegen
+   * etwas halten zu koennen. Mit e als Vorgabe ergaeben sie aus 28 nun 0,028 kWh.
+   *
+   * Angefasst wird nur dieser eine Fall. Wer d gewaehlt hat, hat es bewusst getan —
+   * die 1000 gehoeren dort zusammen, und sie bleiben stehen.
+   */
+  _raeumeTeilerAuf() {
+    try {
+      if ((this.getSetting('dp_phase_json') ?? 0) <= 0) return;
+      if (Number(this.getSetting('json_energy_divisor')) !== 1000) return;
+      if (String(this.getSetting('json_session_field') ?? '') === 'd') return;
+
+      this.setSettings({ json_energy_divisor: 10 })
+        .then(() => this._appLog('JSON session energy divisor corrected from 1000 to 10. The '
+          + '1000 was a default from a version in which no field was read at all, so it was '
+          + 'never measured against anything; the session energy in this block counts in tenths '
+          + 'of a kilowatt-hour, verified against a charger\'s own app.', 'info'))
+        .catch(() => {});
+    } catch (e) { /* eine Vorgabe ist die Initialisierung nicht wert */ }
   }
 
   // ── Abgeschlossene Ladungen ─────────────────────────────────────────────────
@@ -619,7 +656,16 @@ class EvChargerDevice extends BaseTuyaDevice {
 
     // Only accumulate here when the session counter is the chosen source and the
     // charger's own lifetime counter isn't in use.
-    if (this._energySource() === 'session' && this.getSetting('dp_energy_total') <= 0) {
+    //
+    // Und nicht, wenn ein Verlaufsdatensatz gesetzt ist: der traegt jede beendete
+    // Ladung vollstaendig ein, der laufende Zaehler traegt dieselbe Ladung als Summe
+    // seiner Zuwaechse ein, und der Gesamtzaehler bekaeme sie zweimal. Wo es beides
+    // gibt, gehoert die Buchhaltung dem exakten Wert; der laufende fuellt nur die
+    // Kachel. Das war neu und mein Fehler — den Verlaufsdatensatz habe ich
+    // eingebaut, als hier gerade gar nichts zugeordnet war, und da fiel es nicht auf.
+    if (this._energySource() === 'session'
+        && this.getSetting('dp_energy_total') <= 0
+        && (this.getSetting('dp_charge_history') ?? 0) <= 0) {
       if (this._lastSessionKwh !== null && kwh > this._lastSessionKwh) {
         const delta = kwh - this._lastSessionKwh;
         if (this._isPlausibleDelta(delta)) {
