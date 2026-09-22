@@ -2659,8 +2659,13 @@
         var entry = snapshot[deviceId];
         var dps   = entry.dps || {};
         var keys  = Object.keys(dps).map(Number).sort(function(a, b) { return a - b; });
+        var cids  = entry.cids || {};
+        var cidKeys = Object.keys(cids);
 
-        if (keys.length === 0) {
+        // Ein Gateway kann eigene Datenpunkte haben oder keine. Hat es keine und
+        // meldet nur seine Untergeraete, darf die Seite nicht behaupten, es sei nichts
+        // angekommen — genau dieser Fall ist der interessante.
+        if (keys.length === 0 && cidKeys.length === 0) {
           content.innerHTML = '<div id="dpPlaceholder">No data received yet for this device.</div>';
           meta.textContent  = '';
           return;
@@ -2681,12 +2686,72 @@
             + '<td><span class="type-badge">' + type + '</span></td></tr>';
         }).join('');
 
-        content.innerHTML =
-          '<div class="table-scroll">  <table class="dp-debug-table"><thead><tr><th>DP</th><th>Value</th><th>Type</th></tr></thead>'
+        var eigene = keys.length === 0 ? ''
+          : '<div class="table-scroll">  <table class="dp-debug-table"><thead><tr><th>DP</th><th>Value</th><th>Type</th></tr></thead>'
             + '<tbody>' + rows + '</tbody></table></div>';
 
+        content.innerHTML = eigene + bauUntergeraete(cids, cidKeys);
+
         meta.textContent = 'Last update: ' + new Date(entry.updatedAt).toLocaleTimeString()
-          + ' · ' + keys.length + ' DPs';
+          + ' · ' + keys.length + ' DPs'
+          + (cidKeys.length ? ' · ' + cidKeys.length + ' sub-device'
+             + (cidKeys.length === 1 ? '' : 's') : '');
+      }
+
+      /**
+       * Die Untergeraete eines Gateways.
+       *
+       * Ein Tuya-Gateway schickt die Werte seiner Zigbee- und Bluetooth-Geraete ueber
+       * dieselbe Verbindung wie seine eigenen; unterschieden sind sie nur durch eine
+       * Kennung im Rohpaket. Dass hier etwas steht, ist die eigentliche Auskunft: es
+       * beweist, dass das Gateway seine Untergeraete lokal herausgibt, statt sie nur
+       * an die Cloud weiterzureichen.
+       *
+       * Getrennt von der Tabelle darueber, nicht daruntergemischt: DP 2 eines
+       * Thermostats und DP 2 des Gateways sind zwei verschiedene Dinge.
+       */
+      function bauUntergeraete(cids, cidKeys) {
+        if (!cidKeys.length) return '';
+
+        var karten = cidKeys.sort(function(a, b) {
+          return (cids[b].zuletzt || 0) - (cids[a].zuletzt || 0);
+        }).map(function(cid) {
+          var e    = cids[cid] || {};
+          var d    = e.dps || {};
+          var nums = Object.keys(d).map(Number).sort(function(a, b) { return a - b; });
+          var zeilen = nums.map(function(dp) {
+            var val  = d[String(dp)];
+            var type = typeof val;
+            var vh;
+            if (type === 'boolean') {
+              vh = '<span class="' + (val ? 'val-bool-true' : 'val-bool-false') + '">' + val + '</span>';
+            } else if (type === 'number') {
+              vh = '<span class="val-num">' + val + '</span>';
+            } else {
+              vh = '<span class="val-str">&quot;' + escHtml(String(val)) + '&quot;</span>';
+            }
+            return '<tr><td><span class="dp-num">DP ' + dp + '</span></td><td>' + vh + '</td>'
+              + '<td><span class="type-badge">' + type + '</span></td></tr>';
+          }).join('');
+
+          return '<div class="cloud-card">'
+            + '<div class="cloud-field-label">Sub-device id (cid)</div>'
+            + '<div class="cloud-field-value">' + escHtml(cid) + '</div>'
+            + '<div class="cloud-card-sub" style="margin-top:6px">' + (e.pakete || 0)
+              + ' packet' + (e.pakete === 1 ? '' : 's') + ' · last '
+              + (e.zuletzt ? new Date(e.zuletzt).toLocaleTimeString() : '—') + '</div>'
+            + (zeilen ? '<div class="table-scroll" style="margin-top:10px">'
+                + '<table class="dp-debug-table"><thead><tr><th>DP</th><th>Value</th>'
+                + '<th>Type</th></tr></thead><tbody>' + zeilen + '</tbody></table></div>' : '')
+            + '</div>';
+        }).join('');
+
+        return '<h3 style="margin:18px 0 8px;font-size:14px">Sub-devices behind this gateway</h3>'
+          + '<div class="note">These arrived over the local connection with an id of their own, '
+          + 'which is what a gateway uses to tell its Zigbee and Bluetooth devices apart. Their '
+          + 'data points belong to the sub-device, not to the gateway — DP 2 here and DP 2 above '
+          + 'are different things.</div>'
+          + karten;
       }
 
       function refreshDp() { loadSnapshot(renderDps); }
@@ -2714,7 +2779,9 @@
         var entry    = deviceId ? snapshot[deviceId] : null;
         var dps      = (entry && entry.dps) || {};
         var keys     = Object.keys(dps).map(Number).sort(function(a, b) { return a - b; });
-        if (keys.length === 0) return;
+        var cids     = (entry && entry.cids) || {};
+        var cidKeys  = Object.keys(cids);
+        if (keys.length === 0 && cidKeys.length === 0) return;
 
         var lines = [
           (entry.name || deviceId) + (entry.driver ? ' (' + entry.driver + ')' : ''),
@@ -2722,9 +2789,20 @@
           '',
           'DP\tValue\tType',
         ];
-        keys.forEach(function(dp) {
-          var val = dps[String(dp)];
-          lines.push(dp + '\t' + (typeof val === 'string' ? '"' + val + '"' : String(val)) + '\t' + typeof val);
+        var zeile = function(dp, val) {
+          return dp + '\t' + (typeof val === 'string' ? '"' + val + '"' : String(val))
+            + '\t' + typeof val;
+        };
+        keys.forEach(function(dp) { lines.push(zeile(dp, dps[String(dp)])); });
+
+        // Die Untergeraete mitkopieren, klar abgesetzt. Wer einen Bericht einstellt,
+        // soll die Kennung nicht abtippen muessen — sie ist das Einzige, womit sich
+        // ein Geraet hinter dem Gateway ueberhaupt ansprechen laesst.
+        cidKeys.forEach(function(cid) {
+          var e = cids[cid] || {}, d = e.dps || {};
+          lines.push('', 'Sub-device ' + cid + '  (' + (e.pakete || 0) + ' packets)', 'DP\tValue\tType');
+          Object.keys(d).map(Number).sort(function(a, b) { return a - b; })
+            .forEach(function(dp) { lines.push(zeile(dp, d[String(dp)])); });
         });
         copyText(lines.join('\n'), this);
       });

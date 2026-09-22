@@ -450,6 +450,26 @@ class TuyaLocalApp extends Homey.App {
           out.push('  live DPs   none received yet');
         }
 
+        // Untergeraete hinter einem Gateway. Sie kommen ueber dieselbe Verbindung wie
+        // die eigenen Werte und sind nur durch eine Kennung im Rohpaket getrennt. Im
+        // Bericht stehen sie abgesetzt, weil DP 2 eines Thermostats und DP 2 des
+        // Gateways verschiedene Dinge sind — und weil die Kennung das Einzige ist,
+        // womit sich ein solches Geraet ueberhaupt ansprechen laesst.
+        if (entry && entry.cids && Object.keys(entry.cids).length) {
+          const kennungen = Object.keys(entry.cids);
+          out.push(`  sub-devices  ${kennungen.length} reported through this gateway`);
+          for (const cid of kennungen) {
+            const e = entry.cids[cid] || {};
+            const d = e.dps || {};
+            out.push(`    cid ${cid}  ${e.pakete || 0} packet(s), last `
+              + `${e.zuletzt ? new Date(e.zuletzt).toISOString() : '—'}`);
+            for (const dp of Object.keys(d).map(Number).sort((a, b) => a - b)) {
+              const v = d[String(dp)];
+              out.push(`      DP ${pad(dp, 5)} ${pad(JSON.stringify(v), 28)} ${typeof v}`);
+            }
+          }
+        }
+
         const record = {
           name:      device.getName(),
           driver:    driver.id,
