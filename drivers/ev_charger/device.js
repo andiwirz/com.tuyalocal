@@ -81,6 +81,13 @@ const STATE_MAP = {
   PAUSE:    'plugged_in_paused',
 };
 
+// Welche zugeordneten Zustaende einen freigegebenen und welche einen abgeschalteten
+// Lader bedeuten. Nur fuer den Fall, dass der Schalt-Datenpunkt selbst nichts meldet —
+// siehe _schalterAusZustand. Ausgesteckt sagt nichts ueber die Freigabe und steht
+// deshalb in keiner der beiden Mengen.
+const AN_ZUSTAENDE  = new Set(['plugged_in_charging', 'plugged_in']);
+const AUS_ZUSTAENDE = new Set(['plugged_in_paused']);
+
 // Control-pilot states that mean the charger is actively supplying current.
 // Per the CP standard, 9 V = vehicle connected and 6 V = vehicle ready, while the
 // PWM suffix means the charger is signalling an available current — i.e. a charge
@@ -429,15 +436,18 @@ class EvChargerDevice extends BaseTuyaDevice {
    * aus d selbst. Ich habe die Annahme, die ich pruefen wollte, in die Pruefung
    * eingesetzt. Fruh in der Sitzung gemessen passen 1,4 und 2,1 zwanglos.
    *
-   * d ist keine Energie, unter keiner Einheit: es laeuft nicht monoton (54150, dann
-   * 9010, dann 16800), es stand im Leerlauf auf 16800, nachdem eine Ladung bei 12,1
-   * kWh geendet hatte, und es wuchs einmal um 3000 in sieben Minuten — mehr, als ein
-   * Lader mit 16 A liefern kann, und zu schnell fuer Sekunden. Vermutlich eine
-   * Laufzeit; der Verlaufsdatensatz nebenan nennt sein d ausdruecklich in Sekunden.
+   * d ist die Dauer der laufenden Sitzung, in Zehntelsekunden. Auch das ist gemessen:
+   * derselbe Lader schreibt auf einem Textdatenpunkt "charge: t=1225s e=1.130kWh"
+   * aus, und im selben Augenblick stand im Block d=12350 und e=11. 1235 gegen 1225
+   * Sekunden — zehn Sekunden Unterschied, genau der Abfragetakt.
    *
-   * Dass e Zehntel zaehlt, sagt ausserdem der Block selbst: 2320 sind 232,0 V, 55
-   * sind 5,5 A, 370 sind 37,0 °C, 39 sind 3,9 kW — und der Verlaufsdatensatz schreibt
-   * dieselben 12,1 kWh als 121.
+   * Zwei alte Aufnahmen bestaetigen es unabhaengig davon: zwischen ihnen liegen
+   * 240 Sekunden und 0,7 kWh, was 10,5 kW ergibt — die Leistung, die beide meldeten.
+   * Energie ueber Zeit trifft die Leistung, und damit stimmen beide Einheiten.
+   *
+   * Der ganze Block zaehlt also in Zehnteln seiner Einheit, ohne Ausnahme: 2320 sind
+   * 232,0 V, 55 sind 5,5 A, 370 sind 37,0 °C, 39 sind 3,9 kW, 113 sind 11,3 kWh und
+   * 12350 sind 1235,0 Sekunden.
    *
    * @param {*} value
    * @returns {{phasen: Object, gesamt: number|null, temperatur: number|null,
@@ -517,14 +527,20 @@ class EvChargerDevice extends BaseTuyaDevice {
     // Bericht liest, sieht die Rohwerte und kann sie gegen sein Geraet halten.
     if (block.offen.length && !this._offenGemeldet) {
       this._offenGemeldet = true;
-      const werte = block.offen.map((o) => `${o.name}=${o.wert}`).join(' and ');
-      this._appLog(`The phase JSON carries ${werte}, which this driver deliberately does not `
-        + 'map. Both fields have been tried as the session energy on one charger and both were '
-        + 'contradicted by a later reading, so neither is guessed at any more. If your charger '
-        + 'writes a record after each charge — a JSON block with a start time, an end time and '
-        + 'a total — point "Charge History DP" at it instead: that value is exact. To settle d '
-        + 'and e, report these raw numbers together with what your charger\'s own app shows at '
-        + 'the same moment.', 'info', true);
+      const werte = block.offen.map((o) => {
+        // d ist entschluesselt, nur nicht zugeordnet: es gibt keine Kachel dafuer.
+        if (o.name === 'd') {
+          const s = o.wert / 10;
+          return `d=${o.wert} (${Math.floor(s / 60)}m ${Math.round(s % 60)}s of charging)`;
+        }
+        return `${o.name}=${o.wert}`;
+      }).join(' and ');
+      this._appLog(`The phase JSON also carries ${werte}. On the charger this was measured `
+        + 'against, every field of the block counts in tenths of its unit, d included — it is '
+        + 'the running session\'s duration, confirmed against the same charger writing '
+        + '"charge: t=1225s" while the block read d=12350. It is not shown anywhere because '
+        + 'there is no tile for it. If your charger disagrees, report these raw numbers with '
+        + 'what its own app shows at the same moment.', 'info', true);
     }
   }
 
@@ -706,6 +722,43 @@ class EvChargerDevice extends BaseTuyaDevice {
       state = 'plugged_in_charging';
     }
     await this.setCapabilityValue('evcharger_charging_state', state).catch(() => {});
+    await this._schalterAusZustand(raw, state);
+  }
+
+  /**
+   * Fuehrt den Schalter am gemeldeten Zustand nach, wenn der Schalt-DP stumm ist.
+   *
+   * Manche Lader nehmen Befehle auf einem reinen Schreib-Datenpunkt entgegen — bei
+   * dem gemeldeten Geraet ist es DP 140, "x_do_charge". Der bestaetigt nichts und
+   * meldet nichts: schaltet man am Geraet selbst oder in der Hersteller-App, bleibt
+   * Homeys Schalter stehen, wo er stand. Der Zustand daneben stimmt derweil, weil er
+   * aus einem anderen Datenpunkt kommt.
+   *
+   * Also wird der Schalter aus dem Zustand nachgezogen — aber nur, solange der
+   * Schalt-DP noch nie von sich aus etwas gesagt hat. Das ist keine Vermutung: die
+   * Basis merkt sich jede Nummer, die je gemeldet wurde. Sobald einer einmal
+   * antwortet, hoert das hier auf, und der gemeldete Wert gilt wieder allein.
+   *
+   * "Angesteckt, im Ruhen" zaehlt als eingeschaltet: der Lader ist freigegeben, das
+   * Fahrzeug fragt nur gerade nichts ab. Abgeschaltet ist er erst, wenn der Zustand
+   * das sagt.
+   */
+  async _schalterAusZustand(raw, state) {
+    const dp = this.getSetting('dp_switch') ?? 0;
+    if (dp <= 0) return;
+    if (this._seenDps?.has(Number(dp))) return;   // er meldet sich, also nicht eingreifen
+    if (!AN_ZUSTAENDE.has(state) && !AUS_ZUSTAENDE.has(state)) return;
+
+    const an = AN_ZUSTAENDE.has(state);
+    if (this.getCapabilityValue('evcharger_charging') === an) return;
+
+    if (!this._schalterGemeldet) {
+      this._schalterGemeldet = true;
+      this._appLog(`Data point ${dp} accepts commands but never reports back, so the charging `
+        + `switch is being followed from the charger's own state instead ("${raw}"). It will `
+        + `stop doing that the moment DP ${dp} reports a value of its own.`, 'info');
+    }
+    await this.setCapabilityValue('evcharger_charging', an).catch(() => {});
   }
 
   /**

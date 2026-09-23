@@ -1090,11 +1090,17 @@ The exact Tuya state stays available through the **Detailed charger state change
 > itself. I put the assumption I was testing into the test. Read early in a session,
 > 1.4 and 2.1 kWh are unremarkable.
 >
-> `d` is not energy under any unit: it does not run monotonically (54150, then 9010,
-> then 16800), it stood at 16800 while idle after a charge that ended at 12.1 kWh, and
-> it once grew by 3000 in seven minutes — more than a 16 A charger can deliver, and
-> too fast to be seconds. Probably a running time. It is reported to the **Logs** tab
-> once rather than mapped.
+> **`d` is the running session's duration, in tenths of a second** — measured the same
+> way. The charger writes `charge: t=1225s e=1.130kWh` on a text data point, and at
+> that same moment the block read `d=12350` and `e=11`: 1235 seconds against 1225, a
+> ten-second difference that is exactly the polling interval. Two older readings
+> confirm it independently — 240 seconds and 0.7 kWh apart, which is 10.5 kW, the
+> power both of them reported.
+>
+> So **every field in the block counts in tenths of its unit, without exception**:
+> 2320 is 232.0 V, 55 is 5.5 A, 370 is 37.0 °C, 39 is 3.9 kW, 113 is 11.3 kWh and
+> 12350 is 1235.0 seconds. `d` is written to the **Logs** tab rather than mapped,
+> because there is no tile for a charging duration.
 >
 > **Where the session energy really is.** The same charger writes a record after every
 > completed charge, on DP 105:
