@@ -1,8 +1,18 @@
 ﻿'use strict';
 
 const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
+const { rohZuId, idZuRoh } = require('../../lib/utils.js');
 
 const DEBOUNCE_MS = 300;
+
+// Welche Auswahl-Faehigkeit ihre erlaubten Werte aus welcher Einstellung bezieht.
+// Diese drei duerfen eine Zuordnung tragen ("cool=1"), weil hier uebersetzt wird:
+// beim Lesen zurueck auf den Namen, beim Senden auf den Wert des Geraets.
+const ENUM_QUELLE = {
+  ac_mode:      'mode_values',
+  ac_fan_speed: 'fan_speed_values',
+  ac_swing:     'swing_values',
+};
 
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // DP profile â€” entries whose transforms are straightforward scalars.
@@ -57,9 +67,9 @@ class AirConditionerDevice extends BaseTuyaDevice {
 
     await this._migrateCapabilities([]);
     await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
-    await this._syncEnumOptions('ac_mode',      this.getSetting('mode_values'));
-    await this._syncEnumOptions('ac_fan_speed', this.getSetting('fan_speed_values'));
-    await this._syncEnumOptions('ac_swing',     this.getSetting('swing_values'));
+    await this._syncEnumOptions('ac_mode',      this.getSetting('mode_values'),      { zuordnung: true });
+    await this._syncEnumOptions('ac_fan_speed', this.getSetting('fan_speed_values'), { zuordnung: true });
+    await this._syncEnumOptions('ac_swing',     this.getSetting('swing_values'),     { zuordnung: true });
     await this._syncTempCapabilityOptions();
 
     // â”€â”€ Flow trigger cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -111,7 +121,14 @@ class AirConditionerDevice extends BaseTuyaDevice {
 
     for (const entry of DP_PROFILE) {
       if (!entry.settable) continue;
-      const send = (value) => this._set(this.getSetting(entry.settingKey), value);
+      const send = (value) => {
+        // Traegt die Werteliste eine Zuordnung, geht der Wert des Geraets hinaus und
+        // nicht der Name, den Homey anzeigt. Ohne Zuordnung faellt idZuRoh auf den
+        // Wert selbst zurueck, und es bleibt genau beim Bisherigen.
+        const quelle = ENUM_QUELLE[entry.capability];
+        const roh = quelle ? idZuRoh(this.getSetting(quelle), value) : value;
+        return this._set(this.getSetting(entry.settingKey), roh);
+      };
       register(entry.capability, entry.debounce
         ? debounced(entry.capability, send)
         : async (value) => { await send(value); });
@@ -228,7 +245,12 @@ class AirConditionerDevice extends BaseTuyaDevice {
         continue;
       }
 
-      const converted = entry.transform(value);
+      // Und zurueck: schickt das Geraet "0", zeigt Homey "auto" — sofern die
+      // Werteliste das so sagt. Sagt sie nichts, bleibt der Wert, wie er kam.
+      const quelle = ENUM_QUELLE[entry.capability];
+      const converted = quelle
+        ? rohZuId(this.getSetting(quelle), entry.transform(value))
+        : entry.transform(value);
 
       // Capture prev value before updating so the trigger token contains both old and new mode.
       if (entry.capability === 'ac_mode') {
@@ -271,9 +293,9 @@ class AirConditionerDevice extends BaseTuyaDevice {
       this._registerListeners(); // newly added capabilities need listeners immediately
     }
     if (changedKeys.some((k) => ['mode_values', 'fan_speed_values', 'swing_values'].includes(k))) {
-      await this._syncEnumOptions('ac_mode',      this.getSetting('mode_values'));
-      await this._syncEnumOptions('ac_fan_speed', this.getSetting('fan_speed_values'));
-      await this._syncEnumOptions('ac_swing',     this.getSetting('swing_values'));
+      await this._syncEnumOptions('ac_mode',      this.getSetting('mode_values'),      { zuordnung: true });
+      await this._syncEnumOptions('ac_fan_speed', this.getSetting('fan_speed_values'), { zuordnung: true });
+      await this._syncEnumOptions('ac_swing',     this.getSetting('swing_values'),     { zuordnung: true });
     }
     if (changedKeys.some((k) => ['temp_step', 'temp_min', 'temp_max'].includes(k))) {
       await this._syncTempCapabilityOptions();

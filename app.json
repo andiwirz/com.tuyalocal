@@ -18868,8 +18868,8 @@
               },
               "value": "cool,heat,auto,dry,fan",
               "hint": {
-                "en": "Supported values: cool, heat, auto, dry, fan. Remove values your device does not support. Check Raw Data in app settings for the actual strings your device sends.",
-                "de": "Unterstützte Werte: cool, heat, auto, dry, fan. Nicht unterstützte Werte entfernen. Im Raw-Data-Panel der App-Einstellungen stehen die tatsächlichen Strings des Geräts."
+                "en": "Supported values: cool, heat, auto, dry, fan. Remove values your device does not support. Check Raw Data in app settings for the actual strings your device sends. If your device uses numbers instead of names — DP Debug shows \"0\", \"1\", \"2\" rather than a word — write both, as name=value: for example auto=0,cool=1,dry=2,fan=3,heat=4. The left side is what Homey shows and what flows use; the right side is what is sent to the device and what it sends back. A list without any equals signs behaves exactly as before.",
+                "de": "Unterstützte Werte: cool, heat, auto, dry, fan. Nicht unterstützte Werte entfernen. Im Raw-Data-Panel der App-Einstellungen stehen die tatsächlichen Strings des Geräts. Benutzt Ihr Gerät Zahlen statt Namen — DP-Debug zeigt \"0\", \"1\", \"2\" statt eines Worts —, schreiben Sie beides, als Name=Wert: etwa auto=0,cool=1,dry=2,fan=3,heat=4. Links steht, was Homey anzeigt und was in Flows erscheint; rechts, was zum Gerät geht und was es zurückschickt. Eine Liste ganz ohne Gleichheitszeichen verhält sich wie bisher."
               }
             },
             {
@@ -18894,8 +18894,8 @@
               },
               "value": "auto,low,medium,high,turbo",
               "hint": {
-                "en": "Typical values: auto, low, medium, high, turbo. Some devices use numbers (1, 2, 3). Check Raw Data in app settings.",
-                "de": "Typische Werte: auto, low, medium, high, turbo. Manche Geräte verwenden Zahlen (1, 2, 3). Raw Data in den App-Einstellungen prüfen."
+                "en": "Typical values: auto, low, medium, high, turbo. Some devices use numbers (1, 2, 3). Check Raw Data in app settings. If your device uses numbers instead of names — DP Debug shows \"0\", \"1\", \"2\" rather than a word — write both, as name=value: for example auto=0,cool=1,dry=2,fan=3,heat=4. The left side is what Homey shows and what flows use; the right side is what is sent to the device and what it sends back. A list without any equals signs behaves exactly as before.",
+                "de": "Typische Werte: auto, low, medium, high, turbo. Manche Geräte verwenden Zahlen (1, 2, 3). Raw Data in den App-Einstellungen prüfen. Benutzt Ihr Gerät Zahlen statt Namen — DP-Debug zeigt \"0\", \"1\", \"2\" statt eines Worts —, schreiben Sie beides, als Name=Wert: etwa auto=0,cool=1,dry=2,fan=3,heat=4. Links steht, was Homey anzeigt und was in Flows erscheint; rechts, was zum Gerät geht und was es zurückschickt. Eine Liste ganz ohne Gleichheitszeichen verhält sich wie bisher."
               }
             },
             {
@@ -18983,8 +18983,8 @@
               },
               "value": "off,on",
               "hint": {
-                "en": "Valid swing values for your device. Common: off,on or off,updown,leftright,updown_leftright. Leave at default if unsure.",
-                "de": "Gültige Schwenkungswerte. Üblich: off,on oder off,updown,leftright,updown_leftright."
+                "en": "Valid swing values for your device. Common: off,on or off,updown,leftright,updown_leftright. Leave at default if unsure. If your device uses numbers instead of names — DP Debug shows \"0\", \"1\", \"2\" rather than a word — write both, as name=value: for example auto=0,cool=1,dry=2,fan=3,heat=4. The left side is what Homey shows and what flows use; the right side is what is sent to the device and what it sends back. A list without any equals signs behaves exactly as before.",
+                "de": "Gültige Schwenkungswerte. Üblich: off,on oder off,updown,leftright,updown_leftright. Benutzt Ihr Gerät Zahlen statt Namen — DP-Debug zeigt \"0\", \"1\", \"2\" statt eines Worts —, schreiben Sie beides, als Name=Wert: etwa auto=0,cool=1,dry=2,fan=3,heat=4. Links steht, was Homey anzeigt und was in Flows erscheint; rechts, was zum Gerät geht und was es zurückschickt. Eine Liste ganz ohne Gleichheitszeichen verhält sich wie bisher."
               }
             },
             {
