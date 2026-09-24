@@ -68,6 +68,7 @@ when adding a device.
 - **Fix It tab** — five checks that compare your devices against what Tuya declares and offer to correct them: stale local keys, wrong protocol version, wrong measurement scaling, picker options that never got updated, and data points a device does not actually have. Every check previews exactly what it would change, per device, and saves nothing until you confirm
 - **Connect-failure diagnosis** — when a device fails to connect during pairing, the app probes port 6668 and says which of the three it was: nothing at that address, the port closed, or the connection refused because something else already holds the device's single connection slot
 - **Support bundle** — one button, at the top of the **Fix It** tab, collecting everything a report needs: per device the driver, the protocol version configured *and* in use, the full DP mapping, the live values, the connection history (how many connections, how long they held, how many packets arrived, whether any data ever did) and the manufacturer's specification where Cloud Lookup is set up. Local keys never appear in it and device IDs are shortened. Repeated log lines are folded into one with a count, so a single chatty fault cannot crowd out everything else
+- **Sub-devices behind a gateway** — a Tuya gateway sends the values of its Zigbee and Bluetooth devices over the same connection as its own, separated only by an id in the raw packet. That id is what one must send back to address such a device, and the app had been reading it and overwriting it with the next packet without ever showing it. **DP Debug** now lists each sub-device under its own heading with the data points that arrived under it, and the support bundle carries them too. Whether anything appears there is itself the answer to a question that could not be asked before: some gateways hand their sub-devices out locally and some relay them only to the cloud — see [Gateways and their sub-devices](#gateways-and-their-sub-devices)
 - **Diagnostic tools** — in-app log buffer, live DP debug panel, and a Help tab covering every driver and the common faults
 - **Bilingual** — full English and German UI
 
@@ -327,6 +328,25 @@ Some AC units send temperatures multiplied by 10 (e.g. `220` = 22.0 °C). The dr
 |---|---|
 | `mode_values` | `cool,heat,auto,dry,fan` |
 | `fan_speed_values` | `auto,low,medium,high,turbo` |
+| `swing_values` | `off,on` |
+
+> **Units that number their modes instead of naming them.** Some air conditioners carry
+> `"0"` to `"4"` on DP 4 and nothing else. Write both sides, as `name=value`:
+>
+> ```
+> auto=0,cool=1,dry=2,fan=3,heat=4
+> ```
+>
+> The left side is what Homey shows and what flows see; the right side is what is sent
+> to the device and what it is expected to send back. **A list without equals signs
+> behaves exactly as before**, so existing devices are unaffected.
+>
+> Until this existed the one list had to be both at once, which cannot work on such a
+> unit: entering the names left the picker ignoring the device, and entering the numbers
+> was refused with *"cannot restrict options to [1, 4, 0, 2, 3] — current value 'auto' is
+> not in that list"*. Mode, fan speed and swing all accept the mapping. Enum settings on
+> the **other** drivers do not translate yet, and a mapping entered there is refused with
+> a message saying so rather than quietly sending the label.
 
 ---
 
@@ -1126,6 +1146,16 @@ The exact Tuya state stays available through the **Detailed charger state change
 
 > **Total energy:** many chargers expose a lifetime counter (DP 1) that reports a plausible value but never updates over the local connection. Because one reading cannot distinguish a working counter from a frozen one, `dp_energy_total` defaults to `0` and the total is accumulated from the session counter instead — which works on every model tested. Set it to `1` if your charger's own counter does update.
 
+> **Switch data points that only take commands.** Some chargers accept start and stop on a
+> write-only point — `x_do_charge`, DP 140, on one reported unit — which confirms nothing and
+> reports nothing. Starting the charge from the manufacturer's app left Homey's switch where
+> it stood, while the state tile beside it was right all along, because that comes from a
+> different data point. The switch is now followed from the reported state instead, but only
+> while the switch DP has never reported a value of its own; the moment one does, it governs
+> again and this stops. *Plugged in, idle* counts as on — the charger is enabled, the car
+> simply isn't drawing — and unplugged touches nothing, since it says nothing about whether
+> the charger is enabled.
+
 > **Live measurements:** some chargers only stream voltage / current / power while their `online_state` DP is set to `online`. Set `dp_live_updates = 27` and the app re-asserts it on every reconnect.
 
 > **Charging modes:** chargers usually advertise five modes (immediate, to %, fixed kWh, scheduled, delayed) but implement far fewer — on many units only *Charge Now* does anything. DP 33 (`mode_set`) is a bitmask declaring what the hardware actually supports and is more trustworthy than the advertised enum. `dp_work_mode` is therefore disabled by default.
@@ -1638,6 +1668,58 @@ All DPs are auto-detected at pairing time. For AOSD and BoboYun, `dp_door_action
 
 - **Contact sensor** (`dp_door_contact`): reports binary open/closed — opens/closed flow triggers fire on every change.
 - **Action state** (`dp_door_action`): reports `opened`/`opening`/`closing`/`closed` — opened/closed flow triggers fire only on **terminal states** (`opened` / `closed`), not during movement.
+
+---
+
+## Gateways and their sub-devices
+
+A Tuya gateway — Zigbee, Bluetooth, or both — is paired like any other device, usually with
+the **Generic Tuya Device** driver, and it has a handful of data points of its own. Its
+thermostats, sensors and buttons are not separate devices on the network: they have no IP
+address and no local key. The gateway carries them.
+
+**It carries them over the same connection as its own values.** The only thing separating
+them is a `cid` field in the raw packet — the sub-device's own id, and the same id one must
+send back to address it. The app had been reading that field and overwriting it with the
+next packet, without ever showing it to anyone.
+
+### Seeing them
+
+**DP Debug → your gateway** lists them under *Sub-devices behind this gateway*: each id with
+the data points that arrived under it, how many packets it has sent and when it last spoke.
+**Copy Local DP Table** and the support bundle include them.
+
+A sub-device only appears once it has actually reported something, and most of them are
+quiet by nature — a radiator thermostat may say nothing for half an hour. Change something
+on the device itself, turn on **Auto-refresh**, and watch.
+
+**An empty section is an answer too.** Some gateways relay their sub-devices to the cloud
+and never hand them out locally; nothing will ever appear there, and that settles it quickly
+rather than leaving you guessing.
+
+### What is known so far
+
+One reported multimode gateway hands out **both** its Zigbee and its Bluetooth thermostat,
+each under its own id, which disproves the common claim — this README's included — that
+Bluetooth devices behind a gateway are out of reach locally. Its Zigbee thermostat's data
+points matched its Tuya specification exactly: DP 2 target temperature, DP 3 measured
+temperature, DP 4 mode, DP 19 and 20 the valve. Its Bluetooth one used different numbers on
+the same gateway, so the layout is per device, not per gateway.
+
+A gateway's own data point list no longer contains any of this. Before, that same gateway
+listed five data points as its own that all belonged to its two thermostats — and since both
+thermostats have a DP 2, they were overwriting each other in it. A packet carrying a
+sub-device id is now kept out of the gateway's handling entirely: it never reaches the DP
+list, the seen-DP set, or the driver. A device's own id is exempt, since some firmware sends
+it alongside its own values.
+
+### What is not possible yet
+
+**Turning a sub-device into a device in Homey.** Reading them is solved; addressing one is
+not. The local protocol does allow it — the request goes to the gateway's address and key
+with the sub-device's id attached — but the app does not send that form yet, and the library
+it uses builds the request differently from the implementation known to work elsewhere. That
+is unfinished work, not a limitation of the protocol.
 
 ---
 
