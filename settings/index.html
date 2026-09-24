@@ -713,14 +713,14 @@
       <div class="note" data-lang="en"><strong>Known to be impossible locally,</strong> whatever the settings say:
         <ul style="margin:6px 0 0;padding-left:18px;line-height:1.6">
           <li><strong>Battery sensors in deep sleep</strong> — door, motion, smoke, temperature/humidity sensors switch their radio off between reports. There is no window in which to connect, and the cloud sees them only because the device pushes to Tuya itself.</li>
-          <li><strong>Bluetooth devices behind a Tuya gateway</strong> — the gateway proxies them to the cloud, not over the local protocol, and most models accept only one to three connections in total.</li>
+          <li><strong>Bluetooth devices behind a Tuya gateway</strong> — usually, though this one is no longer certain. A reported multimode gateway hands out both its Zigbee and its Bluetooth thermostat over the local connection, each under an id of its own, and DP Debug lists them under <em>Sub-devices behind this gateway</em>. Other gateways relay their sub-devices to the cloud and nothing appears there. Worth looking before giving up.</li>
           <li><strong>Cameras and video doorbells</strong> — the video stream is a proprietary peer-to-peer protocol. Ring and motion events over the local connection can work; the picture cannot. For the stream, use an ONVIF app if the device supports it.</li>
         </ul>
       </div>
       <div class="note" data-lang="de"><strong>Lokal erwiesenermassen unmöglich,</strong> was auch immer die Einstellungen sagen:
         <ul style="margin:6px 0 0;padding-left:18px;line-height:1.6">
           <li><strong>Batteriesensoren im Tiefschlaf</strong> — Tür-, Bewegungs-, Rauch- sowie Temperatur- und Feuchtesensoren schalten ihren Funk zwischen zwei Meldungen ab. Es gibt kein Zeitfenster, in dem man sich verbinden könnte, und die Cloud sieht sie nur, weil das Gerät von sich aus zu Tuya sendet.</li>
-          <li><strong>Bluetooth-Geräte hinter einem Tuya-Gateway</strong> — das Gateway reicht sie an die Cloud weiter, nicht über das lokale Protokoll, und die meisten Modelle nehmen insgesamt nur ein bis drei Verbindungen an.</li>
+          <li><strong>Bluetooth-Geräte hinter einem Tuya-Gateway</strong> — meistens, aber das ist nicht mehr sicher. Ein gemeldetes Multimode-Gateway gibt sowohl sein Zigbee- als auch sein Bluetooth-Thermostat über die lokale Verbindung heraus, jedes unter einer eigenen Kennung, und DP-Debug führt sie unter <em>Untergeräte hinter diesem Gateway</em> auf. Andere Gateways reichen ihre Untergeräte an die Cloud weiter, und dort steht dann nichts. Nachsehen lohnt, bevor man aufgibt.</li>
           <li><strong>Kameras und Video-Türklingeln</strong> — der Videostrom läuft über ein herstellereigenes Peer-to-Peer-Protokoll. Klingel- und Bewegungsereignisse über die lokale Verbindung können gehen, das Bild nicht. Für den Strom eine ONVIF-App benutzen, sofern das Gerät es unterstützt.</li>
         </ul>
       </div>
