@@ -735,9 +735,14 @@ class EvChargerDevice extends BaseTuyaDevice {
    * aus einem anderen Datenpunkt kommt.
    *
    * Also wird der Schalter aus dem Zustand nachgezogen — aber nur, solange der
-   * Schalt-DP noch nie von sich aus etwas gesagt hat. Das ist keine Vermutung: die
-   * Basis merkt sich jede Nummer, die je gemeldet wurde. Sobald einer einmal
-   * antwortet, hoert das hier auf, und der gemeldete Wert gilt wieder allein.
+   * Schalt-DP noch nie von sich aus etwas gesagt hat. Sobald er einmal antwortet,
+   * hoert das hier auf, und der gemeldete Wert gilt wieder allein.
+   *
+   * Woran das erkannt wird, war beim ersten Anlauf falsch: gefragt wurde, ob die
+   * Nummer je in einem Paket vorkam. Das Echo eines eigenen Befehls kommt aber auch
+   * in einem Paket vor. Wer also einmal in Homey schaltete, schaltete sich damit die
+   * Nachfuehrung ab — und das war genau der Fall, fuer den sie gebaut ist. Gezaehlt
+   * wird jetzt nur, was den Echo-Filter passiert hat, also eine echte Meldung.
    *
    * "Angesteckt, im Ruhen" zaehlt als eingeschaltet: der Lader ist freigegeben, das
    * Fahrzeug fragt nur gerade nichts ab. Abgeschaltet ist er erst, wenn der Zustand
@@ -746,7 +751,7 @@ class EvChargerDevice extends BaseTuyaDevice {
   async _schalterAusZustand(raw, state) {
     const dp = this.getSetting('dp_switch') ?? 0;
     if (dp <= 0) return;
-    if (this._seenDps?.has(Number(dp))) return;   // er meldet sich, also nicht eingreifen
+    if (this._schaltDpMeldetSich) return;   // er meldet sich, also nicht eingreifen
     if (!AN_ZUSTAENDE.has(state) && !AUS_ZUSTAENDE.has(state)) return;
 
     const an = AN_ZUSTAENDE.has(state);
@@ -907,6 +912,14 @@ class EvChargerDevice extends BaseTuyaDevice {
 
       // ── Switch ───────────────────────────────────────────────────────────
       if (settings.dp_switch > 0 && dp === settings.dp_switch) {
+        // Hier ankommen heisst: der Datenpunkt meldet sich wirklich. Was hier landet,
+        // hat den Echo-Filter schon hinter sich — ein Wert, den wir selbst gerade
+        // gesetzt haben, kommt nie bis hierher. Genau diese Unterscheidung fehlte:
+        // die erste Fassung fragte, ob die Nummer je angekommen sei, und das Echo
+        // eines eigenen Befehls zaehlte mit. Wer einmal in Homey schaltete, schaltete
+        // sich damit die Nachfuehrung ab — und das war ausgerechnet der Fall, fuer
+        // den sie gebaut ist.
+        this._schaltDpMeldetSich = true;
         await this.setCapabilityValue('evcharger_charging', Boolean(value)).catch(() => {});
         await this._updateChargingState();
         continue;
