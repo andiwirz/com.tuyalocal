@@ -2710,6 +2710,23 @@
        * Getrennt von der Tabelle darueber, nicht daruntergemischt: DP 2 eines
        * Thermostats und DP 2 des Gateways sind zwei verschiedene Dinge.
        */
+      /**
+       * Wann ein Untergeraet zuletzt gesprochen hat.
+       *
+       * Mit Datum, sobald es nicht heute war. Die Liste ueberlebt jetzt einen
+       * Neustart, und eine blosse Uhrzeit aus der vorigen Woche liest sich wie
+       * gerade eben — ein schlafendes Thermostat saehe damit aus wie ein waches.
+       */
+      function wannZuletzt(ms) {
+        if (!ms) return '—';
+        var d = new Date(ms);
+        var heute = new Date();
+        var gleicherTag = d.getDate() === heute.getDate()
+          && d.getMonth() === heute.getMonth()
+          && d.getFullYear() === heute.getFullYear();
+        return gleicherTag ? d.toLocaleTimeString() : d.toLocaleString();
+      }
+
       function bauUntergeraete(cids, cidKeys) {
         if (!cidKeys.length) return '';
 
@@ -2739,7 +2756,7 @@
             + '<div class="cloud-field-value">' + escHtml(cid) + '</div>'
             + '<div class="cloud-card-sub" style="margin-top:6px">' + (e.pakete || 0)
               + ' packet' + (e.pakete === 1 ? '' : 's') + ' · last '
-              + (e.zuletzt ? new Date(e.zuletzt).toLocaleTimeString() : '—') + '</div>'
+              + wannZuletzt(e.zuletzt) + '</div>'
             + (zeilen ? '<div class="table-scroll" style="margin-top:10px">'
                 + '<table class="dp-debug-table"><thead><tr><th>DP</th><th>Value</th>'
                 + '<th>Type</th></tr></thead><tbody>' + zeilen + '</tbody></table></div>' : '')
