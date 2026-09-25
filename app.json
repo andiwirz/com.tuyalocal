@@ -2422,6 +2422,40 @@
       "uiQuickAction": false,
       "insights": false,
       "icon": "/assets/capabilities/buzzer.svg"
+    },
+    "ac_sleep_mode": {
+      "type": "enum",
+      "title": {
+        "en": "Sleep Mode",
+        "de": "Schlafmodus"
+      },
+      "getable": true,
+      "setable": true,
+      "uiComponent": "picker",
+      "icon": "/assets/capabilities/ac_sleep.svg",
+      "values": [
+        {
+          "id": "standard",
+          "title": {
+            "en": "Standard",
+            "de": "Standard"
+          }
+        },
+        {
+          "id": "elderly",
+          "title": {
+            "en": "Elderly",
+            "de": "Senioren"
+          }
+        },
+        {
+          "id": "child",
+          "title": {
+            "en": "Child",
+            "de": "Kind"
+          }
+        }
+      ]
     }
   },
   "flow": {
@@ -18998,6 +19032,64 @@
               "hint": {
                 "en": "DP number for sleep mode. Common: 9. Set to 0 to hide.",
                 "de": "DP-Nummer für den Schlafmodus. Üblich: 9. 0 = ausblenden."
+              }
+            },
+            {
+              "id": "dp_light",
+              "type": "number",
+              "label": {
+                "en": "Indicator Light DP",
+                "de": "Kontrollleuchte DP"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "DP of the number display on the indoor unit — typically 13. Turning it off leaves the unit running silently in the dark, which is what most people want it for at night. 0 = disabled.",
+                "de": "DP der Ziffernanzeige am Innengerät — typischerweise 13. Ausgeschaltet läuft das Gerät weiter, nur dunkel, was der übliche Grund dafür ist. 0 = nicht benutzt."
+              }
+            },
+            {
+              "id": "dp_beep",
+              "type": "number",
+              "label": {
+                "en": "Buzzer DP",
+                "de": "Summer DP"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "DP of the confirmation beep the indoor unit makes when a setting changes — typically 16. 0 = disabled.",
+                "de": "DP des Quittungstons, den das Innengerät bei jeder Änderung gibt — typischerweise 16. 0 = nicht benutzt."
+              }
+            },
+            {
+              "id": "dp_sleep_mode",
+              "type": "number",
+              "label": {
+                "en": "Sleep Mode DP (multi-step)",
+                "de": "Schlafmodus-DP (mehrstufig)"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "For units whose sleep function has several settings rather than just on and off — typically 126. Use this instead of Sleep DP, not alongside it: Sleep DP expects a plain switch and would read any of the steps as simply on. 0 = disabled.",
+                "de": "Für Geräte, deren Schlaffunktion mehrere Stufen statt nur ein und aus kennt — typischerweise 126. Statt des Schlaf-DP zu benutzen, nicht zusätzlich: der erwartet einen einfachen Schalter und läse jede Stufe schlicht als „an\". 0 = nicht benutzt."
+              }
+            },
+            {
+              "id": "sleep_mode_values",
+              "type": "text",
+              "label": {
+                "en": "Sleep mode values (comma-separated)",
+                "de": "Schlafmodus-Werte (kommagetrennt)"
+              },
+              "value": "standard=1,elderly=2,child=3",
+              "hint": {
+                "en": "The steps your unit offers, in the same name=value form as the mode list above. The default is what one reported unit uses, where the Tuya app labels them Standard, The aged and Child. Check yours in DP Debug: switch the sleep setting on the unit and watch which number arrives.",
+                "de": "Die Stufen Ihres Geräts, in derselben Form Name=Wert wie die Betriebsartenliste oben. Die Vorgabe ist das, was ein gemeldetes Gerät benutzt, wo die Tuya-App sie Standard, Senioren und Kind nennt. Prüfen Sie Ihre in DP-Debug: die Schlafeinstellung am Gerät umschalten und sehen, welche Zahl ankommt."
               }
             },
             {

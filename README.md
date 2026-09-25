@@ -314,6 +314,9 @@ Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polli
 | `dp_sleep` | <img src="assets/capabilities/ac_sleep.svg" height="24"> | `ac_sleep` | boolean | 0 | ✓ `0` = disabled |
 | `dp_eco` | <img src="assets/capabilities/ac_eco.svg" height="24"> | `ac_eco` | boolean | 0 | ✓ `0` = disabled |
 | `dp_child_lock` | <img src="assets/capabilities/child_lock.svg" height="24"> | `child_lock` | boolean | 0 | ✓ `0` = disabled |
+| `dp_sleep_mode` | <img src="assets/capabilities/ac_sleep.svg" height="24"> | `ac_sleep_mode` | enum | 0 | ✓ `0` = disabled |
+| `dp_light` | <img src="assets/capabilities/indicator_light.svg" height="24"> | `indicator_light` | boolean | 0 | ✓ `0` = disabled |
+| `dp_beep` | <img src="assets/capabilities/buzzer.svg" height="24"> | `buzzer` | boolean | 0 | ✓ `0` = disabled |
 | `dp_countdown_timer` | <img src="assets/capabilities/countdown_timer.svg" height="24"> | `countdown_timer` | number | 0 | ✓ `0` = disabled |
 | `dp_countdown_left` | <img src="assets/capabilities/countdown_left.svg" height="24"> | `countdown_left` | number | 0 | ✓ `0` = disabled |
 | `dp_fault` |  | `alarm_generic` | boolean | 20 | ✓ `0` = disabled |
@@ -340,6 +343,12 @@ Some AC units send temperatures multiplied by 10 (e.g. `220` = 22.0 °C). The dr
 > The left side is what Homey shows and what flows see; the right side is what is sent
 > to the device and what it is expected to send back. **A list without equals signs
 > behaves exactly as before**, so existing devices are unaffected.
+>
+> The same form applies to **`sleep_mode_values`**. Some units run the sleep function in
+> steps rather than on and off — one reported unit offers three, which its Tuya app labels
+> Standard, The aged and Child, as `standard=1,elderly=2,child=3` on DP 126. Point
+> **Sleep Mode DP (multi-step)** at it instead of **Sleep DP**, not alongside it: the latter
+> expects a plain switch and would read any of the steps as simply on.
 >
 > Until this existed the one list had to be both at once, which cannot work on such a
 > unit: entering the names left the picker ignoring the device, and entering the numbers

@@ -9,9 +9,10 @@ const DEBOUNCE_MS = 300;
 // Diese drei duerfen eine Zuordnung tragen ("cool=1"), weil hier uebersetzt wird:
 // beim Lesen zurueck auf den Namen, beim Senden auf den Wert des Geraets.
 const ENUM_QUELLE = {
-  ac_mode:      'mode_values',
-  ac_fan_speed: 'fan_speed_values',
-  ac_swing:     'swing_values',
+  ac_mode:       'mode_values',
+  ac_fan_speed:  'fan_speed_values',
+  ac_swing:      'swing_values',
+  ac_sleep_mode: 'sleep_mode_values',
 };
 
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -29,6 +30,14 @@ const DP_PROFILE = [
   { settingKey: 'dp_sleep',           capability: 'ac_sleep',        transform: (v) => Boolean(v),  settable: true               },
   { settingKey: 'dp_eco',             capability: 'ac_eco',          transform: (v) => Boolean(v),  settable: true               },
   { settingKey: 'dp_child_lock',      capability: 'child_lock',      transform: (v) => Boolean(v),  settable: true               },
+  // Aus Jeppe Ladefogeds Tabelle: die Ziffernanzeige am Innengeraet und der
+  // Quittungston. Zwei Schalter, die niemand vermisst, bis er nachts daneben liegt.
+  { settingKey: 'dp_light',           capability: 'indicator_light', transform: (v) => Boolean(v),  settable: true               },
+  { settingKey: 'dp_beep',            capability: 'buzzer',          transform: (v) => Boolean(v),  settable: true               },
+  // Und der Schlafmodus, der bei ihm kein Schalter ist, sondern drei Stufen hat.
+  // ac_sleep bleibt daneben bestehen: eine Faehigkeit kann ihren Typ nicht je Geraet
+  // wechseln, und Geraete mit einem blossen Schalter gibt es weiterhin.
+  { settingKey: 'dp_sleep_mode',      capability: 'ac_sleep_mode',   transform: (v) => String(v),   settable: true               },
   { settingKey: 'dp_countdown_left',  capability: 'countdown_left',  transform: (v) => Number(v),   settable: false              },
   { settingKey: 'dp_countdown_timer', capability: 'countdown_timer', transform: (v) => String(v),   settable: true               },
 ];
@@ -38,6 +47,9 @@ const OPTIONAL_CAPABILITIES = [
   { setting: 'dp_swing_h',         capability: 'ac_swing_h'      },
   { setting: 'dp_anion',           capability: 'anion'           },
   { setting: 'dp_sleep',           capability: 'ac_sleep'        },
+  { setting: 'dp_sleep_mode',      capability: 'ac_sleep_mode'   },
+  { setting: 'dp_light',           capability: 'indicator_light' },
+  { setting: 'dp_beep',            capability: 'buzzer'          },
   { setting: 'dp_eco',             capability: 'ac_eco'          },
   { setting: 'dp_child_lock',      capability: 'child_lock'      },
   { setting: 'dp_fault',           capability: 'alarm_generic'   },
@@ -70,6 +82,7 @@ class AirConditionerDevice extends BaseTuyaDevice {
     await this._syncEnumOptions('ac_mode',      this.getSetting('mode_values'),      { zuordnung: true });
     await this._syncEnumOptions('ac_fan_speed', this.getSetting('fan_speed_values'), { zuordnung: true });
     await this._syncEnumOptions('ac_swing',     this.getSetting('swing_values'),     { zuordnung: true });
+    await this._syncEnumOptions('ac_sleep_mode', this.getSetting('sleep_mode_values'), { zuordnung: true });
     await this._syncTempCapabilityOptions();
 
     // â”€â”€ Flow trigger cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -292,10 +305,11 @@ class AirConditionerDevice extends BaseTuyaDevice {
       await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
       this._registerListeners(); // newly added capabilities need listeners immediately
     }
-    if (changedKeys.some((k) => ['mode_values', 'fan_speed_values', 'swing_values'].includes(k))) {
+    if (changedKeys.some((k) => ['mode_values', 'fan_speed_values', 'swing_values', 'sleep_mode_values'].includes(k))) {
       await this._syncEnumOptions('ac_mode',      this.getSetting('mode_values'),      { zuordnung: true });
       await this._syncEnumOptions('ac_fan_speed', this.getSetting('fan_speed_values'), { zuordnung: true });
       await this._syncEnumOptions('ac_swing',     this.getSetting('swing_values'),     { zuordnung: true });
+    await this._syncEnumOptions('ac_sleep_mode', this.getSetting('sleep_mode_values'), { zuordnung: true });
     }
     if (changedKeys.some((k) => ['temp_step', 'temp_min', 'temp_max'].includes(k))) {
       await this._syncTempCapabilityOptions();
