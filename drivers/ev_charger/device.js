@@ -81,12 +81,18 @@ const STATE_MAP = {
   PAUSE:    'plugged_in_paused',
 };
 
-// Welche zugeordneten Zustaende einen freigegebenen und welche einen abgeschalteten
-// Lader bedeuten. Nur fuer den Fall, dass der Schalt-Datenpunkt selbst nichts meldet —
-// siehe _schalterAusZustand. Ausgesteckt sagt nichts ueber die Freigabe und steht
-// deshalb in keiner der beiden Mengen.
-const AN_ZUSTAENDE  = new Set(['plugged_in_charging', 'plugged_in']);
-const AUS_ZUSTAENDE = new Set(['plugged_in_paused']);
+// Der Schalter zeigt, ob geladen wird — nicht, ob der Lader freigegeben ist.
+//
+// Zuerst war es umgekehrt: "angesteckt, im Ruhen" galt als eingeschaltet, weil der
+// Lader ja bereitsteht, und ausgesteckt liess den Schalter unberuehrt, weil es nichts
+// ueber die Freigabe sagt. Beides war vertretbar und beides sah am Geraet falsch aus.
+// Der Meldende hat es zweimal hintereinander erlebt: das Auto war fertig, der Schalter
+// stand auf an; das Auto war ausgesteckt, der Schalter stand immer noch auf an.
+//
+// Ob ein Lader "freigegeben" ist, laesst sich bei einem reinen Schreib-Datenpunkt
+// ohnehin nicht feststellen — es gibt keine Quelle dafuer. Ob geladen wird, schon.
+// Also zeigt der Schalter das, und dann stimmt er in jedem der fuenf Zustaende.
+const LAEDT = 'plugged_in_charging';
 
 // Control-pilot states that mean the charger is actively supplying current.
 // Per the CP standard, 9 V = vehicle connected and 6 V = vehicle ready, while the
@@ -722,7 +728,7 @@ class EvChargerDevice extends BaseTuyaDevice {
       state = 'plugged_in_charging';
     }
     await this.setCapabilityValue('evcharger_charging_state', state).catch(() => {});
-    await this._schalterAusZustand(raw, state);
+    await this._schalterAusZustand(raw);
   }
 
   /**
@@ -744,17 +750,20 @@ class EvChargerDevice extends BaseTuyaDevice {
    * Nachfuehrung ab — und das war genau der Fall, fuer den sie gebaut ist. Gezaehlt
    * wird jetzt nur, was den Echo-Filter passiert hat, also eine echte Meldung.
    *
-   * "Angesteckt, im Ruhen" zaehlt als eingeschaltet: der Lader ist freigegeben, das
-   * Fahrzeug fragt nur gerade nichts ab. Abgeschaltet ist er erst, wenn der Zustand
-   * das sagt.
+   * Gezeigt wird, ob geladen wird — siehe LAEDT. Und zwar aus dem zugeordneten
+   * Rohzustand, nicht aus dem fertigen: der wird weiter oben um die Steuerleitung
+   * angehoben, und diese Anhebung fragt ihrerseits den Schalter. Aus dem Rohzustand
+   * zu lesen haelt die beiden auseinander, statt sie im Kreis laufen zu lassen.
    */
-  async _schalterAusZustand(raw, state) {
+  async _schalterAusZustand(raw) {
     const dp = this.getSetting('dp_switch') ?? 0;
     if (dp <= 0) return;
     if (this._schaltDpMeldetSich) return;   // er meldet sich, also nicht eingreifen
-    if (!AN_ZUSTAENDE.has(state) && !AUS_ZUSTAENDE.has(state)) return;
 
-    const an = AN_ZUSTAENDE.has(state);
+    const zugeordnet = STATE_MAP[raw];
+    if (!zugeordnet) return;                // unbekannter Zustand: lieber nichts sagen
+
+    const an = zugeordnet === LAEDT;
     if (this.getCapabilityValue('evcharger_charging') === an) return;
 
     if (!this._schalterGemeldet) {
