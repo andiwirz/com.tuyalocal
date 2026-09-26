@@ -2,6 +2,7 @@
 
 const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 const { parseColorHex, buildColorHex } = require('../../lib/tuyaColor');
+const { rohZuId, idZuRoh } = require('../../lib/utils.js');
 
 const DEBOUNCE_MS = 300;
 
@@ -19,6 +20,17 @@ const MIN_COLOUR_V = 10;
 // dp_speed (numeric speed integer) is handled separately because it needs
 // min/max scaling to the Homey dim range (0–1).
 // dp_light_dim and dp_light_color_temp are also handled separately (scaling).
+// Welche Auswahl-Faehigkeit ihre erlaubten Werte aus welcher Einstellung bezieht.
+// Diese zwei duerfen eine Zuordnung tragen ("low=1"), weil hier uebersetzt wird: beim
+// Lesen zurueck auf den Namen, beim Senden auf den Wert des Geraets.
+//
+// Gemeldet an einem Ventilator, dessen Stufen 1, 2 und 3 heissen und sonst nichts.
+// Ohne Zuordnung stehen diese Ziffern im Waehler und in jedem Flow.
+const ENUM_QUELLE = {
+  fan_speed: 'fan_speed_values',
+  fan_mode:  'fan_mode_values',
+};
+
 const DP_PROFILE = [
   { settingKey: 'dp_onoff',           capability: 'onoff',           transform: (v) => Boolean(v),  settable: true  },
   { settingKey: 'dp_fan_speed',       capability: 'fan_speed',       transform: (v) => String(v),   settable: true  },
@@ -71,8 +83,8 @@ class FanDevice extends BaseTuyaDevice {
     await this._migrateCapabilities([]);
     await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
     await this._applyFixedPower();
-    await this._syncEnumOptions('fan_speed', this.getSetting('fan_speed_values'));
-    await this._syncEnumOptions('fan_mode',  this.getSetting('fan_mode_values'));
+    await this._syncEnumOptions('fan_speed', this.getSetting('fan_speed_values'), { zuordnung: true });
+    await this._syncEnumOptions('fan_mode',  this.getSetting('fan_mode_values'), { zuordnung: true });
     await this._syncDeviceClass();
 
     // ── Flow trigger cards ──────────────────────────────────────────────────
@@ -120,7 +132,11 @@ class FanDevice extends BaseTuyaDevice {
     for (const entry of DP_PROFILE) {
       if (!entry.settable) continue;
       register(entry.capability, async (value) => {
-        await this._set(this.getSetting(entry.settingKey), value);
+        // Traegt die Werteliste eine Zuordnung, geht der Wert des Geraets hinaus und
+        // nicht der Name. Ohne Zuordnung faellt idZuRoh auf den Wert selbst zurueck.
+        const quelle = ENUM_QUELLE[entry.capability];
+        const roh = quelle ? idZuRoh(this.getSetting(quelle), value) : value;
+        await this._set(this.getSetting(entry.settingKey), roh);
       });
     }
 
@@ -373,7 +389,12 @@ class FanDevice extends BaseTuyaDevice {
         continue;
       }
 
-      const converted = entry.transform(value);
+      // Und zurueck: schickt das Geraet "2", zeigt Homey "medium" — sofern die
+      // Werteliste das so sagt. Sagt sie nichts, bleibt der Wert, wie er kam.
+      const enumQuelle = ENUM_QUELLE[entry.capability];
+      const converted = enumQuelle
+        ? rohZuId(this.getSetting(enumQuelle), entry.transform(value))
+        : entry.transform(value);
 
       if (entry.capability === 'fan_mode') {
         const prevMode = this.getCapabilityValue('fan_mode');
@@ -429,8 +450,8 @@ class FanDevice extends BaseTuyaDevice {
       await this._applyFixedPower();
     }
     if (changedKeys.some((k) => ['fan_speed_values', 'fan_mode_values'].includes(k))) {
-      await this._syncEnumOptions('fan_speed', this.getSetting('fan_speed_values'));
-      await this._syncEnumOptions('fan_mode',  this.getSetting('fan_mode_values'));
+      await this._syncEnumOptions('fan_speed', this.getSetting('fan_speed_values'), { zuordnung: true });
+      await this._syncEnumOptions('fan_mode',  this.getSetting('fan_mode_values'), { zuordnung: true });
     }
     if (changedKeys.some((k) => LIGHT_DP_SETTINGS.includes(k))) {
       await this._syncDeviceClass();

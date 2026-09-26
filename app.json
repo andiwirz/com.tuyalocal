@@ -19533,8 +19533,8 @@
               },
               "value": "low,medium,high,auto,turbo",
               "hint": {
-                "en": "Supported string values for fan speed.",
-                "de": "Unterstützte String-Werte für die Lüftergeschwindigkeit."
+                "en": "The speeds your fan offers, as it spells them. Many use words — low, medium, high — but plenty number them instead. If DP Debug shows \"1\", \"2\", \"3\" rather than a word, write both, as name=value: low=1,medium=2,high=3. The left side is what Homey shows and what flows use; the right side is what is sent to the fan and what it sends back. A list without equals signs behaves exactly as before.",
+                "de": "Die Stufen, die Ihr Ventilator kennt, in seiner eigenen Schreibweise. Viele benutzen Wörter — low, medium, high —, etliche aber Ziffern. Zeigt DP-Debug \"1\", \"2\", \"3\" statt eines Worts, schreiben Sie beides, als Name=Wert: low=1,medium=2,high=3. Links steht, was Homey anzeigt und was in Flows erscheint; rechts, was zum Gerät geht und was es zurückschickt. Eine Liste ohne Gleichheitszeichen verhält sich wie bisher."
               }
             },
             {
@@ -19588,8 +19588,8 @@
               },
               "value": "normal,sleep,nature,breeze,smart",
               "hint": {
-                "en": "Supported mode values.",
-                "de": "Unterstützte Modus-Werte."
+                "en": "The modes your fan offers, as it spells them — often normal, sleep, nature. The same name=value form applies if yours uses numbers instead.",
+                "de": "Die Betriebsarten, die Ihr Ventilator kennt, in seiner eigenen Schreibweise — oft normal, sleep, nature. Dieselbe Form Name=Wert gilt, wenn Ihrer stattdessen Zahlen benutzt."
               }
             },
             {

@@ -403,6 +403,23 @@ Because the speed slider already occupies `dim`, the light's brightness uses its
 | `fan_speed_values` | `low,medium,high,auto,turbo` |
 | `fan_mode_values` | `normal,sleep,nature,breeze,smart` |
 
+> **Fans that number their speeds.** Many report `low`, `medium`, `high`; plenty report
+> `"1"`, `"2"`, `"3"` and nothing else. Write both, as `name=value`:
+>
+> ```
+> low=1,medium=2,high=3
+> ```
+>
+> The left side is what Homey shows and what flows use; the right side is what is sent to the
+> fan and what it sends back. A list without equals signs behaves exactly as before. The same
+> applies to `fan_mode_values`.
+
+> **One trap worth knowing.** `dp_speed` defaults to **3**, which is where many fans put a
+> percentage speed — but some put their *mode* there instead. If both `dp_speed` and
+> `dp_mode` point at the same data point, the slider wins and the mode is lost entirely. Set
+> `dp_speed = 0` when your fan has stepped speeds rather than a percentage, and use
+> `dp_fan_speed` for the steps.
+
 The `fan_direction` capability uses fixed values `forward` and `reverse` (Tuya standard). The DP is auto-detected at pairing time if the device reports either of those strings.
 
 #### Fixed Power Reporting
