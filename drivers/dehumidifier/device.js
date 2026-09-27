@@ -297,8 +297,11 @@ class DehumidifierDevice extends BaseTuyaDevice {
       }
 
       if (entry.capability === 'countdown_left') {
-        const minutes = settings.dp_countdown_left_minutes;
-        await this.setCapabilityValue('countdown_left', minutes ? converted / 60 : converted).catch(() => {});
+        // Rechnete bis hierher Minuten in Stunden um. Jetzt traegt die Kachel die
+        // Einheit des Geraets und zeigt dessen Zahl — 45 Minuten stehen als "45 min"
+        // da statt als "0,8 h". Die Beschriftung besorgt die Basis.
+        await this._richteRestzeitEin();
+        await this.setCapabilityValue('countdown_left', converted).catch(() => {});
         continue;
       }
 
