@@ -7,7 +7,7 @@ const { describeConnectFailure } = require('../../lib/connectFailure');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
 const { detectViaCloud, guessedDefaults } = require('../../lib/dpCodeMap');
-const { fehlertext } = require('../../lib/utils.js');
+const { fehlertext, leseWerteliste } = require('../../lib/utils.js');
 
 // WiFi face/fingerprint access panels, Tuya category "mk".
 //

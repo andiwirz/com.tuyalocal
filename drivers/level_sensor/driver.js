@@ -7,7 +7,7 @@ const { describeConnectFailure } = require('../../lib/connectFailure');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
 const { detectViaCloud, guessedDefaults } = require('../../lib/dpCodeMap');
-const { fehlertext } = require('../../lib/utils.js');
+const { fehlertext, leseWerteliste } = require('../../lib/utils.js');
 
 // Ultrasonic liquid level sensors report a percentage, a depth and a three-state
 // level alarm. There is no local value heuristic here: a bare number carries no
