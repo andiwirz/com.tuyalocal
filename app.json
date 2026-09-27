@@ -19269,7 +19269,6 @@
       ],
       "capabilities": [
         "onoff",
-        "dim",
         "fan_direction"
       ],
       "capabilitiesOptions": {
@@ -19485,8 +19484,8 @@
               },
               "value": 3,
               "hint": {
-                "en": "DP for numeric speed (0 = disable). Maps to Homey speed slider.",
-                "de": "DP für numerische Geschwindigkeit (0 = deaktiviert). Wird auf den Homey-Regler gemappt."
+                "en": "DP for numeric speed (0 = disable). Maps to Homey speed slider. Setting this to 0 removes the percentage slider from the device, which is what you want on a fan with stepped speeds — use the Fan Speed DP for those.",
+                "de": "DP für numerische Geschwindigkeit (0 = deaktiviert). Wird auf den Homey-Regler gemappt. Auf 0 gesetzt verschwindet der Prozentregler vom Gerät, was bei einem Ventilator mit festen Stufen das Gewünschte ist — für die ist der Lüftergeschwindigkeit-DP zuständig."
               }
             },
             {
@@ -19616,6 +19615,19 @@
               "hint": {
                 "en": "Set to 0 to disable.",
                 "de": "0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_countdown_timer_numeric",
+              "type": "checkbox",
+              "label": {
+                "en": "Timer uses plain numbers",
+                "de": "Timer verwendet reine Zahlen"
+              },
+              "value": false,
+              "hint": {
+                "en": "Enable if the timer data point carries a plain number — 0, 1, 2 … — rather than the \"cancel\", \"1h\", \"2h\" … strings the tile uses. On one reported fan the number is hours, 0 to 4. Without this, selecting 2 hours sends \"2h\" to a device expecting \"2\", and the data point simply stays at 0.",
+                "de": "Einschalten, wenn der Timer-Datenpunkt eine blosse Zahl trägt — 0, 1, 2 … — statt der Zeichenketten \"cancel\", \"1h\", \"2h\" …, die die Kachel benutzt. Bei einem gemeldeten Ventilator sind die Zahlen Stunden, 0 bis 4. Ohne diese Einstellung geht bei „2 Stunden\" ein \"2h\" an ein Gerät, das \"2\" erwartet, und der Datenpunkt bleibt schlicht auf 0."
               }
             },
             {
@@ -20244,6 +20256,19 @@
               "hint": {
                 "en": "Set to 0 to disable.",
                 "de": "0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_countdown_timer_numeric",
+              "type": "checkbox",
+              "label": {
+                "en": "Timer uses plain numbers",
+                "de": "Timer verwendet reine Zahlen"
+              },
+              "value": false,
+              "hint": {
+                "en": "Enable if the timer data point carries a plain number — 0, 1, 2 … — rather than the \"cancel\", \"1h\", \"2h\" … strings the tile uses. On one reported fan the number is hours, 0 to 4. Without this, selecting 2 hours sends \"2h\" to a device expecting \"2\", and the data point simply stays at 0.",
+                "de": "Einschalten, wenn der Timer-Datenpunkt eine blosse Zahl trägt — 0, 1, 2 … — statt der Zeichenketten \"cancel\", \"1h\", \"2h\" …, die die Kachel benutzt. Bei einem gemeldeten Ventilator sind die Zahlen Stunden, 0 bis 4. Ohne diese Einstellung geht bei „2 Stunden\" ein \"2h\" an ein Gerät, das \"2\" erwartet, und der Datenpunkt bleibt schlicht auf 0."
               }
             },
             {

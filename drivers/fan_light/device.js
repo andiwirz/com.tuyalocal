@@ -22,6 +22,7 @@
 //   dim.light   = bright dim.fan    = speed
 const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 const { parseColorHex, buildColorHex } = require('../../lib/tuyaColor');
+const { zeitRohZuKachel, zeitKachelZuRoh } = require('../../lib/utils.js');
 
 const DEBOUNCE_MS = 300;
 
@@ -138,7 +139,13 @@ class FanLightDevice extends BaseTuyaDevice {
     for (const entry of DP_PROFILE) {
       if (!entry.settable) continue;
       register(entry.capability, async (value) => {
-        await this._set(this.getSetting(entry.settingKey), value);
+        // Die Abschaltzeit, wo das Geraet eine blosse Zahl fuehrt: "2h" an ein
+        // Geraet, das "2" erwartet, tut gar nichts — der Datenpunkt bleibt auf 0.
+        const roh = entry.capability === 'countdown_timer'
+          && this.getSetting('dp_countdown_timer_numeric')
+          ? zeitKachelZuRoh(value)
+          : value;
+        await this._set(this.getSetting(entry.settingKey), roh);
       });
     }
 
@@ -397,7 +404,10 @@ class FanLightDevice extends BaseTuyaDevice {
         continue;
       }
 
-      const converted = entry.transform(value);
+      const converted = entry.capability === 'countdown_timer'
+        && this.getSetting('dp_countdown_timer_numeric')
+        ? zeitRohZuKachel(value)
+        : entry.transform(value);
 
       // Homey erzeugt "wurde eingeschaltet" nur fuer onoff, und das ist hier das
       // Licht. Der Ventilator sitzt auf onoff.fan und braucht seinen eigenen.

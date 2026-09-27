@@ -2,7 +2,7 @@
 
 const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 const { parseColorHex, buildColorHex } = require('../../lib/tuyaColor');
-const { rohZuId, idZuRoh } = require('../../lib/utils.js');
+const { rohZuId, idZuRoh, zeitRohZuKachel, zeitKachelZuRoh } = require('../../lib/utils.js');
 
 const DEBOUNCE_MS = 300;
 
@@ -47,6 +47,11 @@ const OPTIONAL_CAPABILITIES = [
   // Feste Leistung statt Homeys Schaetzung, die mit der Stufe herunterrechnet. Steht die
   // Wattzahl auf 0, entsteht die Faehigkeit nicht und alles bleibt wie bisher.
   { setting: 'power_on_watts',      capability: 'measure_power'     },
+  // Der Prozentregler gehoert an den Geschwindigkeits-Datenpunkt und war bisher fest
+  // im Manifest. Gemeldet an einem Ventilator mit drei Stufen: dort steht er ohne
+  // Sinn daneben, und dp_speed auf 0 zu setzen half nicht — was fest ist, laesst sich
+  // nicht abwaehlen.
+  { setting: 'dp_speed',            capability: 'dim'               },
   { setting: 'dp_fan_speed',        capability: 'fan_speed'         },
   { setting: 'dp_oscillate',        capability: 'oscillate'         },
   { setting: 'dp_direction',        capability: 'fan_direction'     },
@@ -135,7 +140,12 @@ class FanDevice extends BaseTuyaDevice {
         // Traegt die Werteliste eine Zuordnung, geht der Wert des Geraets hinaus und
         // nicht der Name. Ohne Zuordnung faellt idZuRoh auf den Wert selbst zurueck.
         const quelle = ENUM_QUELLE[entry.capability];
-        const roh = quelle ? idZuRoh(this.getSetting(quelle), value) : value;
+        let roh = quelle ? idZuRoh(this.getSetting(quelle), value) : value;
+        // Und die Abschaltzeit, wo das Geraet eine blosse Zahl fuehrt: "2h" an ein
+        // Geraet, das "2" erwartet, tut gar nichts — der Datenpunkt bleibt auf 0.
+        if (entry.capability === 'countdown_timer' && this.getSetting('dp_countdown_timer_numeric')) {
+          roh = zeitKachelZuRoh(value);
+        }
         await this._set(this.getSetting(entry.settingKey), roh);
       });
     }
@@ -392,9 +402,12 @@ class FanDevice extends BaseTuyaDevice {
       // Und zurueck: schickt das Geraet "2", zeigt Homey "medium" — sofern die
       // Werteliste das so sagt. Sagt sie nichts, bleibt der Wert, wie er kam.
       const enumQuelle = ENUM_QUELLE[entry.capability];
-      const converted = enumQuelle
+      let converted = enumQuelle
         ? rohZuId(this.getSetting(enumQuelle), entry.transform(value))
         : entry.transform(value);
+      if (entry.capability === 'countdown_timer' && this.getSetting('dp_countdown_timer_numeric')) {
+        converted = zeitRohZuKachel(value);
+      }
 
       if (entry.capability === 'fan_mode') {
         const prevMode = this.getCapabilityValue('fan_mode');

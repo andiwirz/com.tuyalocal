@@ -1,22 +1,16 @@
 'use strict';
 
 const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
+const { zeitRohZuKachel, zeitKachelZuRoh } = require('../../lib/utils.js');
 
 const DEBOUNCE_MS = 300; // debounce delay for slider capabilities
 
 // Some devices (e.g. Klarstein Dryfy) transmit the timer DP as a plain numeric
 // enum ("0".."24") instead of the "cancel"/"1h".."24h" strings the countdown_timer
 // capability expects. dp_countdown_timer_numeric enables translation both ways.
-function countdownRawToCap(rawValue) {
-  const s = String(rawValue);
-  if (s === '0') return 'cancel';
-  return /^\d+$/.test(s) ? `${s}h` : s;
-}
-function countdownCapToRaw(capValue) {
-  if (capValue === 'cancel') return '0';
-  const m = String(capValue).match(/^(\d+)h$/);
-  return m ? m[1] : capValue;
-}
+// Die Umrechnung selbst steht in lib/utils.js, seit ein zweiter Treiber sie braucht.
+const countdownRawToCap = zeitRohZuKachel;
+const countdownCapToRaw = zeitKachelZuRoh;
 
 // Maps settings keys → Homey capabilities.
 // settable: false = read-only, no capability listener registered.
