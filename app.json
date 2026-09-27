@@ -479,7 +479,7 @@
       },
       "min": 0,
       "max": 24,
-      "step": 1,
+      "step": 0.1,
       "getable": true,
       "setable": false,
       "uiComponent": "sensor",
@@ -19145,6 +19145,19 @@
               }
             },
             {
+              "id": "dp_countdown_left_minutes",
+              "type": "checkbox",
+              "label": {
+                "en": "Timer Remaining DP is in minutes",
+                "de": "Verbleibende Zeit DP in Minuten"
+              },
+              "value": false,
+              "hint": {
+                "en": "Enable if the DP above reports minutes (e.g. 0–1440) instead of hours. The value is divided by 60 before display.",
+                "de": "Aktivieren wenn der obige DP Minuten (z.B. 0–1440) statt Stunden liefert. Der Wert wird vor der Anzeige durch 60 geteilt."
+              }
+            },
+            {
               "id": "dp_anion",
               "type": "number",
               "label": {
@@ -19641,6 +19654,19 @@
               "hint": {
                 "en": "Read-only. Set to 0 to disable.",
                 "de": "Nur lesen. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_countdown_left_minutes",
+              "type": "checkbox",
+              "label": {
+                "en": "Timer Remaining DP is in minutes",
+                "de": "Verbleibende Zeit DP in Minuten"
+              },
+              "value": false,
+              "hint": {
+                "en": "Enable if the DP above reports minutes (e.g. 0–1440) instead of hours. The value is divided by 60 before display.",
+                "de": "Aktivieren wenn der obige DP Minuten (z.B. 0–1440) statt Stunden liefert. Der Wert wird vor der Anzeige durch 60 geteilt."
               }
             }
           ]
@@ -20283,6 +20309,19 @@
                 "en": "Read-only. Set to 0 to disable.",
                 "de": "Nur lesen. 0 = deaktiviert."
               }
+            },
+            {
+              "id": "dp_countdown_left_minutes",
+              "type": "checkbox",
+              "label": {
+                "en": "Timer Remaining DP is in minutes",
+                "de": "Verbleibende Zeit DP in Minuten"
+              },
+              "value": false,
+              "hint": {
+                "en": "Enable if the DP above reports minutes (e.g. 0–1440) instead of hours. The value is divided by 60 before display.",
+                "de": "Aktivieren wenn der obige DP Minuten (z.B. 0–1440) statt Stunden liefert. Der Wert wird vor der Anzeige durch 60 geteilt."
+              }
             }
           ]
         },
@@ -20878,6 +20917,19 @@
               }
             },
             {
+              "id": "dp_countdown_left_minutes",
+              "type": "checkbox",
+              "label": {
+                "en": "Timer Remaining DP is in minutes",
+                "de": "Verbleibende Zeit DP in Minuten"
+              },
+              "value": false,
+              "hint": {
+                "en": "Enable if the DP above reports minutes (e.g. 0–1440) instead of hours. The value is divided by 60 before display.",
+                "de": "Aktivieren wenn der obige DP Minuten (z.B. 0–1440) statt Stunden liefert. Der Wert wird vor der Anzeige durch 60 geteilt."
+              }
+            },
+            {
               "id": "dp_temperature",
               "type": "number",
               "label": {
@@ -21433,6 +21485,19 @@
               "hint": {
                 "en": "Read-only. Set to 0 to disable.",
                 "de": "Nur lesen. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "dp_countdown_left_minutes",
+              "type": "checkbox",
+              "label": {
+                "en": "Timer Remaining DP is in minutes",
+                "de": "Verbleibende Zeit DP in Minuten"
+              },
+              "value": false,
+              "hint": {
+                "en": "Enable if the DP above reports minutes (e.g. 0–1440) instead of hours. The value is divided by 60 before display.",
+                "de": "Aktivieren wenn der obige DP Minuten (z.B. 0–1440) statt Stunden liefert. Der Wert wird vor der Anzeige durch 60 geteilt."
               }
             },
             {
