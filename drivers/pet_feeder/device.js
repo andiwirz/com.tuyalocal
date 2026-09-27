@@ -251,12 +251,31 @@ class PetFeederDevice extends BaseTuyaDevice {
           converted === 'done' ||
           (converted === 'standby' && prev === 'feeding');
         if (feedingComplete) {
-          // The portions token is only known when the device also reports a feed
-          // count; 0 means "this device does not say how much it dispensed".
-          const reported = this.hasCapability('feed_report')
-            ? Number(this.getCapabilityValue('feed_report')) || 0
-            : 0;
-          this._fireFeedingDone(reported, `DP ${dp} = ${converted}`);
+          // Dieselbe Schonfrist wie beim Rueckmeldeweg darueber, und aus demselben
+          // Grund — nur faellt sie hier staerker ins Gewicht.
+          //
+          // prev kommt aus der Faehigkeit, und Homey bewahrt Faehigkeitswerte ueber
+          // einen Neustart. Endete der letzte App-Lauf, waehrend dort "feeding"
+          // stand, dann ist der erste "standby" nach dem Verbinden zwangslaeufig ein
+          // Uebergang von feeding auf standby — obwohl das Geraet nur seinen
+          // tatsaechlichen Zustand nennt. Gemeldet wurde daraufhin eine
+          // abgeschlossene Fuetterung, jedes Mal beim Starten der App.
+          //
+          // Der Wert wird trotzdem eingetragen: falsch ist die Meldung, nicht der
+          // Zustand.
+          const seitVerbindung = this._connectedAt ? Date.now() - this._connectedAt : Infinity;
+          if (seitVerbindung < FEED_REPORT_CONNECT_GRACE_MS) {
+            this.log(`Feeding completed (DP ${dp} = ${converted}) ignored — arrived `
+              + `${seitVerbindung} ms after connect, where the previous state is whatever `
+              + 'was left over from the last run rather than something just observed');
+          } else {
+            // The portions token is only known when the device also reports a feed
+            // count; 0 means "this device does not say how much it dispensed".
+            const reported = this.hasCapability('feed_report')
+              ? Number(this.getCapabilityValue('feed_report')) || 0
+              : 0;
+            this._fireFeedingDone(reported, `DP ${dp} = ${converted}`);
+          }
         }
 
         // "no_food" means the motor tried to run but the hopper was empty.
