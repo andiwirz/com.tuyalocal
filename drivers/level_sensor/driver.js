@@ -63,8 +63,8 @@ class LevelSensorDriver extends Homey.Driver {
 
     this.homey.flow.getConditionCard('level_sensor_state_is')
       .registerArgumentAutocompleteListener('state', async (query, args) => {
-        const values = (args.device.getSetting('state_values') || 'normal,lower_alarm,upper_alarm')
-          .split(',').map((s) => s.trim()).filter(Boolean);
+        const values = leseWerteliste(args.device.getSetting('state_values') || 'normal,lower_alarm,upper_alarm')
+        .map((e) => e.id);
         const q = String(query || '').toLowerCase();
         return values.filter((v) => v.toLowerCase().includes(q))
           .map((v) => ({ id: v, name: v.charAt(0).toUpperCase() + v.slice(1).replace(/_/g, ' ') }));

@@ -82,8 +82,8 @@ class WeatherStationDriver extends Homey.Driver {
 
     this.homey.flow.getConditionCard('weather_station_comfort_is')
       .registerArgumentAutocompleteListener('comfort', async (query, args) => {
-        const values = (args.device.getSetting('comfort_values') || 'moist,dry,comfortable,na')
-          .split(',').map((s) => s.trim()).filter(Boolean);
+        const values = leseWerteliste(args.device.getSetting('comfort_values') || 'moist,dry,comfortable,na')
+        .map((e) => e.id);
         const q = String(query || '').toLowerCase();
         return values.filter((v) => v.toLowerCase().includes(q))
           .map((v) => ({ id: v, name: v.charAt(0).toUpperCase() + v.slice(1).replace(/_/g, ' ') }));

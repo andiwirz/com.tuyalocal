@@ -7,6 +7,7 @@ const { describeConnectFailure } = require('../../lib/connectFailure');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
 const { detectViaCloud, guessedDefaults }        = require('../../lib/dpCodeMap');
+const { leseWerteliste } = require('../../lib/utils.js');
 
 // Maps this driver's settings keys to the Tuya cloud "code" names that
 // commonly represent them. See lib/dpCodeMap.js for why this refines the
@@ -85,14 +86,14 @@ class FanDriver extends Homey.Driver {
 
     const cap = (v) => v.charAt(0).toUpperCase() + v.slice(1).replace(/_/g, ' ');
     const modeAC = async (query, args) => {
-      const values = (args.device.getSetting('fan_mode_values') || 'normal,sleep,nature,breeze,smart')
-        .split(',').map((s) => s.trim()).filter(Boolean);
+      const values = leseWerteliste(args.device.getSetting('fan_mode_values') || 'normal,sleep,nature,breeze,smart')
+        .map((e) => e.id);
       const q = query.toLowerCase();
       return values.filter((v) => v.toLowerCase().includes(q)).map((v) => ({ id: v, name: cap(v) }));
     };
     const fanAC = async (query, args) => {
-      const values = (args.device.getSetting('fan_speed_values') || 'low,medium,high,auto,turbo')
-        .split(',').map((s) => s.trim()).filter(Boolean);
+      const values = leseWerteliste(args.device.getSetting('fan_speed_values') || 'low,medium,high,auto,turbo')
+        .map((e) => e.id);
       const q = query.toLowerCase();
       return values.filter((v) => v.toLowerCase().includes(q)).map((v) => ({ id: v, name: cap(v) }));
     };
@@ -173,8 +174,8 @@ class FanDriver extends Homey.Driver {
     // throws when the DP is not configured instead of returning silently: a
     // flow that reports success while doing nothing reads as a broken device.
     const lightModeAC = async (query, args) => {
-      const values = (args.device.getSetting('light_mode_values') || 'white,colour,scene,music')
-        .split(',').map((s) => s.trim()).filter(Boolean);
+      const values = leseWerteliste(args.device.getSetting('light_mode_values') || 'white,colour,scene,music')
+        .map((e) => e.id);
       const q = query.toLowerCase();
       return values.filter((v) => v.toLowerCase().includes(q)).map((v) => ({ id: v, name: cap(v) }));
     };

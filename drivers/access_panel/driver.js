@@ -117,8 +117,8 @@ class AccessPanelDriver extends Homey.Driver {
 
     this.homey.flow.getActionCard('access_panel_set_doorbell_volume')
       .registerArgumentAutocompleteListener('volume', async (query, args) => {
-        const values = (args.device.getSetting('volume_values') || 'mute,low,high')
-          .split(',').map((s) => s.trim()).filter(Boolean);
+        const values = leseWerteliste(args.device.getSetting('volume_values') || 'mute,low,high')
+        .map((e) => e.id);
         const q = String(query || '').toLowerCase();
         return values.filter((v) => v.toLowerCase().includes(q))
           .map((v) => ({ id: v, name: v.charAt(0).toUpperCase() + v.slice(1) }));

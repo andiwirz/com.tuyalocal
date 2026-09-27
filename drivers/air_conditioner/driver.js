@@ -47,14 +47,14 @@ class AirConditionerDriver extends Homey.Driver {
 
     const cap = (v) => v.charAt(0).toUpperCase() + v.slice(1).replace(/_/g, ' ');
     const modeAC = async (query, args) => {
-      const values = (args.device.getSetting('mode_values') || 'cool,heat,auto,dry,fan')
-        .split(',').map((s) => s.trim()).filter(Boolean);
+      const values = leseWerteliste(args.device.getSetting('mode_values') || 'cool,heat,auto,dry,fan')
+        .map((e) => e.id);
       const q = query.toLowerCase();
       return values.filter((v) => v.toLowerCase().includes(q)).map((v) => ({ id: v, name: cap(v) }));
     };
     const fanAC = async (query, args) => {
-      const values = (args.device.getSetting('fan_speed_values') || 'auto,low,medium,high,turbo')
-        .split(',').map((s) => s.trim()).filter(Boolean);
+      const values = leseWerteliste(args.device.getSetting('fan_speed_values') || 'auto,low,medium,high,turbo')
+        .map((e) => e.id);
       const q = query.toLowerCase();
       return values.filter((v) => v.toLowerCase().includes(q)).map((v) => ({ id: v, name: cap(v) }));
     };

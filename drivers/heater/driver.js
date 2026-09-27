@@ -7,6 +7,7 @@ const { describeConnectFailure } = require('../../lib/connectFailure');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
 const { detectViaCloud, guessedDefaults }        = require('../../lib/dpCodeMap');
+const { leseWerteliste } = require('../../lib/utils.js');
 
 // Maps this driver's settings keys to the Tuya cloud "code" names that
 // commonly represent them. See lib/dpCodeMap.js.
@@ -44,8 +45,8 @@ class HeaterDriver extends Homey.Driver {
       .registerRunListener(async (args) => args.device.getCapabilityValue('alarm_generic') === true);
 
     const modeAutocomplete = async (query, args) => {
-      const values = (args.device.getSetting('mode_values') || 'eco,comfort,boost,away,auto')
-        .split(',').map((s) => s.trim()).filter(Boolean);
+      const values = leseWerteliste(args.device.getSetting('mode_values') || 'eco,comfort,boost,away,auto')
+        .map((e) => e.id);
       const q = query.toLowerCase();
       return values
         .filter((v) => v.toLowerCase().includes(q))
@@ -103,8 +104,8 @@ class HeaterDriver extends Homey.Driver {
     // "level_2" is simply rejected, so this is an enum with its own card and the
     // choices come from what the device declares.
     const levelAutocomplete = async (query, args) => {
-      const values = (args.device.getSetting('level_values') || '1,2,3')
-        .split(',').map((s) => s.trim()).filter(Boolean);
+      const values = leseWerteliste(args.device.getSetting('level_values') || '1,2,3')
+        .map((e) => e.id);
       const q = String(query || '').toLowerCase();
       return values
         .filter((v) => v.toLowerCase().includes(q))

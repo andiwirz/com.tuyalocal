@@ -9,6 +9,7 @@ const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
 const { capitalize }            = require('../../lib/utils');
 const { detectViaCloud, guessedDefaults }        = require('../../lib/dpCodeMap');
+const { leseWerteliste } = require('../../lib/utils.js');
 
 // Maps this driver's settings keys to the Tuya cloud "code" names that
 // commonly represent them. See lib/dpCodeMap.js. dp_power_level and dp_preset
@@ -93,8 +94,8 @@ class HeatPumpDriver extends Homey.Driver {
 
     this.homey.flow.getActionCard('heat_pump_set_mode')
       .registerArgumentAutocompleteListener('mode', async (query, args) => {
-        const values = (args.device.getSetting('mode_values') || 'heat,cool,auto')
-          .split(',').map((s) => s.trim()).filter(Boolean);
+        const values = leseWerteliste(args.device.getSetting('mode_values') || 'heat,cool,auto')
+        .map((e) => e.id);
         const q = query.toLowerCase();
         return values
           .filter((v) => v.toLowerCase().includes(q))
@@ -107,8 +108,8 @@ class HeatPumpDriver extends Homey.Driver {
 
     this.homey.flow.getActionCard('heat_pump_set_preset')
       .registerArgumentAutocompleteListener('preset', async (query, args) => {
-        const values = (args.device.getSetting('preset_values') || 'sleep,comfort,boost')
-          .split(',').map((s) => s.trim()).filter(Boolean);
+        const values = leseWerteliste(args.device.getSetting('preset_values') || 'sleep,comfort,boost')
+        .map((e) => e.id);
         const q = query.toLowerCase();
         return values
           .filter((v) => v.toLowerCase().includes(q))
