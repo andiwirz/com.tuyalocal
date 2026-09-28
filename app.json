@@ -2456,6 +2456,118 @@
           }
         }
       ]
+    },
+    "dusk_threshold": {
+      "type": "enum",
+      "title": {
+        "en": "Daylight Threshold",
+        "de": "Dämmerungsschwelle"
+      },
+      "getable": true,
+      "setable": true,
+      "uiComponent": "picker",
+      "icon": "/assets/capabilities/backlight_level.svg",
+      "values": [
+        {
+          "id": "2000lux",
+          "title": {
+            "en": "2000 lux",
+            "de": "2000 Lux"
+          }
+        },
+        {
+          "id": "300lux",
+          "title": {
+            "en": "300 lux",
+            "de": "300 Lux"
+          }
+        },
+        {
+          "id": "50lux",
+          "title": {
+            "en": "50 lux",
+            "de": "50 Lux"
+          }
+        },
+        {
+          "id": "10lux",
+          "title": {
+            "en": "10 lux",
+            "de": "10 Lux"
+          }
+        },
+        {
+          "id": "5lux",
+          "title": {
+            "en": "5 lux",
+            "de": "5 Lux"
+          }
+        }
+      ]
+    },
+    "motion_sensitivity": {
+      "type": "enum",
+      "title": {
+        "en": "Motion Sensitivity",
+        "de": "Bewegungsempfindlichkeit"
+      },
+      "getable": true,
+      "setable": true,
+      "uiComponent": "picker",
+      "icon": "/assets/capabilities/comfort_level.svg",
+      "values": [
+        {
+          "id": "low",
+          "title": {
+            "en": "Low",
+            "de": "Niedrig"
+          }
+        },
+        {
+          "id": "middle",
+          "title": {
+            "en": "Medium",
+            "de": "Mittel"
+          }
+        },
+        {
+          "id": "high",
+          "title": {
+            "en": "High",
+            "de": "Hoch"
+          }
+        }
+      ]
+    },
+    "motion_hold_time": {
+      "type": "number",
+      "title": {
+        "en": "Hold Time",
+        "de": "Nachlaufzeit"
+      },
+      "getable": true,
+      "setable": true,
+      "uiComponent": "sensor",
+      "icon": "/assets/capabilities/countdown_left.svg",
+      "units": {
+        "en": "s",
+        "de": "s"
+      },
+      "min": 0,
+      "max": 3600,
+      "step": 1,
+      "insights": false
+    },
+    "motion_enabled": {
+      "type": "boolean",
+      "title": {
+        "en": "Motion Detection",
+        "de": "Bewegungserkennung"
+      },
+      "getable": true,
+      "setable": true,
+      "uiComponent": "toggle",
+      "icon": "/assets/capabilities/self_clean.svg"
     }
   },
   "flow": {
@@ -25178,6 +25290,92 @@
               "hint": {
                 "en": "DP for presence detection (bool). ZY-M100-WIFI: DP 1.",
                 "de": "DP für Anwesenheitserkennung (bool). ZY-M100-WIFI: DP 1."
+              }
+            },
+            {
+              "id": "dp_dusk_threshold",
+              "type": "number",
+              "label": {
+                "en": "Daylight Threshold DP",
+                "de": "Dämmerungsschwelle DP"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "DP of the ambient-light level below which the sensor reacts at all — typically 53 on a PIR. Above the threshold it stays quiet, which is how such a sensor avoids switching a light on in daylight. 0 = disabled.",
+                "de": "DP des Umgebungslichts, unterhalb dessen der Melder überhaupt reagiert — bei einem PIR typischerweise 53. Oberhalb der Schwelle bleibt er still, womit ein solcher Melder vermeidet, bei Tageslicht Licht einzuschalten. 0 = nicht benutzt."
+              }
+            },
+            {
+              "id": "dusk_threshold_values",
+              "type": "text",
+              "label": {
+                "en": "Daylight threshold values (comma-separated)",
+                "de": "Dämmerungsschwelle-Werte (kommagetrennt)"
+              },
+              "value": "2000lux,300lux,50lux,10lux,5lux",
+              "hint": {
+                "en": "The steps your sensor offers, in its own spelling. If it uses numbers instead of words, write both as name=value — for example 5lux=1,50lux=2,300lux=3. The left side is what Homey shows, the right side what is sent to the device.",
+                "de": "Die Stufen, die Ihr Melder kennt, in seiner eigenen Schreibweise. Benutzt er Zahlen statt Wörter, schreiben Sie beides als Name=Wert — etwa 5lux=1,50lux=2,300lux=3. Links steht, was Homey anzeigt, rechts, was zum Gerät geht."
+              }
+            },
+            {
+              "id": "dp_motion_sensitivity",
+              "type": "number",
+              "label": {
+                "en": "Motion Sensitivity DP",
+                "de": "Bewegungsempfindlichkeit DP"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "DP of the detection sensitivity — typically 54 on a PIR, where the values are words like low / middle / high. An mmWave sensor usually puts a number 0–9 on DP 2 instead; that one has no picker here. 0 = disabled.",
+                "de": "DP der Erkennungsempfindlichkeit — bei einem PIR typischerweise 54, wo die Werte Wörter wie low / middle / high sind. Ein mmWave-Melder führt stattdessen meist eine Zahl 0–9 auf DP 2; für die gibt es hier keinen Wähler. 0 = nicht benutzt."
+              }
+            },
+            {
+              "id": "motion_sensitivity_values",
+              "type": "text",
+              "label": {
+                "en": "Sensitivity values (comma-separated)",
+                "de": "Empfindlichkeits-Werte (kommagetrennt)"
+              },
+              "value": "low,middle,high",
+              "hint": {
+                "en": "The steps your sensor offers, in its own spelling. The same name=value form applies if yours uses numbers.",
+                "de": "Die Stufen, die Ihr Melder kennt, in seiner eigenen Schreibweise. Dieselbe Form Name=Wert gilt, wenn Ihrer Zahlen benutzt."
+              }
+            },
+            {
+              "id": "dp_motion_hold_time",
+              "type": "number",
+              "label": {
+                "en": "Hold Time DP",
+                "de": "Nachlaufzeit DP"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "DP of how long the sensor keeps reporting motion after the last movement, in seconds — typically 55 on a PIR, range 5 to 3600. 0 = disabled.",
+                "de": "DP der Zeit, die der Melder nach der letzten Bewegung weiter meldet, in Sekunden — bei einem PIR typischerweise 55, Bereich 5 bis 3600. 0 = nicht benutzt."
+              }
+            },
+            {
+              "id": "dp_motion_enabled",
+              "type": "number",
+              "label": {
+                "en": "Motion Detection DP",
+                "de": "Bewegungserkennung DP"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "DP that switches the motion detection itself off and on — typically 56 on a PIR. Switched off the sensor stops reporting, which is not the same as the device being unreachable. 0 = disabled.",
+                "de": "DP, der die Bewegungserkennung selbst aus- und einschaltet — bei einem PIR typischerweise 56. Ausgeschaltet meldet der Melder nichts mehr, was etwas anderes ist, als wenn das Gerät nicht erreichbar wäre. 0 = nicht benutzt."
               }
             },
             {

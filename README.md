@@ -957,6 +957,20 @@ The defaults match the **ZY-M100-WIFI** DP layout exactly. Sensors using a diffe
 | `dp_alarm` |  | `alarm_generic` | enum | 6 | `checking_result`; anything other than `check_success` / `checking` raises the alarm |
 | `dp_distance` | <img src="assets/capabilities/measure_distance.svg" height="24"> | `measure_distance` | number | 9 | Distance to closest target, cm |
 | `dp_luminance` |  | `measure_luminance` | number | 104 | Illuminance, lux |
+| `dp_dusk_threshold` | <img src="assets/capabilities/backlight_level.svg" height="24"> | `dusk_threshold` | enum | 0 | Ambient-light level below which the sensor reacts at all · ✓ `0` = disabled |
+| `dp_motion_sensitivity` | <img src="assets/capabilities/comfort_level.svg" height="24"> | `motion_sensitivity` | enum | 0 | `low` / `middle` / `high` on a PIR · ✓ `0` = disabled |
+| `dp_motion_hold_time` | <img src="assets/capabilities/countdown_left.svg" height="24"> | `motion_hold_time` | number | 0 | Seconds it keeps reporting after the last movement · ✓ `0` = disabled |
+| `dp_motion_enabled` | <img src="assets/capabilities/self_clean.svg" height="24"> | `motion_enabled` | boolean | 0 | Switches the detection itself off and on · ✓ `0` = disabled |
+
+> **PIR sensors report differently from radar ones.** A radar module puts its presence state
+> on DP 1 as `presence` / `none`; a reported PIR calls the same state `pir` and sits on DP 52.
+> Both are read, along with `motion` and `occupied`, and a plain boolean. Its four settable
+> data points above are words rather than numbers — `low` / `middle` / `high` for sensitivity,
+> `2000lux` down to `5lux` for the threshold — and the value lists take the `name=value` form
+> if yours numbers them instead.
+>
+> The radar settings below are a different thing: they exist in the manifest for pairing
+> auto-detection and are not written to the device.
 
 #### Radar Settings
 

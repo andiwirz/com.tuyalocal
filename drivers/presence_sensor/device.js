@@ -1,6 +1,7 @@
 'use strict';
 
 const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
+const { rohZuId, idZuRoh } = require('../../lib/utils.js');
 
 // ── ZY-M100-WIFI mmWave Presence Sensor DP map ──────────────────────────────
 //
@@ -21,6 +22,12 @@ const DP_PROFILE = [
   { settingKey: 'dp_alarm',     capability: 'alarm_generic',      type: 'check',    settable: false },
   { settingKey: 'dp_distance',  capability: 'measure_distance',   type: 'number',   settable: false },
   { settingKey: 'dp_luminance', capability: 'measure_luminance',  type: 'number',   settable: false },
+  // Die vier Einstellbaren. Sie lesen wie alles andere und schreiben zusaetzlich
+  // zurueck — siehe EINSTELLBAR und _registerListeners.
+  { settingKey: 'dp_dusk_threshold',     capability: 'dusk_threshold',     type: 'auswahl',  settable: true },
+  { settingKey: 'dp_motion_sensitivity', capability: 'motion_sensitivity', type: 'auswahl',  settable: true },
+  { settingKey: 'dp_motion_hold_time',   capability: 'motion_hold_time',   type: 'number',   settable: true },
+  { settingKey: 'dp_motion_enabled',     capability: 'motion_enabled',     type: 'schalter', settable: true },
 ];
 
 // Wie verschiedene Firmware dasselbe sagt. "presence" ist die Tuya-Schreibweise,
@@ -30,7 +37,30 @@ const DP_PROFILE = [
 const ANWESEND = new Set(['presence', 'pir', 'motion', 'occupied', 'true', '1']);
 const ABWESEND = new Set(['none', 'nobody', 'no_motion', 'false', '0', '']);
 
+// Welche Auswahl-Faehigkeit ihre erlaubten Werte aus welcher Einstellung bezieht.
+// Beide duerfen eine Zuordnung tragen ("5lux=1"), weil hier uebersetzt wird: beim
+// Lesen zurueck auf den Namen, beim Senden auf den Wert des Geraets.
+const ENUM_QUELLE = {
+  dusk_threshold:     'dusk_threshold_values',
+  motion_sensitivity: 'motion_sensitivity_values',
+};
+
+// Die vier Bedienelemente eines Melders, der mehr kann als melden: ab wann er bei
+// Helligkeit ueberhaupt reagiert, wie empfindlich er ist, wie lange er nach der
+// letzten Bewegung weiter meldet, und ob er ueberhaupt arbeitet. Alle vier sind am
+// gemeldeten Geraet einstellbar gewesen, und der Treiber hatte fuer keinen etwas.
+const EINSTELLBAR = [
+  { settingKey: 'dp_dusk_threshold',     capability: 'dusk_threshold',     art: 'enum' },
+  { settingKey: 'dp_motion_sensitivity', capability: 'motion_sensitivity', art: 'enum' },
+  { settingKey: 'dp_motion_hold_time',   capability: 'motion_hold_time',   art: 'zahl' },
+  { settingKey: 'dp_motion_enabled',     capability: 'motion_enabled',     art: 'schalter' },
+];
+
 const OPTIONAL_CAPABILITIES = [
+  { setting: 'dp_dusk_threshold',     capability: 'dusk_threshold'     },
+  { setting: 'dp_motion_sensitivity', capability: 'motion_sensitivity' },
+  { setting: 'dp_motion_hold_time',   capability: 'motion_hold_time'   },
+  { setting: 'dp_motion_enabled',     capability: 'motion_enabled'     },
   { setting: 'dp_alarm',     capability: 'alarm_generic'     },
   { setting: 'dp_distance',  capability: 'measure_distance'  },
   { setting: 'dp_luminance', capability: 'measure_luminance' },
@@ -42,6 +72,11 @@ class PresenceSensorDevice extends BaseTuyaDevice {
 
     await this._baseInit();
     await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
+    await this._syncEnumOptions('dusk_threshold',
+      this.getSetting('dusk_threshold_values'), { zuordnung: true });
+    await this._syncEnumOptions('motion_sensitivity',
+      this.getSetting('motion_sensitivity_values'), { zuordnung: true });
+    this._registerListeners();
 
     // ── Flow trigger cards ──────────────────────────────────────────────────
     this._triggerDeviceConnected    = this.homey.flow.getDeviceTriggerCard('presence_sensor_device_connected');
@@ -51,6 +86,32 @@ class PresenceSensorDevice extends BaseTuyaDevice {
     this._triggerPresenceCleared    = this.homey.flow.getDeviceTriggerCard('presence_sensor_presence_cleared');
 
     await this._connect();
+  }
+
+  /**
+   * Die vier Bedienelemente, die zurueckschreiben.
+   *
+   * Nur einmal je Faehigkeit: die Methode laeuft auch nach einer Einstellungsaenderung
+   * noch einmal, weil dort Faehigkeiten dazukommen koennen, und ein zweiter Zuhoerer
+   * auf derselben Kachel wuerde jeden Befehl doppelt senden.
+   */
+  _registerListeners() {
+    this._registeredCaps = this._registeredCaps || new Set();
+    for (const e of EINSTELLBAR) {
+      if (!this.hasCapability(e.capability)) continue;
+      if (this._registeredCaps.has(e.capability)) continue;
+      this._registeredCaps.add(e.capability);
+      this.registerCapabilityListener(e.capability, async (value) => {
+        const dp = this.getSetting(e.settingKey);
+        if (!(dp > 0)) return;
+        const quelle = ENUM_QUELLE[e.capability];
+        let roh = value;
+        if (quelle) roh = idZuRoh(this.getSetting(quelle), value);
+        else if (e.art === 'zahl') roh = Number(value);
+        else if (e.art === 'schalter') roh = Boolean(value);
+        await this._set(dp, roh);
+      });
+    }
   }
 
   // ── DPS handling ───────────────────────────────────────────────────────────
@@ -110,6 +171,22 @@ class PresenceSensorDevice extends BaseTuyaDevice {
           await this.setCapabilityValue(entry.capability, Number(value)).catch(() => {});
           break;
 
+        case 'auswahl': {
+          // Schickt das Geraet eine Ziffer, wo die Kachel einen Namen fuehrt, sagt
+          // die Werteliste, welcher gemeint ist. Ohne Zuordnung bleibt der Wert.
+          const name = rohZuId(this.getSetting(ENUM_QUELLE[entry.capability]), value);
+          await this.setCapabilityValue(entry.capability, name).catch(() => {
+            this._appLog(`${entry.capability}: the device reports "${value}", which is not in `
+              + `the value list. Add it — or, if the device uses numbers, write the list as `
+              + 'name=value so the picker keeps its words.', 'warn');
+          });
+          break;
+        }
+
+        case 'schalter':
+          await this.setCapabilityValue(entry.capability, Boolean(value)).catch(() => {});
+          break;
+
         default:
           break;
       }
@@ -136,6 +213,13 @@ class PresenceSensorDevice extends BaseTuyaDevice {
     if (this._touchesOptional(changedKeys, OPTIONAL_CAPABILITIES)) {
       await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
     }
+    if (changedKeys.some((k) => ['dusk_threshold_values', 'motion_sensitivity_values'].includes(k))) {
+      await this._syncEnumOptions('dusk_threshold',
+        this.getSetting('dusk_threshold_values'), { zuordnung: true });
+      await this._syncEnumOptions('motion_sensitivity',
+        this.getSetting('motion_sensitivity_values'), { zuordnung: true });
+    }
+    this._registerListeners();
   }
 }
 
