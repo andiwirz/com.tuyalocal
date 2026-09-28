@@ -23,6 +23,13 @@ const DP_PROFILE = [
   { settingKey: 'dp_luminance', capability: 'measure_luminance',  type: 'number',   settable: false },
 ];
 
+// Wie verschiedene Firmware dasselbe sagt. "presence" ist die Tuya-Schreibweise,
+// "pir" die eines gemeldeten Bewegungsmelders, "motion" und "occupied" kommen in
+// anderen Katalogen vor. Was in keiner der beiden Mengen steht, wird als Zahl oder
+// Wahrheitswert gelesen — manche Melder schicken dort schlicht true.
+const ANWESEND = new Set(['presence', 'pir', 'motion', 'occupied', 'true', '1']);
+const ABWESEND = new Set(['none', 'nobody', 'no_motion', 'false', '0', '']);
+
 const OPTIONAL_CAPABILITIES = [
   { setting: 'dp_alarm',     capability: 'alarm_generic'     },
   { setting: 'dp_distance',  capability: 'measure_distance'  },
@@ -74,7 +81,15 @@ class PresenceSensorDevice extends BaseTuyaDevice {
       switch (entry.type) {
         case 'presence': {
           // DP 1 enum: "presence" → true, "none" → false
-          const present = String(value).toLowerCase() === 'presence';
+          //
+          // Und die anderen Schreibweisen, die dieselbe Sache meinen. Ein gemeldeter
+          // Melder fuehrt sein pir_state als "pir" / "none": gegen "presence"
+          // geprueft, war das immer falsch, und die Kachel blieb auf "keine
+          // Bewegung" stehen, waehrend der Datenpunkt munter wechselte. Manche
+          // Firmware schickt dort auch schlicht wahr oder eine 1.
+          const roh = String(value).toLowerCase();
+          const present = ANWESEND.has(roh)
+            || (!ABWESEND.has(roh) && (value === true || Number(value) > 0));
           await this.setCapabilityValue('alarm_motion', present).catch(() => {});
           if (present) {
             this._triggerPresenceDetected.trigger(this, {}).catch(() => {});
