@@ -2430,24 +2430,33 @@ fan: sub-capabilities (`onoff.fan`, `dim.fan`) and app-defined capabilities (`fa
 
 | Trigger | Flow tokens | Notes |
 |---|---|---|
-| Presence detected | — | Radar reports `presence` |
+| Presence detected | — | Radar reports `presence`, a PIR `pir`, `motion` or `occupied` — see `dp_presence` |
 | Presence cleared | — | Radar reports `none` (after `dp_fading_time`) |
+| Daylight threshold changed | `threshold` (string) | The name from `dusk_threshold_values`, not the device's raw value |
+| Motion sensitivity changed | `sensitivity` (string) | The name from `motion_sensitivity_values`; does not fire on the first value read after a restart |
 | Presence sensor connected | — | Device established a LAN connection |
 | Presence sensor disconnected | — | Connection lost after offline grace period |
 | Presence sensor data point changed | `dp` (string), `value` (string) | Any raw DP change |
 
 #### Conditions
 
-| Condition |
-|---|
-| Presence is / is not active |
-| Presence sensor is / is not connected |
+| Condition | Notes |
+|---|---|
+| Presence is / is not detected | |
+| Daylight threshold is / is not | Picks from `dusk_threshold_values`; requires `dp_dusk_threshold` ≠ 0 |
+| Motion sensitivity is / is not | Picks from `motion_sensitivity_values`; requires `dp_motion_sensitivity` ≠ 0 |
+| Motion detection is / is not on | Requires `dp_motion_enabled` ≠ 0 |
+| Presence sensor is / is not connected | |
 
 #### Actions
 
 | Action | Notes |
 |---|---|
-| Force presence sensor reconnect | Drops and re-establishes the TCP connection |
+| Set daylight threshold | Picks a name from `dusk_threshold_values` and sends the value behind it — `50lux=2` sends `2`. Requires `dp_dusk_threshold` ≠ 0 |
+| Set motion sensitivity | Same translation from `motion_sensitivity_values`; requires `dp_motion_sensitivity` ≠ 0 |
+| Set hold time | Seconds, 0–3600; requires `dp_motion_hold_time` ≠ 0 |
+| Turn motion detection on or off | Requires `dp_motion_enabled` ≠ 0 |
+| Reconnect presence sensor | Drops and re-establishes the TCP connection |
 | Refresh presence sensor values | Triggers an immediate GET request |
 
 ---

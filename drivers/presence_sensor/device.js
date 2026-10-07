@@ -83,6 +83,12 @@ class PresenceSensorDevice extends BaseTuyaDevice {
     this._triggerDeviceDisconnected = this.homey.flow.getDeviceTriggerCard('presence_sensor_device_disconnected');
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('presence_sensor_dp_changed');
     this._triggerPresenceDetected   = this.homey.flow.getDeviceTriggerCard('presence_sensor_presence_detected');
+    // Je Auswahl eine Karte, die den neuen Wert als Token traegt — ein Flow, der
+    // auf "Empfindlichkeit geaendert" wartet, soll auch wissen, worauf.
+    this._triggerAuswahl = {
+      dusk_threshold:     this.homey.flow.getDeviceTriggerCard('presence_sensor_dusk_threshold_changed'),
+      motion_sensitivity: this.homey.flow.getDeviceTriggerCard('presence_sensor_motion_sensitivity_changed'),
+    };
     this._triggerPresenceCleared    = this.homey.flow.getDeviceTriggerCard('presence_sensor_presence_cleared');
 
     await this._connect();
@@ -175,6 +181,12 @@ class PresenceSensorDevice extends BaseTuyaDevice {
           // Schickt das Geraet eine Ziffer, wo die Kachel einen Namen fuehrt, sagt
           // die Werteliste, welcher gemeint ist. Ohne Zuordnung bleibt der Wert.
           const name = rohZuId(this.getSetting(ENUM_QUELLE[entry.capability]), value);
+          const vorher = this.getCapabilityValue(entry.capability);
+          if (vorher !== null && vorher !== undefined && vorher !== name) {
+            const token = entry.capability === 'dusk_threshold' ? 'threshold' : 'sensitivity';
+            this._triggerAuswahl[entry.capability]
+              .trigger(this, { [token]: name }).catch(() => {});
+          }
           await this.setCapabilityValue(entry.capability, name).catch(() => {
             this._appLog(`${entry.capability}: the device reports "${value}", which is not in `
               + `the value list. Add it — or, if the device uses numbers, write the list as `

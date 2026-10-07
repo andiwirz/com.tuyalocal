@@ -7,7 +7,7 @@ const { describeConnectFailure } = require('../../lib/connectFailure');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
 const { detectViaCloud, guessedDefaults } = require('../../lib/dpCodeMap');
-const { fehlertext } = require('../../lib/utils.js');
+const { fehlertext, leseWerteliste } = require('../../lib/utils.js');
 
 // This driver has no local value heuristic — every DP number below is a written-in
 // guess matching the ZY-M100-WIFI mmWave sensor's layout. On a radar sensor from
@@ -53,7 +53,58 @@ class PresenceSensorDriver extends Homey.Driver {
         args.device.getCapabilityValue('alarm_motion') === true
       );
 
+    // ── Die vier Bedienelemente ────────────────────────────────────────────
+    //
+    // Gebaut waren die Kacheln, die Karten fehlten: der Meldende konnte seinen
+    // Melder von Hand schalten und in keinem Flow. Fuer einen Bewegungsmelder ist
+    // das die falsche Haelfte — tagsueber empfindlich, nachts traege, das ist der
+    // Zweck der Einstellungen.
+    const gross = (v) => v.charAt(0).toUpperCase() + v.slice(1).replace(/_/g, ' ');
+    const vorschlag = (quelle) => async (query, args) => {
+      const werte = leseWerteliste(args.device.getSetting(quelle) || '').map((e) => e.id);
+      const q = String(query || '').toLowerCase();
+      return werte.filter((v) => v.toLowerCase().includes(q))
+        .map((v) => ({ id: v, name: gross(v) }));
+    };
+
+    for (const [kennung, faehigkeit, arg, quelle] of [
+      ['dusk_threshold', 'dusk_threshold', 'threshold', 'dusk_threshold_values'],
+      ['motion_sensitivity', 'motion_sensitivity', 'sensitivity', 'motion_sensitivity_values'],
+    ]) {
+      this.homey.flow.getConditionCard(`presence_sensor_${kennung}_is`)
+        .registerArgumentAutocompleteListener(arg, vorschlag(quelle))
+        .registerRunListener(async (args) =>
+          args.device.getCapabilityValue(faehigkeit) === args[arg].id);
+
+      this.homey.flow.getActionCard(`presence_sensor_set_${kennung}`)
+        .registerArgumentAutocompleteListener(arg, vorschlag(quelle))
+        .registerRunListener(async (args) => {
+          // Ueber den Zuhoerer, nicht am Treiber vorbei: dort sitzt die Uebersetzung
+          // vom Namen auf den Wert, den das Geraet versteht.
+          await args.device.setCapabilityValue(faehigkeit, args[arg].id).catch(() => {});
+          return args.device.triggerCapabilityListener(faehigkeit, args[arg].id);
+        });
+    }
+
+    this.homey.flow.getConditionCard('presence_sensor_motion_enabled_is')
+      .registerRunListener(async (args) =>
+        args.device.getCapabilityValue('motion_enabled') === true);
+
     // ── Actions ─────────────────────────────────────────────────────────────
+    this.homey.flow.getActionCard('presence_sensor_set_hold_time')
+      .registerRunListener(async (args) => {
+        const s = Number(args.seconds);
+        await args.device.setCapabilityValue('motion_hold_time', s).catch(() => {});
+        return args.device.triggerCapabilityListener('motion_hold_time', s);
+      });
+
+    this.homey.flow.getActionCard('presence_sensor_set_motion_enabled')
+      .registerRunListener(async (args) => {
+        const an = args.state === 'on';
+        await args.device.setCapabilityValue('motion_enabled', an).catch(() => {});
+        return args.device.triggerCapabilityListener('motion_enabled', an);
+      });
+
     this.homey.flow.getActionCard('presence_sensor_force_reconnect')
       .registerRunListener(async (args) => args.device.forceReconnect());
 

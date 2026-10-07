@@ -2547,7 +2547,7 @@
       },
       "getable": true,
       "setable": true,
-      "uiComponent": "sensor",
+      "uiComponent": "slider",
       "icon": "/assets/capabilities/countdown_left.svg",
       "units": {
         "en": "s",
@@ -6612,6 +6612,56 @@
             ]
           }
         ]
+      },
+      {
+        "id": "presence_sensor_dusk_threshold_changed",
+        "title": {
+          "en": "Daylight threshold changed",
+          "de": "Dämmerungsschwelle geändert"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=presence_sensor"
+          }
+        ],
+        "tokens": [
+          {
+            "name": "threshold",
+            "type": "string",
+            "title": {
+              "en": "Threshold",
+              "de": "Schwelle"
+            },
+            "example": "50lux"
+          }
+        ]
+      },
+      {
+        "id": "presence_sensor_motion_sensitivity_changed",
+        "title": {
+          "en": "Motion sensitivity changed",
+          "de": "Bewegungsempfindlichkeit geändert"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=presence_sensor"
+          }
+        ],
+        "tokens": [
+          {
+            "name": "sensitivity",
+            "type": "string",
+            "title": {
+              "en": "Sensitivity",
+              "de": "Empfindlichkeit"
+            },
+            "example": "middle"
+          }
+        ]
       }
     ],
     "conditions": [
@@ -8705,6 +8755,72 @@
             "name": "device",
             "type": "device",
             "filter": "driver_id=air_quality"
+          }
+        ]
+      },
+      {
+        "id": "presence_sensor_dusk_threshold_is",
+        "title": {
+          "en": "Daylight threshold !{{is|is not}}",
+          "de": "Dämmerungsschwelle !{{ist|ist nicht}}"
+        },
+        "titleFormatted": {
+          "en": "Daylight threshold !{{is|is not}} [[threshold]]",
+          "de": "Dämmerungsschwelle !{{ist|ist nicht}} [[threshold]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=presence_sensor"
+          },
+          {
+            "name": "threshold",
+            "type": "autocomplete",
+            "placeholder": {
+              "en": "Threshold",
+              "de": "Schwelle"
+            }
+          }
+        ]
+      },
+      {
+        "id": "presence_sensor_motion_sensitivity_is",
+        "title": {
+          "en": "Motion sensitivity !{{is|is not}}",
+          "de": "Bewegungsempfindlichkeit !{{ist|ist nicht}}"
+        },
+        "titleFormatted": {
+          "en": "Motion sensitivity !{{is|is not}} [[sensitivity]]",
+          "de": "Bewegungsempfindlichkeit !{{ist|ist nicht}} [[sensitivity]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=presence_sensor"
+          },
+          {
+            "name": "sensitivity",
+            "type": "autocomplete",
+            "placeholder": {
+              "en": "Sensitivity",
+              "de": "Empfindlichkeit"
+            }
+          }
+        ]
+      },
+      {
+        "id": "presence_sensor_motion_enabled_is",
+        "title": {
+          "en": "Motion detection !{{is|is not}} on",
+          "de": "Bewegungserkennung !{{ist|ist nicht}} ein"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=presence_sensor"
           }
         ]
       }
@@ -14201,6 +14317,125 @@
               "en": "Gap (ms)",
               "de": "Abstand (ms)"
             }
+          }
+        ]
+      },
+      {
+        "id": "presence_sensor_set_dusk_threshold",
+        "title": {
+          "en": "Set daylight threshold",
+          "de": "Dämmerungsschwelle setzen"
+        },
+        "titleFormatted": {
+          "en": "Set daylight threshold to [[threshold]]",
+          "de": "Dämmerungsschwelle auf [[threshold]] setzen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=presence_sensor"
+          },
+          {
+            "name": "threshold",
+            "type": "autocomplete",
+            "placeholder": {
+              "en": "Threshold",
+              "de": "Schwelle"
+            }
+          }
+        ]
+      },
+      {
+        "id": "presence_sensor_set_motion_sensitivity",
+        "title": {
+          "en": "Set motion sensitivity",
+          "de": "Bewegungsempfindlichkeit setzen"
+        },
+        "titleFormatted": {
+          "en": "Set motion sensitivity to [[sensitivity]]",
+          "de": "Bewegungsempfindlichkeit auf [[sensitivity]] setzen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=presence_sensor"
+          },
+          {
+            "name": "sensitivity",
+            "type": "autocomplete",
+            "placeholder": {
+              "en": "Sensitivity",
+              "de": "Empfindlichkeit"
+            }
+          }
+        ]
+      },
+      {
+        "id": "presence_sensor_set_hold_time",
+        "title": {
+          "en": "Set hold time",
+          "de": "Nachlaufzeit setzen"
+        },
+        "titleFormatted": {
+          "en": "Set hold time to [[seconds]] s",
+          "de": "Nachlaufzeit auf [[seconds]] s setzen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=presence_sensor"
+          },
+          {
+            "name": "seconds",
+            "type": "number",
+            "min": 0,
+            "max": 3600,
+            "step": 1,
+            "placeholder": {
+              "en": "Seconds",
+              "de": "Sekunden"
+            }
+          }
+        ]
+      },
+      {
+        "id": "presence_sensor_set_motion_enabled",
+        "title": {
+          "en": "Turn motion detection on or off",
+          "de": "Bewegungserkennung ein- oder ausschalten"
+        },
+        "titleFormatted": {
+          "en": "Turn motion detection [[state]]",
+          "de": "Bewegungserkennung [[state]]"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=presence_sensor"
+          },
+          {
+            "name": "state",
+            "type": "dropdown",
+            "values": [
+              {
+                "id": "on",
+                "label": {
+                  "en": "on",
+                  "de": "ein"
+                }
+              },
+              {
+                "id": "off",
+                "label": {
+                  "en": "off",
+                  "de": "aus"
+                }
+              }
+            ]
           }
         ]
       }
