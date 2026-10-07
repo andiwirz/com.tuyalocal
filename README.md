@@ -967,7 +967,30 @@ The defaults match the **ZY-M100-WIFI** DP layout exactly. Sensors using a diffe
 > Both are read, along with `motion` and `occupied`, and a plain boolean. Its four settable
 > data points above are words rather than numbers — `low` / `middle` / `high` for sensitivity,
 > `2000lux` down to `5lux` for the threshold — and the value lists take the `name=value` form
-> if yours numbers them instead.
+> if yours numbers them instead. Pairing recognises all four by their manufacturer code names
+> (`cds`, `pir_sensitivity`, `pir_delay`, `switch_pir`) when Cloud Lookup is configured.
+
+##### The hold time's range
+
+| Setting | Purpose | Default |
+|---|---|---|
+| `hold_time_min` | Shortest hold time the sensor accepts, in the unit it transports | 0 |
+| `hold_time_max` | Longest hold time it accepts, same unit | 3600 |
+| `hold_time_decimals` | Decimal places its value carries — `1` means it counts tenths of a second | 0 |
+| `hold_time_step` | Smallest change it accepts, same unit | 1 |
+
+A Tuya integer specification gives `min` and `max` as the **raw** numbers the device
+transports and says separately where the decimal point belongs. A hold time of 5 to 3600
+seconds declared with one decimal reads `{"min":50,"max":36000,"scale":1}` — so a sensor whose
+slider ran to 36000 was showing its own raw span, which is one hour, not ten. The four
+settings above hold that span; the tile stays in seconds and divides and multiplies by ten on
+the way in and out.
+
+They are filled in at pairing from the manufacturer's specification, and **Cloud Lookup →
+Apply** fills them on a sensor that is already paired. Left at their defaults, the tile
+behaves exactly as before: a 0–3600 second slider with no conversion. A value between 0 and
+`hold_time_min` is one the sensor cannot accept, so the tile snaps it to 0 rather than sending
+an impossible one; 0 itself stays reachable.
 >
 > The radar settings below are a different thing: they exist in the manifest for pairing
 > auto-detection and are not written to the device.
@@ -2454,7 +2477,7 @@ fan: sub-capabilities (`onoff.fan`, `dim.fan`) and app-defined capabilities (`fa
 |---|---|
 | Set daylight threshold | Picks a name from `dusk_threshold_values` and sends the value behind it — `50lux=2` sends `2`. Requires `dp_dusk_threshold` ≠ 0 |
 | Set motion sensitivity | Same translation from `motion_sensitivity_values`; requires `dp_motion_sensitivity` ≠ 0 |
-| Set hold time | Seconds, 0–3600; requires `dp_motion_hold_time` ≠ 0 |
+| Set hold time | Seconds, 0–3600. The card offers one range for every sensor; a value outside this one's own range arrives as its nearest end rather than being refused. Requires `dp_motion_hold_time` ≠ 0 |
 | Turn motion detection on or off | Requires `dp_motion_enabled` ≠ 0 |
 | Reconnect presence sensor | Drops and re-establishes the TCP connection |
 | Refresh presence sensor values | Triggers an immediate GET request |

@@ -26,7 +26,7 @@ const DP_PROFILE = [
   // zurueck — siehe EINSTELLBAR und _registerListeners.
   { settingKey: 'dp_dusk_threshold',     capability: 'dusk_threshold',     type: 'auswahl',  settable: true },
   { settingKey: 'dp_motion_sensitivity', capability: 'motion_sensitivity', type: 'auswahl',  settable: true },
-  { settingKey: 'dp_motion_hold_time',   capability: 'motion_hold_time',   type: 'number',   settable: true },
+  { settingKey: 'dp_motion_hold_time',   capability: 'motion_hold_time',   type: 'nachlauf', settable: true },
   { settingKey: 'dp_motion_enabled',     capability: 'motion_enabled',     type: 'schalter', settable: true },
 ];
 
@@ -52,9 +52,21 @@ const ENUM_QUELLE = {
 const EINSTELLBAR = [
   { settingKey: 'dp_dusk_threshold',     capability: 'dusk_threshold',     art: 'enum' },
   { settingKey: 'dp_motion_sensitivity', capability: 'motion_sensitivity', art: 'enum' },
-  { settingKey: 'dp_motion_hold_time',   capability: 'motion_hold_time',   art: 'zahl' },
+  { settingKey: 'dp_motion_hold_time',   capability: 'motion_hold_time',   art: 'nachlauf' },
   { settingKey: 'dp_motion_enabled',     capability: 'motion_enabled',     art: 'schalter' },
 ];
+
+// Die Nachlaufzeit, in der Einheit des Geraets und in der der Kachel.
+//
+// Tuya gibt den Bereich einer Zahl roh an und sagt daneben, wo das Komma sitzt:
+// 5 bis 3600 Sekunden mit einer Dezimalstelle heisst {"min":50,"max":36000,"scale":1}.
+// Wer die 36000 fuer Sekunden nimmt, baut einen Schieber bis zehn Stunden — und wer
+// 300 sendet, wo das Geraet Zehntel erwartet, bekommt 30 Sekunden Nachlauf.
+//
+// Der Rueckfallwert muss hier der Vorgabe im Manifest gleichen: eine Einstellung,
+// die es bei der Geraeteanlage noch nicht gab, liefert auf einem bestehenden Geraet
+// null, nicht ihre Vorgabe. Siehe lib/BaseTuyaDevice.js.
+const NACHLAUF_VORGABE = { min: 0, max: 3600, decimals: 0, step: 1 };
 
 const OPTIONAL_CAPABILITIES = [
   { setting: 'dp_dusk_threshold',     capability: 'dusk_threshold'     },
@@ -76,6 +88,7 @@ class PresenceSensorDevice extends BaseTuyaDevice {
       this.getSetting('dusk_threshold_values'), { zuordnung: true });
     await this._syncEnumOptions('motion_sensitivity',
       this.getSetting('motion_sensitivity_values'), { zuordnung: true });
+    await this._richteNachlaufEin();
     this._registerListeners();
 
     // ── Flow trigger cards ──────────────────────────────────────────────────
@@ -92,6 +105,51 @@ class PresenceSensorDevice extends BaseTuyaDevice {
     this._triggerPresenceCleared    = this.homey.flow.getDeviceTriggerCard('presence_sensor_presence_cleared');
 
     await this._connect();
+  }
+
+  /**
+   * Was das Geraet mit seiner Nachlaufzeit meint.
+   *
+   * Alles eine Stelle: der rohe Bereich, der Teiler und der Bereich in Sekunden.
+   * Unbrauchbare Angaben fallen auf die Vorgabe zurueck — ein max unter dem min
+   * waere ein Schieber ohne Weg.
+   */
+  _nachlaufBereich() {
+    const g = (k) => {
+      const v = Number(this.getSetting(`hold_time_${k}`));
+      return Number.isFinite(v) ? v : NACHLAUF_VORGABE[k];
+    };
+    const decimals = Math.min(3, Math.max(0, Math.round(g('decimals'))));
+    const teiler   = 10 ** decimals;
+    let rohMin = g('min');
+    let rohMax = g('max');
+    if (!(rohMax > rohMin)) { rohMin = NACHLAUF_VORGABE.min; rohMax = NACHLAUF_VORGABE.max; }
+    const rohStep = Math.max(1, g('step'));
+    return {
+      teiler,
+      rohMin,
+      rohMax,
+      min:  rohMin / teiler,
+      max:  rohMax / teiler,
+      step: rohStep / teiler,
+    };
+  }
+
+  /**
+   * Der Schieber bekommt den Bereich des Geraets.
+   *
+   * min bleibt 0, damit ein Melder, der 0 meldet, seinen Wert auch zeigen darf, und
+   * weil der SDK eine erreichbare Null will. Was darunter und ueber dem Minimum des
+   * Geraets liegt, ist unmoeglich — Homey rastet es auf 0, statt dem Melder eine
+   * Nachlaufzeit zu schicken, die er ablehnt. Dasselbe Muster wie beim Ladestrom
+   * der Wallbox.
+   */
+  async _richteNachlaufEin() {
+    if (!this.hasCapability('motion_hold_time')) return;
+    const b = this._nachlaufBereich();
+    const opts = { min: 0, max: b.max, step: b.step };
+    if (b.min > 0) { opts.excludeMin = 0; opts.excludeMax = b.min; }
+    await this._setCapabilityOptionsIfChanged('motion_hold_time', opts).catch(() => {});
   }
 
   /**
@@ -113,7 +171,14 @@ class PresenceSensorDevice extends BaseTuyaDevice {
         const quelle = ENUM_QUELLE[e.capability];
         let roh = value;
         if (quelle) roh = idZuRoh(this.getSetting(quelle), value);
-        else if (e.art === 'zahl') roh = Number(value);
+        else if (e.art === 'nachlauf') {
+          // Zurueck in die Einheit des Geraets, und in seinen Bereich. Eine 0 bleibt
+          // eine 0 — das ist der einzige Wert unter dem Minimum, den es annehmen
+          // koennte, und auf der Kachel der einzige, der dort erreichbar ist.
+          const b = this._nachlaufBereich();
+          const r = Math.round(Number(value) * b.teiler);
+          roh = r <= 0 ? 0 : Math.min(b.rohMax, Math.max(b.rohMin, r));
+        } else if (e.art === 'zahl') roh = Number(value);
         else if (e.art === 'schalter') roh = Boolean(value);
         await this._set(dp, roh);
       });
@@ -177,6 +242,13 @@ class PresenceSensorDevice extends BaseTuyaDevice {
           await this.setCapabilityValue(entry.capability, Number(value)).catch(() => {});
           break;
 
+        case 'nachlauf': {
+          // Der Melder zaehlt in seiner Einheit, die Kachel in Sekunden.
+          const b = this._nachlaufBereich();
+          await this.setCapabilityValue(entry.capability, Number(value) / b.teiler).catch(() => {});
+          break;
+        }
+
         case 'auswahl': {
           // Schickt das Geraet eine Ziffer, wo die Kachel einen Namen fuehrt, sagt
           // die Werteliste, welcher gemeint ist. Ohne Zuordnung bleibt der Wert.
@@ -230,6 +302,9 @@ class PresenceSensorDevice extends BaseTuyaDevice {
         this.getSetting('dusk_threshold_values'), { zuordnung: true });
       await this._syncEnumOptions('motion_sensitivity',
         this.getSetting('motion_sensitivity_values'), { zuordnung: true });
+    }
+    if (changedKeys.some((k) => k.startsWith('hold_time_') || k === 'dp_motion_hold_time')) {
+      await this._richteNachlaufEin();
     }
     this._registerListeners();
   }

@@ -25599,6 +25599,70 @@
               }
             },
             {
+              "id": "hold_time_min",
+              "type": "number",
+              "label": {
+                "en": "Hold Time Minimum",
+                "de": "Nachlaufzeit Minimum"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 360000,
+              "step": 1,
+              "hint": {
+                "en": "Shortest hold time the sensor accepts, in the unit it transports. Filled in from the manufacturer’s specification at pairing, or by Cloud Lookup → Apply on a sensor that is already paired. Anything between 0 and this value is impossible, so the tile snaps it to 0.",
+                "de": "Kürzeste Nachlaufzeit, die der Melder annimmt, in der Einheit, in der er sie überträgt. Wird bei der Geräteanlage aus der Herstellerangabe gefüllt, oder per Cloud Lookup → Übernehmen an einem bereits angelegten Melder. Alles zwischen 0 und diesem Wert ist unmöglich und rastet auf der Kachel auf 0."
+              }
+            },
+            {
+              "id": "hold_time_max",
+              "type": "number",
+              "label": {
+                "en": "Hold Time Maximum",
+                "de": "Nachlaufzeit Maximum"
+              },
+              "value": 3600,
+              "min": 1,
+              "max": 360000,
+              "step": 1,
+              "hint": {
+                "en": "Longest hold time the sensor accepts, in the unit it transports — so 36000 on a sensor that counts tenths of a second, which is one hour, not ten.",
+                "de": "Längste Nachlaufzeit, die der Melder annimmt, in der Einheit, in der er sie überträgt — also 36000 bei einem Melder, der Zehntelsekunden zählt, und das ist eine Stunde, nicht zehn."
+              }
+            },
+            {
+              "id": "hold_time_decimals",
+              "type": "number",
+              "label": {
+                "en": "Hold Time Decimal Places",
+                "de": "Nachlaufzeit Dezimalstellen"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 3,
+              "step": 1,
+              "hint": {
+                "en": "How many decimal places the sensor’s value carries. 0 means it counts whole seconds. 1 means it counts tenths, and everything shown and sent is divided and multiplied by ten so the tile stays in seconds.",
+                "de": "Wie viele Dezimalstellen der Wert des Melders führt. 0 heißt ganze Sekunden. 1 heißt Zehntel, und alles Angezeigte und Gesendete wird durch zehn geteilt beziehungsweise mit zehn multipliziert, damit die Kachel in Sekunden bleibt."
+              }
+            },
+            {
+              "id": "hold_time_step",
+              "type": "number",
+              "label": {
+                "en": "Hold Time Step",
+                "de": "Nachlaufzeit Schrittweite"
+              },
+              "value": 1,
+              "min": 1,
+              "max": 3600,
+              "step": 1,
+              "hint": {
+                "en": "Smallest change the sensor accepts, in the unit it transports.",
+                "de": "Kleinste Änderung, die der Melder annimmt, in der Einheit, in der er sie überträgt."
+              }
+            },
+            {
               "id": "dp_motion_enabled",
               "type": "number",
               "label": {

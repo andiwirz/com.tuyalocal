@@ -38,6 +38,27 @@ const CLOUD_CODE_MAP = {
   dp_detection_delay: ['detection_delay'],
   dp_fading_time:     ['fading_time'],
   dp_luminance:       ['illuminance'],
+  // Die vier Bedienelemente eines gemeldeten PIR. Nur Namen, die wir an einem
+  // Geraet gesehen haben — ein erfundener Aliasname wuerde im schlimmsten Fall
+  // einen fremden Datenpunkt auf die Nachlaufzeit legen, und das faellt erst
+  // auf, wenn jemand daran dreht.
+  dp_dusk_threshold:     ['cds'],
+  dp_motion_sensitivity: ['pir_sensitivity'],
+  dp_motion_hold_time:   ['pir_delay'],
+  dp_motion_enabled:     ['switch_pir'],
+};
+
+// Die Nachlaufzeit in der Einheit, in der das Geraet sie fuehrt. Tuya gibt den
+// Bereich roh an und "scale" sagt, wo das Komma sitzt: 5 bis 3600 Sekunden mit einer
+// Dezimalstelle lautet min 50, max 36000, scale 1. Ohne die Dezimalstelle wird aus
+// diesem Maximum ein Schieber bis zehn Stunden.
+const CLOUD_RANGE_MAP = {
+  dp_motion_hold_time: {
+    min:   'hold_time_min',
+    max:   'hold_time_max',
+    scale: 'hold_time_decimals',
+    step:  'hold_time_step',
+  },
 };
 
 class PresenceSensorDriver extends Homey.Driver {
@@ -93,7 +114,13 @@ class PresenceSensorDriver extends Homey.Driver {
     // ── Actions ─────────────────────────────────────────────────────────────
     this.homey.flow.getActionCard('presence_sensor_set_hold_time')
       .registerRunListener(async (args) => {
-        const s = Number(args.seconds);
+        // Die Karte kann nur einen Bereich fuer alle Melder anbieten; welcher fuer
+        // diesen gilt, weiss erst das Geraet. Was darueber liegt, geht als sein
+        // Maximum durch, statt an der Kachel abgewiesen zu werden.
+        const b = args.device._nachlaufBereich();
+        let s = Number(args.seconds);
+        if (!Number.isFinite(s)) throw new Error('Hold time must be a number');
+        s = s <= 0 ? 0 : Math.min(b.max, Math.max(b.min, s));
         await args.device.setCapabilityValue('motion_hold_time', s).catch(() => {});
         return args.device.triggerCapabilityListener('motion_hold_time', s);
       });
@@ -110,6 +137,19 @@ class PresenceSensorDriver extends Homey.Driver {
 
     this.homey.flow.getActionCard('presence_sensor_refresh_device')
       .registerRunListener(async (args) => args.device.pollNow());
+  }
+
+  // Lets the settings page re-apply the manufacturer's declared range to a sensor
+  // that is already paired — see applyCloudValues() in app.js. Without it the
+  // presence sensor was skipped there with "no value lists to fill", so the only
+  // way to a correct hold-time range was to pair the device again.
+  //
+  // Deliberately no enumValuesMap: the two pickers accept the name=value form, and
+  // a device that reports numbers where its specification declares words is exactly
+  // the case that form was built for. Overwriting those settings with the declared
+  // word list would undo the mapping that makes such a sensor work.
+  getCloudMaps() {
+    return { codeMap: CLOUD_CODE_MAP, rangeMap: CLOUD_RANGE_MAP };
   }
 
   async onPair(session) {
@@ -187,7 +227,7 @@ class PresenceSensorDriver extends Homey.Driver {
       // Tuya cloud specification — matters for other radar sensor models whose
       // DP layout differs. Never blocks pairing if unavailable or it fails.
       const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m),
-        {}, guessedDefaults(DEFAULT_DPS, collectedDps));
+        {}, guessedDefaults(DEFAULT_DPS, collectedDps), CLOUD_RANGE_MAP);
 
       pendingDevice = this._buildPendingDevice({
         ip, deviceId, localKey, version: actualVersion, detectedDps: cloudDps,
