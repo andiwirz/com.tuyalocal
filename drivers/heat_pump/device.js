@@ -65,6 +65,22 @@ const DP_PROFILE = [
 
 // Welche Einstellung die erlaubten Werte einer Auswahl fuehrt. Stimmen Liste und
 // Geraet nicht ueberein, verpuffen Befehle wortlos - siehe _reconcileEnumToken.
+// The target temperature inside a packed block.
+//
+// Reported with a Power World PW58421: no temp_set data point at all - the target
+// is the 5th value in DP 118 (parameter_group_1), a block of 4-byte big-endian
+// integers. With target_temp_field set, dp_target_temp names that block and the
+// field says where in it the target sits, counting from 1. 0 keeps the plain form.
+//
+// Writing means sending the whole block back with only that field changed, which
+// also sends the other values in it. So the block written is always one the device
+// reported on THIS connection - every change makes it report the block again, so
+// that copy is current - and when there is none yet, it is asked for first, and
+// nothing is written without it.
+const BLOCK_FELD_BYTES      = 4;
+const BLOCK_ANFORDERN_MS    = 5000;   // waiting for a block that was asked for
+const BLOCK_BESTAETIGUNG_MS = 6000;   // waiting for the device to report the write back
+
 const ENUM_VALUE_SETTINGS = {
   heat_pump_mode:   'mode_values',
   heat_pump_preset: 'preset_values',
@@ -88,6 +104,11 @@ class HeatPumpDevice extends BaseTuyaDevice {
     this._connectedAt         = null;
     this._faultAlarmTimer     = null;
     this._faultAlarmConfirmed = false;
+
+    // The target's block, as last reported on this connection - see BLOCK_FELD_BYTES.
+    this._sollBlock      = null;
+    this._blockWarter    = [];
+    this._blockSchreiben = Promise.resolve();
 
     await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
     await this._syncTempRange();
@@ -114,6 +135,7 @@ class HeatPumpDevice extends BaseTuyaDevice {
       const dp  = this.getSetting('dp_target_temp');
       const div = this.getSetting('temp_divisor') || 1;
       if (!dp || dp === 0) throw new Error('Target temperature DP not configured');
+      if (this._sollFeld() > 0) return this._setzeSollImBlock(dp, Math.round(value * div));
       await this._set(dp, Math.round(value * div));
     });
 
@@ -124,6 +146,8 @@ class HeatPumpDevice extends BaseTuyaDevice {
 
   /** Reset fault-debounce state on every (re)connect. */
   _onConnected() {
+    // A block from an earlier connection may have missed a change made meanwhile.
+    this._sollBlock           = null;
     this._connectedAt         = Date.now();
     clearTimeout(this._faultAlarmTimer);
     this._faultAlarmTimer     = null;
@@ -132,6 +156,102 @@ class HeatPumpDevice extends BaseTuyaDevice {
 
   async _onDeleted() {
     clearTimeout(this._faultAlarmTimer);
+    for (const w of this._blockWarter || []) clearTimeout(w.timer);
+  }
+
+  /** Where the target sits in the block, counting from 1; 0 when the DP is the value. */
+  _sollFeld() {
+    const f = Number(this.getSetting('target_temp_field'));
+    return Number.isInteger(f) && f > 0 ? f : 0;
+  }
+
+  /** The block as bytes, or null when the value is not one or too short for the field. */
+  _leseBlock(wert, feld) {
+    if (typeof wert !== 'string' || !wert) return null;
+    const block = Buffer.from(wert, 'base64');
+    return block.length >= feld * BLOCK_FELD_BYTES ? block : null;
+  }
+
+  /** Hands a newly reported block to whoever is waiting for one. */
+  _meldeBlock(block) {
+    const wartende = this._blockWarter;
+    this._blockWarter = [];
+    for (const w of wartende) { clearTimeout(w.timer); w.resolve(block); }
+  }
+
+  /** The next block the device reports, or null after ms. */
+  _naechsterBlock(ms) {
+    let w;
+    const versprechen = new Promise((resolve) => {
+      w = { resolve, timer: null };
+      w.timer = setTimeout(() => {
+        this._blockWarter = this._blockWarter.filter((x) => x !== w);
+        resolve(null);
+      }, ms);
+      this._blockWarter.push(w);
+    });
+    const abbrechen = () => {
+      clearTimeout(w.timer);
+      this._blockWarter = this._blockWarter.filter((x) => x !== w);
+    };
+    return { versprechen, abbrechen };
+  }
+
+  /** One write at a time: two at once would each start from the same block. */
+  _setzeSollImBlock(dp, sollRoh) {
+    const lauf = this._blockSchreiben.then(() => this._schreibeSoll(dp, sollRoh));
+    this._blockSchreiben = lauf.catch(() => {});
+    return lauf;
+  }
+
+  async _schreibeSoll(dp, sollRoh) {
+    const feld   = this._sollFeld();
+    const stelle = (feld - 1) * BLOCK_FELD_BYTES;
+    const block  = await this._aktuellerBlock(dp);
+    if (block.readInt32BE(stelle) === sollRoh) return;   // already there
+
+    const neu = Buffer.from(block);
+    neu.writeInt32BE(sollRoh, stelle);
+
+    // Listening before sending: a device that answers at once must not be missed.
+    const antwort = this._naechsterBlock(BLOCK_BESTAETIGUNG_MS);
+    try {
+      await this._set(dp, neu.toString('base64'));
+    } catch (err) {
+      antwort.abbrechen();
+      throw err;
+    }
+    const zurueck = await antwort.versprechen;
+    if (!zurueck) {
+      this._appLog(`Target temperature: wrote ${sollRoh} into field ${feld} of DP ${dp}, and the `
+        + `device did not report the block back within ${BLOCK_BESTAETIGUNG_MS / 1000} s. It may not `
+        + 'accept writes to this block.', 'warn');
+      throw new Error('The heat pump did not confirm the new target temperature');
+    }
+    const gemeldet = zurueck.readInt32BE(stelle);
+    if (gemeldet !== sollRoh) {
+      this._appLog(`Target temperature: asked for ${sollRoh}, the device reports ${gemeldet} `
+        + `(field ${feld} of DP ${dp}) - most likely outside the range it allows.`, 'warn');
+      throw new Error(`The heat pump set ${gemeldet} instead`);
+    }
+  }
+
+  /**
+   * The block to write: the one reported on this connection, or - when there is none
+   * yet - one asked for now. Never one from an earlier connection, and never none.
+   */
+  async _aktuellerBlock(dp) {
+    if (this._sollBlock) return this._sollBlock;
+    const kommt = this._naechsterBlock(BLOCK_ANFORDERN_MS);
+    this._conn?.refresh([dp]).catch(() => {});
+    this._conn?.get().catch(() => {});
+    const block = await kommt.versprechen;
+    if (!block) {
+      throw new Error(`The heat pump has not reported DP ${dp} since connecting and did not send `
+        + 'it when asked. Change the target once in its own app - it reports the block then - '
+        + 'and try again.');
+    }
+    return block;
   }
 
   // â”€â”€ Optional capability listeners â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -243,6 +363,22 @@ class HeatPumpDevice extends BaseTuyaDevice {
 
         // â”€â”€ Target temperature â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         case 'temp': {
+          const feld = this._sollFeld();
+          if (feld > 0) {
+            const block = this._leseBlock(rawValue, feld);
+            if (!block) {
+              this._appLog(`Target temperature: DP ${dp} is set up as a packed block with the `
+                + `target in field ${feld}, but what it reported is not a block that long. `
+                + 'Check Target Temperature DP and Target Temperature Field.', 'warn');
+              break;
+            }
+            this._sollBlock = block;
+            this._meldeBlock(block);
+            await this.setCapabilityValue('target_temperature',
+              block.readInt32BE((feld - 1) * BLOCK_FELD_BYTES) / div).catch(() => {});
+            setTimeout(() => { this.refreshDps().catch(() => {}); }, 1500);
+            break;
+          }
           await this.setCapabilityValue('target_temperature', Number(value) / div).catch(() => {});
           // A temperature push without a simultaneous mode DP update indicates the
           // mode was changed via cloud (SmartLife). Refresh to pick up the current mode.
@@ -371,6 +507,10 @@ class HeatPumpDevice extends BaseTuyaDevice {
     }
     if (changedKeys.some((k) => ['temp_min', 'temp_max', 'temp_step'].includes(k))) {
       await this._syncTempRange();
+    }
+    // The cached block belongs to the old DP or field; the next report brings the new.
+    if (changedKeys.includes('dp_target_temp') || changedKeys.includes('target_temp_field')) {
+      this._sollBlock = null;
     }
     // Rebuild mode picker when either the DP assignment or the value list changes.
     if (changedKeys.includes('mode_values') || changedKeys.includes('dp_mode')) {

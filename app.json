@@ -23752,6 +23752,22 @@
               }
             },
             {
+              "id": "target_temp_field",
+              "type": "number",
+              "value": 0,
+              "min": 0,
+              "max": 64,
+              "step": 1,
+              "label": {
+                "en": "Target Temperature Field",
+                "de": "Sollwert-Feld"
+              },
+              "hint": {
+                "en": "0: the Target Temperature DP is the temperature itself. A number: that DP is a packed block of 4-byte values, and this is where the target sits in it, counting from 1 - on a Power World PW58421, DP 118 and field 5. Setting the target then writes the whole block back with only this value changed, always from a copy the device reported since the app connected.",
+                "de": "0: der Sollwert-DP ist die Temperatur selbst. Eine Zahl: dieser DP ist ein gepackter Block aus 4-Byte-Werten, und sie sagt, an welcher Stelle darin der Sollwert steht, ab 1 gezählt — bei einer Power World PW58421 DP 118 und Feld 5. Das Setzen des Sollwerts schreibt dann den ganzen Block zurück, mit nur diesem Wert geändert, immer aus einer Kopie, die das Gerät seit dem Verbinden gemeldet hat."
+              }
+            },
+            {
               "id": "dp_current_temp",
               "type": "number",
               "label": {

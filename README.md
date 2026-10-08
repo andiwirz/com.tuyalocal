@@ -655,11 +655,12 @@ Universal driver for pool / air-water heat pumps. Auto-detects all major DP layo
 | Phalén Calidi XP / Fairland InverterPlus | DP 1 | DP 106 | DP 102 | DP 105 |
 | Waterco Electroheat ECO-VS | DP 101 | DP 104 | — | — |
 | Apricus / Powerworld water HP | DP 1 | DP 2 | DP 3 | DP 4 |
-| Power World PW58421 (DHW + heating) | DP 1 | — ¹ | DP 102 | DP 5, preset DP 2 |
+| Power World PW58421 (DHW + heating) | DP 1 | DP 118, field 5 ¹ | DP 102 | DP 5, preset DP 2 |
 | Arcelik / Axen combo (DHW + space heating) | DP 1 | DP 103–106 | — | DP 109 |
 
-¹ Not a data point of its own on this model — the target temperature is packed into one of
-its `parameter_group` blocks, which are not decoded yet.
+¹ Not a data point of its own on this model: the target is the fifth value in `parameter_group_1`
+(DP 118), a block of twenty 4-byte numbers. Set `dp_target_temp` to 118 and `target_temp_field`
+to 5 — see [A target inside a packed block](#a-target-inside-a-packed-block).
 
 Not every Power World unit follows the older Powerworld row. The PW58421 puts its operating
 mode — hot water, heating, cooling and the combinations — on DP 5 as `work_mode`, and on
@@ -690,12 +691,32 @@ Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polli
 |---|:---:|---|---|---|---|
 | `dp_onoff` |  | `onoff` | boolean | 1 | — |
 | `dp_target_temp` |  | `target_temperature` | number | 2 | — |
+| `target_temp_field` |  | — | number | 0 | ✓ `0` = the DP is the temperature itself |
 | `dp_current_temp` |  | `measure_temperature` | number | 3 | ✓ `0` = disabled |
 | `dp_mode` | <img src="assets/capabilities/heat_pump_mode.svg" height="24"> | `heat_pump_mode` | enum | 0 | ✓ `0` = disabled |
 | `dp_preset` | <img src="assets/capabilities/heat_pump_preset.svg" height="24"> | `heat_pump_preset` | enum or bool | 0 | ✓ `0` = disabled |
 | `dp_fault` |  | `alarm_generic` | bitfield / bool | 0 | ✓ `0` = disabled |
 | `dp_power_level` | <img src="assets/capabilities/power_level.svg" height="24"> | `power_level` | number | 0 | ✓ `0` = disabled |
 | `dp_silent` | <img src="assets/capabilities/heat_pump_silent.svg" height="24"> | `heat_pump_silent` | boolean | 0 | ✓ `0` = disabled |
+
+#### A target inside a packed block
+
+Some heat pumps have no target-temperature data point. They keep their settings in raw
+`parameter_group` blocks instead — on the Power World PW58421, `parameter_group_1` (DP 118) is
+twenty 4-byte big-endian numbers, and the fifth is the heating target in whole degrees. With
+`target_temp_field` set, `dp_target_temp` names the block and the field says which number in it
+is the target, counting from 1. `temp_divisor` applies as usual.
+
+Reading is just that number. Writing is not: the block has to go back whole, so changing the
+target also sends the other nineteen settings in it. To make sure those are the device's own
+current values, the block written is always one the device reported **on this connection** — it
+reports the block again after every change, so that copy is current. When there is none yet,
+the app asks for it first and writes nothing until it arrives. After writing it waits for the
+device to report the block back: if it reports a different target, it most likely clamped the
+value to its range, and the log and the error say which value it took instead.
+
+To find the field on another model, change the target in the manufacturer's app a few times and
+compare the block between changes: the number that follows is the one.
 
 #### Silent Mode
 
