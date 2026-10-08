@@ -715,6 +715,16 @@ the app asks for it first and writes nothing until it arrives. After writing it 
 device to report the block back: if it reports a different target, it most likely clamped the
 value to its range, and the log and the error say which value it took instead.
 
+Some pumps never send the block when asked — the PW58421 sends it only when a setting changes.
+After every reconnect the first change from Homey would then have nothing to write from. With
+**Cloud Lookup** set up, the app asks the Tuya cloud at the same time as the pump: the cloud holds
+the copy the manufacturer's app shows, and the pump reports every change to it, Homey's included.
+A copy from the cloud is checked before it is written back — base64, whole 4-byte fields, as long
+as the pump's own blocks once one has been seen, and a target in it that can be a temperature —
+because a wrong block would not just set a wrong target, it would overwrite every other setting
+in it. Without Cloud Lookup, the first change after a reconnect needs the pump to have reported
+its block: change the target once in the manufacturer's app.
+
 To find the field on another model, change the target in the manufacturer's app a few times and
 compare the block between changes: the number that follows is the one.
 

@@ -503,9 +503,13 @@ class TuyaLocalApp extends Homey.App {
                   if (p?.range) range = p.range.join(',');
                   else if (p?.min !== undefined) range = `${p.min}-${p.max}${p.unit ? ' ' + p.unit : ''}`;
                 } catch (_) {}
+                // cloudDeviceDetail keeps the current value as current_value. Reading
+                // e.value printed null for every device in every bundle, which looked
+                // like an answer - "the cloud has no value" - and was none.
+                const wert = JSON.stringify(e.current_value ?? e.value ?? null);
                 out.push(`    ${pad(e.code, 26)} ${pad(e.dp_id, 5)} ${pad(e.type, 9)}`
-                  + ` ${pad(JSON.stringify(e.value ?? null), 16)} ${range}`);
-                specLines.push(`${e.code}\tDP ${e.dp_id}\t${e.type}\t${JSON.stringify(e.value ?? null)}\t${range}`);
+                  + ` ${pad(wert, 16)} ${range}`);
+                specLines.push(`${e.code}\tDP ${e.dp_id}\t${e.type}\t${wert}\t${range}`);
               }
               record.cloudSpec = specLines.join('\n');
             } else {

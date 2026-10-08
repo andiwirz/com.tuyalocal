@@ -80,6 +80,11 @@ const DP_PROFILE = [
 const BLOCK_FELD_BYTES      = 4;
 const BLOCK_ANFORDERN_MS    = 5000;   // waiting for a block that was asked for
 const BLOCK_BESTAETIGUNG_MS = 6000;   // waiting for the device to report the write back
+const BLOCK_CLOUD_MS        = 8000;   // waiting for the Tuya cloud's copy
+// What a target read out of a block from elsewhere may plausibly be, after the
+// divisor. Anything outside is a block decoded wrongly, not a temperature.
+const BLOCK_SOLL_MIN        = -50;
+const BLOCK_SOLL_MAX        = 150;
 
 const ENUM_VALUE_SETTINGS = {
   heat_pump_mode:   'mode_values',
@@ -107,6 +112,9 @@ class HeatPumpDevice extends BaseTuyaDevice {
 
     // The target's block, as last reported on this connection - see BLOCK_FELD_BYTES.
     this._sollBlock      = null;
+    // How long the device's own blocks are - a property of the device, not of a
+    // connection, so it survives reconnects. Used to check a copy from the cloud.
+    this._blockLaenge    = null;
     this._blockWarter    = [];
     this._blockSchreiben = Promise.resolve();
 
@@ -240,18 +248,106 @@ class HeatPumpDevice extends BaseTuyaDevice {
    * The block to write: the one reported on this connection, or - when there is none
    * yet - one asked for now. Never one from an earlier connection, and never none.
    */
+  //
+  // From the device and, where Cloud Lookup is set up, from the Tuya cloud at the same
+  // time. Reported with a heat pump that sends its block only when a setting changes
+  // and ignores a request for it: after every reconnect - about every two hours there -
+  // the first change from Homey failed until someone touched the manufacturer's app.
+  // The cloud holds the copy that app shows, and the device reports every change to
+  // it, Homey's included. Whichever arrives first with a block is used; the device's
+  // own wins a tie, and a copy from the cloud is checked before it is trusted.
   async _aktuellerBlock(dp) {
     if (this._sollBlock) return this._sollBlock;
     const kommt = this._naechsterBlock(BLOCK_ANFORDERN_MS);
     this._conn?.refresh([dp]).catch(() => {});
     this._conn?.get().catch(() => {});
-    const block = await kommt.versprechen;
+    const ausCloud = this._blockAusCloud(dp);
+
+    const erstes = await Promise.race([
+      kommt.versprechen.then((b) => ({ quelle: 'device', b })),
+      ausCloud.then((b) => ({ quelle: 'cloud', b })),
+    ]);
+    let block  = erstes.b;
+    let quelle = erstes.quelle;
+    if (!block) {
+      quelle = erstes.quelle === 'device' ? 'cloud' : 'device';
+      block  = quelle === 'cloud' ? await ausCloud : await kommt.versprechen;
+    }
+    if (quelle === 'cloud') kommt.abbrechen();
     if (!block) {
       throw new Error(`The heat pump has not reported DP ${dp} since connecting and did not send `
         + 'it when asked. Change the target once in its own app - it reports the block then - '
         + 'and try again.');
     }
+    if (quelle === 'cloud') {
+      this._appLog(`Target temperature: the heat pump has not reported DP ${dp} since connecting `
+        + '- writing from the copy in the Tuya cloud.', 'info');
+    }
     return block;
+  }
+
+  /**
+   * The block as the Tuya cloud holds it, or null - when Cloud Lookup is not set up,
+   * the cloud does not answer in time, or its copy does not pass _fremderBlockGrund.
+   * Never throws: the device itself may still answer.
+   */
+  async _blockAusCloud(dp) {
+    const accessId     = this.homey.settings.get('cloud_access_id');
+    const accessSecret = this.homey.settings.get('cloud_access_secret');
+    const region       = this.homey.settings.get('cloud_region');
+    const deviceId     = this.getSetting('device_id');
+    if (!accessId || !accessSecret || !region || !deviceId) return null;
+    let uhr;
+    try {
+      const detail = await Promise.race([
+        this.homey.app.cloudDeviceDetail({ accessId, accessSecret, region, deviceId }),
+        new Promise((resolve) => { uhr = setTimeout(() => resolve('zu spaet'), BLOCK_CLOUD_MS); }),
+      ]);
+      if (detail === 'zu spaet') {
+        this._appLog(`Target temperature: the Tuya cloud did not answer within ${BLOCK_CLOUD_MS / 1000} s.`, 'warn');
+        return null;
+      }
+      const eintrag = (detail?.status || []).find((e) => e && e.dp_id === dp);
+      const grund = this._fremderBlockGrund(eintrag?.current_value);
+      if (grund) {
+        this._appLog(`Target temperature: the Tuya cloud's copy of DP ${dp} was not used - ${grund}.`, 'warn');
+        return null;
+      }
+      return Buffer.from(eintrag.current_value, 'base64');
+    } catch (err) {
+      this._appLog(`Target temperature: asking the Tuya cloud for DP ${dp} failed: ${err?.message || err}`, 'warn');
+      return null;
+    } finally {
+      clearTimeout(uhr);
+    }
+  }
+
+  /**
+   * Why a block that did not come from the device itself cannot be trusted, or null.
+   *
+   * It is written back whole, so a wrong one would not just set a wrong target - it
+   * would overwrite every other setting in it. A hex string, say, is valid base64 too,
+   * and decodes to a block of plausible length full of nonsense. So: base64, whole
+   * 4-byte fields, as long as the device's own blocks when one has been seen, and a
+   * target in it that can be a temperature.
+   */
+  _fremderBlockGrund(wert) {
+    const feld = this._sollFeld();
+    if (typeof wert !== 'string' || !wert) return 'it holds no value';
+    if (!/^[A-Za-z0-9+/]+={0,2}$/.test(wert) || wert.length % 4 !== 0) return 'it is not base64';
+    const block = Buffer.from(wert, 'base64');
+    if (block.length % BLOCK_FELD_BYTES !== 0 || block.length < feld * BLOCK_FELD_BYTES) {
+      return `its ${block.length} bytes are not a block of 4-byte values reaching field ${feld}`;
+    }
+    if (this._blockLaenge && block.length !== this._blockLaenge) {
+      return `it is ${block.length} bytes long, and the device's own blocks are ${this._blockLaenge}`;
+    }
+    const div  = this.getSetting('temp_divisor') || 1;
+    const soll = block.readInt32BE((feld - 1) * BLOCK_FELD_BYTES) / div;
+    if (!(soll >= BLOCK_SOLL_MIN && soll <= BLOCK_SOLL_MAX)) {
+      return `its target would be ${soll}, which cannot be a temperature`;
+    }
+    return null;
   }
 
   // â”€â”€ Optional capability listeners â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -373,6 +469,7 @@ class HeatPumpDevice extends BaseTuyaDevice {
               break;
             }
             this._sollBlock = block;
+            this._blockLaenge = block.length;
             this._meldeBlock(block);
             await this.setCapabilityValue('target_temperature',
               block.readInt32BE((feld - 1) * BLOCK_FELD_BYTES) / div).catch(() => {});
