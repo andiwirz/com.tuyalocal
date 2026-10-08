@@ -898,9 +898,11 @@ class TuyaLocalApp extends Homey.App {
    * harmless direction is the one that needs no argument.
    *
    * Deliberately narrow: only companion settings are written — value lists, and,
-   * where the specification states a data point's own numeric span, the min/max
-   * pair a slider is scaled against. DP numbers themselves are left exactly as
-   * they are, and nothing is ever switched off. During pairing the live DP
+   * where the specification states a data point's own numeric span, the bounds a
+   * slider is scaled against, with their decimal place and step. DP numbers
+   * themselves are left exactly as they are, and nothing is ever switched off — and
+   * since they are left as they are, every list and span is read from the DP the
+   * device is set to, not from the one its code name would suggest. During pairing the live DP
    * snapshot protects a real DP from being cleared by an incomplete specification;
    * here there is no snapshot, so that protection is unavailable and remapping
    * would risk breaking a device the user has already tuned by hand.
@@ -942,8 +944,21 @@ class TuyaLocalApp extends Homey.App {
 
         let cloudDps = {};
         try {
+          // The lists belong to the DPs this device is set to, not to whichever DP the
+          // code names point at. Those differ exactly on the devices whose owners have
+          // corrected a mapping by hand — the ones most likely to press this button.
+          const festeDps = {};
+          for (const settingKey of [
+            ...Object.keys(maps.enumValuesMap || {}),
+            ...Object.keys(maps.rangeMap || {}),
+          ]) {
+            let dp = null;
+            try { dp = device.getSetting(settingKey); } catch (e) {}
+            if (Number.isInteger(dp) && dp >= 0) festeDps[settingKey] = dp;
+          }
           cloudDps = await detectViaCloud(this.homey, id, maps.codeMap,
-            (m) => this.log(`[${name}] ${m}`), maps.enumValuesMap || {}, null, maps.rangeMap || {});
+            (m) => this.log(`[${name}] ${m}`), maps.enumValuesMap || {}, null, maps.rangeMap || {},
+            { festeDps });
         } catch (err) {
           skipped.push({ name, driver: driver.id, reason: `lookup failed: ${err.message}` });
           continue;
@@ -951,11 +966,14 @@ class TuyaLocalApp extends Homey.App {
 
         // Only the companion keys are allowed through — never a dp_* DP number.
         // A value-list entry is either the setting name or { setting, from } —
-        // see extractEnumValues in lib/dpCodeMap.js. A range entry is the pair of
-        // settings its min/max are written to — see extractIntegerRange there.
+        // see extractEnumValues in lib/dpCodeMap.js. A range entry names the settings
+        // its bounds go to, and possibly its decimal place and step as well — see
+        // extractIntegerRange there. All of them, or the range is wrong: raw bounds
+        // written without their decimal place turn one hour in tenths of a second
+        // into a slider running to ten hours.
         const allowed = new Set([
           ...Object.values(maps.enumValuesMap || {}).map((t) => (typeof t === 'string' ? t : t?.setting)),
-          ...Object.values(maps.rangeMap || {}).flatMap((r) => [r?.min, r?.max]),
+          ...Object.values(maps.rangeMap || {}).flatMap((r) => Object.values(r || {})),
         ].filter(Boolean));
         const changes = [];
         for (const [key, value] of Object.entries(cloudDps)) {

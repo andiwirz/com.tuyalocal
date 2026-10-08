@@ -8,13 +8,15 @@ const net                       = require('net');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
 const { capitalize }            = require('../../lib/utils');
-const { detectViaCloud, guessedDefaults }        = require('../../lib/dpCodeMap');
+const { detectViaCloud, guessedDefaults, normalizeCode } = require('../../lib/dpCodeMap');
 const { leseWerteliste } = require('../../lib/utils.js');
 
 // Maps this driver's settings keys to the Tuya cloud "code" names that
 // commonly represent them. See lib/dpCodeMap.js. dp_power_level and dp_preset
 // are omitted — their code names vary too much between heat pump models to
-// guess confidently.
+// guess confidently. A preset can still come out of the specification: where a
+// device has both "mode" and "work_mode", the one that is not the operating mode
+// is often a preset — see _pruefeGegenSpec.
 // Verglichen wird kleingeschrieben und ohne Trennzeichen, "SetTemp" trifft also
 // "settemp". Die zweite Reihe je Zeile stammt von einer gemeldeten Inverter-Pool-
 // waermepumpe, die ihre Datenpunkte in den 100er-Block legt und in CamelCase benennt.
@@ -43,6 +45,8 @@ const CLOUD_ENUM_VALUES_MAP = {
 // Liste, desto eher greift sie sich einen Datenpunkt, der etwas anderes meint.
 const PRESET_VALUES = new Set([
   'sleep', 'comfort', 'boost', 'eco', 'silent', 'quiet', 'turbo', 'powerful',
+  // Eine gemeldete Power-World-Waermepumpe (PW58421): smart / strong / mute.
+  'strong', 'mute',
 ]);
 
 const MODE_VALUES = new Set([
@@ -50,6 +54,15 @@ const MODE_VALUES = new Set([
   'heating', 'cooling', 'hot', 'make_cold', 'make_hot',
   'auto_dhw', 'wth', 'heat_cool',
 ]);
+
+// Woerter, die auf manchen Geraeten eine Betriebsart sind und auf anderen eine
+// Leistungsstufe. "smart" ist bei Phalén der Automatikbetrieb, bei einer gemeldeten
+// Power-World-Waermepumpe die mittlere von drei Leistungsstufen neben "strong" und
+// "mute". Allein entscheiden sie darum nicht, welcher Datenpunkt der Betrieb ist.
+const MEHRDEUTIG = new Set(['smart', 'auto']);
+
+// Einheiten, an denen die Spezifikation einen Datenpunkt als Temperatur ausweist.
+const TEMPERATUR_EINHEITEN = new Set(['℃', '°c', '℉', '°f']);
 
 class HeatPumpDriver extends Homey.Driver {
   async onInit() {
@@ -198,7 +211,10 @@ class HeatPumpDriver extends Homey.Driver {
         connected = true;
         if (Object.keys(collectedDps).length > 0) {
           detectedDps = this._detectDps(collectedDps);
-          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m), CLOUD_ENUM_VALUES_MAP, guessedDefaults(detectedDps, collectedDps));
+          const vermutet = { ...detectedDps };
+          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m),
+            CLOUD_ENUM_VALUES_MAP, guessedDefaults(detectedDps, collectedDps), {},
+            { nachbearbeitung: (spec, ergebnis) => this._pruefeGegenSpec(spec, ergebnis, vermutet, (m) => this.log(m)) });
           if (Object.keys(cloudDps).length > 0) Object.assign(detectedDps, cloudDps);
         }
       } catch (err) {
@@ -238,6 +254,93 @@ class HeatPumpDriver extends Homey.Driver {
 
   // ── Auto-detect DPs ──────────────────────────────────────────────────────────
 
+  /**
+   * Was die Spezifikation ueber die Belegung sagt, nachdem die Codenamen gesprochen
+   * haben — fuer die Faelle, in denen ein Name allein in die Irre fuehrt.
+   *
+   * Gemeldet an einer Power-World-Waermepumpe (PW58421). DP 2 heisst "mode" und
+   * fuehrt smart / strong / mute, eine Leistungsstufe; DP 5 heisst "work_mode" und
+   * fuehrt wth / heat / cool, den Betrieb. "mode" steht im Namensabgleich vorn und
+   * gewann. Die lokale Schaetzung legte den Sollwert auf DP 106 und die Leistung auf
+   * DP 104 — Phaléns Belegung —, wo dieses Geraet einen Temperaturfuehler und die
+   * Verdichtertemperatur fuehrt. Die Spezifikation sagte beides. Gehoert hat niemand:
+   * sie schaltet nur ab, was in ihr fehlt, und beide standen drin.
+   *
+   * Drei Pruefungen, jede so eng wie moeglich:
+   *  - Betriebsart: hat ein anderer Kandidat mehr eindeutige Betriebswoerter in
+   *    seiner Werteliste, wird er es. Gleichstand laesst die Wahl der Namen stehen.
+   *    Der Verdraengte wird Voreinstellung, wenn seine Woerter danach klingen.
+   *  - Sollwert: ein Datenpunkt, den die Spezifikation als nicht schreibbar fuehrt,
+   *    ist keiner — sofern die Liste der schreibbaren ueberhaupt angekommen ist.
+   *  - Leistung: ein Datenpunkt, der in Grad misst, ist keine Leistung in Prozent.
+   * Was die Namen selbst aufgeloest haben, wird nicht angefasst.
+   *
+   * @param {Array}  spec      Die Spezifikation, wie cloudDeviceDetail sie liefert.
+   * @param {Object} ergebnis  Was die Codenamen ergeben haben; wird hier berichtigt.
+   * @param {Object} vermutet  Die lokale Schaetzung, die das Ergebnis sonst stehen liesse.
+   */
+  _pruefeGegenSpec(spec, ergebnis, vermutet = {}, log = () => {}) {
+    const werteVon = (e) => {
+      try {
+        return typeof e.values === 'string' ? JSON.parse(e.values) : (e.values || {});
+      } catch (_) { return {}; }
+    };
+    const liste   = (e) => (Array.isArray(werteVon(e).range) ? werteVon(e).range.map(String) : null);
+    const einheit = (e) => String(werteVon(e).unit || '').trim().toLowerCase();
+    const eintrag = (dp) => spec.find((e) => e && e.dp_id === dp);
+
+    // ── Betriebsart ─────────────────────────────────────────────────────────
+    const modusNamen = new Set(CLOUD_CODE_MAP.dp_mode
+      .filter((a) => typeof a === 'string').map((a) => normalizeCode(a)));
+    const betrieb = (werte) => werte
+      .filter((w) => MODE_VALUES.has(w.toLowerCase()) && !MEHRDEUTIG.has(w.toLowerCase())).length;
+    const kandidaten = spec
+      .filter((e) => e && e.dp_id && modusNamen.has(normalizeCode(e.code)))
+      .map((e) => ({ dp: e.dp_id, werte: liste(e) }))
+      .filter((k) => k.werte && k.werte.length > 0);
+    const jetzt = kandidaten.find((k) => k.dp === ergebnis.dp_mode);
+    if (jetzt) {
+      const besser = kandidaten
+        .filter((k) => betrieb(k.werte) > betrieb(jetzt.werte))
+        .sort((a, b) => betrieb(b.werte) - betrieb(a.werte))[0];
+      if (besser) {
+        ergebnis.dp_mode     = besser.dp;
+        ergebnis.mode_values = besser.werte.join(',');
+        log(`Cloud DP spec: operating mode is DP ${besser.dp} (${ergebnis.mode_values}), `
+          + `not DP ${jetzt.dp} (${jetzt.werte.join(',')})`);
+        const klingtNachVoreinstellung = jetzt.werte.some((w) => PRESET_VALUES.has(w.toLowerCase()));
+        if (klingtNachVoreinstellung && !(ergebnis.dp_preset > 0)) {
+          ergebnis.dp_preset     = jetzt.dp;
+          ergebnis.preset_values = jetzt.werte.join(',');
+          log(`Cloud DP spec: preset is DP ${jetzt.dp} (${ergebnis.preset_values})`);
+        }
+      }
+    }
+
+    // ── Sollwert ────────────────────────────────────────────────────────────
+    // Fehlt die Liste der schreibbaren Datenpunkte, steht ueberall settable: false,
+    // und das hiesse nichts. Darum nur, wenn mindestens einer schreibbar ist.
+    const schreibbarBekannt = spec.some((e) => e && e.settable === true);
+    if (ergebnis.dp_target_temp === undefined && vermutet.dp_target_temp > 0 && schreibbarBekannt) {
+      const e = eintrag(vermutet.dp_target_temp);
+      if (e && e.settable === false) {
+        ergebnis.dp_target_temp = 0;
+        log(`Cloud DP spec: DP ${e.dp_id} is "${e.code}", which cannot be written — `
+          + 'not a target temperature');
+      }
+    }
+
+    // ── Leistung ────────────────────────────────────────────────────────────
+    if (ergebnis.dp_power_level === undefined && vermutet.dp_power_level > 0) {
+      const e = eintrag(vermutet.dp_power_level);
+      if (e && TEMPERATUR_EINHEITEN.has(einheit(e))) {
+        ergebnis.dp_power_level = 0;
+        log(`Cloud DP spec: DP ${e.dp_id} is "${e.code}", measured in ${einheit(e)} — `
+          + 'not a power level');
+      }
+    }
+  }
+
   _detectDps(dps) {
     const dpsMap    = Object.fromEntries(Object.entries(dps).map(([k, v]) => [parseInt(k), v]));
     const boolDps   = Object.entries(dpsMap)
@@ -272,8 +375,11 @@ class HeatPumpDriver extends Homey.Driver {
       ?? 0;   // 0 = disabled; some devices don't expose current temp
 
     // ── Operating mode ────────────────────────────────────────────────────────
-    // String DP whose current value is a recognised mode keyword.
-    const modeEntry = stringDps.find((d) => MODE_VALUES.has(d.val));
+    // String DP whose current value is a recognised mode keyword — an unambiguous
+    // one first. A Power-World unit reports "smart" on DP 2, its performance level,
+    // and "heat" on DP 5, its operating mode; taking the first hit took DP 2.
+    const modeEntry = stringDps.find((d) => MODE_VALUES.has(d.val) && !MEHRDEUTIG.has(d.val))
+      ?? stringDps.find((d) => MODE_VALUES.has(d.val));
     const dp_mode   = modeEntry?.dp ?? 0;
 
     // ── Preset ────────────────────────────────────────────────────────────────

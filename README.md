@@ -653,7 +653,30 @@ Universal driver for pool / air-water heat pumps. Auto-detects all major DP layo
 | Phalén Calidi XP / Fairland InverterPlus | DP 1 | DP 106 | DP 102 | DP 105 |
 | Waterco Electroheat ECO-VS | DP 101 | DP 104 | — | — |
 | Apricus / Powerworld water HP | DP 1 | DP 2 | DP 3 | DP 4 |
+| Power World PW58421 (DHW + heating) | DP 1 | — ¹ | DP 102 | DP 5, preset DP 2 |
 | Arcelik / Axen combo (DHW + space heating) | DP 1 | DP 103–106 | — | DP 109 |
+
+¹ Not a data point of its own on this model — the target temperature is packed into one of
+its `parameter_group` blocks, which are not decoded yet.
+
+Not every Power World unit follows the older Powerworld row. The PW58421 puts its operating
+mode — hot water, heating, cooling and the combinations — on DP 5 as `work_mode`, and on
+DP 2, under the name `mode`, a performance level (`smart` / `strong` / `mute`). DP 104 and
+DP 106, where a Phalén keeps its power level and target temperature, are a compressor
+temperature and a coil sensor here.
+
+With Cloud Lookup set up, pairing sorts this out from the manufacturer's specification:
+
+- Where a device has both `mode` and `work_mode`, the one whose values name an operating
+  mode (`heat`, `cool`, `wth`, …) becomes the mode. The other becomes the preset if its
+  values sound like one. A tie leaves the code names to decide, as before.
+- A guessed target temperature on a data point the specification marks as not writable is
+  dropped — a setpoint you cannot write is not one.
+- A guessed power level on a data point the specification measures in degrees is dropped.
+
+What the code names resolve on their own is never overruled. Without Cloud Lookup, pairing
+still prefers an unambiguous mode word (`heat`) over one that means different things on
+different devices (`smart`, `auto`), but cannot know what DP 104 and DP 106 are.
 
 #### Connection
 
@@ -986,8 +1009,9 @@ slider ran to 36000 was showing its own raw span, which is one hour, not ten. Th
 settings above hold that span; the tile stays in seconds and divides and multiplies by ten on
 the way in and out.
 
-They are filled in at pairing from the manufacturer's specification, and **Cloud Lookup →
-Apply** fills them on a sensor that is already paired. Left at their defaults, the tile
+They are filled in at pairing from the manufacturer's specification, and **Fix It → Update
+pickers on existing devices** fills them on a sensor that is already paired — all four
+together, since raw bounds without their decimal place describe a different range. Left at their defaults, the tile
 behaves exactly as before: a 0–3600 second slider with no conversion. A value between 0 and
 `hold_time_min` is one the sensor cannot accept, so the tile snaps it to 0 rather than sending
 an impossible one; 0 itself stays reachable.
@@ -2779,7 +2803,7 @@ confirm. All except **protocol versions** need Cloud Lookup credentials.
 | **Check local keys** | A local key changes every time the device is reset or re-paired in the Tuya app, and the symptom is a device that never connects again. Compares the stored key against your account. Keys are shown shortened, never in full |
 | **Check protocol versions** | The device is connected and answering on a different version than the settings say. Waits for the device to answer first, so it cannot save a version a device was merely stuck on |
 | **Check measurement scaling** | Readings that are 10× or 100× off, using the divisor Tuya declares rather than leaving you to work it out from the number |
-| **Update pickers on existing devices** | Mode and fan-speed lists that were seeded from whatever the device happened to report at pairing time. Never touches DP numbers |
+| **Update pickers on existing devices** | Mode and fan-speed lists that were seeded from whatever the device happened to report at pairing time, and numeric ranges with their decimal place and step. Never touches DP numbers — and reads every list from the DP your device is set to, so a mapping you corrected by hand gets that DP's list, not the one its code name would suggest. A DP set to `0` gets none |
 | **Find data points your device does not have** | Driver defaults written for one device family pointing at nothing on another. A DP is only reported when the specification does not list it **and** your device has never once reported it |
 
 ### Help

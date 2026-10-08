@@ -115,8 +115,14 @@ class PresenceSensorDevice extends BaseTuyaDevice {
    * waere ein Schieber ohne Weg.
    */
   _nachlaufBereich() {
+    // null ist "gibt es auf diesem Geraet noch nicht", nicht 0 — Number(null) waere
+    // 0, und ein fehlendes Maximum hiesse dann ein Schieber bis 0. Das fiel bisher
+    // nur darum nicht auf, weil der Waechter unten max <= min abfaengt und dabei
+    // beide Grenzen zuruecksetzt, auch eine gesetzte.
     const g = (k) => {
-      const v = Number(this.getSetting(`hold_time_${k}`));
+      const roh = this.getSetting(`hold_time_${k}`);
+      if (roh === null || roh === undefined || roh === '') return NACHLAUF_VORGABE[k];
+      const v = Number(roh);
       return Number.isFinite(v) ? v : NACHLAUF_VORGABE[k];
     };
     const decimals = Math.min(3, Math.max(0, Math.round(g('decimals'))));
