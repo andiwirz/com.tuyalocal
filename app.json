@@ -14640,6 +14640,19 @@
               "value": 60,
               "min": 0,
               "max": 3600
+            },
+            {
+              "id": "trace_connection_start",
+              "type": "checkbox",
+              "value": false,
+              "label": {
+                "en": "Record connection start",
+                "de": "Verbindungsbeginn aufzeichnen"
+              },
+              "hint": {
+                "en": "Writes every message exchanged with the device during the first 20 seconds of each connection to the log. For tracking down a device that does something when the app connects to it. Takes effect at the next connection — restart the app, or reconnect the device with its flow action. Leave off otherwise: it is verbose.",
+                "de": "Schreibt jede Nachricht, die in den ersten 20 Sekunden einer Verbindung mit dem Gerät ausgetauscht wird, ins Log. Zum Aufspüren eines Geräts, das etwas tut, sobald die App sich verbindet. Greift bei der nächsten Verbindung — die App neu starten oder das Gerät mit seiner Flow-Aktion neu verbinden. Sonst ausgeschaltet lassen: es ist ausführlich."
+              }
             }
           ]
         },
@@ -15189,6 +15202,19 @@
               "value": 60,
               "min": 0,
               "max": 3600
+            },
+            {
+              "id": "trace_connection_start",
+              "type": "checkbox",
+              "value": false,
+              "label": {
+                "en": "Record connection start",
+                "de": "Verbindungsbeginn aufzeichnen"
+              },
+              "hint": {
+                "en": "Writes every message exchanged with the device during the first 20 seconds of each connection to the log. For tracking down a device that does something when the app connects to it. Takes effect at the next connection — restart the app, or reconnect the device with its flow action. Leave off otherwise: it is verbose.",
+                "de": "Schreibt jede Nachricht, die in den ersten 20 Sekunden einer Verbindung mit dem Gerät ausgetauscht wird, ins Log. Zum Aufspüren eines Geräts, das etwas tut, sobald die App sich verbindet. Greift bei der nächsten Verbindung — die App neu starten oder das Gerät mit seiner Flow-Aktion neu verbinden. Sonst ausgeschaltet lassen: es ist ausführlich."
+              }
             }
           ]
         },
@@ -15913,6 +15939,19 @@
               "value": 60,
               "min": 0,
               "max": 3600
+            },
+            {
+              "id": "trace_connection_start",
+              "type": "checkbox",
+              "value": false,
+              "label": {
+                "en": "Record connection start",
+                "de": "Verbindungsbeginn aufzeichnen"
+              },
+              "hint": {
+                "en": "Writes every message exchanged with the device during the first 20 seconds of each connection to the log. For tracking down a device that does something when the app connects to it. Takes effect at the next connection — restart the app, or reconnect the device with its flow action. Leave off otherwise: it is verbose.",
+                "de": "Schreibt jede Nachricht, die in den ersten 20 Sekunden einer Verbindung mit dem Gerät ausgetauscht wird, ins Log. Zum Aufspüren eines Geräts, das etwas tut, sobald die App sich verbindet. Greift bei der nächsten Verbindung — die App neu starten oder das Gerät mit seiner Flow-Aktion neu verbinden. Sonst ausgeschaltet lassen: es ist ausführlich."
+              }
             }
           ]
         },
@@ -16458,6 +16497,19 @@
               },
               "min": 0,
               "max": 600
+            },
+            {
+              "id": "trace_connection_start",
+              "type": "checkbox",
+              "value": false,
+              "label": {
+                "en": "Record connection start",
+                "de": "Verbindungsbeginn aufzeichnen"
+              },
+              "hint": {
+                "en": "Writes every message exchanged with the device during the first 20 seconds of each connection to the log. For tracking down a device that does something when the app connects to it. Takes effect at the next connection — restart the app, or reconnect the device with its flow action. Leave off otherwise: it is verbose.",
+                "de": "Schreibt jede Nachricht, die in den ersten 20 Sekunden einer Verbindung mit dem Gerät ausgetauscht wird, ins Log. Zum Aufspüren eines Geräts, das etwas tut, sobald die App sich verbindet. Greift bei der nächsten Verbindung — die App neu starten oder das Gerät mit seiner Flow-Aktion neu verbinden. Sonst ausgeschaltet lassen: es ist ausführlich."
+              }
             }
           ]
         },
@@ -16980,6 +17032,19 @@
                 "en": "Send commands without waiting for acknowledgement. Off by default on this device type. Switch it on if commands are not arriving, or the device drops the connection right after a command.",
                 "de": "Befehle ohne Warten auf Bestätigung senden. Bei diesem Gerätetyp standardmässig aus. Einschalten, wenn Befehle nicht ankommen oder das Gerät die Verbindung unmittelbar nach einem Befehl trennt."
               }
+            },
+            {
+              "id": "trace_connection_start",
+              "type": "checkbox",
+              "value": false,
+              "label": {
+                "en": "Record connection start",
+                "de": "Verbindungsbeginn aufzeichnen"
+              },
+              "hint": {
+                "en": "Writes every message exchanged with the device during the first 20 seconds of each connection to the log. For tracking down a device that does something when the app connects to it. Takes effect at the next connection — restart the app, or reconnect the device with its flow action. Leave off otherwise: it is verbose.",
+                "de": "Schreibt jede Nachricht, die in den ersten 20 Sekunden einer Verbindung mit dem Gerät ausgetauscht wird, ins Log. Zum Aufspüren eines Geräts, das etwas tut, sobald die App sich verbindet. Greift bei der nächsten Verbindung — die App neu starten oder das Gerät mit seiner Flow-Aktion neu verbinden. Sonst ausgeschaltet lassen: es ist ausführlich."
+              }
             }
           ]
         },
@@ -17417,6 +17482,19 @@
                 "en": "Send commands without waiting for acknowledgement. Off by default on this device type. Switch it on if commands are not arriving, or the device drops the connection right after a command.",
                 "de": "Befehle ohne Warten auf Bestätigung senden. Bei diesem Gerätetyp standardmässig aus. Einschalten, wenn Befehle nicht ankommen oder das Gerät die Verbindung unmittelbar nach einem Befehl trennt."
               }
+            },
+            {
+              "id": "trace_connection_start",
+              "type": "checkbox",
+              "value": false,
+              "label": {
+                "en": "Record connection start",
+                "de": "Verbindungsbeginn aufzeichnen"
+              },
+              "hint": {
+                "en": "Writes every message exchanged with the device during the first 20 seconds of each connection to the log. For tracking down a device that does something when the app connects to it. Takes effect at the next connection — restart the app, or reconnect the device with its flow action. Leave off otherwise: it is verbose.",
+                "de": "Schreibt jede Nachricht, die in den ersten 20 Sekunden einer Verbindung mit dem Gerät ausgetauscht wird, ins Log. Zum Aufspüren eines Geräts, das etwas tut, sobald die App sich verbindet. Greift bei der nächsten Verbindung — die App neu starten oder das Gerät mit seiner Flow-Aktion neu verbinden. Sonst ausgeschaltet lassen: es ist ausführlich."
+              }
             }
           ]
         },
@@ -17830,6 +17908,19 @@
               "hint": {
                 "en": "Send commands without waiting for acknowledgement. Off by default on this device type. Switch it on if commands are not arriving, or the device drops the connection right after a command.",
                 "de": "Befehle ohne Warten auf Bestätigung senden. Bei diesem Gerätetyp standardmässig aus. Einschalten, wenn Befehle nicht ankommen oder das Gerät die Verbindung unmittelbar nach einem Befehl trennt."
+              }
+            },
+            {
+              "id": "trace_connection_start",
+              "type": "checkbox",
+              "value": false,
+              "label": {
+                "en": "Record connection start",
+                "de": "Verbindungsbeginn aufzeichnen"
+              },
+              "hint": {
+                "en": "Writes every message exchanged with the device during the first 20 seconds of each connection to the log. For tracking down a device that does something when the app connects to it. Takes effect at the next connection — restart the app, or reconnect the device with its flow action. Leave off otherwise: it is verbose.",
+                "de": "Schreibt jede Nachricht, die in den ersten 20 Sekunden einer Verbindung mit dem Gerät ausgetauscht wird, ins Log. Zum Aufspüren eines Geräts, das etwas tut, sobald die App sich verbindet. Greift bei der nächsten Verbindung — die App neu starten oder das Gerät mit seiner Flow-Aktion neu verbinden. Sonst ausgeschaltet lassen: es ist ausführlich."
               }
             }
           ]
@@ -18292,6 +18383,19 @@
               },
               "min": 0,
               "max": 600
+            },
+            {
+              "id": "trace_connection_start",
+              "type": "checkbox",
+              "value": false,
+              "label": {
+                "en": "Record connection start",
+                "de": "Verbindungsbeginn aufzeichnen"
+              },
+              "hint": {
+                "en": "Writes every message exchanged with the device during the first 20 seconds of each connection to the log. For tracking down a device that does something when the app connects to it. Takes effect at the next connection — restart the app, or reconnect the device with its flow action. Leave off otherwise: it is verbose.",
+                "de": "Schreibt jede Nachricht, die in den ersten 20 Sekunden einer Verbindung mit dem Gerät ausgetauscht wird, ins Log. Zum Aufspüren eines Geräts, das etwas tut, sobald die App sich verbindet. Greift bei der nächsten Verbindung — die App neu starten oder das Gerät mit seiner Flow-Aktion neu verbinden. Sonst ausgeschaltet lassen: es ist ausführlich."
+              }
             }
           ]
         },
@@ -18566,6 +18670,19 @@
               },
               "min": 0,
               "max": 600
+            },
+            {
+              "id": "trace_connection_start",
+              "type": "checkbox",
+              "value": false,
+              "label": {
+                "en": "Record connection start",
+                "de": "Verbindungsbeginn aufzeichnen"
+              },
+              "hint": {
+                "en": "Writes every message exchanged with the device during the first 20 seconds of each connection to the log. For tracking down a device that does something when the app connects to it. Takes effect at the next connection — restart the app, or reconnect the device with its flow action. Leave off otherwise: it is verbose.",
+                "de": "Schreibt jede Nachricht, die in den ersten 20 Sekunden einer Verbindung mit dem Gerät ausgetauscht wird, ins Log. Zum Aufspüren eines Geräts, das etwas tut, sobald die App sich verbindet. Greift bei der nächsten Verbindung — die App neu starten oder das Gerät mit seiner Flow-Aktion neu verbinden. Sonst ausgeschaltet lassen: es ist ausführlich."
+              }
             }
           ]
         },
@@ -19177,6 +19294,19 @@
               "hint": {
                 "en": "How long after reconnect before a fault alarm can trigger a flow or notification. Prevents false alarms caused by transient error states on reconnect. Default: 30 s.",
                 "de": "Wie lange nach dem Verbindungsaufbau ein Fehleralarm einen Flow oder eine Benachrichtigung auslösen kann. Verhindert Fehlalarme durch kurzzeitige Fehlerzustände beim Reconnect. Standard: 30 s."
+              }
+            },
+            {
+              "id": "trace_connection_start",
+              "type": "checkbox",
+              "value": false,
+              "label": {
+                "en": "Record connection start",
+                "de": "Verbindungsbeginn aufzeichnen"
+              },
+              "hint": {
+                "en": "Writes every message exchanged with the device during the first 20 seconds of each connection to the log. For tracking down a device that does something when the app connects to it. Takes effect at the next connection — restart the app, or reconnect the device with its flow action. Leave off otherwise: it is verbose.",
+                "de": "Schreibt jede Nachricht, die in den ersten 20 Sekunden einer Verbindung mit dem Gerät ausgetauscht wird, ins Log. Zum Aufspüren eines Geräts, das etwas tut, sobald die App sich verbindet. Greift bei der nächsten Verbindung — die App neu starten oder das Gerät mit seiner Flow-Aktion neu verbinden. Sonst ausgeschaltet lassen: es ist ausführlich."
               }
             }
           ]
@@ -19812,6 +19942,19 @@
               },
               "min": 0,
               "max": 600
+            },
+            {
+              "id": "trace_connection_start",
+              "type": "checkbox",
+              "value": false,
+              "label": {
+                "en": "Record connection start",
+                "de": "Verbindungsbeginn aufzeichnen"
+              },
+              "hint": {
+                "en": "Writes every message exchanged with the device during the first 20 seconds of each connection to the log. For tracking down a device that does something when the app connects to it. Takes effect at the next connection — restart the app, or reconnect the device with its flow action. Leave off otherwise: it is verbose.",
+                "de": "Schreibt jede Nachricht, die in den ersten 20 Sekunden einer Verbindung mit dem Gerät ausgetauscht wird, ins Log. Zum Aufspüren eines Geräts, das etwas tut, sobald die App sich verbindet. Greift bei der nächsten Verbindung — die App neu starten oder das Gerät mit seiner Flow-Aktion neu verbinden. Sonst ausgeschaltet lassen: es ist ausführlich."
+              }
             }
           ]
         },
@@ -20466,6 +20609,19 @@
               },
               "min": 0,
               "max": 600
+            },
+            {
+              "id": "trace_connection_start",
+              "type": "checkbox",
+              "value": false,
+              "label": {
+                "en": "Record connection start",
+                "de": "Verbindungsbeginn aufzeichnen"
+              },
+              "hint": {
+                "en": "Writes every message exchanged with the device during the first 20 seconds of each connection to the log. For tracking down a device that does something when the app connects to it. Takes effect at the next connection — restart the app, or reconnect the device with its flow action. Leave off otherwise: it is verbose.",
+                "de": "Schreibt jede Nachricht, die in den ersten 20 Sekunden einer Verbindung mit dem Gerät ausgetauscht wird, ins Log. Zum Aufspüren eines Geräts, das etwas tut, sobald die App sich verbindet. Greift bei der nächsten Verbindung — die App neu starten oder das Gerät mit seiner Flow-Aktion neu verbinden. Sonst ausgeschaltet lassen: es ist ausführlich."
+              }
             }
           ]
         },
@@ -21114,6 +21270,19 @@
               },
               "min": 0,
               "max": 600
+            },
+            {
+              "id": "trace_connection_start",
+              "type": "checkbox",
+              "value": false,
+              "label": {
+                "en": "Record connection start",
+                "de": "Verbindungsbeginn aufzeichnen"
+              },
+              "hint": {
+                "en": "Writes every message exchanged with the device during the first 20 seconds of each connection to the log. For tracking down a device that does something when the app connects to it. Takes effect at the next connection — restart the app, or reconnect the device with its flow action. Leave off otherwise: it is verbose.",
+                "de": "Schreibt jede Nachricht, die in den ersten 20 Sekunden einer Verbindung mit dem Gerät ausgetauscht wird, ins Log. Zum Aufspüren eines Geräts, das etwas tut, sobald die App sich verbindet. Greift bei der nächsten Verbindung — die App neu starten oder das Gerät mit seiner Flow-Aktion neu verbinden. Sonst ausgeschaltet lassen: es ist ausführlich."
+              }
             }
           ]
         },
@@ -21617,6 +21786,19 @@
                 "en": "How long after reconnect before a fault alarm can trigger a flow or notification. Prevents false alarms caused by transient error states on reconnect. Default: 30 s.",
                 "de": "Wie lange nach dem Verbindungsaufbau ein Fehleralarm einen Flow oder eine Benachrichtigung auslösen kann. Verhindert Fehlalarme durch kurzzeitige Fehlerzustände beim Reconnect. Standard: 30 s."
               }
+            },
+            {
+              "id": "trace_connection_start",
+              "type": "checkbox",
+              "value": false,
+              "label": {
+                "en": "Record connection start",
+                "de": "Verbindungsbeginn aufzeichnen"
+              },
+              "hint": {
+                "en": "Writes every message exchanged with the device during the first 20 seconds of each connection to the log. For tracking down a device that does something when the app connects to it. Takes effect at the next connection — restart the app, or reconnect the device with its flow action. Leave off otherwise: it is verbose.",
+                "de": "Schreibt jede Nachricht, die in den ersten 20 Sekunden einer Verbindung mit dem Gerät ausgetauscht wird, ins Log. Zum Aufspüren eines Geräts, das etwas tut, sobald die App sich verbindet. Greift bei der nächsten Verbindung — die App neu starten oder das Gerät mit seiner Flow-Aktion neu verbinden. Sonst ausgeschaltet lassen: es ist ausführlich."
+              }
             }
           ]
         },
@@ -22109,6 +22291,19 @@
               },
               "min": 0,
               "max": 600
+            },
+            {
+              "id": "trace_connection_start",
+              "type": "checkbox",
+              "value": false,
+              "label": {
+                "en": "Record connection start",
+                "de": "Verbindungsbeginn aufzeichnen"
+              },
+              "hint": {
+                "en": "Writes every message exchanged with the device during the first 20 seconds of each connection to the log. For tracking down a device that does something when the app connects to it. Takes effect at the next connection — restart the app, or reconnect the device with its flow action. Leave off otherwise: it is verbose.",
+                "de": "Schreibt jede Nachricht, die in den ersten 20 Sekunden einer Verbindung mit dem Gerät ausgetauscht wird, ins Log. Zum Aufspüren eines Geräts, das etwas tut, sobald die App sich verbindet. Greift bei der nächsten Verbindung — die App neu starten oder das Gerät mit seiner Flow-Aktion neu verbinden. Sonst ausgeschaltet lassen: es ist ausführlich."
+              }
             }
           ]
         },
@@ -22531,6 +22726,19 @@
               "hint": {
                 "en": "How long the device must remain offline before the 'device disconnected' flow trigger fires. Tuya devices often drop and immediately re-establish the connection — a grace period of 60 s prevents spurious offline notifications. Set to 0 to trigger immediately.",
                 "de": "Wie lange das Gerät offline sein muss, bevor der 'Gerät getrennt'-Flow-Auslöser ausgelöst wird. Tuya-Geräte trennen die Verbindung kurz und bauen sie sofort wieder auf — eine Karenzzeit von 60 s verhindert unnötige Offline-Benachrichtigungen. 0 = sofort auslösen."
+              }
+            },
+            {
+              "id": "trace_connection_start",
+              "type": "checkbox",
+              "value": false,
+              "label": {
+                "en": "Record connection start",
+                "de": "Verbindungsbeginn aufzeichnen"
+              },
+              "hint": {
+                "en": "Writes every message exchanged with the device during the first 20 seconds of each connection to the log. For tracking down a device that does something when the app connects to it. Takes effect at the next connection — restart the app, or reconnect the device with its flow action. Leave off otherwise: it is verbose.",
+                "de": "Schreibt jede Nachricht, die in den ersten 20 Sekunden einer Verbindung mit dem Gerät ausgetauscht wird, ins Log. Zum Aufspüren eines Geräts, das etwas tut, sobald die App sich verbindet. Greift bei der nächsten Verbindung — die App neu starten oder das Gerät mit seiner Flow-Aktion neu verbinden. Sonst ausgeschaltet lassen: es ist ausführlich."
               }
             }
           ]
@@ -23071,6 +23279,19 @@
                 "en": "How long the device must remain offline before the 'device disconnected' flow trigger fires. Set to 0 to trigger immediately.",
                 "de": "Wie lange das Gerät offline sein muss, bevor der 'Gerät getrennt'-Auslöser ausgelöst wird. 0 = sofort auslösen."
               }
+            },
+            {
+              "id": "trace_connection_start",
+              "type": "checkbox",
+              "value": false,
+              "label": {
+                "en": "Record connection start",
+                "de": "Verbindungsbeginn aufzeichnen"
+              },
+              "hint": {
+                "en": "Writes every message exchanged with the device during the first 20 seconds of each connection to the log. For tracking down a device that does something when the app connects to it. Takes effect at the next connection — restart the app, or reconnect the device with its flow action. Leave off otherwise: it is verbose.",
+                "de": "Schreibt jede Nachricht, die in den ersten 20 Sekunden einer Verbindung mit dem Gerät ausgetauscht wird, ins Log. Zum Aufspüren eines Geräts, das etwas tut, sobald die App sich verbindet. Greift bei der nächsten Verbindung — die App neu starten oder das Gerät mit seiner Flow-Aktion neu verbinden. Sonst ausgeschaltet lassen: es ist ausführlich."
+              }
             }
           ]
         },
@@ -23480,6 +23701,19 @@
               "hint": {
                 "en": "Delay before 'device disconnected' trigger fires.",
                 "de": "Verzögerung vor dem 'Gerät getrennt'-Auslöser."
+              }
+            },
+            {
+              "id": "trace_connection_start",
+              "type": "checkbox",
+              "value": false,
+              "label": {
+                "en": "Record connection start",
+                "de": "Verbindungsbeginn aufzeichnen"
+              },
+              "hint": {
+                "en": "Writes every message exchanged with the device during the first 20 seconds of each connection to the log. For tracking down a device that does something when the app connects to it. Takes effect at the next connection — restart the app, or reconnect the device with its flow action. Leave off otherwise: it is verbose.",
+                "de": "Schreibt jede Nachricht, die in den ersten 20 Sekunden einer Verbindung mit dem Gerät ausgetauscht wird, ins Log. Zum Aufspüren eines Geräts, das etwas tut, sobald die App sich verbindet. Greift bei der nächsten Verbindung — die App neu starten oder das Gerät mit seiner Flow-Aktion neu verbinden. Sonst ausgeschaltet lassen: es ist ausführlich."
               }
             }
           ]
@@ -24050,6 +24284,19 @@
                 "en": "Seconds to wait before triggering the 'device disconnected' flow.",
                 "de": "Sekunden bis der 'Gerät getrennt'-Flow ausgelöst wird."
               }
+            },
+            {
+              "id": "trace_connection_start",
+              "type": "checkbox",
+              "value": false,
+              "label": {
+                "en": "Record connection start",
+                "de": "Verbindungsbeginn aufzeichnen"
+              },
+              "hint": {
+                "en": "Writes every message exchanged with the device during the first 20 seconds of each connection to the log. For tracking down a device that does something when the app connects to it. Takes effect at the next connection — restart the app, or reconnect the device with its flow action. Leave off otherwise: it is verbose.",
+                "de": "Schreibt jede Nachricht, die in den ersten 20 Sekunden einer Verbindung mit dem Gerät ausgetauscht wird, ins Log. Zum Aufspüren eines Geräts, das etwas tut, sobald die App sich verbindet. Greift bei der nächsten Verbindung — die App neu starten oder das Gerät mit seiner Flow-Aktion neu verbinden. Sonst ausgeschaltet lassen: es ist ausführlich."
+              }
             }
           ]
         },
@@ -24476,6 +24723,19 @@
               "hint": {
                 "en": "Send commands without waiting for acknowledgement. Off by default on this device type. Switch it on if commands are not arriving, or the device drops the connection right after a command.",
                 "de": "Befehle ohne Warten auf Bestätigung senden. Bei diesem Gerätetyp standardmässig aus. Einschalten, wenn Befehle nicht ankommen oder das Gerät die Verbindung unmittelbar nach einem Befehl trennt."
+              }
+            },
+            {
+              "id": "trace_connection_start",
+              "type": "checkbox",
+              "value": false,
+              "label": {
+                "en": "Record connection start",
+                "de": "Verbindungsbeginn aufzeichnen"
+              },
+              "hint": {
+                "en": "Writes every message exchanged with the device during the first 20 seconds of each connection to the log. For tracking down a device that does something when the app connects to it. Takes effect at the next connection — restart the app, or reconnect the device with its flow action. Leave off otherwise: it is verbose.",
+                "de": "Schreibt jede Nachricht, die in den ersten 20 Sekunden einer Verbindung mit dem Gerät ausgetauscht wird, ins Log. Zum Aufspüren eines Geräts, das etwas tut, sobald die App sich verbindet. Greift bei der nächsten Verbindung — die App neu starten oder das Gerät mit seiner Flow-Aktion neu verbinden. Sonst ausgeschaltet lassen: es ist ausführlich."
               }
             }
           ]
@@ -24981,6 +25241,19 @@
               },
               "min": 0,
               "max": 600
+            },
+            {
+              "id": "trace_connection_start",
+              "type": "checkbox",
+              "value": false,
+              "label": {
+                "en": "Record connection start",
+                "de": "Verbindungsbeginn aufzeichnen"
+              },
+              "hint": {
+                "en": "Writes every message exchanged with the device during the first 20 seconds of each connection to the log. For tracking down a device that does something when the app connects to it. Takes effect at the next connection — restart the app, or reconnect the device with its flow action. Leave off otherwise: it is verbose.",
+                "de": "Schreibt jede Nachricht, die in den ersten 20 Sekunden einer Verbindung mit dem Gerät ausgetauscht wird, ins Log. Zum Aufspüren eines Geräts, das etwas tut, sobald die App sich verbindet. Greift bei der nächsten Verbindung — die App neu starten oder das Gerät mit seiner Flow-Aktion neu verbinden. Sonst ausgeschaltet lassen: es ist ausführlich."
+              }
             }
           ]
         },
@@ -25501,6 +25774,19 @@
               "hint": {
                 "en": "Send commands without waiting for acknowledgement. Off by default on this device type. Switch it on if commands are not arriving, or the device drops the connection right after a command.",
                 "de": "Befehle ohne Warten auf Bestätigung senden. Bei diesem Gerätetyp standardmässig aus. Einschalten, wenn Befehle nicht ankommen oder das Gerät die Verbindung unmittelbar nach einem Befehl trennt."
+              }
+            },
+            {
+              "id": "trace_connection_start",
+              "type": "checkbox",
+              "value": false,
+              "label": {
+                "en": "Record connection start",
+                "de": "Verbindungsbeginn aufzeichnen"
+              },
+              "hint": {
+                "en": "Writes every message exchanged with the device during the first 20 seconds of each connection to the log. For tracking down a device that does something when the app connects to it. Takes effect at the next connection — restart the app, or reconnect the device with its flow action. Leave off otherwise: it is verbose.",
+                "de": "Schreibt jede Nachricht, die in den ersten 20 Sekunden einer Verbindung mit dem Gerät ausgetauscht wird, ins Log. Zum Aufspüren eines Geräts, das etwas tut, sobald die App sich verbindet. Greift bei der nächsten Verbindung — die App neu starten oder das Gerät mit seiner Flow-Aktion neu verbinden. Sonst ausgeschaltet lassen: es ist ausführlich."
               }
             }
           ]
@@ -26086,6 +26372,19 @@
               "value": 60,
               "min": 0,
               "max": 600
+            },
+            {
+              "id": "trace_connection_start",
+              "type": "checkbox",
+              "value": false,
+              "label": {
+                "en": "Record connection start",
+                "de": "Verbindungsbeginn aufzeichnen"
+              },
+              "hint": {
+                "en": "Writes every message exchanged with the device during the first 20 seconds of each connection to the log. For tracking down a device that does something when the app connects to it. Takes effect at the next connection — restart the app, or reconnect the device with its flow action. Leave off otherwise: it is verbose.",
+                "de": "Schreibt jede Nachricht, die in den ersten 20 Sekunden einer Verbindung mit dem Gerät ausgetauscht wird, ins Log. Zum Aufspüren eines Geräts, das etwas tut, sobald die App sich verbindet. Greift bei der nächsten Verbindung — die App neu starten oder das Gerät mit seiner Flow-Aktion neu verbinden. Sonst ausgeschaltet lassen: es ist ausführlich."
+              }
             }
           ]
         },
@@ -27194,6 +27493,19 @@
                 "en": "Send commands without waiting for acknowledgement. Off by default on this device type. Switch it on if commands are not arriving, or the device drops the connection right after a command.",
                 "de": "Befehle ohne Warten auf Bestätigung senden. Bei diesem Gerätetyp standardmässig aus. Einschalten, wenn Befehle nicht ankommen oder das Gerät die Verbindung unmittelbar nach einem Befehl trennt."
               }
+            },
+            {
+              "id": "trace_connection_start",
+              "type": "checkbox",
+              "value": false,
+              "label": {
+                "en": "Record connection start",
+                "de": "Verbindungsbeginn aufzeichnen"
+              },
+              "hint": {
+                "en": "Writes every message exchanged with the device during the first 20 seconds of each connection to the log. For tracking down a device that does something when the app connects to it. Takes effect at the next connection — restart the app, or reconnect the device with its flow action. Leave off otherwise: it is verbose.",
+                "de": "Schreibt jede Nachricht, die in den ersten 20 Sekunden einer Verbindung mit dem Gerät ausgetauscht wird, ins Log. Zum Aufspüren eines Geräts, das etwas tut, sobald die App sich verbindet. Greift bei der nächsten Verbindung — die App neu starten oder das Gerät mit seiner Flow-Aktion neu verbinden. Sonst ausgeschaltet lassen: es ist ausführlich."
+              }
             }
           ]
         },
@@ -27686,6 +27998,19 @@
               "hint": {
                 "en": "Send commands without waiting for acknowledgement. Off by default on this device type. Switch it on if commands are not arriving, or the device drops the connection right after a command.",
                 "de": "Befehle ohne Warten auf Bestätigung senden. Bei diesem Gerätetyp standardmässig aus. Einschalten, wenn Befehle nicht ankommen oder das Gerät die Verbindung unmittelbar nach einem Befehl trennt."
+              }
+            },
+            {
+              "id": "trace_connection_start",
+              "type": "checkbox",
+              "value": false,
+              "label": {
+                "en": "Record connection start",
+                "de": "Verbindungsbeginn aufzeichnen"
+              },
+              "hint": {
+                "en": "Writes every message exchanged with the device during the first 20 seconds of each connection to the log. For tracking down a device that does something when the app connects to it. Takes effect at the next connection — restart the app, or reconnect the device with its flow action. Leave off otherwise: it is verbose.",
+                "de": "Schreibt jede Nachricht, die in den ersten 20 Sekunden einer Verbindung mit dem Gerät ausgetauscht wird, ins Log. Zum Aufspüren eines Geräts, das etwas tut, sobald die App sich verbindet. Greift bei der nächsten Verbindung — die App neu starten oder das Gerät mit seiner Flow-Aktion neu verbinden. Sonst ausgeschaltet lassen: es ist ausführlich."
               }
             }
           ]
@@ -28348,6 +28673,19 @@
               "hint": {
                 "en": "Send commands without waiting for acknowledgement. On by default here: these blasters answer a command inconsistently, and every known implementation sends to them this way. Switch it off only if codes are arriving twice.",
                 "de": "Befehle ohne Warten auf Bestätigung senden. Hier ab Werk an: diese Blaster antworten uneinheitlich auf einen Befehl, und jede bekannte Umsetzung schickt ihnen so. Nur ausschalten, wenn Codes doppelt ankommen."
+              }
+            },
+            {
+              "id": "trace_connection_start",
+              "type": "checkbox",
+              "value": false,
+              "label": {
+                "en": "Record connection start",
+                "de": "Verbindungsbeginn aufzeichnen"
+              },
+              "hint": {
+                "en": "Writes every message exchanged with the device during the first 20 seconds of each connection to the log. For tracking down a device that does something when the app connects to it. Takes effect at the next connection — restart the app, or reconnect the device with its flow action. Leave off otherwise: it is verbose.",
+                "de": "Schreibt jede Nachricht, die in den ersten 20 Sekunden einer Verbindung mit dem Gerät ausgetauscht wird, ins Log. Zum Aufspüren eines Geräts, das etwas tut, sobald die App sich verbindet. Greift bei der nächsten Verbindung — die App neu starten oder das Gerät mit seiner Flow-Aktion neu verbinden. Sonst ausgeschaltet lassen: es ist ausführlich."
               }
             }
           ]
