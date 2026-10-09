@@ -16974,6 +16974,19 @@
               "value": ""
             },
             {
+              "id": "sub_device_cid",
+              "type": "text",
+              "label": {
+                "en": "Sub-device ID (cid)",
+                "de": "Untergeräte-ID (cid)"
+              },
+              "value": "",
+              "hint": {
+                "en": "Only for a thermostat behind a Zigbee or Bluetooth gateway, such as a radiator valve behind a Tuya bridge. It has no connection of its own and is reached through the gateway: IP Address, Device ID and Local Key are then the gateway's, and the gateway has to be added in Homey as well (any driver). Pairing fills this in when you pick the device under \"Behind a Zigbee or Bluetooth gateway?\"; DP Debug lists the IDs under the gateway, as Sub-devices. Leave empty for a thermostat with its own connection.",
+                "de": "Nur für ein Thermostat hinter einem Zigbee- oder Bluetooth-Gateway, etwa ein Heizkörperventil hinter einer Tuya-Bridge. Es hat keine eigene Verbindung und wird über das Gateway erreicht: IP-Adresse, Geräte-ID und Lokaler Schlüssel sind dann die des Gateways, und das Gateway muss ebenfalls in Homey hinzugefügt sein (mit beliebigem Treiber). Das Pairing füllt dies aus, wenn das Gerät unter \"Hinter einem Zigbee- oder Bluetooth-Gateway?\" gewählt wird; DP Debug führt die IDs unter dem Gateway als Untergeräte auf. Leer lassen für ein Thermostat mit eigener Verbindung."
+              }
+            },
+            {
               "id": "version",
               "type": "dropdown",
               "label": {

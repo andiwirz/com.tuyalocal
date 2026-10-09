@@ -196,7 +196,9 @@ class ThermostatDevice extends BaseTuyaDevice {
   // â”€â”€ Settings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async onSettings({ changedKeys }) {
-    const connectionKeys = ['ip', 'device_id', 'local_key', 'version'];
+    // sub_device_cid: welches Geraet hinter einem Gateway das hier ist. Ein anderes
+    // braucht eine neue Anmeldung beim Gateway, also wie die Zugangsdaten neu verbinden.
+    const connectionKeys = ['ip', 'device_id', 'local_key', 'version', 'sub_device_cid'];
     if (changedKeys.some((k) => connectionKeys.includes(k))) {
       await this._connect();
       return;

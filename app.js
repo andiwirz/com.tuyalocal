@@ -47,6 +47,19 @@ const TUYA_REGIONS = {
   in:      'openapi.tuyain.com',
 };
 
+// Ein Geraet hinter einem Gateway, etwa ein Thermostat hinter einer Zigbee- oder
+// Bluetooth-Bridge (lib/SubDeviceConnection.js). Es hat keine eigene Verbindung, und
+// nichts in seinen Einstellungen ist eine eigene Cloud-Kennung: device_id ist die des
+// Gateways, die Homey-Kennung ist Gateway und cid zusammen. Was ein Geraet ueber seine
+// Kennung in der Cloud nachschlaegt oder an seiner Verbindung abliest, laesst es darum
+// aus. Sonst traefe es das Gateway - oder, mit der zusammengesetzten Kennung in einer
+// Sammelabfrage, liesse es die ganze Abfrage scheitern.
+const istUntergeraet = (device) => {
+  try { return String(device.getSetting('sub_device_cid') ?? '').trim() !== ''; } catch (e) { return false; }
+};
+const UNTERGERAET_OHNE_CLOUD = 'behind a gateway \u2014 not looked up: its settings carry the '
+  + 'gateway\'s id, not a cloud id of its own';
+
 class TuyaLocalApp extends Homey.App {
   async onInit() {
     this._logs = [];
@@ -352,7 +365,8 @@ class TuyaLocalApp extends Homey.App {
         // Look the device up before printing its block, so the model can appear in
         // the header rather than further down. The result is reused by the cloud
         // spec section below — one cloud call per device, as before.
-        const wantCloud = cloudUsable && (!onlyDevice || device.getName() === onlyDevice);
+        const sub = istUntergeraet(device);
+        const wantCloud = cloudUsable && !sub && (!onlyDevice || device.getName() === onlyDevice);
         let cloudDetail = null;
         let cloudError  = null;
         if (wantCloud && id) {
@@ -389,6 +403,13 @@ class TuyaLocalApp extends Homey.App {
         // in use differ after a rotation, and that difference is the answer to a
         // whole class of "it only works sometimes" reports.
         const conn = device._conn;
+        // Ein Geraet hinter einem Gateway hat keine eigene Leitung: was darunter ueber
+        // Protokoll und Verlauf steht, ist die des Gateways, von hier aus gesehen - und
+        // die Pakete sind die, die das Gateway mit dieser cid weitergereicht hat.
+        if (sub) {
+          out.push(`  via        gateway ${conn?.gatewayName ? `"${conn.gatewayName}"` : '(not found in Homey)'}`
+            + ` \u00b7 cid ${settings.sub_device_cid}`);
+        }
         out.push(`  protocol   configured ${settings.version ?? '?'}`
           + (conn?._version ? `, connected ${conn._version}` : '')
           + `  ip ${settings.ip ?? '?'}`);
@@ -484,8 +505,12 @@ class TuyaLocalApp extends Homey.App {
         // device is paired with — so no guessing is involved. Kept in the record as
         // well as the text, so a bug report can be prefilled with it rather than
         // relying on the reporter to paste the bundle.
-        if (!wantCloud && cloudUsable && onlyDevice) {
+        if (!wantCloud && cloudUsable && onlyDevice && !sub) {
           out.push('  cloud spec  skipped (only the reported device is looked up)');
+          record.cloudSpec = '';
+        }
+        if (sub && cloudUsable) {
+          out.push(`  cloud spec  skipped (${UNTERGERAET_OHNE_CLOUD})`);
           record.cloudSpec = '';
         }
         if (wantCloud && id) {
@@ -934,6 +959,10 @@ class TuyaLocalApp extends Homey.App {
         const name = device.getName();
         if (onlyDevice && name !== onlyDevice) continue;
 
+        if (istUntergeraet(device)) {
+          skipped.push({ name, driver: driver.id, reason: UNTERGERAET_OHNE_CLOUD });
+          continue;
+        }
         if (!hasEnumMap && !hasRangeMap) {
           skipped.push({ name, driver: driver.id, reason: 'this driver has no value lists to fill' });
           continue;
@@ -1065,6 +1094,7 @@ class TuyaLocalApp extends Homey.App {
 
         const note = (reason) => skipped.push({ name, driver: driver.id, reason });
         const read = (k) => { try { return device.getStoreValue(k); } catch (e) { return null; } };
+        if (istUntergeraet(device)) { note(UNTERGERAET_OHNE_CLOUD); continue; }
 
         let id = '';
         try { id = device.getData().id || ''; } catch (e) {}
@@ -1214,6 +1244,7 @@ class TuyaLocalApp extends Homey.App {
     for (const driver of Object.values(this.homey.drivers.getDrivers())) {
       for (const device of driver.getDevices()) {
         if (onlyDevice && device.getName() !== onlyDevice) continue;
+        if (istUntergeraet(device)) continue;   // "Gateway:cid" ist keine Cloud-Kennung
         for (const id of kennungen(device).ids) {
           if (!byId.has(id)) wanted.push(id);
         }
@@ -1262,6 +1293,13 @@ class TuyaLocalApp extends Homey.App {
         const name = device.getName();
         if (onlyDevice && name !== onlyDevice) continue;
         const note = (reason) => skipped.push({ name, driver: driver.id, reason });
+
+        // Ein Geraet hinter einem Gateway hat keinen eigenen Schluessel. Was in seinen
+        // Einstellungen steht, ist eine Kopie von dem des Gateways und wird nicht benutzt.
+        if (istUntergeraet(device)) {
+          note('behind a gateway \u2014 it has no key of its own; the gateway\'s is the one that counts');
+          continue;
+        }
 
         // Ein Geraet, das verbunden ist und auf dieser Verbindung schon Daten
         // empfangen hat, beweist damit, dass sein Schluessel stimmt. Ein Cloud-Wert,
@@ -1349,6 +1387,10 @@ class TuyaLocalApp extends Homey.App {
         if (onlyDevice && name !== onlyDevice) continue;
         const note = (reason) => skipped.push({ name, driver: driver.id, reason });
 
+        if (istUntergeraet(device)) {
+          note('behind a gateway \u2014 it uses the gateway\'s connection and protocol');
+          continue;
+        }
         const conn = device._conn;
         if (!conn || !conn.connected) { note('not connected — cannot tell'); continue; }
         // Connected is not the same as working, and on protocol 3.3, 3.2 and 3.1 the
@@ -1463,6 +1505,7 @@ class TuyaLocalApp extends Homey.App {
         if (onlyDevice && name !== onlyDevice) continue;
         const note = (reason) => skipped.push({ name, driver: driver.id, reason });
 
+        if (istUntergeraet(device)) { note(UNTERGERAET_OHNE_CLOUD); continue; }
         if (!maps || Object.keys(maps).length === 0) {
           note('this driver has no scaling settings');
           continue;

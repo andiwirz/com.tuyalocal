@@ -71,7 +71,7 @@ when adding a device.
 - **Fix It tab** — five checks that compare your devices against what Tuya declares and offer to correct them: stale local keys, wrong protocol version, wrong measurement scaling, picker options that never got updated, and data points a device does not actually have. Every check previews exactly what it would change, per device, and saves nothing until you confirm
 - **Connect-failure diagnosis** — when a device fails to connect during pairing, the app probes port 6668 and says which of the three it was: nothing at that address, the port closed, or the connection refused because something else already holds the device's single connection slot
 - **Support bundle** — one button, at the top of the **Fix It** tab, collecting everything a report needs: per device the driver, the protocol version configured *and* in use, the full DP mapping, the live values, the connection history (how many connections, how long they held, how many packets arrived, whether any data ever did) and the manufacturer's specification where Cloud Lookup is set up. Local keys never appear in it and device IDs are shortened. Repeated log lines are folded into one with a count, so a single chatty fault cannot crowd out everything else
-- **Sub-devices behind a gateway** — a Tuya gateway sends the values of its Zigbee and Bluetooth devices over the same connection as its own, separated only by an id in the raw packet. That id is what one must send back to address such a device, and the app had been reading it and overwriting it with the next packet without ever showing it. **DP Debug** now lists each sub-device under its own heading with the data points that arrived under it, and the support bundle carries them too. Whether anything appears there is itself the answer to a question that could not be asked before: some gateways hand their sub-devices out locally and some relay them only to the cloud — see [Gateways and their sub-devices](#gateways-and-their-sub-devices)
+- **Sub-devices behind a gateway** — a Tuya gateway sends the values of its Zigbee and Bluetooth devices over the same connection as its own, separated only by an id in the raw packet. That id is what one must send back to address such a device, and the app had been reading it and overwriting it with the next packet without ever showing it. **DP Debug** now lists each sub-device under its own heading with the data points that arrived under it, and the support bundle carries them too. Whether anything appears there is itself the answer to a question that could not be asked before: some gateways hand their sub-devices out locally and some relay them only to the cloud. A **thermostat behind a gateway** can be added as a device of its own and controlled through the gateway's connection — see [Gateways and their sub-devices](#gateways-and-their-sub-devices)
 - **Diagnostic tools** — in-app log buffer, live DP debug panel, and a Help tab covering every driver and the common faults
 - **Bilingual** — full English and German UI
 
@@ -836,9 +836,15 @@ point that follows it is the one.
 
 Universal driver for floor heating thermostats, room thermostats, TRVs (radiator valves), and zone valves.
 
+A thermostat behind a Zigbee or Bluetooth gateway — a radiator valve behind a Tuya bridge — is added
+through that gateway: when pairing, open **Behind a Zigbee or Bluetooth gateway?** and pick it. See
+[Controlling a thermostat behind a gateway](#controlling-a-thermostat-behind-a-gateway).
+
 #### Connection
 
 Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polling Interval, Offline Grace Period).
+Plus `sub_device_cid` (**Sub-device ID (cid)**), only for a thermostat behind a gateway: IP, Device ID and Local
+Key are then the gateway's. Leave it empty for a thermostat with its own connection.
 
 #### Data Points
 
@@ -1848,13 +1854,44 @@ sub-device id is now kept out of the gateway's handling entirely: it never reach
 list, the seen-DP set, or the driver. A device's own id is exempt, since some firmware sends
 it alongside its own values.
 
-### What is not possible yet
+### Controlling a thermostat behind a gateway
 
-**Turning a sub-device into a device in Homey.** Reading them is solved; addressing one is
-not. The local protocol does allow it — the request goes to the gateway's address and key
-with the sub-device's id attached — but the app does not send that form yet, and the library
-it uses builds the request differently from the implementation known to work elsewhere. That
-is unfinished work, not a limitation of the protocol.
+A thermostat behind a gateway can be added as a Homey device of its own. It has no connection
+of its own: the gateway accepts one local connection, and the gateway device in Homey already
+holds it. So the thermostat attaches to that device instead. The gateway passes on every report
+carrying the thermostat's id, and sends the thermostat's commands with that id attached.
+
+1. Add the gateway itself first, with any driver — **Generic Tuya Device** will do.
+2. Change something on the thermostat — turn its dial, or its target temperature in the Tuya app —
+   so the gateway reports it. **DP Debug → your gateway** shows it under *Sub-devices behind this gateway*.
+3. Add a **Thermostat**, open **Behind a Zigbee or Bluetooth gateway?** and pick it. The list shows
+   the gateway, the id, when it last reported and the values it reported, latest first.
+
+The new device gets the gateway's IP address, Device ID, Local Key and protocol version,
+`sub_device_cid` set to its id, and Polling Interval 0: a sub-device reports when something
+changes, and the gateway passes it on. Its data points are set from what it has reported, with
+two corrections for radiator valves: on/off only on DP 1, and child lock only on DP 6, 7 or 28.
+A mode it reported that is missing from the mode list is added to it. **Check the data points in
+the device settings afterwards** — they come from a few reports, not from a specification.
+
+How it behaves:
+
+- **Available while the gateway is connected.** When the gateway drops out, the thermostat follows
+  it after five seconds, with the gateway's reason; a command meanwhile fails instead of being lost.
+  If the gateway is not in Homey at all, the thermostat says so in the log and keeps looking.
+- **Not asked for its state.** A status request for a sub-device would go over the gateway's
+  connection and occupy it, and the reported gateway does not even answer one for itself. On
+  connecting, the thermostat gets what the gateway last passed on — kept across restarts.
+- **Commands** go out the way a gateway expects them: `{t, dps, cid}` on 3.1–3.3, and on 3.4/3.5
+  `{data: {ctype: 0, cid, dps}, protocol: 5, t}` with `cid` also at the top level — the form tinytuya
+  sends. They are paced by the gateway's **Minimum gap between commands**, since they share its connection. The
+  gateway's **Alternative command format** leaves them alone.
+- **Fix It** checks and the support bundle's cloud lookup skip it: its settings carry the gateway's
+  id, not one of its own. The support bundle shows which gateway it goes through and with which id.
+
+Built from one report, without the hardware to try it on: whether a given gateway carries the
+commands out is still to be seen. If it does not, **Record connection start** on the *gateway*
+writes the command frames to the log. Only the Thermostat driver offers this so far.
 
 ---
 

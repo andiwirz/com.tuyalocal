@@ -104,6 +104,23 @@ class ThermostatDriver extends Homey.Driver {
 
     session.setHandler('scan_network', async () => scanNetwork(this.homey));
 
+    // Ein Thermostat hinter einem Gateway - ein Zigbee- oder Bluetooth-Heizkoerperventil
+    // hinter einer Tuya-Bridge. Es hat weder Adresse noch Schluessel; erreicht wird es
+    // ueber das Gateway-Geraet, das dafuer schon in Homey angelegt sein muss. Zur Auswahl
+    // steht, was die Gateways bisher von ihren Untergeraeten weitergereicht haben - dieselbe
+    // Liste, die DP Debug unter dem Gateway zeigt. Das Gateway-Geraet selbst bleibt hier:
+    // es ist ein Homey-Geraet und gehoert nicht in die Antwort an die Ansicht.
+    session.setHandler('list_sub_devices', async () => this._untergeraeteZurAuswahl()
+      .map(({ gateway, ...eintrag }) => eintrag));
+    session.setHandler('select_sub_device', async ({ gatewayId, cid } = {}) => {
+      const eintrag = this._untergeraeteZurAuswahl()
+        .find((e) => e.gatewayId === String(gatewayId) && e.cid === String(cid));
+      if (!eintrag) throw new Error(this.homey.__('pair.credentials.subGone'));
+      pendingDevice = this._untergeraetAnlegen(eintrag);
+      pendingRawDps = { ...eintrag.dps };
+      return true;
+    });
+
     session.setHandler('credentials', async (data) => {
       const { ip, deviceId, localKey, version } = data;
 
@@ -212,10 +229,13 @@ class ThermostatDriver extends Homey.Driver {
       temp_divisor:    '1',
     };
 
+    // holidayready und freeze melden zwei Heizkoerperventile hinter einer Bridge - ohne
+    // sie bleibt der Modus unerkannt, wenn das Ventil beim Anlegen gerade so steht.
     const MODE_VALUES = new Set([
       'manual', 'auto', 'program', 'holiday', 'eco', 'comfort', 'away',
       'heat', 'cool', 'off', 'wind', 'dry', 'fan_only',
       'hot', 'colding', 'dehumidify', 'wet',
+      'holidayready', 'freeze',
     ]);
 
     const boolDps = [];
@@ -286,6 +306,120 @@ class ThermostatDriver extends Homey.Driver {
     if (faultEntry) result.dp_fault = faultEntry.dp;
 
     return result;
+  }
+
+  /**
+   * Was die Gateways in Homey bisher von ihren Untergeraeten weitergereicht haben, ohne
+   * die, die schon als eigenes Geraet angelegt sind. Was sich zuletzt gemeldet hat,
+   * steht oben: wer gerade am Thermostat gedreht hat, findet es so an erster Stelle.
+   *
+   * @returns {Array<{gateway, gatewayName, gatewayId, cid, dps, zuletzt, pakete}>}
+   */
+  _untergeraeteZurAuswahl() {
+    let treiber = {};
+    try { treiber = this.homey.drivers.getDrivers() || {}; } catch (e) { return []; }
+    const geraete = [];
+    for (const d of Object.values(treiber)) {
+      try { geraete.push(...(d.getDevices() || [])); } catch (e) {}
+    }
+    const lies = (g, k) => { try { return String(g.getSetting(k) ?? ''); } catch (e) { return ''; } };
+
+    const angelegt = new Set();
+    for (const g of geraete) {
+      const cid = lies(g, 'sub_device_cid');
+      if (cid) angelegt.add(`${lies(g, 'device_id')}:${cid}`);
+    }
+
+    const liste = [];
+    for (const g of geraete) {
+      if (lies(g, 'sub_device_cid')) continue;          // selbst eines
+      const gesehen = g._cidSeen;
+      if (!gesehen || typeof gesehen !== 'object') continue;
+      const gatewayId = lies(g, 'device_id');
+      if (!gatewayId) continue;
+      for (const [cid, e] of Object.entries(gesehen)) {
+        if (angelegt.has(`${gatewayId}:${cid}`)) continue;
+        let gatewayName = gatewayId;
+        try { gatewayName = g.getName(); } catch (err) {}
+        liste.push({
+          gateway: g, gatewayName, gatewayId, cid,
+          dps: { ...(e?.dps || {}) },
+          zuletzt: e?.zuletzt || null,
+          pakete: e?.pakete || 0,
+        });
+      }
+    }
+    return liste;
+  }
+
+  /**
+   * Das anzulegende Geraet fuer ein Untergeraet hinter einem Gateway.
+   *
+   * Adresse, Device ID, Schluessel und Version sind die des Gateways: das ist die
+   * Verbindung, ueber die es laeuft (siehe SubDeviceConnection). Abgefragt wird nicht,
+   * polling_interval ist 0 - ein Untergeraet meldet sich, wenn sich etwas aendert, und
+   * das Gateway reicht es weiter.
+   *
+   * Die Datenpunkte kommen aus dem, was es schon gemeldet hat, und zwar mit zwei
+   * Korrekturen, beide an einem gemeldeten Heizkoerperventil abgelesen (DP 2 Soll, 3 Ist,
+   * 4 Modus, 7 Kindersicherung, 17 und 18 Fenster). Ist DP 1 kein Wahrheitswert, nimmt
+   * _detectDps fuer Ein/Aus den ersten, den es findet - hier die Kindersicherung -, und die
+   * Kindersicherung weicht dann auf das Fenster-Erkennen aus. Ein Ventil hinter einem
+   * Gateway hat in aller Regel kein Ein/Aus. Also gibt es Ein/Aus nur auf DP 1, und die
+   * Kindersicherung nur auf einer der Stellen, auf denen sie ueblicherweise liegt.
+   *
+   * Der gemeldete Modus kommt in die Modusliste, falls er fehlt: das Bluetooth-Ventil
+   * desselben Meldenden kennt holidayready, und ein Wert, der nicht in der Liste steht,
+   * laesst die Kachel leer.
+   */
+  _untergeraetAnlegen({ gateway, gatewayId, cid, dps }) {
+    let s = {};
+    try { s = gateway.getSettings() || {}; } catch (e) {}
+    const erkannt = this._detectDps(dps);
+    if (typeof dps['1'] !== 'boolean') erkannt.dp_onoff = 0;
+    erkannt.dp_child_lock = [6, 7, 28]
+      .find((dp) => dp !== erkannt.dp_onoff && typeof dps[String(dp)] === 'boolean') ?? 0;
+
+    const settings = {
+      ip:               s.ip || '',
+      device_id:        gatewayId,
+      local_key:        s.local_key || '',
+      version:          s.version || '3.3',
+      sub_device_cid:   cid,
+      polling_interval: 0,
+      ...erkannt,
+    };
+
+    const modus = erkannt.dp_mode > 0 ? dps[String(erkannt.dp_mode)] : undefined;
+    if (typeof modus === 'string' && modus.trim()) {
+      const liste = this._vorgabeModi().split(',').map((v) => v.trim()).filter(Boolean);
+      const wert = modus.trim().toLowerCase();
+      if (!liste.includes(wert)) settings.mode_values = [...liste, wert].join(',');
+    }
+
+    return {
+      name: this.homey.__('device.defaultName.thermostat'),
+      data: { id: `${gatewayId}:${cid}` },
+      settings,
+    };
+  }
+
+  /** Die Vorgabe fuer mode_values aus dem Manifest, die ein neues Geraet ohnehin bekommt. */
+  _vorgabeModi() {
+    const ersatz = 'manual,auto,program';
+    try {
+      const treiber = this.homey.manifest?.drivers?.find((d) => d.id === 'thermostat');
+      const suche = (items) => {
+        for (const i of items || []) {
+          if (i.type === 'group') { const v = suche(i.children); if (v) return v; }
+          else if (i.id === 'mode_values' && typeof i.value === 'string') return i.value;
+        }
+        return null;
+      };
+      return suche(treiber?.settings) || ersatz;
+    } catch (e) {
+      return ersatz;
+    }
   }
 
   async onPairListDevices() { return []; }
