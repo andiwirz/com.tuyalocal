@@ -803,6 +803,7 @@ Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polli
 |---|:---:|---|---|---|---|
 | `dp_control` |  | `windowcoverings_state` | enum `open`/`stop`/`close` | 1 | — |
 | `dp_percent_control` |  | `windowcoverings_set` | integer 0–100 % | 2 | — |
+| `dp_percent_state` |  | `windowcoverings_set` | integer 0–100 % (read-only) | 0 | ✓ `0` = `dp_percent_control` does both |
 | `dp_work_state` |  | `windowcoverings_state` | enum `opening`/`closing` (read-only) | 7 | ✓ `0` = disabled |
 | `dp_fault` |  | `alarm_generic` | bitmap | 0 | ✓ `0` = disabled |
 
@@ -813,6 +814,19 @@ Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polli
 | `invert_position` | Enable if `0 %` = open and `100 %` = closed on your device | `false` |
 
 > **Position convention:** The driver maps `percent_control` where `0` = fully closed and `100` = fully open to Homey's `windowcoverings_set` (0.0–1.0). Enable `invert_position` if your device uses the opposite convention.
+
+#### Target and actual position
+
+Many motors keep two positions: `percent_control` (usually DP 2), where a position is asked for,
+and `percent_state` (usually DP 3), where the curtain actually is. Opening and closing, or moving
+the curtain by hand, changes only the second — so a tile that reads the first stays on the last
+position that was *set*. On a reported motor DP 2 stayed on 100 while DP 3 went to 0.
+
+Set `dp_percent_state` to that data point and the tile follows it; `dp_percent_control` is then
+only used to send a position, and its own reports no longer move the tile. With Cloud Lookup set
+up, pairing fills it in; a motor that has `percent_state` alone keeps it as its one position DP.
+To check by hand: open **DP Debug**, switch on **Auto-refresh**, and move the curtain — the data
+point that follows it is the one.
 
 > **Zemismart v2 extra DPs:** DP 16 (`border` / limit calibration) and DP 19 (`position_best` / favourite position) are motor-setup commands — run the limit calibration from the Tuya/Smart Life app first, then use Homey for daily control.
 

@@ -29,6 +29,7 @@ const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 const DP_PROFILE = [
   { settingKey: 'dp_control',         capability: 'windowcoverings_state', type: 'control',    settable: true  },
   { settingKey: 'dp_percent_control', capability: 'windowcoverings_set',   type: 'position',   settable: true  },
+  { settingKey: 'dp_percent_state',   capability: 'windowcoverings_set',   type: 'position_state', settable: false },
   { settingKey: 'dp_work_state',      capability: 'windowcoverings_state', type: 'work_state', settable: false },
   { settingKey: 'dp_fault',          capability: 'alarm_generic',          type: 'alarm',      settable: false },
 ];
@@ -179,7 +180,17 @@ class CurtainMotorDevice extends BaseTuyaDevice {
         }
 
         // â”€â”€ Position (percent_control 0â€“100) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Where the motor actually is, when it reports that apart from the target.
+        // Reported with a motor whose DP 2 (percent_control) stayed on 100 while DP 3
+        // (percent_state) went from 100 to 0: DP 2 is where a position is asked for,
+        // DP 3 where the curtain is. With a current-position DP set, only it moves the
+        // tile - the target would put the old value back on every reconnect, and fire
+        // "opened" on its way there. The same DP in both settings means one DP for both,
+        // as before.
+        case 'position_state':
         case 'position': {
+          const istDp = Number(settings.dp_percent_state);
+          if (entry.type === 'position' && istDp > 0 && istDp !== Number(settings.dp_percent_control)) break;
           const invert  = settings.invert_position || false;
           const percent = Number(value);
           const homey   = Math.min(1, Math.max(0, invert ? (100 - percent) / 100 : percent / 100));
@@ -257,6 +268,17 @@ class CurtainMotorDevice extends BaseTuyaDevice {
     if (changedKeys.includes('reconnect_interval')) this._startAutoReconnect();
     if (this._touchesOptional(changedKeys, OPTIONAL_CAPABILITIES)) {
       await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
+    }
+    // The current-position DP usually already has a value on record, from when it was
+    // just an unknown DP - and an unchanged value is skipped, so the tile would wait
+    // for the next movement. A moment later, once the new setting is saved (inside
+    // onSettings getSetting still returns the old one), forget that value and ask.
+    if (changedKeys.includes('dp_percent_state') || changedKeys.includes('dp_percent_control')) {
+      this.homey.setTimeout(() => {
+        const istDp = Number(this.getSetting('dp_percent_state'));
+        if (istDp > 0 && this._lastDps) delete this._lastDps[String(istDp)];
+        this.pollNow().catch(() => {});
+      }, 1000);
     }
   }
 }

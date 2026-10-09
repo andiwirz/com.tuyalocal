@@ -15,11 +15,27 @@ const { detectViaCloud, guessedDefaults }        = require('../../lib/dpCodeMap'
 const CLOUD_CODE_MAP = {
   dp_control:         ['control'],
   dp_percent_control: ['percent_control', 'percent_state'],
+  // Where the curtain is, when the motor reports it apart from the target. A motor
+  // that has percent_state alone keeps it as its one position DP - see
+  // _ordneIstPosition.
+  dp_percent_state:   ['percent_state'],
   dp_work_state:      ['work_state'],
   dp_fault:           ['fault', 'fault_alarm'],
 };
 
 class CurtainMotorDriver extends Homey.Driver {
+  /**
+   * percent_state is where the curtain is. Next to percent_control it is the
+   * current-position DP; on its own it has always been the one position DP, read and
+   * written - and stays that, rather than leaving the position to a local guess.
+   */
+  _ordneIstPosition(ergebnis) {
+    if (ergebnis.dp_percent_state > 0 && !(ergebnis.dp_percent_control > 0)) {
+      ergebnis.dp_percent_control = ergebnis.dp_percent_state;
+      ergebnis.dp_percent_state   = 0;
+    }
+  }
+
   async onInit() {
     this.log('Curtain Motor driver initialized');
 
@@ -146,7 +162,8 @@ class CurtainMotorDriver extends Homey.Driver {
         connected = true;
         if (Object.keys(collectedDps).length > 0) {
           detectedDps = this._detectDps(collectedDps);
-          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m), {}, guessedDefaults(detectedDps, collectedDps));
+          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m), {}, guessedDefaults(detectedDps, collectedDps), {},
+            { nachbearbeitung: (spec, ergebnis) => this._ordneIstPosition(ergebnis) });
           if (Object.keys(cloudDps).length > 0) Object.assign(detectedDps, cloudDps);
         }
       } catch (err) {

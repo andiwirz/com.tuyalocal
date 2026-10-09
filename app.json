@@ -24603,6 +24603,22 @@
               }
             },
             {
+              "id": "dp_percent_state",
+              "type": "number",
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "step": 1,
+              "label": {
+                "en": "Current Position DP",
+                "de": "Ist-Position-DP"
+              },
+              "hint": {
+                "en": "The data point that reports where the curtain actually is - often 3 (percent_state). When set, the position tile follows it, and Position DP is only used to send a position. 0: Position DP does both, as before.",
+                "de": "Der Datenpunkt, der meldet, wo der Vorhang tatsächlich steht - oft 3 (percent_state). Ist er gesetzt, folgt die Positionskachel ihm, und der Positions-DP dient nur noch zum Senden einer Position. 0: der Positions-DP macht beides, wie bisher."
+              }
+            },
+            {
               "id": "dp_work_state",
               "type": "number",
               "label": {
