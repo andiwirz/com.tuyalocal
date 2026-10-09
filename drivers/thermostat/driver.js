@@ -349,7 +349,7 @@ class ThermostatDriver extends Homey.Driver {
         });
       }
     }
-    return liste;
+    return liste.sort((a, b) => (b.zuletzt || 0) - (a.zuletzt || 0));
   }
 
   /**
