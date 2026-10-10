@@ -52,6 +52,7 @@ when adding a device.
 - **Stale-connection watchdog** — a second watchdog beside the heartbeat, watching for something the heartbeat cannot see: firmware that keeps answering keep-alive pings while it has stopped answering everything else. That state used to look perfectly healthy — and on protocol 3.4/3.5, where a SET is fire-and-forget, commands into it reported success while the device did not move. A device that has sent no data for three polling cycles (at least 90 s) is now reconnected
 - **Command pacing** — a configurable minimum gap between two commands to the same device (**Command Gap**, default 100 ms). Some firmware accepts the first command of a pair and silently drops the second when they arrive microseconds apart, which nothing on 3.4/3.5 reports as an error
 - **Outbound heartbeat** — sends a keep-alive ping every 15 s; keeps connections alive on strict firmware that requires host-initiated keep-alives
+- **A late answer is not a dead device** — the library underneath also pings every 10 s, and it used to hang up whenever one answer took longer than 2 s. On a device with weak WiFi that ended connections that had been delivering data for hours — every "socket closed" in a reported log came exactly 2 s after one of those pings — and the reconnect then often hit a device apparently still holding the old connection. A late answer no longer ends anything; a connection that has really gone silent is still ended, after 30 s
 - **Push-only device support** — devices that don't respond to GET requests (e.g. BCM700D-TY01 curtain motors) stay connected and accept SET commands without entering a reconnect loop; set Polling Interval to 0 for these devices
 - **A status request never writes** — when a device rejects a status request, the underlying library falls back to writing `null` to the requested data points "to read them another way". That is a control command nobody gave, sent to feeders, locks and garage doors alike, so the app refuses it and logs that it did. Protocol 3.2 is the exception: there that write *is* how a device is read
 - **Connection trace** — per device, **Record connection start** writes every message exchanged in the first 20 seconds of each connection to the log: what was sent, what came back, with DPs and values, the device's return code on each answer (0 means it took the request), and the header of any frame that could not be read. Device IDs and keys never appear. Off by default
@@ -2857,7 +2858,7 @@ Timestamped in-memory buffer (max 500 entries, cleared on app restart):
 |---|---|
 | `[INF]` | Normal events: connect, disconnect, capability updates |
 | `[WRN]` | Warnings: reconnect attempts, stale connection, rejected capability option values |
-| `[ERR]` | Errors — includes ECONNRESET hint when a protocol version mismatch is likely |
+| `[ERR]` | Errors — an ECONNRESET says what it points at: the protocol version only when nothing has ever arrived; on a connection that had been delivering data, the device itself — and whether it came right after a status request |
 
 Repeated identical messages are automatically suppressed: the first 3 occurrences are shown in full, then one summary every 10th repeat, and a final "suppressed N more times" note when the message changes.
 
@@ -2916,6 +2917,7 @@ Fetch device credentials and DP specifications from the Tuya IoT Platform (avail
 |---|---|---|
 | Device stays unavailable | Wrong IP, Device ID or Local Key | Open the device in Homey → **Settings** → update the credentials; check the Logs tab for the exact error |
 | ECONNRESET on every connect | Protocol version mismatch | Open device **Settings** → set Protocol Version to **Auto-detect**, or manually try 3.3, 3.4, 3.1, 3.5 in turn |
+| Connection runs fine, then ECONNRESET "right after a status request", again and again | Some firmware drops the connection when it is asked for its state at the wrong moment — in a reported log every one of these fell exactly on a poll | Set **Polling Interval** to 0. A device that reports its changes on its own loses nothing: it is still read once after every connect |
 | Device connects but values are wrong | Incorrect DP numbers | Adjust DPs in device settings |
 | Smart Plug power reading is 10× off | Wrong power scale | Change **Power Scale** setting to ×0.1 |
 | Energy (kWh) shows `—` or never updates | `dp_energy` set to 17 but device sends delta locally | Set `dp_energy = 0` — app will compute kWh from power readings |
