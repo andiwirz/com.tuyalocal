@@ -258,6 +258,17 @@ Set `dp_energy = 17` only if your device provides a reliable cumulative local en
 
 The energy accumulator can be reset via the **Reset energy meter** flow action.
 
+#### Refresh requests
+
+Some plugs report voltage, current and power only when asked for them with a refresh (DP_REFRESH), so
+the app sends one shortly after connecting and on every second polling tick. It names the measurement
+data points only — `dp_current`, `dp_power`, `dp_voltage`, `dp_energy`, `dp_power_factor`, on whatever
+numbers they are set to — and never the switch: tinytuya asks for `[18, 19, 20]` and localtuya filters
+to exactly those. A reported plug acknowledged every ON/OFF from Homey and carried out none of them while
+its refresh named the switch as well; switch, countdown, fault and turn-on behaviour come in with the
+status request and the plug's own reports anyway. A plug with no measurement data point set keeps
+asking for everything it is configured for, as before.
+
 #### The Shifted DP Layout
 
 Besides the conventional block 17/18/19/20 there is a second arrangement, common on

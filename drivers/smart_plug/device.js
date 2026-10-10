@@ -15,6 +15,9 @@ const DP_PROFILE = [
   { settingKey: 'dp_power_factor',  capability: 'power_factor',    transform: (v)      => Number(v),                         settable: false },
 ];
 
+// Was ein Refresh abfragt: nur die Messwerte. Siehe refreshDps.
+const MESS_DPS = ['dp_current', 'dp_power', 'dp_voltage', 'dp_energy', 'dp_power_factor'];
+
 class SmartPlugDevice extends BaseTuyaDevice {
   async onInit() {
     this.log('Device initialized:', this.getName());
@@ -98,6 +101,38 @@ class SmartPlugDevice extends BaseTuyaDevice {
     // and not in the standard GET — without this, energy data could be silent for the
     // entire first poll interval after connecting.
     setTimeout(() => { this.refreshDps().catch(() => {}); }, 2500);
+  }
+
+  /**
+   * Ein Refresh fragt nur die Messwerte ab - Strom, Leistung, Spannung, Energie und
+   * Leistungsfaktor -, nicht den Schalter.
+   *
+   * Gemeldet mit einem Nedis-Stecker (WIFIPO120FWT, Firmware 1.3.5), der jeden
+   * Schaltbefehl aus Homey mit Rueckgabecode 0 quittierte und keinen ausfuehrte, waehrend
+   * Smart Life und die Taste am Stecker schalteten. Mit 1.0.76 hatte er funktioniert. Seit
+   * 1.0.154 nennt jeder Refresh alle eingestellten DPs, bei ihm [1, 9, 18, 19, 20, 26, 38]:
+   * den Schalter, den Countdown, den Fehler und ein DP 38, das er gar nicht hat - bei
+   * jedem Verbinden und bei jedem zweiten Abfragetakt. Vorher galt die Vorgabe der
+   * Bibliothek, [4, 5, 6, 18, 19, 20], ohne den Schalter. tinytuya fragt ab Werk
+   * [18, 19, 20] ab, localtuya filtert ausdruecklich auf diese drei ("Socket (Wi-Fi)").
+   * Dass der Refresh mit DP 1 die Ursache ist, ist eine Spur und kein Beweis. Gebraucht
+   * wird der Schalter darin aber nicht: die Statusabfrage liefert ihn, und er meldet
+   * sich bei jeder Aenderung von selbst.
+   *
+   * Wozu der Refresh hier da ist, sagt _onConnected: Energiewerte, die manche Stecker
+   * nur auf diese Anfrage hin melden. Dafuer genuegen die Mess-DPs, auf welchen Nummern
+   * sie auch liegen - was 1.0.154 fuer DP 101 und hoeher gebracht hat, bleibt.
+   *
+   * Ein Stecker ganz ohne Mess-DPs fragt weiter wie bisher: fuer ihn gibt es weder einen
+   * Grund noch einen Bericht, etwas zu aendern.
+   */
+  async refreshDps() {
+    const liste = [...new Set(MESS_DPS
+      .map((k) => this.getSetting(k))
+      .filter((dp) => Number.isInteger(dp) && dp >= 1 && dp <= 255))]
+      .sort((a, b) => a - b);
+    if (liste.length === 0) return super.refreshDps();
+    return this._conn?.refresh(liste);
   }
 
   /**
