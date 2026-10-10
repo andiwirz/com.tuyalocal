@@ -177,7 +177,10 @@ class ThermostatDevice extends BaseTuyaDevice {
         case 'hvac_action': {
           // "1" / true / "heating" → actively heating; anything else → idle
           const v = typeof value === 'string' ? value.toLowerCase() : value;
-          const heating = v === 1 || v === true || v === 'heating' || v === 'heat';
+          // 'open': ein Heizkoerperventil meldet valve_state, und offen heisst, es heizt.
+          // Der Treiber legt valve_state beim Anlegen selbst auf diesen DP - ohne 'open'
+          // blieb die Anzeige bei jedem so angelegten Ventil immer aus.
+          const heating = v === 1 || v === true || v === 'heating' || v === 'heat' || v === 'open';
           await this.setCapabilityValue('alarm_heat', heating).catch(() => {});
           break;
         }

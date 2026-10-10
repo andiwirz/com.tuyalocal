@@ -869,7 +869,7 @@ Key are then the gateway's. Leave it empty for a thermostat with its own connect
 | `dp_child_lock` | <img src="assets/capabilities/child_lock.svg" height="24"> | `child_lock` | boolean | 0 | ✓ `0` = disabled |
 | `dp_battery` |  | `measure_battery` | number | 0 | ✓ `0` = disabled (TRVs only) |
 | `dp_fault` |  | `alarm_generic` | bitfield | 0 | ✓ `0` = disabled |
-| `dp_hvac_action` |  | `alarm_heat` | enum / bool / int | 0 | ✓ `0` = disabled — shows heating indicator when boiler is actively firing |
+| `dp_hvac_action` |  | `alarm_heat` | enum / bool / int | 0 | ✓ `0` = disabled — shows heating indicator when boiler is actively firing, or on a radiator valve when its valve state is `open` |
 
 #### Temperature Settings
 

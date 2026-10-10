@@ -17225,8 +17225,8 @@
                 "de": "DP Heizstatus (0 = deaktiviert)"
               },
               "hint": {
-                "en": "DP that indicates the boiler is actively heating. Common values: 1 or 'heating' = heating, 0 or 'idle' = idle. Enables the 'Heating' indicator in the device card.",
-                "de": "DP der anzeigt ob der Heizkessel aktiv heizt. Häufige Werte: 1 oder 'heating' = heizt, 0 oder 'idle' = inaktiv. Aktiviert den 'Heizt'-Indikator in der Gerätekachel."
+                "en": "DP that indicates the boiler is actively heating. Common values: 1 or 'heating' = heating, 0 or 'idle' = idle. On a radiator valve, its valve state: 'open' = heating, 'close' = idle. Enables the 'Heating' indicator in the device card.",
+                "de": "DP der anzeigt ob der Heizkessel aktiv heizt. Häufige Werte: 1 oder 'heating' = heizt, 0 oder 'idle' = inaktiv. Bei einem Heizkörperventil dessen Ventilzustand: 'open' = heizt, 'close' = inaktiv. Aktiviert den 'Heizt'-Indikator in der Gerätekachel."
               },
               "value": 0,
               "min": 0,
