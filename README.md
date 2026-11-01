@@ -2512,10 +2512,16 @@ fan: sub-capabilities (`onoff.fan`, `dim.fan`) and app-defined capabilities (`fa
 
 | Action | Notes |
 |---|---|
-| Set switch gang on or off | Select gang (1–4) and state (on/off) |
+| Set switch gang on or off | Pick the channel by name and the state (on/off) |
 | Toggle switch gang | Inverts current state of selected gang |
 | Force wall switch reconnect | Drops and re-establishes the TCP connection |
 | Refresh wall switch values | Triggers an immediate GET request |
+
+The channel picker on the four channel cards lists the channels the chosen device actually has, under the
+names given in its settings (`name_switch_1` … `_4`); a channel without a name appears as "Switch N", an
+outlet of a power strip as "Outlet N". Flows saved before 1.0.282 hold the plain channel number and keep
+working as they are. Should one of them show an empty channel field in the editor, pick the channel once and
+save.
 
 The channel cards work for the outlets of a power strip on the **Smart Plug** driver as well — see
 [Power strips](#power-strips).

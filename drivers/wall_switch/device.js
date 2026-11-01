@@ -97,6 +97,22 @@ class WallSwitchDevice extends BaseTuyaDevice {
     return GANG_CAPS.filter((g) => (this.getSetting(g.settingKey) || 0) > 0);
   }
 
+  /**
+   * Die Kanaele fuer die Auswahl der Kanal-Karten - siehe kanalAuswahl im Treiber. Nur
+   * die eingerichteten, mit dem Namen aus den Einstellungen. Ohne Namen nennt der Treiber
+   * sie "Schalter N", auch Kanal 1: in einer Liste von Kanaelen sagt "Ein/Aus" nicht,
+   * welcher gemeint ist.
+   */
+  _kanalAuswahl() {
+    return this._activeGangs()
+      .filter((g) => this.hasCapability(this._gangCapability(g)))
+      .map((g) => ({
+        nummer:  g.gang,
+        name:    String(this.getSetting(g.nameSetting) || '').trim(),
+        vorgabe: 'flow.gangSwitch',
+      }));
+  }
+
   async _syncGangCapabilities() {
     // `onoff` bleibt in beiden Betriebsarten bestehen - es ist die Hauptfaehigkeit und
     // darf nie fehlen; nur seine Bedeutung wechselt. Umziehen muss allein Kanal 1.

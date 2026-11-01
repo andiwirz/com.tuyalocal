@@ -198,6 +198,24 @@ class SmartPlugDevice extends BaseTuyaDevice {
   }
 
   /**
+   * Die Steckdosen fuer die Auswahl der Kanal-Karten - siehe kanalAuswahl im Treiber des
+   * Wandschalters. Steckdose 1 gibt es immer und hat keinen eigenen Namen; die weiteren
+   * nur, wenn sie eingerichtet sind.
+   */
+  _kanalAuswahl() {
+    const kanaele = [{ nummer: 1, name: '', vorgabe: 'flow.gangOutlet' }];
+    for (const s of STECKDOSEN) {
+      if (!this.hasCapability(s.capability)) continue;
+      kanaele.push({
+        nummer:  s.nummer,
+        name:    String(this.getSetting(s.nameSetting) || '').trim(),
+        vorgabe: 'flow.gangOutlet',
+      });
+    }
+    return kanaele;
+  }
+
+  /**
    * Kacheln, Namen und Zuhoerer der Steckdosen 2-4, nach ihren Einstellungen.
    *
    * Ein Zuhoerer je Faehigkeit und nur einmal: Homey behaelt ihn ueber ein Entfernen und

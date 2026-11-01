@@ -1,4 +1,8 @@
 {
+  "1.0.282": {
+    "en": "Wall switch and power strip: the channel cards now list the channels by the names you gave them, and only the ones the device has. Existing flows keep working.",
+    "de": "Wandschalter und Steckdosenleiste: Die Kanal-Karten zeigen die Kanäle jetzt unter den Namen aus den Einstellungen, und nur die, die das Gerät hat. Bestehende Flows laufen weiter."
+  },
   "1.0.281": {
     "en": "Status widget: new preview images in the widget picker and the App Store.",
     "de": "Status-Widget: neue Vorschaubilder in der Widget-Auswahl und im App Store."

@@ -3660,8 +3660,8 @@
           "de": "Ein Schalterkanal hat sich geändert"
         },
         "titleFormatted": {
-          "en": "Switch [[gang]] changed",
-          "de": "Schalter [[gang]] hat sich geändert"
+          "en": "[[gang]] changed",
+          "de": "[[gang]] hat sich geändert"
         },
         "args": [
           {
@@ -3671,41 +3671,11 @@
           },
           {
             "name": "gang",
-            "type": "dropdown",
-            "title": {
-              "en": "Gang",
+            "type": "autocomplete",
+            "placeholder": {
+              "en": "Channel",
               "de": "Kanal"
-            },
-            "values": [
-              {
-                "id": "1",
-                "label": {
-                  "en": "Switch 1",
-                  "de": "Schalter 1"
-                }
-              },
-              {
-                "id": "2",
-                "label": {
-                  "en": "Switch 2",
-                  "de": "Schalter 2"
-                }
-              },
-              {
-                "id": "3",
-                "label": {
-                  "en": "Switch 3",
-                  "de": "Schalter 3"
-                }
-              },
-              {
-                "id": "4",
-                "label": {
-                  "en": "Switch 4",
-                  "de": "Schalter 4"
-                }
-              }
-            ]
+            }
           }
         ],
         "tokens": [
@@ -7197,8 +7167,8 @@
           "de": "Schalterkanal ist !{{ein|aus}}"
         },
         "titleFormatted": {
-          "en": "Switch [[gang]] !{{is|is not}} on",
-          "de": "Schalter [[gang]] ist !{{ein|aus}}"
+          "en": "[[gang]] !{{is|is not}} on",
+          "de": "[[gang]] ist !{{ein|aus}}"
         },
         "args": [
           {
@@ -7208,41 +7178,11 @@
           },
           {
             "name": "gang",
-            "type": "dropdown",
-            "title": {
-              "en": "Gang",
+            "type": "autocomplete",
+            "placeholder": {
+              "en": "Channel",
               "de": "Kanal"
-            },
-            "values": [
-              {
-                "id": "1",
-                "label": {
-                  "en": "Switch 1",
-                  "de": "Schalter 1"
-                }
-              },
-              {
-                "id": "2",
-                "label": {
-                  "en": "Switch 2",
-                  "de": "Schalter 2"
-                }
-              },
-              {
-                "id": "3",
-                "label": {
-                  "en": "Switch 3",
-                  "de": "Schalter 3"
-                }
-              },
-              {
-                "id": "4",
-                "label": {
-                  "en": "Switch 4",
-                  "de": "Schalter 4"
-                }
-              }
-            ]
+            }
           }
         ]
       },
@@ -10183,8 +10123,8 @@
           "de": "Schalterkanal ein- oder ausschalten"
         },
         "titleFormatted": {
-          "en": "Set switch [[gang]] to [[state]]",
-          "de": "Schalter [[gang]] auf [[state]] setzen"
+          "en": "Set [[gang]] to [[state]]",
+          "de": "[[gang]] auf [[state]] setzen"
         },
         "args": [
           {
@@ -10194,41 +10134,11 @@
           },
           {
             "name": "gang",
-            "type": "dropdown",
-            "title": {
-              "en": "Gang",
+            "type": "autocomplete",
+            "placeholder": {
+              "en": "Channel",
               "de": "Kanal"
-            },
-            "values": [
-              {
-                "id": "1",
-                "label": {
-                  "en": "Switch 1",
-                  "de": "Schalter 1"
-                }
-              },
-              {
-                "id": "2",
-                "label": {
-                  "en": "Switch 2",
-                  "de": "Schalter 2"
-                }
-              },
-              {
-                "id": "3",
-                "label": {
-                  "en": "Switch 3",
-                  "de": "Schalter 3"
-                }
-              },
-              {
-                "id": "4",
-                "label": {
-                  "en": "Switch 4",
-                  "de": "Schalter 4"
-                }
-              }
-            ]
+            }
           },
           {
             "name": "state",
@@ -10263,8 +10173,8 @@
           "de": "Schalterkanal umschalten"
         },
         "titleFormatted": {
-          "en": "Toggle switch [[gang]]",
-          "de": "Schalter [[gang]] umschalten"
+          "en": "Toggle [[gang]]",
+          "de": "[[gang]] umschalten"
         },
         "args": [
           {
@@ -10274,41 +10184,11 @@
           },
           {
             "name": "gang",
-            "type": "dropdown",
-            "title": {
-              "en": "Gang",
+            "type": "autocomplete",
+            "placeholder": {
+              "en": "Channel",
               "de": "Kanal"
-            },
-            "values": [
-              {
-                "id": "1",
-                "label": {
-                  "en": "Switch 1",
-                  "de": "Schalter 1"
-                }
-              },
-              {
-                "id": "2",
-                "label": {
-                  "en": "Switch 2",
-                  "de": "Schalter 2"
-                }
-              },
-              {
-                "id": "3",
-                "label": {
-                  "en": "Switch 3",
-                  "de": "Schalter 3"
-                }
-              },
-              {
-                "id": "4",
-                "label": {
-                  "en": "Switch 4",
-                  "de": "Schalter 4"
-                }
-              }
-            ]
+            }
           }
         ]
       },

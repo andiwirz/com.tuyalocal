@@ -22,6 +22,14 @@ const CLOUD_CODE_MAP = {
   dp_relay_status: ['relay_status'],
 };
 
+// Die Kanalnummer aus dem Argument der Kanal-Karten. Seit die Auswahl die Namen der
+// Kanaele zeigt, ist sie ein {id, name}. Flows von davor halten noch die blosse Nummer
+// "1" ... "4" aus der alten Liste - die sollen weiterlaufen, ohne dass jemand sie neu
+// waehlen muss.
+function kanalVon(arg) {
+  return String(arg?.id ?? arg ?? '').trim();
+}
+
 class WallSwitchDriver extends Homey.Driver {
   async onInit() {
     this.log('Wall Switch driver initialized');
@@ -30,18 +38,46 @@ class WallSwitchDriver extends Homey.Driver {
     this.homey.flow.getConditionCard('switch_device_is_connected')
       .registerRunListener(async (args) => args.device._conn?.connected === true);
 
+    // Die Auswahl der Kanal-Karten, aus dem gewaehlten Geraet: nur die eingerichteten
+    // Kanaele, unter dem Namen aus seinen Einstellungen. Die feste Liste davor konnte das
+    // nicht - sie war fuer jedes Geraet dieselbe und hiess immer "Schalter 1-4". Die
+    // Karten gelten auch fuer die Steckdosenleiste, darum fragt das hier das Geraet und
+    // nicht GANG_CAPS - siehe _kanalAuswahl in beiden.
+    const kanalAuswahl = async (query, args) => {
+      const kanaele = typeof args.device?._kanalAuswahl === 'function'
+        ? args.device._kanalAuswahl() : [];
+      const suche = String(query || '').trim().toLowerCase();
+      return kanaele
+        .map((k) => {
+          const vorgabe = this.homey.__(k.vorgabe, { n: k.nummer });
+          return k.name
+            ? { id: String(k.nummer), name: k.name, description: vorgabe }
+            : { id: String(k.nummer), name: vorgabe };
+        })
+        .filter((e) => !suche || `${e.name} ${e.description || ''}`.toLowerCase().includes(suche));
+    };
+
+    // Ein leeres Argument hiesse sonst "onoff.NaN", und das kaeme als unlesbarer Fehler an.
+    const kanalOderFehler = (args) => {
+      const kanal = kanalVon(args.gang);
+      if (!/^[1-4]$/.test(kanal)) throw new Error(this.homey.__('errors.pickGangAgain'));
+      return kanal;
+    };
+
     // Welche Faehigkeit ein Kanal traegt, weiss das Geraet - siehe _capForGang. Kanal 1
     // wandert auf onoff.1, sobald der Sammelschalter `onoff` uebernimmt, und eine Karte,
     // die das selbst ausrechnet, schaltet dann den falschen.
     this.homey.flow.getConditionCard('switch_gang_is_on')
+      .registerArgumentAutocompleteListener('gang', kanalAuswahl)
       .registerRunListener(async (args) => {
-        const cap = args.device._capForGang(args.gang);
+        const cap = args.device._capForGang(kanalOderFehler(args));
         return args.device.getCapabilityValue(cap) === true;
       });
 
     // ── Trigger run-listeners ────────────────────────────────────────────────
     this.homey.flow.getDeviceTriggerCard('switch_gang_changed')
-      .registerRunListener(async (args, state) => String(state.gang) === args.gang);
+      .registerArgumentAutocompleteListener('gang', kanalAuswahl)
+      .registerRunListener(async (args, state) => String(state.gang) === kanalVon(args.gang));
 
     // ── Actions ─────────────────────────────────────────────────────────────
     this.homey.flow.getActionCard('switch_force_reconnect')
@@ -51,20 +87,24 @@ class WallSwitchDriver extends Homey.Driver {
       .registerRunListener(async (args) => args.device.pollNow());
 
     this.homey.flow.getActionCard('switch_set_gang')
+      .registerArgumentAutocompleteListener('gang', kanalAuswahl)
       .registerRunListener(async (args) => {
-        const cap = args.device._capForGang(args.gang);
+        const kanal = kanalOderFehler(args);
+        const cap = args.device._capForGang(kanal);
         if (!args.device.hasCapability(cap)) {
-          throw new Error(`Switch ${args.gang} is not configured on this device`);
+          throw new Error(`Switch ${kanal} is not configured on this device`);
         }
         const value = args.state === 'on';
         await args.device.triggerCapabilityListener(cap, value);
       });
 
     this.homey.flow.getActionCard('switch_toggle_gang')
+      .registerArgumentAutocompleteListener('gang', kanalAuswahl)
       .registerRunListener(async (args) => {
-        const cap = args.device._capForGang(args.gang);
+        const kanal = kanalOderFehler(args);
+        const cap = args.device._capForGang(kanal);
         if (!args.device.hasCapability(cap)) {
-          throw new Error(`Switch ${args.gang} is not configured on this device`);
+          throw new Error(`Switch ${kanal} is not configured on this device`);
         }
         const current = args.device.getCapabilityValue(cap) ?? false;
         await args.device.triggerCapabilityListener(cap, !current);

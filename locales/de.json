@@ -237,13 +237,16 @@
     "dp_changed": "Ein Datenpunkt hat sich geändert",
     "device_is_connected": "Gerät ist verbunden",
     "force_reconnect": "Verbindung neu aufbauen",
-    "levelName": "Stufe {{n}}"
+    "levelName": "Stufe {{n}}",
+    "gangSwitch": "Schalter {{n}}",
+    "gangOutlet": "Steckdose {{n}}"
   },
   "errors": {
     "missing_settings": "Geräteeinstellungen unvollständig — IP-Adresse, Geräte-ID und Local Key prüfen.",
     "dpNotConfigured": "Dieser Datenpunkt ist auf diesem Gerät nicht eingerichtet ({{setting}}) — bitte zuerst seine DP-Nummer in den Geräteeinstellungen eintragen.",
     "lockControlDisabled": "Ver- und Entriegeln aus Homey ist für dieses Gerät abgeschaltet. Nach Prüfung der Zustandsanzeige in den Geräteeinstellungen „Ver- und Entriegeln aus Homey zulassen“ einschalten.",
-    "pickAgain": "Diese Stufe bietet das Heizgerät nicht mehr an — bitte im Flow die Stufe neu auswählen."
+    "pickAgain": "Diese Stufe bietet das Heizgerät nicht mehr an — bitte im Flow die Stufe neu auswählen.",
+    "pickGangAgain": "Diese Flow-Karte sagt nicht mehr, welcher Kanal gemeint ist — bitte im Flow den Kanal neu auswählen."
   },
   "settings": {
     "logs": {
