@@ -1507,6 +1507,12 @@ Same settings as Dehumidifier.
 
 `depth_divisor` defaults to `1000` — the depth arrives in millimetres. Homey shows it in centimetres.
 
+The divisor turns the raw value into metres: `100` for a sensor that counts in centimetres, `1000` for one
+that counts in millimetres. Before 1.0.269 it turned the value into centimetres, so a sensor set up then
+had `1` or `10`, and read 100 times too high afterwards. The app now changes those two values to `100` and
+`1000` once, says so in the log, and writes a warning whenever a depth comes out above the 1000 cm the tile
+can show. A changed divisor applies to the last reading as soon as it is saved.
+
 `state_values` maps the raw strings, default `normal,lower_alarm,upper_alarm`. The state drives
 three capabilities from the one data point: the `liquid_state` picker showing which of the three it
 is, plus an empty and a full alarm that a flow can react to directly.

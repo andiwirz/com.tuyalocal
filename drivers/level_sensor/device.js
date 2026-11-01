@@ -15,6 +15,10 @@ const OPTIONAL_CAPABILITIES = [
   { setting: ['dp_state', 'own_high_percent'], capability: 'alarm_tank_full'  },
 ];
 
+// So weit reicht measure_distance (app.json). Darueber zeigt die Kachel diesen Wert und
+// nicht den gemessenen - siehe _tiefeZuGross.
+const TIEFE_MAX_CM = 1000;
+
 class LevelSensorDevice extends BaseTuyaDevice {
   async onInit() {
     this.log('Level sensor initialized:', this.getName());
@@ -23,8 +27,9 @@ class LevelSensorDevice extends BaseTuyaDevice {
     await this._migrateCapabilities([]);
     await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
     await this._syncEnumOptions('liquid_state', this.getSetting('state_values'));
+    await this._teilerUmstellen();
 
-    this._triggerDeviceConnected    = this.homey.flow.getDeviceTriggerCard('level_sensor_device_connected');
+    this._triggerDeviceConnected   = this.homey.flow.getDeviceTriggerCard('level_sensor_device_connected');
     this._triggerDeviceDisconnected = this.homey.flow.getDeviceTriggerCard('level_sensor_device_disconnected');
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('level_sensor_dp_changed');
     this._triggerStateChanged       = this.homey.flow.getDeviceTriggerCard('level_sensor_state_changed');
@@ -140,6 +145,63 @@ class LevelSensorDevice extends BaseTuyaDevice {
     return Number.isFinite(d) && d > 0 ? d : 1000;
   }
 
+  /**
+   * Stellt einen Teiler um, der fuer die Formel vor 1.0.269 gewaehlt war - einmal je Geraet.
+   *
+   * Bis 1.0.268 galt: Rohwert / Teiler = Zentimeter. Ein Sensor, der in Zentimetern
+   * zaehlt, brauchte also 1, einer in Millimetern 10. Seit 1.0.269 gilt: Rohwert / Teiler
+   * = Meter, mal 100 fuer die Anzeige - dort gehoeren 100 und 1000 hin. Wer den Teiler
+   * damals passend gestellt hatte, sieht seither das Hundertfache. Gemeldet mit 77 cm
+   * Fuellhoehe, die als 1000 dastanden, weil die Faehigkeit dort endet.
+   *
+   * 1 und 10 sind nach der neuen Formel keine sinnvollen Werte - in ganzen Metern oder
+   * Dezimetern zaehlt kein Tanksensor -, darum trifft das niemanden, der schon richtig
+   * eingestellt hat. Andere Werte bleiben, wie sie sind, die Vorgabe 1000 ohnehin.
+   *
+   * setSettings ruft onSettings nicht auf, also wird der letzte Rohwert hier selbst neu
+   * verrechnet: sonst stuende die Kachel auf dem alten Wert, bis sich der Fuellstand
+   * aendert.
+   */
+  async _teilerUmstellen() {
+    try {
+      if (this.getStoreValue('depthDivisorFormula') === 2) return;
+      const alt = String(this.getSetting('depth_divisor') ?? '');
+      const neu = { 1: '100', 10: '1000' }[alt];
+      if (neu) {
+        await this.setSettings({ depth_divisor: neu });
+        this._appLog(`Depth divisor changed from ${alt} to ${neu}. Since version 1.0.269 the `
+          + 'divisor turns the raw value into metres rather than centimetres, and with the '
+          + `${alt} chosen for the old calculation the depth read 100 times too high.`, 'info');
+        const dp  = Number(this.getSetting('dp_depth')) || 0;
+        const roh = dp > 0 ? this._lastDps?.[String(dp)] : undefined;
+        if (roh !== undefined) await this._neuUmrechnen({ [String(dp)]: roh });
+      }
+      await this.setStoreValue('depthDivisorFormula', 2);
+    } catch (err) {
+      this._appLog(`Could not update the depth divisor: ${err.message}`, 'warn');
+    }
+  }
+
+  /**
+   * Sagt es, wenn die Tiefe ueber das hinausgeht, was die Kachel zeigen kann - einmal je
+   * Teiler. Eine Kachel, die auf 1000 steht, sieht aus wie ein Messwert; so fiel der
+   * falsche Teiler oben nicht auf.
+   */
+  _tiefeZuGross(cm) {
+    if (!(cm > TIEFE_MAX_CM)) return;
+    const teiler = this._depthDivisor();
+    if (this._tiefeGewarntBei === teiler) return;
+    this._tiefeGewarntBei = teiler;
+    this._appLog(`Depth reads ${Math.round(cm)} cm, more than the ${TIEFE_MAX_CM} cm the tile `
+      + `can show. The Depth Divisor (${teiler}) is most likely too small for this sensor: one `
+      + 'that counts in centimetres needs 100, one that counts in millimetres 1000.', 'warn');
+  }
+
+  /** Die Tiefe gilt sofort mit einem neuen Teiler - siehe _umrechnungen in BaseTuyaDevice. */
+  _umrechnungen() {
+    return [['dp_depth', 'depth_divisor']];
+  }
+
   // ── Public, called by the flow actions in driver.js ─────────────────────────
 
   /**
@@ -225,9 +287,10 @@ class LevelSensorDevice extends BaseTuyaDevice {
       // Teiler macht aus dem Rohwert Meter, daher mal 100. Ohne das wurden 1059 mm zu
       // 1,059 und als "1 cm" angezeigt.
       if (settings.dp_depth > 0 && dp === settings.dp_depth) {
+        const cm = (Number(value) * 100) / this._depthDivisor();
+        this._tiefeZuGross(cm);
         if (this.hasCapability('measure_distance')) {
-          await this.setCapabilityValue('measure_distance', (Number(value) * 100) / this._depthDivisor())
-            .catch(() => {});
+          await this.setCapabilityValue('measure_distance', cm).catch(() => {});
         }
         continue;
       }
