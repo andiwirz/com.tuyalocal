@@ -1,4 +1,8 @@
 {
+  "1.0.284": {
+    "en": "Adding a device: a connection test that loses the device just before the end no longer leaves an error behind that showed up as a crash report.",
+    "de": "Gerät hinzufügen: Ein Verbindungstest, bei dem das Gerät kurz vor Schluss die Verbindung trennt, hinterlässt keinen Fehler mehr, der als Absturzbericht erschien."
+  },
   "1.0.283": {
     "en": "Level sensor: a depth divisor chosen before version 1.0.269 is corrected once (1 becomes 100, 10 becomes 1000) - with it the depth read 100 times too high. A changed divisor now applies right away, and the log warns when the depth exceeds what the tile can show.",
     "de": "Füllstandssensor: Ein vor Version 1.0.269 gewählter Höhen-Teiler wird einmalig korrigiert (1 wird 100, 10 wird 1000) – mit ihm stand die Füllhöhe hundertfach zu hoch. Ein geänderter Teiler gilt jetzt sofort, und das Protokoll warnt, wenn die Füllhöhe über dem liegt, was die Kachel zeigen kann."

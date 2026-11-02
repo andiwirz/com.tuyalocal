@@ -199,7 +199,7 @@ class EnergyMeterDriver extends Homey.Driver {
             new Promise((_, rej) => setTimeout(() => rej(new Error('Connection timed out')), 8000)),
           ]);
           await new Promise((resolve) => setTimeout(resolve, 2000));
-          try { device.refresh(); } catch (_) {}
+          try { Promise.resolve(device.refresh()).catch(() => {}); } catch (_) {}
           await new Promise((resolve) => setTimeout(resolve, 2000));
           device.verwerfen();
           pairingDevice = null;

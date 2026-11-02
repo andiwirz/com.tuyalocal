@@ -130,7 +130,7 @@ class GenericDriver extends Homey.Driver {
           // Always ask for a refresh, not just when nothing arrived: devices that do
           // answer dp_query may still withhold the refresh-only DPs, which is where
           // packed voltage/current/power values usually live.
-          try { device.refresh(); } catch (_) {}
+          try { Promise.resolve(device.refresh()).catch(() => {}); } catch (_) {}
           await new Promise((resolve) => setTimeout(resolve, 2000));
           device.verwerfen();
           rawDps = tmpDps;
