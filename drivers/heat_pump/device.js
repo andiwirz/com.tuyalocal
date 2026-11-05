@@ -3,24 +3,24 @@
 const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 const { capitalize }  = require('../../lib/utils');
 
-// â”€â”€ Universal pool / air-water heat pump driver â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Universal pool / air-water heat pump driver ───────────────────────────────
 //
 // Supports all major Tuya pool-heat-pump DP layouts found in tuya-local:
 //
 // Standard pool HPs (Brustec / BWT / CBC / Madimack / Mountfield / Varpoolfaye / Waterco):
 //   DP 1    bool   on/off
-//   DP 2    int    target_temperature  (Â°C or Â°F)
+//   DP 2    int    target_temperature  (°C or °F)
 //   DP 3    int    current_temperature
 //   DP 4/5  str    mode / preset
 //   DP 9/13/15/21  bitfield  fault
 //
-// PhalÃ©n Calidi XP / Fairland InverterPlus (user device):
+// Phalén Calidi XP / Fairland InverterPlus (user device):
 //   DP 1    bool   on/off
 //   DP 102  int    current_temperature
-//   DP 103  bool   temp unit (true=Â°C, false=Â°F)
-//   DP 104  int    power_level 0â€“100 %
+//   DP 103  bool   temp unit (true=°C, false=°F)
+//   DP 104  int    power_level 0–100 %
 //   DP 105  str    mode (warm / cool / smart)
-//   DP 106  int    target_temperature (12â€“45 Â°C)
+//   DP 106  int    target_temperature (12–45 °C)
 //   DP 115/116 bitfield  fault
 //   DP 117  bool   preset (false=sleep, true=boost)
 //
@@ -38,19 +38,19 @@ const { capitalize }  = require('../../lib/utils');
 //
 // Arcelik / Axen combo (DHW + space heating):
 //   DP 1    bool   on/off
-//   DP 103â€“106  int  temperatures (Ã—10 â†’ temp_divisor = 10)
-//   DP 109  str    mode (cool/heat/auto/hot_water/â€¦)
+//   DP 103–106  int  temperatures (×10 → temp_divisor = 10)
+//   DP 109  str    mode (cool/heat/auto/hot_water/…)
 //
-// â”€â”€ DP_PROFILE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── DP_PROFILE ────────────────────────────────────────────────────────────────
 //
 // Each entry has a `type` field used in _handleDps:
-//   'switch'   â†’ onoff (bool)
-//   'temp'     â†’ target_temperature (int, applies temp_divisor)
-//   'temp_ro'  â†’ measure_temperature (int, applies temp_divisor, read-only)
-//   'mode'     â†’ heat_pump_mode (str or combined bool+mode)
-//   'preset'   â†’ heat_pump_preset (bool or str)
-//   'alarm'    â†’ alarm_generic (bitfield / bool: non-zero = fault)
-//   'number'   â†’ power_level (int)
+//   'switch'   → onoff (bool)
+//   'temp'     → target_temperature (int, applies temp_divisor)
+//   'temp_ro'  → measure_temperature (int, applies temp_divisor, read-only)
+//   'mode'     → heat_pump_mode (str or combined bool+mode)
+//   'preset'   → heat_pump_preset (bool or str)
+//   'alarm'    → alarm_generic (bitfield / bool: non-zero = fault)
+//   'number'   → power_level (int)
 
 const DP_PROFILE = [
   { settingKey: 'dp_onoff',        capability: 'onoff',              type: 'switch',  settable: true  },
@@ -124,7 +124,7 @@ class HeatPumpDevice extends BaseTuyaDevice {
     await this._syncPresetOptions();
     this._registerOptionalListeners();
 
-    // â”€â”€ Flow trigger cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Flow trigger cards ───────────────────────────────────────────────────
     this._triggerModeChanged        = this.homey.flow.getDeviceTriggerCard('heat_pump_mode_changed');
     this._triggerSilentChanged      = this.homey.flow.getDeviceTriggerCard('heat_pump_silent_changed');
     this._triggerFault              = this.homey.flow.getDeviceTriggerCard('heat_pump_fault_triggered');
@@ -132,7 +132,7 @@ class HeatPumpDevice extends BaseTuyaDevice {
     this._triggerDeviceDisconnected = this.homey.flow.getDeviceTriggerCard('heat_pump_device_disconnected');
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('heat_pump_dp_changed');
 
-    // â”€â”€ Capability listeners (always-present capabilities) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Capability listeners (always-present capabilities) ───────────────────
     this.registerCapabilityListener('onoff', async (value) => {
       const dp = this.getSetting('dp_onoff');
       if (!dp || dp === 0) throw new Error('On/Off DP not configured');
@@ -150,7 +150,7 @@ class HeatPumpDevice extends BaseTuyaDevice {
     await this._connect();
   }
 
-  // â”€â”€ Hook overrides â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Hook overrides ────────────────────────────────────────────────────────────
 
   /** Reset fault-debounce state on every (re)connect. */
   _onConnected() {
@@ -354,7 +354,7 @@ class HeatPumpDevice extends BaseTuyaDevice {
     return null;
   }
 
-  // â”€â”€ Optional capability listeners â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Optional capability listeners ─────────────────────────────────────────────
   //
   // Called from onInit (after _syncOptionalCapabilities) AND from onSettings
   // whenever dp_mode / dp_preset changes.  Homey SDK replaces the listener if
@@ -393,7 +393,7 @@ class HeatPumpDevice extends BaseTuyaDevice {
     }
   }
 
-  // â”€â”€ DPS handling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── DPS handling ─────────────────────────────────────────────────────────────
 
   async _handleDps(dps) {
     const settings = this.getSettings();
@@ -441,8 +441,8 @@ class HeatPumpDevice extends BaseTuyaDevice {
       const divCurrent = settings.current_temp_divisor || div;
 
       switch (entry.type) {
-        // â”€â”€ On / Off â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-        // â”€â”€ Fluestermodus â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── On / Off ─────────────────────────────────────────────────────────
+        // ── Fluestermodus ──────────────────────────────────────────────────
         case 'silent': {
           const leise = this._rawToSilent(value);
           const vorher = this.getCapabilityValue('heat_pump_silent');
@@ -461,7 +461,7 @@ class HeatPumpDevice extends BaseTuyaDevice {
           break;
         }
 
-        // â”€â”€ Target temperature â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Target temperature ────────────────────────────────────────────────
         case 'temp': {
           const feld = this._sollFeld();
           if (feld > 0) {
@@ -487,13 +487,13 @@ class HeatPumpDevice extends BaseTuyaDevice {
           break;
         }
 
-        // â”€â”€ Current temperature (read-only) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Current temperature (read-only) ──────────────────────────────────
         case 'temp_ro': {
           await this.setCapabilityValue('measure_temperature', Number(value) / divCurrent).catch(() => {});
           break;
         }
 
-        // â”€â”€ Operating mode â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Operating mode ────────────────────────────────────────────────────
         case 'mode': {
           const prev = this.getCapabilityValue('heat_pump_mode');
           const mode = value; // already lowercased at loop entry
@@ -510,7 +510,7 @@ class HeatPumpDevice extends BaseTuyaDevice {
           break;
         }
 
-        // â”€â”€ Preset (bool or string) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Preset (bool or string) ───────────────────────────────────────────
         case 'preset': {
           const presetVals = (settings.preset_values || 'sleep,comfort,boost')
             .split(',').map((s) => s.trim()).filter(Boolean);
@@ -524,8 +524,8 @@ class HeatPumpDevice extends BaseTuyaDevice {
           break;
         }
 
-        // â”€â”€ Fault alarm (bitfield or bool) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-        // non-zero number = fault active; bool true = fault; string â‰  eorr0/no = fault
+        // ── Fault alarm (bitfield or bool) ────────────────────────────────────
+        // non-zero number = fault active; bool true = fault; string ≠ eorr0/no = fault
         //
         // Debounce: heat-pump firmware (like AC / Heater) can send a transient fault=true
         // immediately after reconnect that self-corrects within seconds.  Suppress the
@@ -572,7 +572,7 @@ class HeatPumpDevice extends BaseTuyaDevice {
           break;
         }
 
-        // â”€â”€ Power level 0â€“100 % â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Power level 0–100 % ───────────────────────────────────────────────
         case 'number': {
           await this.setCapabilityValue('power_level', Number(value)).catch(() => {});
           break;
@@ -589,7 +589,7 @@ class HeatPumpDevice extends BaseTuyaDevice {
     }
   }
 
-  // â”€â”€ Settings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Settings ─────────────────────────────────────────────────────────────────
 
   async onSettings({ changedKeys }) {
     const connectionKeys = ['ip', 'device_id', 'local_key', 'version'];
@@ -707,7 +707,7 @@ class HeatPumpDevice extends BaseTuyaDevice {
     return this._silentTrueIsQuiet() ? Boolean(leise) : !leise;
   }
 
-  // â”€â”€ Sync helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Sync helpers ─────────────────────────────────────────────────────────────
 
   /**
    * Update target_temperature slider range from temp_min / temp_max / temp_step settings.
@@ -718,7 +718,7 @@ class HeatPumpDevice extends BaseTuyaDevice {
     const step = this.getSetting('temp_step') ?? 1;
     try {
       const changed = await this._setCapabilityOptionsIfChanged('target_temperature', { min, max, step });
-      if (changed) this.log(`target_temperature range â†’ ${min}â€“${max} step ${step}`);
+      if (changed) this.log(`target_temperature range → ${min}–${max} step ${step}`);
     } catch (err) {
       this.log('setCapabilityOptions(target_temperature) failed:', err.message);
     }
@@ -735,7 +735,7 @@ class HeatPumpDevice extends BaseTuyaDevice {
       .map((v) => ({ id: v, title: { en: capitalize(v), de: capitalize(v) } }));
     try {
       const changedMode = await this._setCapabilityOptionsIfChanged('heat_pump_mode', { values });
-      if (changedMode) this.log(`heat_pump_mode picker â†’ ${values.map((v) => v.id).join(', ')}`);
+      if (changedMode) this.log(`heat_pump_mode picker → ${values.map((v) => v.id).join(', ')}`);
     } catch (err) {
       this.log('setCapabilityOptions(heat_pump_mode) failed:', err.message);
     }
@@ -752,7 +752,7 @@ class HeatPumpDevice extends BaseTuyaDevice {
       .map((v) => ({ id: v, title: { en: capitalize(v), de: capitalize(v) } }));
     try {
       const changedPreset = await this._setCapabilityOptionsIfChanged('heat_pump_preset', { values });
-      if (changedPreset) this.log(`heat_pump_preset picker â†’ ${values.map((v) => v.id).join(', ')}`);
+      if (changedPreset) this.log(`heat_pump_preset picker → ${values.map((v) => v.id).join(', ')}`);
     } catch (err) {
       this.log('setCapabilityOptions(heat_pump_preset) failed:', err.message);
     }

@@ -3001,7 +3001,7 @@
         },
         "titleFormatted": {
           "en": "Liquid level rose above [[level]]%",
-          "de": "Füllstand ist ueber [[level]]% gestiegen"
+          "de": "Füllstand ist über [[level]]% gestiegen"
         },
         "args": [
           {
@@ -20549,7 +20549,7 @@
               "step": 0.1,
               "hint": {
                 "en": "Report a fixed wattage instead of letting Homey scale its estimate with the speed. Many fans draw nearly the same power at every step, so an estimate that follows the slider is wrong all day. Enter what the fan actually draws while running — a plug-in meter reading is the honest source. 0 = off, leaving Homey to estimate as before.",
-                "de": "Eine feste Wattzahl melden, statt Homey seine Schaetzung mit der Stufe herunterrechnen zu lassen. Viele Ventilatoren ziehen auf jeder Stufe nahezu dasselbe, eine dem Regler folgende Schaetzung ist dann den ganzen Tag falsch. Trage ein, was der Ventilator im Betrieb wirklich zieht — ein Zwischenstecker-Messgeraet ist die ehrliche Quelle. 0 = aus, dann schaetzt Homey wie bisher."
+                "de": "Eine feste Wattzahl melden, statt Homey seine Schätzung mit der Stufe herunterrechnen zu lassen. Viele Ventilatoren ziehen auf jeder Stufe nahezu dasselbe, eine dem Regler folgende Schätzung ist dann den ganzen Tag falsch. Trage ein, was der Ventilator im Betrieb wirklich zieht — ein Zwischenstecker-Messgerät ist die ehrliche Quelle. 0 = aus, dann schätzt Homey wie bisher."
               }
             },
             {
@@ -21229,7 +21229,7 @@
               "step": 0.1,
               "hint": {
                 "en": "Report a fixed wattage instead of letting Homey scale its estimate with the brightness. Many LED lamps draw very nearly the same power at every dim level, so an estimate that follows the slider is wrong all day. Enter what the lamp actually draws while on — a plug-in meter reading is the honest source — and the app reports that figure whenever the light is on. 0 = off, leaving Homey to estimate as before.",
-                "de": "Eine feste Wattzahl melden, statt Homey seine Schaetzung mit der Helligkeit herunterrechnen zu lassen. Viele LED-Leuchten ziehen bei jeder Dimmstufe nahezu dasselbe, eine dem Regler folgende Schaetzung ist dann den ganzen Tag falsch. Trage ein, was die Leuchte eingeschaltet wirklich zieht — ein Zwischenstecker-Messgeraet ist die ehrliche Quelle —, und die App meldet diesen Wert, solange das Licht an ist. 0 = aus, dann schaetzt Homey wie bisher."
+                "de": "Eine feste Wattzahl melden, statt Homey seine Schätzung mit der Helligkeit herunterrechnen zu lassen. Viele LED-Leuchten ziehen bei jeder Dimmstufe nahezu dasselbe, eine dem Regler folgende Schätzung ist dann den ganzen Tag falsch. Trage ein, was die Leuchte eingeschaltet wirklich zieht — ein Zwischenstecker-Messgerät ist die ehrliche Quelle —, und die App meldet diesen Wert, solange das Licht an ist. 0 = aus, dann schätzt Homey wie bisher."
               }
             },
             {
@@ -22746,7 +22746,7 @@
               "step": 0.1,
               "hint": {
                 "en": "Report a fixed wattage instead of letting Homey scale its estimate with the brightness. Many LED lamps draw very nearly the same power at every dim level, so an estimate that follows the slider is wrong all day. Enter what the lamp actually draws while on — a plug-in meter reading is the honest source — and the app reports that figure whenever the light is on. 0 = off, leaving Homey to estimate as before.",
-                "de": "Eine feste Wattzahl melden, statt Homey seine Schaetzung mit der Helligkeit herunterrechnen zu lassen. Viele LED-Leuchten ziehen bei jeder Dimmstufe nahezu dasselbe, eine dem Regler folgende Schaetzung ist dann den ganzen Tag falsch. Trage ein, was die Leuchte eingeschaltet wirklich zieht — ein Zwischenstecker-Messgeraet ist die ehrliche Quelle —, und die App meldet diesen Wert, solange das Licht an ist. 0 = aus, dann schaetzt Homey wie bisher."
+                "de": "Eine feste Wattzahl melden, statt Homey seine Schätzung mit der Helligkeit herunterrechnen zu lassen. Viele LED-Leuchten ziehen bei jeder Dimmstufe nahezu dasselbe, eine dem Regler folgende Schätzung ist dann den ganzen Tag falsch. Trage ein, was die Leuchte eingeschaltet wirklich zieht — ein Zwischenstecker-Messgerät ist die ehrliche Quelle —, und die App meldet diesen Wert, solange das Licht an ist. 0 = aus, dann schätzt Homey wie bisher."
               }
             },
             {
@@ -27308,7 +27308,7 @@
               "value": 0,
               "hint": {
                 "en": "Only for chargers that report this as a plain number rather than inside the packed phase DP above. Leave both kinds configured and the packed one wins. Example: a Feyree reports L1 voltage on DP 102. Set to 0 to disable.",
-                "de": "Nur fuer Wallboxen, die den Wert als schlichte Zahl melden statt im gepackten Phasen-DP darueber. Sind beide gesetzt, gilt der gepackte. Beispiel: eine Feyree meldet die L1-Spannung auf DP 102. 0 = deaktiviert."
+                "de": "Nur für Wallboxen, die den Wert als schlichte Zahl melden statt im gepackten Phasen-DP darüber. Sind beide gesetzt, gilt der gepackte. Beispiel: eine Feyree meldet die L1-Spannung auf DP 102. 0 = deaktiviert."
               }
             },
             {
@@ -27321,7 +27321,7 @@
               "value": 0,
               "hint": {
                 "en": "Only for chargers that report this as a plain number rather than inside the packed phase DP above. Leave both kinds configured and the packed one wins. Feyree: DP 103. Set to 0 to disable.",
-                "de": "Nur fuer Wallboxen, die den Wert als schlichte Zahl melden statt im gepackten Phasen-DP darueber. Sind beide gesetzt, gilt der gepackte. Feyree: DP 103. 0 = deaktiviert."
+                "de": "Nur für Wallboxen, die den Wert als schlichte Zahl melden statt im gepackten Phasen-DP darüber. Sind beide gesetzt, gilt der gepackte. Feyree: DP 103. 0 = deaktiviert."
               }
             },
             {
@@ -27334,7 +27334,7 @@
               "value": 0,
               "hint": {
                 "en": "Only for chargers that report this as a plain number rather than inside the packed phase DP above. Leave both kinds configured and the packed one wins. Feyree: DP 104. Set to 0 to disable.",
-                "de": "Nur fuer Wallboxen, die den Wert als schlichte Zahl melden statt im gepackten Phasen-DP darueber. Sind beide gesetzt, gilt der gepackte. Feyree: DP 104. 0 = deaktiviert."
+                "de": "Nur für Wallboxen, die den Wert als schlichte Zahl melden statt im gepackten Phasen-DP darüber. Sind beide gesetzt, gilt der gepackte. Feyree: DP 104. 0 = deaktiviert."
               }
             },
             {
@@ -27347,7 +27347,7 @@
               "value": 0,
               "hint": {
                 "en": "Only for chargers that report this as a plain number rather than inside the packed phase DP above. Leave both kinds configured and the packed one wins. Feyree: DP 105. Not to be confused with the charge current DP, which sets the limit rather than reporting what flows. Set to 0 to disable.",
-                "de": "Nur fuer Wallboxen, die den Wert als schlichte Zahl melden statt im gepackten Phasen-DP darueber. Sind beide gesetzt, gilt der gepackte. Feyree: DP 105. Nicht zu verwechseln mit dem Ladestrom-DP, der das Limit setzt, statt den fliessenden Strom zu melden. 0 = deaktiviert."
+                "de": "Nur für Wallboxen, die den Wert als schlichte Zahl melden statt im gepackten Phasen-DP darüber. Sind beide gesetzt, gilt der gepackte. Feyree: DP 105. Nicht zu verwechseln mit dem Ladestrom-DP, der das Limit setzt, statt den fliessenden Strom zu melden. 0 = deaktiviert."
               }
             },
             {
@@ -27360,7 +27360,7 @@
               "value": 0,
               "hint": {
                 "en": "Only for chargers that report this as a plain number rather than inside the packed phase DP above. Leave both kinds configured and the packed one wins. Feyree: DP 106. Set to 0 to disable.",
-                "de": "Nur fuer Wallboxen, die den Wert als schlichte Zahl melden statt im gepackten Phasen-DP darueber. Sind beide gesetzt, gilt der gepackte. Feyree: DP 106. 0 = deaktiviert."
+                "de": "Nur für Wallboxen, die den Wert als schlichte Zahl melden statt im gepackten Phasen-DP darüber. Sind beide gesetzt, gilt der gepackte. Feyree: DP 106. 0 = deaktiviert."
               }
             },
             {
@@ -27373,7 +27373,7 @@
               "value": 0,
               "hint": {
                 "en": "Only for chargers that report this as a plain number rather than inside the packed phase DP above. Leave both kinds configured and the packed one wins. Feyree: DP 107. Set to 0 to disable.",
-                "de": "Nur fuer Wallboxen, die den Wert als schlichte Zahl melden statt im gepackten Phasen-DP darueber. Sind beide gesetzt, gilt der gepackte. Feyree: DP 107. 0 = deaktiviert."
+                "de": "Nur für Wallboxen, die den Wert als schlichte Zahl melden statt im gepackten Phasen-DP darüber. Sind beide gesetzt, gilt der gepackte. Feyree: DP 107. 0 = deaktiviert."
               }
             },
             {
@@ -27402,7 +27402,7 @@
               ],
               "hint": {
                 "en": "Applies to the separate voltage DPs above, not to the packed phase DP — that one carries its own scaling. A reading of 2359 for 235.9 V means 0.1.",
-                "de": "Gilt fuer die getrennten Spannungs-DPs darueber, nicht fuer den gepackten Phasen-DP — der bringt seine Skalierung mit. Ein Wert von 2359 fuer 235,9 V heisst 0,1."
+                "de": "Gilt für die getrennten Spannungs-DPs darüber, nicht für den gepackten Phasen-DP — der bringt seine Skalierung mit. Ein Wert von 2359 für 235,9 V heisst 0,1."
               }
             },
             {
@@ -27438,7 +27438,7 @@
               ],
               "hint": {
                 "en": "Applies to the separate current DPs above — the current that flows. The charge current limit has its own scale setting further up; the two are often different.",
-                "de": "Gilt fuer die getrennten Strom-DPs darueber — den fliessenden Strom. Das Ladestrom-Limit hat weiter oben seine eigene Skalierung; die beiden unterscheiden sich oft."
+                "de": "Gilt für die getrennten Strom-DPs darüber — den fliessenden Strom. Das Ladestrom-Limit hat weiter oben seine eigene Skalierung; die beiden unterscheiden sich oft."
               }
             },
             {
@@ -27481,7 +27481,7 @@
               ],
               "hint": {
                 "en": "Multiplier turning the total power DP into watts. Most chargers report watts directly; some report kilowatts. A reading of 110 for 11 kW means 100.",
-                "de": "Faktor, der den Gesamtleistungs-DP in Watt umrechnet. Die meisten Wallboxen melden Watt, manche Kilowatt. Ein Wert von 110 fuer 11 kW heisst 100."
+                "de": "Faktor, der den Gesamtleistungs-DP in Watt umrechnet. Die meisten Wallboxen melden Watt, manche Kilowatt. Ein Wert von 110 für 11 kW heisst 100."
               }
             },
             {
@@ -27510,7 +27510,7 @@
               ],
               "hint": {
                 "en": "A reading of 435 for 43.5 °C means 0.1.",
-                "de": "Ein Wert von 435 fuer 43,5 °C heisst 0,1."
+                "de": "Ein Wert von 435 für 43,5 °C heisst 0,1."
               }
             },
             {

@@ -15,11 +15,11 @@ const ENUM_QUELLE = {
   ac_sleep_mode: 'sleep_mode_values',
 };
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// DP profile â€” entries whose transforms are straightforward scalars.
+// ─────────────────────────────────────────────────────────────────────────────
+// DP profile — entries whose transforms are straightforward scalars.
 // target_temperature, measure_temperature, and alarm_generic (fault) are handled
 // separately in _handleDps because they need context (temp_divisor / debounce).
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 const DP_PROFILE = [
   { settingKey: 'dp_onoff',           capability: 'onoff',           transform: (v) => Boolean(v),  settable: true               },
   { settingKey: 'dp_mode',            capability: 'ac_mode',         transform: (v) => String(v),   settable: true               },
@@ -85,7 +85,7 @@ class AirConditionerDevice extends BaseTuyaDevice {
     await this._syncEnumOptions('ac_sleep_mode', this.getSetting('sleep_mode_values'), { zuordnung: true });
     await this._syncTempCapabilityOptions();
 
-    // â”€â”€ Flow trigger cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Flow trigger cards ────────────────────────────────────────────────────
     this._triggerDeviceConnected    = this.homey.flow.getDeviceTriggerCard('ac_device_connected');
     this._triggerDeviceDisconnected = this.homey.flow.getDeviceTriggerCard('ac_device_disconnected');
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('ac_dp_changed');
@@ -161,7 +161,7 @@ class AirConditionerDevice extends BaseTuyaDevice {
     }));
   }
 
-  // â”€â”€ Hook overrides â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Hook overrides ───────────────────────────────────────────────────────────
 
   /** Reset fault state on (re)connect. */
   _onConnected() {
@@ -178,14 +178,14 @@ class AirConditionerDevice extends BaseTuyaDevice {
     for (const t of this._debounceTimers.values()) clearTimeout(t);
   }
 
-  // â”€â”€ DPS handling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── DPS handling ──────────────────────────────────────────────────────────
 
   async _handleDps(dps) {
     const settings = this.getSettings();
     const divisor  = settings.temp_divisor || 1;
     let   changed  = false;
 
-    // â”€â”€ Lazy optional-DP discovery â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Lazy optional-DP discovery ───────────────────────────────────────────
     // If pairing happened in a mode where some DPs (e.g. sleep DP 103) are not
     // reported by the device, they won't be auto-configured.  When those DPs
     // appear later (e.g. user switches to Cooling mode), we detect them here.
@@ -211,13 +211,13 @@ class AirConditionerDevice extends BaseTuyaDevice {
         .trigger(this, { dp: dpStr, value: String(value) })
         .catch(() => {});
 
-      // â”€â”€ Target temperature â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── Target temperature ──────────────────────────────────────────────────
       if (settings.dp_target_temp > 0 && dp === settings.dp_target_temp) {
         await this.setCapabilityValue('target_temperature', Number(value) / divisor).catch(() => {});
         continue;
       }
 
-      // â”€â”€ Current (measured) temperature â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── Current (measured) temperature ─────────────────────────────────────
       if (settings.dp_current_temp > 0 && dp === settings.dp_current_temp) {
         if (this.hasCapability('measure_temperature')) {
           await this.setCapabilityValue('measure_temperature', Number(value) / divisor).catch(() => {});
@@ -225,7 +225,7 @@ class AirConditionerDevice extends BaseTuyaDevice {
         continue;
       }
 
-      // â”€â”€ Fault alarm (debounced against reconnect artifacts) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── Fault alarm (debounced against reconnect artifacts) ─────────────────
       if (settings.dp_fault > 0 && dp === settings.dp_fault) {
         const isActive    = value !== 0 && value !== false;
         const faultCode   = typeof value === 'number' ? value : (isActive ? 1 : 0);
@@ -257,7 +257,7 @@ class AirConditionerDevice extends BaseTuyaDevice {
         continue;
       }
 
-      // â”€â”€ All other DPs â€” matched via DP_PROFILE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── All other DPs — matched via DP_PROFILE ─────────────────────────────
       const entry = DP_PROFILE.find((e) => {
         const dpNum = settings[e.settingKey];
         return dpNum > 0 && dp === dpNum;
@@ -290,14 +290,14 @@ class AirConditionerDevice extends BaseTuyaDevice {
       await this._applyCapability(entry.capability, converted);
     }
 
-    // Debounced persistence â€” avoids hammering storage on every DPS packet.
+    // Debounced persistence — avoids hammering storage on every DPS packet.
     if (changed) {
       this._scheduleStoreSave();
       this._writeDpSnapshot();
     }
   }
 
-  // â”€â”€ Homey lifecycle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Homey lifecycle ───────────────────────────────────────────────────────
 
   async onSettings({ changedKeys }) {
     const connectionKeys = ['ip', 'device_id', 'local_key', 'version'];
@@ -326,23 +326,23 @@ class AirConditionerDevice extends BaseTuyaDevice {
     }
   }
 
-  // â”€â”€ Lazy optional-DP discovery â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Lazy optional-DP discovery ─────────────────────────────────────────────
   // Called once per connection with the first data packet.  Updates settings and
   // syncs capabilities for any well-known DP that the device now reports but
   // was not detected at pairing time (e.g. sleep DP 103 missing in Fan mode).
   async _autoDiscoverOptionalDps(dps, settings) {
     const updates = {};
 
-    // DP 103 â†’ sleep mode (boolean)
+    // DP 103 → sleep mode (boolean)
     if (settings.dp_sleep === 0 && typeof dps['103'] === 'boolean') {
       updates.dp_sleep = 103;
     }
-    // DP 11 â†’ anion / ioniser (boolean â€” only if not already used as countdown_left)
+    // DP 11 → anion / ioniser (boolean — only if not already used as countdown_left)
     if (settings.dp_anion === 0 && settings.dp_countdown_left !== 11
         && typeof dps['11'] === 'boolean') {
       updates.dp_anion = 11;
     }
-    // DP 110 â†’ horizontal swing (boolean)
+    // DP 110 → horizontal swing (boolean)
     if (settings.dp_swing_h === 0 && typeof dps['110'] === 'boolean') {
       updates.dp_swing_h = 110;
     }

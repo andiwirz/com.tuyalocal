@@ -1,4 +1,8 @@
 {
+  "1.0.285": {
+    "en": "Log messages and source files no longer contain garbled characters (such as \"â€”\" in place of a dash), and the German setting hints use proper umlauts.",
+    "de": "Protokollmeldungen und Quelldateien enthalten keine verstümmelten Zeichen mehr (etwa „â€”“ statt eines Gedankenstrichs), und die deutschen Hinweise zu den Einstellungen verwenden richtige Umlaute."
+  },
   "1.0.284": {
     "en": "Adding a device: a connection test that loses the device just before the end no longer leaves an error behind that showed up as a crash report.",
     "de": "Gerät hinzufügen: Ein Verbindungstest, bei dem das Gerät kurz vor Schluss die Verbindung trennt, hinterlässt keinen Fehler mehr, der als Absturzbericht erschien."

@@ -2,7 +2,7 @@
 
 const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 
-// Capabilities that are boolean in nature â€” used in _dpToCap to coerce to boolean
+// Capabilities that are boolean in nature — used in _dpToCap to coerce to boolean
 const BOOLEAN_CAPS = new Set([
   'onoff', 'alarm_generic', 'alarm_contact', 'alarm_co', 'alarm_co2',
   'alarm_fire', 'alarm_flood', 'alarm_heat', 'alarm_motion', 'alarm_pm25',
@@ -17,13 +17,13 @@ class GenericDevice extends BaseTuyaDevice {
     await this._baseInit();
 
     // Driver-specific state
-    this._debounceTimers  = new Map(); // keyed by capability id â€” cleared on each _registerListeners()
-    this._mappingsCache   = null;      // parsed dp_config â€” invalidated on settings change (#3)
+    this._debounceTimers  = new Map(); // keyed by capability id — cleared on each _registerListeners()
+    this._mappingsCache   = null;      // parsed dp_config — invalidated on settings change (#3)
 
     await this._migrateCapabilities([]);
     await this._syncCapabilities();
 
-    // â”€â”€ Flow trigger cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Flow trigger cards ───────────────────────────────────────────────────
     this._triggerDeviceConnected    = this.homey.flow.getDeviceTriggerCard('generic_device_connected');
     this._triggerDeviceDisconnected = this.homey.flow.getDeviceTriggerCard('generic_device_disconnected');
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('generic_dp_changed');
@@ -34,14 +34,14 @@ class GenericDevice extends BaseTuyaDevice {
     await this._connect();
   }
 
-  // â”€â”€ Hook overrides â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Hook overrides ───────────────────────────────────────────────────────────
 
   async _onDeleted() {
     for (const timer of this._debounceTimers.values()) clearTimeout(timer);
     this._debounceTimers.clear();
   }
 
-  // â”€â”€ DP config helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── DP config helpers ──────────────────────────────────────────────────────
 
   /**
    * Returns the parsed dp_config array. Caches the result so JSON.parse is
@@ -59,7 +59,7 @@ class GenericDevice extends BaseTuyaDevice {
       }
       const arr = JSON.parse(raw);
       if (!Array.isArray(arr)) {
-        this._appLog('dp_config is not a JSON array â€” ignoring', 'warn');
+        this._appLog('dp_config is not a JSON array — ignoring', 'warn');
         this._mappingsCache = [];
         return this._mappingsCache;
       }
@@ -67,16 +67,16 @@ class GenericDevice extends BaseTuyaDevice {
       const valid = [];
       for (const entry of arr) {
         if (typeof entry.dp !== 'number' || entry.dp <= 0 || !Number.isInteger(entry.dp)) {
-          this._appLog(`dp_config entry skipped â€” invalid dp: ${JSON.stringify(entry)}`, 'warn');
+          this._appLog(`dp_config entry skipped — invalid dp: ${JSON.stringify(entry)}`, 'warn');
           continue;
         }
         if (typeof entry.cap !== 'string' || entry.cap.trim() === '') {
-          this._appLog(`dp_config entry skipped â€” missing cap: ${JSON.stringify(entry)}`, 'warn');
+          this._appLog(`dp_config entry skipped — missing cap: ${JSON.stringify(entry)}`, 'warn');
           continue;
         }
         // Normalise flags so downstream code can use strict equality.
-        // `readonly: true`  â€” never register a capability listener (no writes to device)
-        // `invert: true`    â€” mirror numeric value within [min, max] on both read & write
+        // `readonly: true`  — never register a capability listener (no writes to device)
+        // `invert: true`    — mirror numeric value within [min, max] on both read & write
         entry.readonly = entry.readonly === true;
         entry.invert   = entry.invert   === true;
         valid.push(entry);
@@ -195,7 +195,7 @@ class GenericDevice extends BaseTuyaDevice {
 
     for (const mapping of mappings) {
       if (!mapping.settable) continue;
-      if (mapping.readonly)  continue; // sensor-only DP â€” never write
+      if (mapping.readonly)  continue; // sensor-only DP — never write
       if (!this.hasCapability(mapping.cap)) continue;
 
       // Numeric capabilities with min/max (sliders) or generic_number_* get debounce
@@ -225,11 +225,11 @@ class GenericDevice extends BaseTuyaDevice {
     }
   }
 
-  // â”€â”€ Value conversion â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Value conversion ───────────────────────────────────────────────────────
 
   /**
    * Helper: mirror a numeric value within [min, max].
-   * Used when `mapping.invert = true` â€” flips the range so that, e.g.,
+   * Used when `mapping.invert = true` — flips the range so that, e.g.,
    * a curtain motor where 0 = open and 100 = closed becomes 100 = open, 0 = closed.
    * Requires both `mapping.min` and `mapping.max` to be defined; no-ops otherwise.
    */
@@ -301,7 +301,7 @@ class GenericDevice extends BaseTuyaDevice {
     return rawValue;
   }
 
-  // â”€â”€ DPS handling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── DPS handling ───────────────────────────────────────────────────────────
 
   async _handleDps(dps) {
     const mappings = this._getMappings();
@@ -344,14 +344,14 @@ class GenericDevice extends BaseTuyaDevice {
       });
     }
 
-    // Debounced persistence â€” avoids hammering storage on every DPS packet.
+    // Debounced persistence — avoids hammering storage on every DPS packet.
     if (changed) {
       this._scheduleStoreSave();
       this._writeDpSnapshot();
     }
   }
 
-  // â”€â”€ Homey lifecycle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Homey lifecycle ────────────────────────────────────────────────────────
 
   async onSettings({ changedKeys }) {
     const connectionKeys = ['ip', 'device_id', 'local_key', 'version'];

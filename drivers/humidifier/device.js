@@ -41,7 +41,7 @@ class HumidifierDevice extends BaseTuyaDevice {
     await this._syncEnumOptions('mode',      this.getSetting('mode_values'));
     await this._syncEnumOptions('fan_speed', this.getSetting('fan_speed_values'));
 
-    // â”€â”€ Flow trigger cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Flow trigger cards ───────────────────────────────────────────────────
     this._triggerHumidityAbove      = this.homey.flow.getDeviceTriggerCard('humidifier_humidity_above');
     this._triggerHumidityBelow      = this.homey.flow.getDeviceTriggerCard('humidifier_humidity_below');
     this._triggerWaterEmpty         = this.homey.flow.getDeviceTriggerCard('humidifier_water_empty');
@@ -56,7 +56,7 @@ class HumidifierDevice extends BaseTuyaDevice {
       child_lock: 'humidifier_child_lock_changed',
     });
 
-    // â”€â”€ Capability listeners â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Capability listeners ─────────────────────────────────────────────────
     // Registered through a helper so that a capability switched on later — by
     // pointing its DP setting at a number — becomes controllable at once. Without
     // that, the tile appears and taps do nothing until the app is restarted.
@@ -113,7 +113,7 @@ class HumidifierDevice extends BaseTuyaDevice {
     for (const timer of Object.values(this._debounceTimers || {})) clearTimeout(timer);
   }
 
-  // â”€â”€ DPS handling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── DPS handling ─────────────────────────────────────────────────────────────
 
   async _handleDps(dps) {
     const settings = this.getSettings();
@@ -182,7 +182,7 @@ class HumidifierDevice extends BaseTuyaDevice {
     }
   }
 
-  // â”€â”€ Homey lifecycle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Homey lifecycle ──────────────────────────────────────────────────────────
 
   async onSettings({ changedKeys }) {
     const connectionKeys = ['ip', 'device_id', 'local_key', 'version'];

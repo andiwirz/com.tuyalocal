@@ -3,14 +3,14 @@
 const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 const { capitalize }  = require('../../lib/utils');
 
-// â”€â”€ DP â†’ capability mapping â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// DP 1   on/off           : boolean â€” start/stop heating
-// DP 2   current_temp     : integer Â°C â€” current water temperature
-// DP 4   target_temp      : integer Â°C â€” target temperature
-// DP 13  keep_warm        : boolean â€” keep-warm toggle
+// ── DP → capability mapping ──────────────────────────────────────────────────
+// DP 1   on/off           : boolean — start/stop heating
+// DP 2   current_temp     : integer °C — current water temperature
+// DP 4   target_temp      : integer °C — target temperature
+// DP 13  keep_warm        : boolean — keep-warm toggle
 // DP 15  status           : enum standby|heating|cooling|warm|heating_temp
 // DP 16  mode             : enum boil|heat|quick_boil|quick_heat|tea variants
-// DP 19  fault            : bitfield â€” fault alarm
+// DP 19  fault            : bitfield — fault alarm
 
 const DP_PROFILE = [
   { settingKey: 'dp_onoff',        capability: 'onoff',              type: 'switch',  settable: true  },
@@ -41,14 +41,14 @@ class KettleDevice extends BaseTuyaDevice {
     await this._syncModeOptions();
     await this._syncStatusOptions();
 
-    // â”€â”€ Flow trigger cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Flow trigger cards ───────────────────────────────────────────────────
     this._triggerDeviceConnected    = this.homey.flow.getDeviceTriggerCard('kettle_device_connected');
     this._triggerDeviceDisconnected = this.homey.flow.getDeviceTriggerCard('kettle_device_disconnected');
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('kettle_dp_changed');
     this._triggerStatusChanged      = this.homey.flow.getDeviceTriggerCard('kettle_status_changed');
     this._triggerBoilDone           = this.homey.flow.getDeviceTriggerCard('kettle_boil_done');
 
-    // â”€â”€ Capability listeners â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Capability listeners ─────────────────────────────────────────────────
     // Registered through a helper so that a capability switched on later — by
     // pointing its DP setting at a number — becomes controllable at once. Without
     // that, the tile appears and taps do nothing until the app is restarted.
@@ -76,7 +76,7 @@ class KettleDevice extends BaseTuyaDevice {
     register('kettle_mode',        'dp_mode');
   }
 
-  // â”€â”€ DPS handling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── DPS handling ─────────────────────────────────────────────────────────────
 
   async _handleDps(dps) {
     const settings = this.getSettings();
@@ -134,7 +134,7 @@ class KettleDevice extends BaseTuyaDevice {
             this._triggerStatusChanged
               .trigger(this, { status, prev_status: prev ?? status })
               .catch(() => {});
-            // "done" variants: boiling, boiling_temp, pause, cooling â†’ signal boil complete
+            // "done" variants: boiling, boiling_temp, pause, cooling → signal boil complete
             const DONE_STATES = new Set(['boiling', 'boiling_temp', 'pause', 'done', 'cooling']);
             if (DONE_STATES.has(status) && prev === 'heating') {
               this._triggerBoilDone.trigger(this).catch(() => {});
@@ -167,7 +167,7 @@ class KettleDevice extends BaseTuyaDevice {
     }
   }
 
-  // â”€â”€ Settings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Settings ─────────────────────────────────────────────────────────────────
 
   async onSettings({ changedKeys }) {
     const connectionKeys = ['ip', 'device_id', 'local_key', 'version'];
@@ -194,7 +194,7 @@ class KettleDevice extends BaseTuyaDevice {
     }
   }
 
-  // â”€â”€ Sync helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Sync helpers ─────────────────────────────────────────────────────────────
 
   async _syncTempRange() {
     if (!this.hasCapability('target_temperature')) return;

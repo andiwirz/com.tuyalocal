@@ -3,18 +3,18 @@
 const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 const { capitalize }  = require('../../lib/utils');
 
-// â”€â”€ Tuya thermostat DP patterns â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Tuya thermostat DP patterns ──────────────────────────────────────────────
 //
-// Pattern A â€” BHT-002 / Moes / Beok floor heating (temps Ã—10):
+// Pattern A — BHT-002 / Moes / Beok floor heating (temps ×10):
 //   DP 1   bool   on/off
 //   DP 2   str    mode (manual / auto / program / holiday)
-//   DP 16  int    target_temperature (Ã—10)
-//   DP 24  int    current_temperature (Ã—10)
-//   DP 27  int    temp_correction (-9â€¦9)
+//   DP 16  int    target_temperature (×10)
+//   DP 24  int    current_temperature (×10)
+//   DP 27  int    temp_correction (-9…9)
 //   DP 28  bool   child_lock
 //   DP 45  bitmask fault
 //
-// Pattern B â€” Simple thermostat / zone valve:
+// Pattern B — Simple thermostat / zone valve:
 //   DP 1   bool   on/off
 //   DP 2   int    target_temperature
 //   DP 3   int    current_temperature
@@ -22,7 +22,7 @@ const { capitalize }  = require('../../lib/utils');
 //   DP 5   int    eco_temperature
 //   DP 6   bool   child_lock
 //
-// Pattern C â€” TRV / radiator valve:
+// Pattern C — TRV / radiator valve:
 //   DP 1   bool   on/off
 //   DP 2   int    target_temperature
 //   DP 3   int    current_temperature
@@ -60,7 +60,7 @@ class ThermostatDevice extends BaseTuyaDevice {
     await this._syncTempRange();
     await this._syncModeOptions();
 
-    // â”€â”€ Flow trigger cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Flow trigger cards ───────────────────────────────────────────────────
     this._triggerDeviceConnected    = this.homey.flow.getDeviceTriggerCard('thermostat_device_connected');
     this._triggerDeviceDisconnected = this.homey.flow.getDeviceTriggerCard('thermostat_device_disconnected');
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('thermostat_dp_changed');
@@ -72,7 +72,7 @@ class ThermostatDevice extends BaseTuyaDevice {
       child_lock: 'thermostat_child_lock_changed',
     });
 
-    // â”€â”€ Capability listeners â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Capability listeners ─────────────────────────────────────────────────
     // Registered through a helper so that a capability switched on later — by
     // pointing its DP setting at a number — becomes controllable at once. Without
     // that, the tile appears and taps do nothing until the app is restarted.
@@ -101,7 +101,7 @@ class ThermostatDevice extends BaseTuyaDevice {
     register('child_lock',         'dp_child_lock');
   }
 
-  // â”€â”€ DPS handling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── DPS handling ─────────────────────────────────────────────────────────────
 
   async _handleDps(dps) {
     const settings = this.getSettings();
@@ -196,7 +196,7 @@ class ThermostatDevice extends BaseTuyaDevice {
     }
   }
 
-  // â”€â”€ Settings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Settings ─────────────────────────────────────────────────────────────────
 
   async onSettings({ changedKeys }) {
     // sub_device_cid: welches Geraet hinter einem Gateway das hier ist. Ein anderes
@@ -222,7 +222,7 @@ class ThermostatDevice extends BaseTuyaDevice {
     }
   }
 
-  // â”€â”€ Sync helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Sync helpers ─────────────────────────────────────────────────────────────
 
   async _syncTempRange() {
     const min  = this.getSetting('temp_min')  ?? 5;

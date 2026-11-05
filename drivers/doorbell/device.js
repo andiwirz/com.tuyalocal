@@ -2,33 +2,33 @@
 
 const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 
-// â”€â”€ Marmitek Buzz LO / Tuya category "sp" video doorbell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Marmitek Buzz LO / Tuya category "sp" video doorbell ─────────────────────
 //
 // Event DPs (read-only, push-based):
-//   DP 136  doorbell_active       string  â€” Unix timestamp string on ring
-//   DP 115  movement_detect_pic   raw     â€” raw image on motion detected
-//   DP 185  alarm_message         raw     â€” base64 JSON {cmd:"ipc_doorbell"|"ipc_motion",...}
-//   DP 154  doorbell_pic          raw     â€” raw image on ring
+//   DP 136  doorbell_active       string  — Unix timestamp string on ring
+//   DP 115  movement_detect_pic   raw     — raw image on motion detected
+//   DP 185  alarm_message         raw     — base64 JSON {cmd:"ipc_doorbell"|"ipc_motion",...}
+//   DP 154  doorbell_pic          raw     — raw image on ring
 //
 // Control DPs (settable):
-//   DP 134  motion_switch         bool    â€” enable/disable motion detection
-//   DP 106  motion_sensitivity    enum    â€” 0=low, 1=medium, 2=high
-//   DP 108  basic_nightvision     enum    â€” 0=auto, 1=off, 2=color
-//   DP 101  basic_indicator       bool    â€” status LED
-//   DP 150  record_switch         bool    â€” SD recording
-//   DP 157  chime_ring_volume     int     â€” 0â€“100
-//   DP 160  basic_device_volume   int     â€” 0â€“10
+//   DP 134  motion_switch         bool    — enable/disable motion detection
+//   DP 106  motion_sensitivity    enum    — 0=low, 1=medium, 2=high
+//   DP 108  basic_nightvision     enum    — 0=auto, 1=off, 2=color
+//   DP 101  basic_indicator       bool    — status LED
+//   DP 150  record_switch         bool    — SD recording
+//   DP 157  chime_ring_volume     int     — 0–100
+//   DP 160  basic_device_volume   int     — 0–10
 //
-// â”€â”€ Wireless chime / plug-in receiver (a different device family entirely) â”€â”€â”€â”€
+// ── Wireless chime / plug-in receiver (a different device family entirely) ────
 //
 // These units carry no camera and number their DPs from 1, so none of the defaults
 // above apply and every DP has to be pointed at by hand (or by cloud code name):
-//   DP 1   doorbell_list_data    raw     â€” list of paired buttons, not an event
-//   DP 2   doorbell_ring_value   int     â€” selected ring tone, 0â€“32
-//   DP 3   doorbell_volume_value int     â€” volume 0â€“100 (dp_chime_volume)
-//   DP 4   switch_night_light    bool    â€” night light (dp_night_light)
-//   DP 5   alarm_message         raw     â€” UTF-16BE name of the button that rang
-//   DP 10  doorbell_call         int     â€” which button rang, 1â€“8 (dp_doorbell)
+//   DP 1   doorbell_list_data    raw     — list of paired buttons, not an event
+//   DP 2   doorbell_ring_value   int     — selected ring tone, 0–32
+//   DP 3   doorbell_volume_value int     — volume 0–100 (dp_chime_volume)
+//   DP 4   switch_night_light    bool    — night light (dp_night_light)
+//   DP 5   alarm_message         raw     — UTF-16BE name of the button that rang
+//   DP 10  doorbell_call         int     — which button rang, 1–8 (dp_doorbell)
 //
 // The ring payload on these units is constant per button, so the same value
 // arrives on every press. That is handled by the event-DP clearing further down,
@@ -65,7 +65,7 @@ class DoorbellDevice extends BaseTuyaDevice {
     this._nightLightRegistered = false;
     this._registerNightLight();
 
-    // â”€â”€ Flow trigger cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Flow trigger cards ───────────────────────────────────────────────────
     this._triggerRang               = this.homey.flow.getDeviceTriggerCard('doorbell_rang');
     this._triggerMotionDetected     = this.homey.flow.getDeviceTriggerCard('doorbell_motion_detected');
     this._triggerDeviceConnected    = this.homey.flow.getDeviceTriggerCard('doorbell_device_connected');
@@ -85,7 +85,7 @@ class DoorbellDevice extends BaseTuyaDevice {
     clearTimeout(this._doorbellResetTimer);
   }
 
-  // â”€â”€ DPS handling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── DPS handling ─────────────────────────────────────────────────────────────
 
   async _handleDps(dps) {
     const settings = this.getSettings();
@@ -173,7 +173,7 @@ class DoorbellDevice extends BaseTuyaDevice {
         delete this._lastDps[dpStr];
       }
 
-      // Alarm message (base64 JSON â€” decodes cmd: ipc_doorbell / ipc_motion)
+      // Alarm message (base64 JSON — decodes cmd: ipc_doorbell / ipc_motion)
       if (dpAlarmMsg > 0 && dp === dpAlarmMsg && value) {
         this._handleAlarmMessage(value, dpDoorbell, dpMotionEvent);
         // persist:false — clear so identical alarm payloads re-trigger
@@ -276,7 +276,7 @@ class DoorbellDevice extends BaseTuyaDevice {
         }
       }
     } catch (_) {
-      // Non-base64 or non-JSON payload â€” ignore
+      // Non-base64 or non-JSON payload — ignore
     }
   }
 
@@ -310,7 +310,7 @@ class DoorbellDevice extends BaseTuyaDevice {
     }, resetMs);
   }
 
-  // â”€â”€ Settings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Settings ─────────────────────────────────────────────────────────────────
 
   async onSettings({ changedKeys }) {
     const connectionKeys = ['ip', 'device_id', 'local_key', 'version'];

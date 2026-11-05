@@ -8,27 +8,27 @@ const { rohZuId, idZuRoh } = require('../../lib/utils.js');
 // denn ein Geraet, das vor der Einstellung angelegt wurde, liefert fuer sie null.
 const BEFEHLE_VORGABE = 'open,stop,close';
 
-// â”€â”€ Universal curtain motor driver â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Universal curtain motor driver ────────────────────────────────────────────
 //
 // Zemismart v1 (category "cl"):
 //   DP 1   control          enum open|stop|close
-//   DP 2   percent_control  integer 0â€“100  (0 = closed, 100 = open)
-//   DP 5   control_back     bool   â€” reverse motor direction
+//   DP 2   percent_control  integer 0–100  (0 = closed, 100 = open)
+//   DP 5   control_back     bool   — reverse motor direction
 //   DP 7   work_state       enum opening|closing  (read-only)
 //   DP 10  fault            bitmap
 //
 // Zemismart v2 (same core, extra DPs):
 //   DP 1   control          enum open|stop|close
-//   DP 2   percent_control  integer 0â€“100
+//   DP 2   percent_control  integer 0–100
 //   DP 5   control_back     bool / control_back_mode enum forward|back
 //   DP 7   work_state       enum opening|closing
 //   DP 12  fault            bitmap (motor_fault)
-//   DP 16  border           enum â€” limit calibration  (device-settings-only)
-//   DP 19  position_best    integer â€” favourite position  (device-settings-only)
+//   DP 16  border           enum — limit calibration  (device-settings-only)
+//   DP 19  position_best    integer — favourite position  (device-settings-only)
 //
 // Homey mapping:
-//   windowcoverings_state  "up"/"idle"/"down"  â†”  "open"/"stop"/"close"
-//   windowcoverings_set    0.0 â€“ 1.0           â†”  percent_control 0â€“100
+//   windowcoverings_state  "up"/"idle"/"down"  ↔  "open"/"stop"/"close"
+//   windowcoverings_set    0.0 – 1.0           ↔  percent_control 0–100
 //     (0.0 = fully closed, 1.0 = fully open; enable invert_position if reversed)
 //   alarm_generic          fault bitmap non-zero
 
@@ -44,11 +44,11 @@ const OPTIONAL_CAPABILITIES = [
   { setting: 'dp_fault', capability: 'alarm_generic' },
 ];
 
-// Tuya control â†’ Homey windowcoverings_state
+// Tuya control → Homey windowcoverings_state
 const CONTROL_TO_STATE = { open: 'up', stop: 'idle', close: 'down' };
-// Homey windowcoverings_state â†’ Tuya control
+// Homey windowcoverings_state → Tuya control
 const STATE_TO_CONTROL = { up: 'open', idle: 'stop', down: 'close' };
-// Tuya work_state â†’ Homey windowcoverings_state
+// Tuya work_state → Homey windowcoverings_state
 const WORK_STATE_MAP   = { opening: 'up', closing: 'down' };
 
 class CurtainMotorDevice extends BaseTuyaDevice {
@@ -69,7 +69,7 @@ class CurtainMotorDevice extends BaseTuyaDevice {
 
     await this._syncOptionalCapabilities(OPTIONAL_CAPABILITIES);
 
-    // â”€â”€ Flow trigger cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Flow trigger cards ───────────────────────────────────────────────────
     this._triggerOpened             = this.homey.flow.getDeviceTriggerCard('curtain_opened');
     this._triggerClosed             = this.homey.flow.getDeviceTriggerCard('curtain_closed');
     this._triggerPositionChanged    = this.homey.flow.getDeviceTriggerCard('curtain_position_changed');
@@ -78,10 +78,10 @@ class CurtainMotorDevice extends BaseTuyaDevice {
     this._triggerDeviceDisconnected = this.homey.flow.getDeviceTriggerCard('curtain_device_disconnected');
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('curtain_dp_changed');
 
-    // â”€â”€ Capability listeners â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Capability listeners ─────────────────────────────────────────────────
 
-    // windowcoverings_state: "up"/"idle"/"down" â†’ open/stop/close
-    // invert_control swaps openâ†”close for devices where the Tuya "open" command
+    // windowcoverings_state: "up"/"idle"/"down" → open/stop/close
+    // invert_control swaps open↔close for devices where the Tuya "open" command
     // physically closes the curtain (common on some Zemismart installations).
     this.registerCapabilityListener('windowcoverings_state', async (value) => {
       const dp     = this.getSetting('dp_control');
@@ -96,7 +96,7 @@ class CurtainMotorDevice extends BaseTuyaDevice {
       await this._set(dp, this._befehl(cmd));
     });
 
-    // windowcoverings_closed: Quick Action toggle â€” true = close, false = open
+    // windowcoverings_closed: Quick Action toggle — true = close, false = open
     this.registerCapabilityListener('windowcoverings_closed', async (value) => {
       const dp     = this.getSetting('dp_control');
       const invert = this.getSetting('invert_control') || false;
@@ -108,20 +108,20 @@ class CurtainMotorDevice extends BaseTuyaDevice {
       await this._set(dp, this._befehl(cmd));
     });
 
-    // windowcoverings_set: 0.0â€“1.0 â†’ 0â€“100 (with optional inversion)
+    // windowcoverings_set: 0.0–1.0 → 0–100 (with optional inversion)
     this.registerCapabilityListener('windowcoverings_set', async (value) => {
       const dp     = this.getSetting('dp_percent_control');
       const invert = this.getSetting('invert_position') || false;
       if (!dp || dp === 0) throw new Error('Position DP not configured');
       const raw = Math.round(invert ? (1 - value) * 100 : value * 100);
-      this.log(`Curtain position â†’ ${raw}% (DP ${dp})`);
+      this.log(`Curtain position → ${raw}% (DP ${dp})`);
       await this._set(dp, raw);
     });
 
     await this._connect();
   }
 
-  // â”€â”€ Hook overrides â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Hook overrides ────────────────────────────────────────────────────────────
 
   _onConnected() {
     this._connectedAt         = Date.now();
@@ -177,7 +177,7 @@ class CurtainMotorDevice extends BaseTuyaDevice {
     return [...super._umrechnungen(), ['dp_control', 'control_values']];
   }
 
-  // â”€â”€ DPS handling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── DPS handling ─────────────────────────────────────────────────────────────
 
   /**
    * invert_control gilt in beide Richtungen. Gesendet wurde vertauscht, das Echo des
@@ -219,7 +219,7 @@ class CurtainMotorDevice extends BaseTuyaDevice {
 
       switch (entry.type) {
 
-        // â”€â”€ Control command echo â†’ windowcoverings_state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Control command echo → windowcoverings_state ──────────────────────
         case 'control': {
           // Ueber die Befehlswerte zurueck auf das Wort: bei open=1,close=2,stop=3 meint
           // ein gemeldetes "2" close.
@@ -233,7 +233,7 @@ class CurtainMotorDevice extends BaseTuyaDevice {
           break;
         }
 
-        // â”€â”€ Movement state â†’ windowcoverings_state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Movement state → windowcoverings_state ────────────────────────────
         // Overrides the control echo while the motor is actively moving so the
         // tile shows "moving" rather than the last command sent.
         case 'work_state': {
@@ -244,7 +244,7 @@ class CurtainMotorDevice extends BaseTuyaDevice {
           break;
         }
 
-        // â”€â”€ Position (percent_control 0â€“100) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Position (percent_control 0–100) ──────────────────────────────────
         // Where the motor actually is, when it reports that apart from the target.
         // Reported with a motor whose DP 2 (percent_control) stayed on 100 while DP 3
         // (percent_state) went from 100 to 0: DP 2 is where a position is asked for,
@@ -283,7 +283,7 @@ class CurtainMotorDevice extends BaseTuyaDevice {
           break;
         }
 
-        // â”€â”€ Fault (bitmap non-zero = fault) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Fault (bitmap non-zero = fault) ───────────────────────────────────
         case 'alarm': {
           const isAlarm   = typeof value === 'number' ? value !== 0 : Boolean(value);
           const prevAlarm = this.getCapabilityValue('alarm_generic');
@@ -323,7 +323,7 @@ class CurtainMotorDevice extends BaseTuyaDevice {
     }
   }
 
-  // â”€â”€ Settings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Settings ─────────────────────────────────────────────────────────────────
 
   async onSettings({ changedKeys }) {
     const connectionKeys = ['ip', 'device_id', 'local_key', 'version'];

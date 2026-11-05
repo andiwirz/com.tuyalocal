@@ -2,7 +2,7 @@
 
 const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 
-// Maps settings keys â†’ Homey capabilities.
+// Maps settings keys → Homey capabilities.
 // settable: false = read-only, no capability listener registered.
 const DP_PROFILE = [
   { settingKey: 'dp_switch',        capability: 'onoff',           transform: (v)      => Boolean(v),                        settable: true  },
@@ -11,7 +11,7 @@ const DP_PROFILE = [
   { settingKey: 'dp_energy',        capability: 'meter_power',     transform: (v, dev) => dev._applyScale(v, 'kwh_scale', 0.001),  settable: false },
   { settingKey: 'dp_fault',         capability: 'alarm_generic',   transform: (v)      => Number(v) > 0,                     settable: false },
   { settingKey: 'dp_power',         capability: 'measure_power',   transform: (v, dev) => dev._applyPowerScale(v),          settable: false },
-  // Optional: power factor (DP 21 on most power-monitoring plugs, 0â€“100 %)
+  // Optional: power factor (DP 21 on most power-monitoring plugs, 0–100 %)
   { settingKey: 'dp_power_factor',  capability: 'power_factor',    transform: (v)      => Number(v),                         settable: false },
 ];
 
@@ -45,7 +45,7 @@ class SmartPlugDevice extends BaseTuyaDevice {
     this._energyAccum         = 0;     // accumulated kWh (computed from power)
     this._faultAlarmTimer     = null;  // debounce: prevents spurious fault notifications on reconnect
     this._faultAlarmConfirmed = false; // true only after alarm stayed true for debounce period
-    this._justReconnected     = false; // true for 30 s after each connect â€” extends alarm debounce
+    this._justReconnected     = false; // true for 30 s after each connect — extends alarm debounce
 
     // Remove legacy relay_status capability (moved to device settings in v1.0.14).
     if (this.hasCapability('relay_status')) {
@@ -84,7 +84,7 @@ class SmartPlugDevice extends BaseTuyaDevice {
     }
     await this._syncSteckdosen();
 
-    // â”€â”€ Flow trigger cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Flow trigger cards ───────────────────────────────────────────────────
     this._triggerDeviceConnected    = this.homey.flow.getDeviceTriggerCard('plug_device_connected');
     this._triggerDeviceDisconnected = this.homey.flow.getDeviceTriggerCard('plug_device_disconnected');
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('plug_dp_changed');
@@ -94,7 +94,7 @@ class SmartPlugDevice extends BaseTuyaDevice {
     // Die Kanal-Karten des Wandschalters gelten auch hier - siehe _capForGang.
     this._triggerGangChanged        = this.homey.flow.getDeviceTriggerCard('switch_gang_changed');
 
-    // â”€â”€ Capability listeners (auto-registered from DP_PROFILE) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Capability listeners (auto-registered from DP_PROFILE) ──────────────
     for (const entry of DP_PROFILE) {
       if (!entry.settable) continue;
 
@@ -106,11 +106,11 @@ class SmartPlugDevice extends BaseTuyaDevice {
     await this._connect();
   }
 
-  // â”€â”€ Hook overrides â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Hook overrides ───────────────────────────────────────────────────────────
 
   /** Reset power-integration baseline and grace-period flag on every (re)connect. */
   _onConnected() {
-    // Reset power-integration baseline â€” avoids a giant energy spike if the
+    // Reset power-integration baseline — avoids a giant energy spike if the
     // device was offline for an extended period.
     this._lastPowerTime      = null;
     this._prevTickPowerWatts = 0;
@@ -160,7 +160,7 @@ class SmartPlugDevice extends BaseTuyaDevice {
   }
 
   /**
-   * Trapezoidal energy integration â€” runs every poll tick so stable power
+   * Trapezoidal energy integration — runs every poll tick so stable power
    * (unchanged DP value, blocked by dedup) still accumulates correctly.
    * Only active when dp_energy = 0 (hardware energy counter disabled).
    */
@@ -169,7 +169,7 @@ class SmartPlugDevice extends BaseTuyaDevice {
       const intervalSec = this._pollIntervalMs / 1000;
       const now         = Date.now();
       const elapsedH    = (now - this._lastPowerTime) / 3_600_000;
-      // Cap at 2Ã— poll interval â€” guards against a spike after a long outage.
+      // Cap at 2× poll interval — guards against a spike after a long outage.
       if (elapsedH > 0 && elapsedH < (intervalSec * 2) / 3600) {
         const avgWatts = (this._prevTickPowerWatts + this._lastPowerWatts) / 2;
         // Guard against negative readings from a misbehaving device.
@@ -268,7 +268,7 @@ class SmartPlugDevice extends BaseTuyaDevice {
     clearTimeout(this._faultAlarmTimer);
   }
 
-  // â”€â”€ Power-scale helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Power-scale helper ───────────────────────────────────────────────────────
 
   /**
    * Reads one of the fixed-point scaling dropdowns. Tuya declares a "scale"
@@ -312,11 +312,11 @@ class SmartPlugDevice extends BaseTuyaDevice {
     if (s === '1')    return 1;
     if (s === '0.1')  return 0.1;
     if (s === '0.01') return 0.01;
-    // 'auto': detect from last known power value â€” if raw value ever exceeded 2000, scale is 0.1
+    // 'auto': detect from last known power value — if raw value ever exceeded 2000, scale is 0.1
     return this._detectedPowerScale || 0.1;
   }
 
-  // â”€â”€ DPS handling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── DPS handling ─────────────────────────────────────────────────────────────
 
   async _handleDps(dps) {
     const settings = this.getSettings();
@@ -377,8 +377,8 @@ class SmartPlugDevice extends BaseTuyaDevice {
         if (rawNum > 2000) {
           this._detectedPowerScale = 0.1;
         } else if (rawNum > 0 && rawNum <= 2000 && !this._powerScaleDetected) {
-          // Only lock Ã—1 scale on a non-zero reading; a reading of 0 (device on
-          // but no load) must not permanently lock out the Ã—0.1 detection path.
+          // Only lock ×1 scale on a non-zero reading; a reading of 0 (device on
+          // but no load) must not permanently lock out the ×0.1 detection path.
           this._detectedPowerScale  = 1;
           this._powerScaleDetected  = true;
         }
@@ -435,16 +435,16 @@ class SmartPlugDevice extends BaseTuyaDevice {
       }
     }
 
-    // Debounced persistence â€” avoids hammering storage on every DPS packet.
+    // Debounced persistence — avoids hammering storage on every DPS packet.
     if (changed) {
       this._scheduleStoreSave();
       this._writeDpSnapshot();
     }
   }
 
-  // â”€â”€ Public actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Public actions ───────────────────────────────────────────────────────────
 
-  // Public â€“ called by the "plug_reset_energy" flow action.
+  // Public – called by the "plug_reset_energy" flow action.
   async resetEnergy() {
     this._energyAccum    = 0;
     this._lastPowerTime  = null;
@@ -454,7 +454,7 @@ class SmartPlugDevice extends BaseTuyaDevice {
     this._appLog('Energy accumulator reset', 'info');
   }
 
-  // Public â€“ called by the "plug_set_countdown" flow action.
+  // Public – called by the "plug_set_countdown" flow action.
   // seconds = 0 cancels any active countdown.
   async setCountdown(seconds) {
     const dp = this.getSetting('dp_countdown');
@@ -462,7 +462,7 @@ class SmartPlugDevice extends BaseTuyaDevice {
     await this._set(dp, Math.round(seconds));
   }
 
-  // â”€â”€ Homey lifecycle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Homey lifecycle ──────────────────────────────────────────────────────────
 
   async onSettings({ changedKeys }) {
     const connectionKeys = ['ip', 'device_id', 'local_key', 'version'];
@@ -513,14 +513,14 @@ class SmartPlugDevice extends BaseTuyaDevice {
         { setting: 'dp_power_factor', capability: 'power_factor'  },
       ]);
     }
-    // User changed the Turn On Behavior dropdown â†’ send command to device immediately.
+    // User changed the Turn On Behavior dropdown → send command to device immediately.
     if (changedKeys.includes('relay_status')) {
       const dp = this.getSetting('dp_relay_status');
       if (dp > 0) {
         await this._set(dp, this.getSetting('relay_status'))
           .catch((err) => this._appLog(`relay_status set failed: ${err.message}`, 'warn'));
       } else {
-        this._appLog('Turn On Behavior changed but dp_relay_status = 0 â€” no command sent. Set the DP number first.', 'warn');
+        this._appLog('Turn On Behavior changed but dp_relay_status = 0 — no command sent. Set the DP number first.', 'warn');
       }
     }
   }

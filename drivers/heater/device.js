@@ -59,7 +59,7 @@ class HeaterDevice extends BaseTuyaDevice {
     await this._syncEnumOptions('heat_level', this.getSetting('level_values'));
     await this._syncTempCapabilityOptions();
 
-    // â”€â”€ Flow trigger cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Flow trigger cards ───────────────────────────────────────────────────
     this._triggerDeviceConnected    = this.homey.flow.getDeviceTriggerCard('heater_device_connected');
     this._triggerDeviceDisconnected = this.homey.flow.getDeviceTriggerCard('heater_device_disconnected');
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('heater_dp_changed');
@@ -118,7 +118,7 @@ class HeaterDevice extends BaseTuyaDevice {
     });
   }
 
-  // â”€â”€ Hook overrides â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Hook overrides ───────────────────────────────────────────────────────────
 
   _onConnected() {
     this._connectedAt         = Date.now();
@@ -132,7 +132,7 @@ class HeaterDevice extends BaseTuyaDevice {
     for (const t of this._debounceTimers.values()) clearTimeout(t);
   }
 
-  // â”€â”€ DPS handling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── DPS handling ─────────────────────────────────────────────────────────────
 
   async _handleDps(dps) {
     const settings = this.getSettings();
@@ -150,13 +150,13 @@ class HeaterDevice extends BaseTuyaDevice {
         .trigger(this, { dp: dpStr, value: String(value) })
         .catch(() => {});
 
-      // â”€â”€ Target temperature â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── Target temperature ─────────────────────────────────────────────────
       if (settings.dp_target_temp > 0 && dp === settings.dp_target_temp) {
         await this.setCapabilityValue('target_temperature', Number(value) / divisor).catch(() => {});
         continue;
       }
 
-      // â”€â”€ Current (measured) temperature â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── Current (measured) temperature ────────────────────────────────────
       if (settings.dp_current_temp > 0 && dp === settings.dp_current_temp) {
         if (this.hasCapability('measure_temperature')) {
           await this.setCapabilityValue('measure_temperature', Number(value) / divisor).catch(() => {});
@@ -164,7 +164,7 @@ class HeaterDevice extends BaseTuyaDevice {
         continue;
       }
 
-      // â”€â”€ Fault alarm â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── Fault alarm ────────────────────────────────────────────────────────
       if (settings.dp_fault > 0 && dp === settings.dp_fault) {
         const isActive   = value !== 0 && value !== false;
         const faultCode  = typeof value === 'number' ? value : (isActive ? 1 : 0);
@@ -195,7 +195,7 @@ class HeaterDevice extends BaseTuyaDevice {
         continue;
       }
 
-      // â”€â”€ All other DPs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── All other DPs ──────────────────────────────────────────────────────
       const entry = DP_PROFILE.find((e) => {
         const dpNum = settings[e.settingKey];
         return dpNum > 0 && dp === dpNum;
@@ -239,7 +239,7 @@ class HeaterDevice extends BaseTuyaDevice {
     }
   }
 
-  // â”€â”€ Homey lifecycle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Homey lifecycle ──────────────────────────────────────────────────────────
 
   async onSettings({ changedKeys }) {
     const connectionKeys = ['ip', 'device_id', 'local_key', 'version'];
