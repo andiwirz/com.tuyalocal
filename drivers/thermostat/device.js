@@ -97,7 +97,8 @@ class ThermostatDevice extends BaseTuyaDevice {
     register('onoff',              'dp_onoff');
     register('target_temperature', 'dp_target_temp',
              (v) => Math.round(v * (this.getSetting('temp_divisor') || 1)));
-    register('thermostat_mode',    'dp_mode');
+    register('thermostat_mode',    'dp_mode',
+             (v) => this._inDeviceCase(this.getSetting('dp_mode'), v));
     register('child_lock',         'dp_child_lock');
   }
 
@@ -117,6 +118,8 @@ class ThermostatDevice extends BaseTuyaDevice {
       const value = (entry?.type === 'mode') && typeof rawValue === 'string'
         ? rawValue.toLowerCase()
         : rawValue;
+
+      if ((entry?.type === 'mode')) this._rememberCase(dpStr, rawValue);
 
       if (this._lastDps[dpStr] === value) continue;
       this._lastDps[dpStr] = value;
