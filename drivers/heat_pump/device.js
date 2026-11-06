@@ -366,7 +366,7 @@ class HeatPumpDevice extends BaseTuyaDevice {
       this.registerCapabilityListener('heat_pump_mode', async (value) => {
         const dp = this.getSetting('dp_mode');
         if (!dp || dp === 0) throw new Error('Mode DP not configured');
-        await this._set(dp, value);
+        await this._set(dp, this._inDeviceCase(dp, value));
       });
     }
     if (this.hasCapability('heat_pump_silent')) {
@@ -387,7 +387,7 @@ class HeatPumpDevice extends BaseTuyaDevice {
             .split(',').map((s) => s.trim()).filter(Boolean);
           await this._set(dp, value === (vals[1] ?? 'boost'));
         } else {
-          await this._set(dp, value);
+          await this._set(dp, this._inDeviceCase(dp, value));
         }
       });
     }
@@ -409,6 +409,8 @@ class HeatPumpDevice extends BaseTuyaDevice {
       const value = (entry?.type === 'mode' || entry?.type === 'preset') && typeof rawValue === 'string'
         ? rawValue.toLowerCase()
         : rawValue;
+
+      if ((entry?.type === 'mode' || entry?.type === 'preset')) this._rememberCase(dpStr, rawValue);
 
       if (this._lastDps[dpStr] === value) continue;
       this._lastDps[dpStr] = value;
