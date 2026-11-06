@@ -3081,7 +3081,10 @@
             return;
           }
 
-          title.textContent = d.name + ' — DP Specification';
+          title.textContent = d.name + ' — DP Specification'
+            + (result.sleeps ? ' — probably a battery-powered sensor (category ' + result.category
+              + '): it sleeps and does not accept local connections, so Tuya Local cannot reach it'
+              + ' unless it runs on mains or USB power and stays online.' : '');
           var items = result.status || [];
           if (items.length === 0) {
             tbody.innerHTML = '<tr><td colspan="6" style="color:#888">No DP data available from cloud.</td></tr>';
@@ -3514,6 +3517,8 @@
             tr.innerHTML =
               '<a href="#" class="cloud-card-name">' + escHtml(primaryName) + '</a>' +
               (zusatz.length ? '<div class="cloud-card-sub">' + escHtml(zusatz.join(' · ')) + '</div>' : '') +
+              (d.sleeps ? '<div class="cloud-card-sub" style="color:#b45309">' +
+                'Probably a battery-powered sensor (category ' + escHtml(d.category) + '): these sleep and only wake briefly to report to the Tuya cloud, so they do not accept local connections. Unless yours runs on mains or USB power and stays online, it cannot be added to Tuya Local.</div>' : '') +
               '<div class="cloud-field"><div class="cloud-field-label">Device ID</div>' +
                 '<div class="cloud-field-value">' + escHtml(d.id) + '</div></div>' +
               '<div class="cloud-field"><div class="cloud-field-label">Local Key</div>' +

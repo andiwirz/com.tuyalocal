@@ -84,7 +84,8 @@
       "subVia": "Über {{gateway}}",
       "subLast": "zuletzt gemeldet {{time}}",
       "subAdding": "Gerät wird vorbereitet…",
-      "subGone": "Dieses Gerät steht nicht mehr in der Liste — die Liste erneut öffnen."
+      "subGone": "Dieses Gerät steht nicht mehr in der Liste — die Liste erneut öffnen.",
+      "sleepsHint": "Vermutlich ein Batteriesensor (Kategorie {{category}}): Er schläft und nimmt keine lokale Verbindung an. Das Hinzufügen wird darum sehr wahrscheinlich scheitern, egal mit welcher IP, welchem Schlüssel oder Protokoll. Nur ein Modell am Netz oder an USB, das online bleibt, kann funktionieren."
     },
     "list_devices": {
       "title": "Gerät gefunden",

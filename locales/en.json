@@ -84,7 +84,8 @@
       "subVia": "Via {{gateway}}",
       "subLast": "last report {{time}}",
       "subAdding": "Preparing the device…",
-      "subGone": "That device is no longer in the list — open the list again."
+      "subGone": "That device is no longer in the list — open the list again.",
+      "sleepsHint": "Probably a battery-powered sensor (category {{category}}): it sleeps and does not accept local connections, so adding it will most likely fail, whatever the IP, key or protocol. Only a model on mains or USB power that stays online can work."
     },
     "list_devices": {
       "title": "Device found",

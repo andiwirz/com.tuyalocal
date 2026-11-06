@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const https  = require('https');
 
 const { isNotADpNumber } = require('./lib/dpCodeMap');
+const { probablySleeps } = require('./lib/sleepingDevices');
 
 // Wie lange eine Fix-It-Vorschau angewendet werden kann. Danach wird neu geprueft.
 const VORSCHAU_MS = 10 * 60 * 1000;
@@ -1081,6 +1082,7 @@ class TuyaLocalApp extends Homey.App {
     return {
       status:    Object.values(dps),
       category:  spec.category || thing.category || '',
+      sleeps:    probablySleeps(spec.category || thing.category),
       product:   thing.product_name || thing.model || '',
       productId: thing.product_id || '',
     };
@@ -1951,6 +1953,9 @@ class TuyaLocalApp extends Homey.App {
         id:           d.id || '',
         local_key:    d.local_key || '',
         category:     d.category || '',
+        // Ein Batteriesensor, der lokal nie antwortet - die Seiten sagen es, bevor jemand
+        // es mit IP, Schluessel und allen Protokollversionen versucht. Siehe sleepingDevices.
+        sleeps:       probablySleeps(d.category),
         online:       d.online ?? false,
         uuid:         d.uuid || '',
       });
