@@ -1,4 +1,8 @@
 {
+  "1.0.286": {
+    "en": "Heat pumps: a new Defrosting indicator shows when the heat pump defrosts, with flow triggers for start and end and a condition - for example to stop a floor-heating circuit meanwhile. Set it up with Defrost DP; on the Avarma that is DP 107, field 3.",
+    "de": "Wärmepumpen: Eine neue Anzeige „Enteisung“ zeigt, wann die Wärmepumpe enteist, mit Flow-Auslösern für Beginn und Ende und einer Bedingung – etwa um währenddessen einen Fussbodenkreis anzuhalten. Eingerichtet wird sie mit „DP Enteisung“; bei der Avarma DP 107, Feld 3."
+  },
   "1.0.285": {
     "en": "Log messages and source files no longer contain garbled characters (such as \"â€”\" in place of a dash), and the German setting hints use proper umlauts. Adding a device and Cloud Lookup now point out battery-powered sensors (temperature, door, leak): they sleep and cannot be reached locally.",
     "de": "Protokollmeldungen und Quelldateien enthalten keine verstümmelten Zeichen mehr (etwa „â€”“ statt eines Gedankenstrichs), und die deutschen Hinweise zu den Einstellungen verwenden richtige Umlaute. Gerät hinzufügen und Cloud-Abfrage weisen jetzt auf Batteriesensoren hin (Temperatur, Tür, Wasser): Sie schlafen und sind lokal nicht erreichbar."

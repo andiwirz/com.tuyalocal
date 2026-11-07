@@ -2296,6 +2296,27 @@
       "insights": false,
       "icon": "/assets/capabilities/heat_pump_silent.svg"
     },
+    "heat_pump_defrost": {
+      "type": "boolean",
+      "title": {
+        "en": "Defrosting",
+        "de": "Enteisung"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "uiQuickAction": false,
+      "insights": true,
+      "insightsTitleTrue": {
+        "en": "Defrost started",
+        "de": "Enteisung begonnen"
+      },
+      "insightsTitleFalse": {
+        "en": "Defrost ended",
+        "de": "Enteisung beendet"
+      },
+      "icon": "/assets/capabilities/heat_pump_defrost.svg"
+    },
     "smoke_level": {
       "type": "number",
       "title": {
@@ -5016,6 +5037,34 @@
               "en": "Silent mode",
               "de": "Flüstermodus"
             }
+          }
+        ]
+      },
+      {
+        "id": "heat_pump_defrost_started",
+        "title": {
+          "en": "Defrost started",
+          "de": "Enteisung hat begonnen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=heat_pump"
+          }
+        ]
+      },
+      {
+        "id": "heat_pump_defrost_ended",
+        "title": {
+          "en": "Defrost ended",
+          "de": "Enteisung ist beendet"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=heat_pump"
           }
         ]
       },
@@ -7902,6 +7951,20 @@
         "title": {
           "en": "Silent mode !{{is|is not}} on",
           "de": "Flüstermodus !{{ist|ist nicht}} ein"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=heat_pump"
+          }
+        ]
+      },
+      {
+        "id": "heat_pump_defrost_is",
+        "title": {
+          "en": "Defrost !{{is|is not}} running",
+          "de": "Enteisung !{{läuft|läuft nicht}}"
         },
         "args": [
           {
@@ -24216,6 +24279,67 @@
               "hint": {
                 "en": "Names for the bits of the fault data point, lowest bit first, comma separated (e.g. no_food,jammed,feed_timeout,battery_low). Filled in automatically from the manufacturer's specification when Cloud Lookup is set up. Leave an entry empty for a bit the manufacturer does not name. With no names the fault is shown as a code.",
                 "de": "Namen für die Bits des Fehler-Datenpunkts, niedrigstes Bit zuerst, mit Komma getrennt (z. B. no_food,jammed,feed_timeout,battery_low). Wird bei eingerichtetem Cloud Lookup automatisch aus der Herstellerspezifikation gefüllt. Für ein vom Hersteller nicht benanntes Bit den Eintrag leer lassen. Ohne Namen wird der Fehler als Code angezeigt."
+              }
+            },
+            {
+              "id": "dp_defrost",
+              "type": "number",
+              "label": {
+                "en": "Defrost DP",
+                "de": "DP Enteisung"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "step": 1,
+              "hint": {
+                "en": "Data point that shows the heat pump is defrosting. Adds a Defrosting indicator to the device, with flow triggers for when a defrost starts and ends and a condition - for example to stop a floor-heating circuit meanwhile. On the reported Avarma it is DP 107, field 3, 2 bytes. 0 = disabled.",
+                "de": "Datenpunkt, der zeigt, dass die Wärmepumpe enteist. Fügt dem Gerät eine Anzeige „Enteisung“ hinzu, dazu Flow-Auslöser für Beginn und Ende und eine Bedingung – etwa um währenddessen einen Fussbodenkreis anzuhalten. Bei der gemeldeten Avarma DP 107, Feld 3, 2 Byte. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "defrost_field",
+              "type": "number",
+              "label": {
+                "en": "Defrost Field",
+                "de": "Enteisungs-Feld"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 64,
+              "step": 1,
+              "hint": {
+                "en": "0: the Defrost DP is a switch or a number itself, and true or anything but 0 means defrosting. A number: that DP is a packed block of equal-sized values, and this is the field in it that is not 0 while defrosting, counting from 1. To find it on another model, compare the block during a defrost with the block in normal operation.",
+                "de": "0: der Enteisungs-DP ist selbst ein Schalter oder eine Zahl, und true oder alles ausser 0 heisst Enteisung. Eine Zahl: dieser DP ist ein gepackter Block aus gleich grossen Werten, und sie sagt, welches Feld darin während der Enteisung nicht 0 ist, ab 1 gezählt. Bei einem anderen Modell findet man es, indem man den Block während einer Enteisung mit dem im normalen Betrieb vergleicht."
+              }
+            },
+            {
+              "id": "defrost_field_bytes",
+              "type": "dropdown",
+              "label": {
+                "en": "Defrost Field Size",
+                "de": "Grösse des Enteisungs-Felds"
+              },
+              "value": "2",
+              "values": [
+                {
+                  "id": "2",
+                  "label": {
+                    "en": "2 bytes",
+                    "de": "2 Byte"
+                  }
+                },
+                {
+                  "id": "4",
+                  "label": {
+                    "en": "4 bytes",
+                    "de": "4 Byte"
+                  }
+                }
+              ],
+              "hint": {
+                "en": "How wide each value in the block is. Only used when Defrost Field is not 0. The Avarma uses 2 bytes.",
+                "de": "Wie breit jeder Wert im Block ist. Nur wirksam, wenn das Enteisungs-Feld nicht 0 ist. Die Avarma verwendet 2 Byte."
               }
             }
           ]

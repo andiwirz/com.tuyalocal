@@ -86,6 +86,15 @@ const BLOCK_CLOUD_MS        = 8000;   // waiting for the Tuya cloud's copy
 const BLOCK_SOLL_MIN        = -50;
 const BLOCK_SOLL_MAX        = 150;
 
+// Defrosting, read from a data point - see _enteisungAus.
+//
+// Gemeldet mit einer Avarma: die Tuya-App faerbt beim Abtauen die Kreise um, einen
+// eigenen Datenpunkt dafuer gibt es nicht. Der Vergleich eines Abzugs mitten in der
+// Enteisung mit sechs aus dem normalen Betrieb zeigte es in DP 107, einem Block aus
+// 2-Byte-Werten: Feld 3 und Feld 5 (ab 1 gezaehlt) standen nur waehrend der Enteisung
+// auf 1. Darum ist Feld und Feldbreite einstellbar und nicht fest verdrahtet.
+const ENTEISUNG_EINSTELLUNGEN = ['dp_defrost', 'defrost_field', 'defrost_field_bytes'];
+
 const ENUM_VALUE_SETTINGS = {
   heat_pump_mode:   'mode_values',
   heat_pump_preset: 'preset_values',
@@ -97,6 +106,7 @@ const OPTIONAL_CAPABILITIES = [
   { setting: 'dp_fault',       capability: 'alarm_generic'   },
   { setting: 'dp_power_level', capability: 'power_level'     },
   { setting: 'dp_silent',      capability: 'heat_pump_silent'},
+  { setting: 'dp_defrost',     capability: 'heat_pump_defrost'},
 ];
 
 class HeatPumpDevice extends BaseTuyaDevice {
@@ -131,6 +141,8 @@ class HeatPumpDevice extends BaseTuyaDevice {
     this._triggerDeviceConnected    = this.homey.flow.getDeviceTriggerCard('heat_pump_device_connected');
     this._triggerDeviceDisconnected = this.homey.flow.getDeviceTriggerCard('heat_pump_device_disconnected');
     this._triggerDpChanged          = this.homey.flow.getDeviceTriggerCard('heat_pump_dp_changed');
+    this._triggerDefrostStarted     = this.homey.flow.getDeviceTriggerCard('heat_pump_defrost_started');
+    this._triggerDefrostEnded       = this.homey.flow.getDeviceTriggerCard('heat_pump_defrost_ended');
 
     // ── Capability listeners (always-present capabilities) ───────────────────
     this.registerCapabilityListener('onoff', async (value) => {
@@ -418,8 +430,13 @@ class HeatPumpDevice extends BaseTuyaDevice {
         .trigger(this, { dp: dpStr, value: String(rawValue) })
         .catch(() => {})
 
+      // Neben dem Profil, nicht darin: der Enteisungs-DP kann zugleich ein anderer sein -
+      // ein Block wie DP 107 traegt Fehler- und Relaiszustaende nebeneinander.
+      const enteisung = dp > 0 && dp === Number(settings.dp_defrost);
+      if (enteisung) await this._zeigeEnteisung(rawValue);
+
       if (!entry) {
-        this.log(`Unknown DP ${dp}:`, rawValue);
+        if (!enteisung) this.log(`Unknown DP ${dp}:`, rawValue);
         continue;
       }
 
@@ -609,6 +626,18 @@ class HeatPumpDevice extends BaseTuyaDevice {
     if (changedKeys.some((k) => ['temp_min', 'temp_max', 'temp_step'].includes(k))) {
       await this._syncTempRange();
     }
+    // Gleich neu bewerten, nicht erst beim naechsten Wechsel am Geraet: der Block steht
+    // schon in _lastDps, und die Gleichheitssperre liesse ihn bis dahin nicht durch.
+    // Ohne auszuloesen - eine geaenderte Einstellung ist keine Enteisung, die beginnt.
+    if (changedKeys.some((k) => ENTEISUNG_EINSTELLUNGEN.includes(k))) {
+      this._enteisungGewarnt = false;
+      const dp = Number(this.getSetting('dp_defrost'));
+      if (dp > 0 && this._lastDps[String(dp)] !== undefined) {
+        await this._zeigeEnteisung(this._lastDps[String(dp)], { ausloesen: false });
+      } else if (dp > 0) {
+        this._conn?.get().catch(() => {});
+      }
+    }
     // The cached block belongs to the old DP or field; the next report brings the new.
     //
     // Und dieser Bericht muss auch kommen: der Block stand meist schon in _lastDps, und
@@ -632,6 +661,61 @@ class HeatPumpDevice extends BaseTuyaDevice {
     if (changedKeys.includes('preset_values') || changedKeys.includes('dp_preset')) {
       await this._syncPresetOptions();
     }
+  }
+
+  /**
+   * Ob die Waermepumpe gerade enteist, aus dem Rohwert des Enteisungs-DP.
+   *
+   * Feld 0: der DP selbst - true oder eine Zahl ungleich 0 heisst Enteisung. Ein Feld:
+   * der DP ist ein base64-Block aus gleich breiten Werten (2 oder 4 Byte, big-endian),
+   * und das Feld, ab 1 gezaehlt, ist waehrend der Enteisung nicht 0.
+   *
+   * @returns {boolean|null} null, wenn der Wert nicht zur Einstellung passt
+   */
+  _enteisungAus(wert) {
+    const feld = Number(this.getSetting('defrost_field'));
+    if (!(Number.isInteger(feld) && feld > 0)) {
+      if (typeof wert === 'boolean') return wert;
+      if (typeof wert === 'number')  return wert !== 0;
+      const t = String(wert ?? '').trim().toLowerCase();
+      if (t === 'true'  || t === '1') return true;
+      if (t === 'false' || t === '0') return false;
+      return null;
+    }
+    if (typeof wert !== 'string' || !wert) return null;
+    const breite = String(this.getSetting('defrost_field_bytes')) === '4' ? 4 : 2;
+    const block  = Buffer.from(wert, 'base64');
+    if (block.length % breite !== 0 || block.length < feld * breite) return null;
+    const zahl = breite === 4 ? block.readInt32BE((feld - 1) * 4) : block.readInt16BE((feld - 1) * 2);
+    return zahl !== 0;
+  }
+
+  /** Setzt die Anzeige und loest bei einem Wechsel "begonnen" oder "beendet" aus. */
+  async _zeigeEnteisung(wert, { ausloesen = true } = {}) {
+    if (!this.hasCapability('heat_pump_defrost')) return;
+    const aktiv = this._enteisungAus(wert);
+    if (aktiv === null) {
+      // Einmal sagen, nicht bei jedem Paket - der Block kommt alle paar Sekunden.
+      if (!this._enteisungGewarnt) {
+        this._enteisungGewarnt = true;
+        const feld = Number(this.getSetting('defrost_field')) || 0;
+        this._appLog(feld > 0
+          ? `Defrost: DP ${this.getSetting('dp_defrost')} is set up as a packed block with the flag in `
+            + `field ${feld}, but what it reported is not a block that long. Check Defrost DP, `
+            + 'Defrost Field and Defrost Field Size.'
+          : `Defrost: DP ${this.getSetting('dp_defrost')} reported "${String(wert).slice(0, 40)}", which `
+            + 'is neither a switch nor a number. If it is a packed block, set Defrost Field.', 'warn');
+      }
+      return;
+    }
+    this._enteisungGewarnt = false;
+    const vorher = this.getCapabilityValue('heat_pump_defrost');
+    await this.setCapabilityValue('heat_pump_defrost', aktiv).catch(() => {});
+    // Der erste Wert loest nicht aus: davor steht null, und das ist kein Wechsel.
+    if (!ausloesen || vorher === null || vorher === undefined || vorher === aktiv) return;
+    this._appLog(aktiv ? 'Defrost started' : 'Defrost ended', 'info');
+    (aktiv ? this._triggerDefrostStarted : this._triggerDefrostEnded)
+      .trigger(this).catch(() => {});
   }
 
   /**

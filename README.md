@@ -726,6 +726,7 @@ Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polli
 | `dp_fault` |  | `alarm_generic` | bitfield / bool | 0 | ✓ `0` = disabled |
 | `dp_power_level` | <img src="assets/capabilities/power_level.svg" height="24"> | `power_level` | number | 0 | ✓ `0` = disabled |
 | `dp_silent` | <img src="assets/capabilities/heat_pump_silent.svg" height="24"> | `heat_pump_silent` | boolean | 0 | ✓ `0` = disabled |
+| `dp_defrost` | <img src="assets/capabilities/heat_pump_defrost.svg" height="24"> | `heat_pump_defrost` | boolean / number / packed block | 0 | ✓ `0` = disabled |
 
 #### A target inside a packed block
 
@@ -779,6 +780,27 @@ Some pumps name the two modes rather than switching them — a reported Fairland
 tells the two apart by what the device reports, so nothing needs choosing; only the two
 names have to be in `silent_values`, normal mode first. On a boolean device that setting
 is ignored.
+
+#### Defrost
+
+In cold, damp weather an air-water heat pump defrosts its outdoor coil every so often: it runs
+the circuit backwards for a few minutes and takes the heat for it from the water. A reported
+buffer tank lost 6 °C in five minutes. Set `dp_defrost` and the device gains a Defrosting
+indicator, the triggers **Defrost started** and **Defrost ended**, and the condition **Defrost
+is / is not running** — to stop a floor-heating circuit meanwhile, or switch on a backup heater.
+
+| Setting | Meaning | Default |
+|---|---|---|
+| `dp_defrost` | The data point that shows the defrost | `0` (disabled) |
+| `defrost_field` | `0`: the data point is a switch or a number itself, anything but `false` / `0` is a defrost. A number: the data point is a packed block, and this field in it, counting from 1, is not 0 while defrosting | `0` |
+| `defrost_field_bytes` | Width of each value in the block: `2` or `4` bytes | `2` |
+
+Few pumps have a data point of its own for it. The reported Avarma keeps it in DP 107, a block of
+2-byte flags: fields 3 and 5 were 1 in a snapshot taken during a defrost and 0 in six taken in
+normal operation — so `dp_defrost` 107, `defrost_field` 3. To find it on another model, save the
+DP list once while the manufacturer's app shows the defrost and once in normal operation, and
+compare the blocks. The first value after the app connects sets the indicator without firing a
+trigger, and so does changing these settings.
 
 #### Temperature Settings
 
@@ -2335,6 +2357,8 @@ fan: sub-capabilities (`onoff.fan`, `dim.fan`) and app-defined capabilities (`fa
 | Heat pump disconnected | — |
 | Heat pump mode changed | `mode` (string), `prev_mode` (string) |
 | Silent mode changed | `silent` (boolean) |
+| Defrost started | — |
+| Defrost ended | — |
 | Fault alarm triggered | `fault_code` (string) |
 | Heat pump data point changed | `dp` (string), `value` (string) |
 
@@ -2344,6 +2368,7 @@ fan: sub-capabilities (`onoff.fan`, `dim.fan`) and app-defined capabilities (`fa
 |---|
 | Heat pump is / is not on |
 | Silent mode is / is not on |
+| Defrost is / is not running |
 | Fault alarm is / is not active |
 | Heat pump is / is not connected |
 

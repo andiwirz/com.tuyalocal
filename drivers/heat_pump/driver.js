@@ -74,6 +74,8 @@ class HeatPumpDriver extends Homey.Driver {
     this.homey.flow.getDeviceTriggerCard('heat_pump_device_connected');
     this.homey.flow.getDeviceTriggerCard('heat_pump_device_disconnected');
     this.homey.flow.getDeviceTriggerCard('heat_pump_dp_changed');
+    this.homey.flow.getDeviceTriggerCard('heat_pump_defrost_started');
+    this.homey.flow.getDeviceTriggerCard('heat_pump_defrost_ended');
 
     // ── Conditions ───────────────────────────────────────────────────────────
     this.homey.flow.getConditionCard('heat_pump_is_on')
@@ -92,6 +94,11 @@ class HeatPumpDriver extends Homey.Driver {
     this.homey.flow.getConditionCard('heat_pump_silent_is')
       .registerRunListener(async (args) =>
         args.device.getCapabilityValue('heat_pump_silent') === true
+      );
+
+    this.homey.flow.getConditionCard('heat_pump_defrost_is')
+      .registerRunListener(async (args) =>
+        args.device.getCapabilityValue('heat_pump_defrost') === true
       );
 
     // ── Actions ──────────────────────────────────────────────────────────────
