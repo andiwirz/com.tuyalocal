@@ -1,4 +1,8 @@
 {
+  "1.0.287": {
+    "en": "Connections to devices that report several times a second, such as heat pumps, no longer drop with \"Attempt to access memory outside buffer bounds\": a garbled piece is now skipped and the connection stays up. If Homey refuses to add a tile enabled in the settings, the log now says so.",
+    "de": "Verbindungen zu Geräten, die mehrmals pro Sekunde melden, etwa Wärmepumpen, brechen nicht mehr mit „Attempt to access memory outside buffer bounds“ ab: Ein verstümmeltes Stück wird übersprungen, und die Verbindung bleibt bestehen. Lehnt Homey eine in den Einstellungen eingeschaltete Anzeige ab, steht das jetzt im Protokoll."
+  },
   "1.0.286": {
     "en": "Heat pumps: a new Defrosting indicator shows when the heat pump defrosts, with flow triggers for start and end and a condition - for example to stop a floor-heating circuit meanwhile. Set it up with Defrost DP; on the Avarma that is DP 107, field 3.",
     "de": "Wärmepumpen: Eine neue Anzeige „Enteisung“ zeigt, wann die Wärmepumpe enteist, mit Flow-Auslösern für Beginn und Ende und einer Bedingung – etwa um währenddessen einen Fussbodenkreis anzuhalten. Eingerichtet wird sie mit „DP Enteisung“; bei der Avarma DP 107, Feld 3."
