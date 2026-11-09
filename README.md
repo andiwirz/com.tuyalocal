@@ -802,6 +802,31 @@ DP list once while the manufacturer's app shows the defrost and once in normal o
 compare the blocks. The first value after the app connects sets the indicator without firing a
 trigger, and so does changing these settings.
 
+**Example — keeping the floor heating warm during a defrost.** A user with the Avarma runs
+these flows. The buffer tank used to lose 6 °C in a defrost; with them it loses 2.2 °C. A defrost
+takes about four minutes on that pump.
+
+| When | And | Then |
+|---|---|---|
+| **Defrost started** | — | Circulation pump off; a timeline note |
+| **Defrost started** (after the pump) | **Defrost is running** | Backup heater on |
+| **Defrost ended** | — | after 45 s circulation pump on; after 67 s backup heater off; a timeline note |
+| Room temperature changed, at night | **Defrost is not running** | the usual night-setback logic |
+
+The second check before the backup heater keeps it off if the defrost was over in the meantime,
+and the delays give the heat pump time to switch back to heating before the circulation pump
+draws water again.
+
+Add a safety net. If the connection drops during a defrost and comes back, **Defrost ended**
+still fires once the app sees the value again, because the indicator remembers the last one.
+If the heat pump stays offline, though, nothing ends the defrost, and the pump stays off while
+the backup heater runs. Two small flows close that gap:
+
+| When | And | Then |
+|---|---|---|
+| **Defrost started** | after a 15-minute delay: **Defrost is running** | Circulation pump on; backup heater off |
+| **Heat pump disconnected** | — | Circulation pump on; backup heater off |
+
 #### Temperature Settings
 
 | Setting | Description | Default |
