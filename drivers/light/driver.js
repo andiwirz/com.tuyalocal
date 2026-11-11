@@ -6,7 +6,7 @@ const { setupCloudLookup } = require('../../lib/pairCloudLookup');
 const { describeConnectFailure } = require('../../lib/connectFailure');
 const { detectProtocolVersion } = require('../../lib/autoDetect');
 const { scanNetwork }           = require('../../lib/networkScan');
-const { detectViaCloud, guessedDefaults, dpVorgaben }        = require('../../lib/dpCodeMap');
+const { detectViaCloud, guessedDefaults, dpVorgaben, normalizeCode } = require('../../lib/dpCodeMap');
 
 // Maps this driver's settings keys to the Tuya cloud "code" names that
 // commonly represent them. See lib/dpCodeMap.js.
@@ -17,7 +17,35 @@ const CLOUD_CODE_MAP = {
   dp_color_temp: ['temp_value', 'temp_value_v2'],
   dp_color_mode: ['work_mode'],
   dp_color:      ['colour_data', 'colour_data_v2'],
+  // RGBIC-Streifen: Farbe und Helligkeit in einem Rohblock - siehe drivers/light/device.js.
+  dp_paint_color: ['paint_colour_data'],
 };
+
+/**
+ * Schaltet ab, was die Formerkennung geraten hat und die Spezifikation anders nennt.
+ *
+ * _detectDps nimmt als Helligkeit die erste Zahl zwischen 0 und 1000. Auf einem
+ * gemeldeten RGBIC-Streifen ohne bright_value war das DP 26, countdown - der Regler
+ * haette einen Abschalt-Timer in Sekunden gestellt. guessedDefaults laesst solche
+ * Treffer stehen, weil der DP im Netz zu sehen war; dass er existiert, sagt aber
+ * nichts darueber, was er ist. Steht er in der Spezifikation unter einem Code, der zu
+ * dieser Einstellung nicht passt, gilt die Spezifikation.
+ *
+ * @param {Array} spec      Die Cloud-Spezifikation (dp_id, code, ...).
+ * @param {Object} ergebnis Was die Code-Namen ergaben; wird ergaenzt.
+ * @param {Object} geraten  Das Ergebnis von _detectDps.
+ */
+function fremdeDpsAbschalten(spec, ergebnis, geraten) {
+  const codeVon = new Map((spec || []).filter((e) => e && e.dp_id)
+    .map((e) => [Number(e.dp_id), normalizeCode(e.code)]));
+  for (const key of ['dp_brightness', 'dp_color_temp', 'dp_color_mode', 'dp_color']) {
+    if (ergebnis[key] !== undefined) continue;          // per Code-Name gefunden
+    const dp = Number(geraten?.[key]);
+    if (!(dp > 0) || !codeVon.has(dp)) continue;
+    const passend = CLOUD_CODE_MAP[key].map((a) => normalizeCode(typeof a === 'string' ? a : a.code));
+    if (!passend.includes(codeVon.get(dp))) ergebnis[key] = 0;
+  }
+}
 
 class LightDriver extends Homey.Driver {
   async onInit() {
@@ -103,7 +131,9 @@ class LightDriver extends Homey.Driver {
         connected = true;
         if (Object.keys(collectedDps).length > 0) {
           detectedDps = this._detectDps(collectedDps);
-          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m), {}, guessedDefaults(detectedDps, collectedDps));
+          const geraten  = detectedDps;
+          const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m), {}, guessedDefaults(detectedDps, collectedDps), {},
+            { nachbearbeitung: (spec, ergebnis) => fremdeDpsAbschalten(spec, ergebnis, geraten) });
           if (Object.keys(cloudDps).length > 0) Object.assign(detectedDps, cloudDps);
         }
       } catch (err) {
@@ -200,3 +230,6 @@ class LightDriver extends Homey.Driver {
 }
 
 module.exports = LightDriver;
+// Fuer Tests - Homey liest nur den Export selbst.
+module.exports.CLOUD_CODE_MAP       = CLOUD_CODE_MAP;
+module.exports.fremdeDpsAbschalten = fremdeDpsAbschalten;

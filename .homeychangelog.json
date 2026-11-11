@@ -1,4 +1,8 @@
 {
+  "1.0.288": {
+    "en": "Lights: RGBIC strips that take colour and brightness from a colour block (paint_colour_data, usually DP 61) can now be controlled - set Colour Block DP, or add the strip again with Cloud Lookup. Changing the colour switches a light out of a scene first, and a light without a brightness DP dims through its colour.",
+    "de": "Lichter: RGBIC-Streifen, die Farbe und Helligkeit aus einem Farbblock nehmen (paint_colour_data, meist DP 61), lassen sich jetzt steuern – „DP Farbblock“ setzen oder den Streifen mit der Cloud-Abfrage neu hinzufügen. Eine Farbänderung holt eine Lampe zuerst aus einer Szene, und eine Lampe ohne Helligkeits-DP dimmt über ihre Farbe."
+  },
   "1.0.287": {
     "en": "Connections to devices that report several times a second, such as heat pumps, no longer drop with \"Attempt to access memory outside buffer bounds\": a garbled piece is now skipped and the connection stays up. If Homey refuses to add a tile enabled in the settings, the log now says so.",
     "de": "Verbindungen zu Geräten, die mehrmals pro Sekunde melden, etwa Wärmepumpen, brechen nicht mehr mit „Attempt to access memory outside buffer bounds“ ab: Ein verstümmeltes Stück wird übersprungen, und die Verbindung bleibt bestehen. Lehnt Homey eine in den Einstellungen eingeschaltete Anzeige ab, steht das jetzt im Protokoll."

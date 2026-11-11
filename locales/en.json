@@ -145,6 +145,7 @@
       "brightness": "Brightness",
       "colorMode": "Color Mode",
       "color": "Color (HSV)",
+      "colorBlock": "Colour block (RGBIC)",
       "dpHint": "DP numbers can be changed directly — the current value updates live.",
       "allDps": "Show all detected DPs",
       "unknown": "unknown — configure in settings",

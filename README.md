@@ -629,6 +629,7 @@ Same settings as Dehumidifier (IP, Device ID, Local Key, Protocol Version, Polli
 | `dp_color_temp` |  | `light_temperature` | number | 23 | ✓ `0` = disabled |
 | `dp_color_mode` |  | `light_mode` | string | 21 | ✓ `0` = disabled |
 | `dp_color` |  | `light_hue` + `light_saturation` | HSV hex | 24 | ✓ `0` = disabled |
+| `dp_paint_color` |  | `light_hue` + `light_saturation` (+ `dim`) | base64 colour block | 0 | ✓ `0` = disabled — RGBIC strips, see below |
 
 Standard Tuya light DP layout (newer protocol):
 
@@ -655,6 +656,31 @@ Older protocol uses DPs 1–5 instead of 20–24.
 #### Color Handling
 
 In **white mode**, the brightness (`dim`) slider writes directly to `dp_brightness`. In **color mode**, the brightness slider updates the V (value) component of the HSV hex string. Hue and saturation are mapped from the Homey `light_hue` / `light_saturation` capabilities.
+
+Changing hue or saturation first switches the light to colour mode when it reports something
+else (`scene`, `music`, `white`) — in a scene it would discard the colour without a word.
+Dimming does not, so a running scene keeps running. A light without a brightness DP
+(`dp_brightness` = 0) dims through the V component in every mode.
+
+#### RGBIC Strips (Colour Block)
+
+Strips with individually addressable LEDs (Tuya "dreamlight") often ignore `colour_data`
+(DP 24) and take colour and brightness from `paint_colour_data`, usually **DP 61**. On a
+reported strip DP 24 stayed the same for red, green, blue, white and 10 %, while DP 61 changed
+every time. Its 11 bytes:
+
+| Bytes | Meaning |
+|---|---|
+| 1–5 | Not known (`00 01 00 14 00` on two strips with 83 and 200 LEDs) — copied from the last report, never made up |
+| 6–7 | Hue 0–360 |
+| 8–9 | Saturation 0–1000 — white is saturation 0, there is no white mode |
+| 10–11 | Brightness 0–1000 |
+
+Set `dp_paint_color` to that DP: colour and brightness then use the block, and DP 24 is no
+longer read. With Cloud Lookup, adding the strip finds it by its code name. These strips
+usually have no brightness DP either; Cloud Lookup now also switches off a DP the shape
+detection guessed but the specification names differently — on the reported strip it had taken
+DP 26, `countdown`, for the brightness.
 
 #### Fixed Power Reporting
 

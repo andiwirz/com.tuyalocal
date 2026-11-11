@@ -22786,6 +22786,21 @@
                 "en": "DP for HSV hex color string (default: 24 or 5). Set to 0 to disable.",
                 "de": "DP für den HSV-Farbstring (Standard: 24 oder 5). 0 = deaktiviert."
               }
+            },
+            {
+              "id": "dp_paint_color",
+              "type": "number",
+              "label": {
+                "en": "Colour Block DP",
+                "de": "DP Farbblock"
+              },
+              "value": 0,
+              "min": 0,
+              "max": 255,
+              "hint": {
+                "en": "For RGBIC strips (individually addressable LEDs) that take colour and brightness from a raw block, usually DP 61 (paint_colour_data), instead of the Color (HSV) DP. When set, colour and brightness use this block. 0 = disabled.",
+                "de": "Für RGBIC-Streifen (einzeln ansteuerbare LEDs), die Farbe und Helligkeit aus einem Rohblock nehmen, meist DP 61 (paint_colour_data), statt aus dem Farb-DP (HSV). Ist er gesetzt, laufen Farbe und Helligkeit über diesen Block. 0 = deaktiviert."
+              }
             }
           ]
         },

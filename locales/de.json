@@ -145,6 +145,7 @@
       "brightness": "Helligkeit",
       "colorMode": "Farbmodus",
       "color": "Farbe (HSV)",
+      "colorBlock": "Farbblock (RGBIC)",
       "dpHint": "DP-Nummern können direkt angepasst werden — der Aktueller Wert aktualisiert sich sofort.",
       "allDps": "Alle erkannten DPs anzeigen",
       "unknown": "unbekannt — in Einstellungen konfigurieren",
