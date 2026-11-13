@@ -28,7 +28,10 @@ const { detectViaCloud, guessedDefaults, dpVorgaben }        = require('../../li
 // use than a DP that swallows every command in silence.
 const CLOUD_CODE_MAP = {
   dp_switch:           ['switch'],
-  dp_work_state:       ['work_state'],
+  // DeviceState stand zuerst unter dp_connection_state. Seine Werte (no_connet,
+  // charing, finish ...) sind aber der Ladestatus der Goodcell-Firmware, nicht die
+  // Steuerleitung (controlpi_...); dort setzte die Kachel sie nie.
+  dp_work_state:       ['work_state', 'DeviceState'],
   dp_charge_current:   ['charge_cur_set'],
   dp_phase_a:          ['phase_a', 'phase_1'],
   dp_phase_b:          ['phase_b', 'phase_2'],
@@ -43,7 +46,7 @@ const CLOUD_CODE_MAP = {
   dp_energy_total:     ['forward_energy_total', 'DeviceKwh'],
   dp_session_energy:   ['charge_energy_once'],
   dp_fault:            ['fault'],
-  dp_connection_state: ['connection_state', 'DeviceState'],
+  dp_connection_state: ['connection_state'],
   dp_work_mode:        ['work_mode'],
   dp_temperature:      ['temp_current', 'DeviceTemp'],
   dp_timer_on:         ['timer_on'],
@@ -55,6 +58,54 @@ const WORK_STATES = [
   'charger_free', 'charger_insert', 'charger_free_fault', 'charger_wait',
   'charger_charging', 'charger_pause', 'charger_end', 'charger_fault',
 ];
+
+// Goodcell-Firmware (Feyree u. a.). Nur die Woerter, die sonst nirgends vorkommen,
+// erkennen den Status-DP an jeder Stelle - "connect", "finish" und "error" koennten auf
+// einem fremden DP eines anderen Laders stehen. Sie zaehlen nur auf DP 101, wo diese
+// Firmware den Status fuehrt, und nie gegen einen Tuya-Status, der schon gefunden ist.
+const STATUS_SPERRE = [...WORK_STATES,
+  'charger_start_wait', 'charger_stop_wait', 'IDLE', 'IDLEINS', 'WORKING', 'PAUSE', 'SLEEP'];
+const GOODCELL_EINDEUTIG  = ['no_connet', 'charing', 'wait_charing', 'wait_rfid'];
+const GOODCELL_AUF_DP_101 = ['connect', 'finish', 'error'];
+// Start und Stopp als Text, auf DP 124. WaitOperation ist der Ruhewert dazwischen.
+const GOODCELL_BEFEHLE    = ['OpenCharging', 'CloseCharging', 'WaitOperation'];
+// DP 113 nennt die Baugroesse; der passende Stromsollwert steht auf 114 bzw. 115.
+const GOODCELL_STROM      = { Max16A: { dp: 114, max: 16 }, Max32A: { dp: 115, max: 32 } };
+
+/**
+ * Was die Live-Werte ueber Goodcell-Firmware verraten - nur die Einstellungen, die
+ * sicher belegt sind, sonst nichts. Ein gewoehnlicher Tuya-Lader liefert hier ein
+ * leeres Ergebnis: keines dieser Woerter kommt bei ihm vor, und ein Tuya-Status
+ * (charger_...) sperrt die Statuserkennung ganz.
+ *
+ * @param {Object} dps  Die beim Hinzufuegen gelesenen Datenpunkte.
+ * @returns {Object} settingKey -> Wert
+ */
+function goodcellErkennen(dps) {
+  const out = {};
+  const eintraege = Object.entries(dps || {}).map(([k, v]) => [parseInt(k, 10), v]);
+  const vorhanden = (dp) => eintraege.some(([d]) => d === dp);
+  // Jeder Status, den der Geraetecode schon kennt, sperrt - nicht nur die acht Tuya-
+  // Woerter, sonst hielte ein Lader mit IDLEINS auf DP 3 und "error" auf DP 101 die
+  // 101 fuer seinen Status.
+  const tuyaStatus = eintraege.some(([, v]) => STATUS_SPERRE.includes(v));
+
+  for (const [dp, val] of eintraege) {
+    if (typeof val !== 'string') continue;
+    if (!tuyaStatus && (GOODCELL_EINDEUTIG.includes(val)
+        || (dp === 101 && GOODCELL_AUF_DP_101.includes(val)))) {
+      out.dp_work_state = dp;
+    } else if (GOODCELL_BEFEHLE.includes(val)) {
+      out.dp_switch        = dp;
+      out.switch_on_value  = 'OpenCharging';
+      out.switch_off_value = 'CloseCharging';
+    } else if (dp === 113 && GOODCELL_STROM[val] && vorhanden(GOODCELL_STROM[val].dp)) {
+      out.dp_charge_current = GOODCELL_STROM[val].dp;
+      out.current_max       = GOODCELL_STROM[val].max;
+    }
+  }
+  return out;
+}
 
 class EvChargerDriver extends Homey.Driver {
   async onInit() {
@@ -198,7 +249,10 @@ class EvChargerDriver extends Homey.Driver {
 
           const cloudDps = await detectViaCloud(this.homey, deviceId, CLOUD_CODE_MAP, (m) => this.log(m), {}, guessedDefaults(detectedDps, collectedDps));
           if (Object.keys(cloudDps).length > 0) {
-            Object.assign(detectedDps, cloudDps);
+            // Was die Goodcell-Firmware selbst meldet, gilt vor der Spezifikation: die
+            // kennt bei diesen Ladern nur den Standard-Satz - switch auf DP 18 und
+            // work_state auf einem DP, den das Geraet nie sendet.
+            Object.assign(detectedDps, cloudDps, goodcellErkennen(collectedDps));
             this.log('Final detected DPs (cloud-refined):', JSON.stringify(detectedDps));
           }
         }
@@ -347,10 +401,13 @@ class EvChargerDriver extends Homey.Driver {
     // on every model tested, so that is the default; users whose counter does
     // update can set dp_energy_total to 1 in device settings.
 
-    return result;
+    return Object.assign(result, goodcellErkennen(dps));
   }
 
   async onPairListDevices() { return []; }
 }
 
 module.exports = EvChargerDriver;
+// Fuer Tests - Homey liest nur den Export selbst.
+module.exports.CLOUD_CODE_MAP   = CLOUD_CODE_MAP;
+module.exports.goodcellErkennen = goodcellErkennen;

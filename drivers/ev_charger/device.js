@@ -43,6 +43,9 @@ const WORK_STATES = [
   // Ein Lader mit durchweg eigenen Datenpunkten (gxrtu5vljdthtd3g) schreibt statt
   // der Tuya-Namen diese Grosskuerzel aus.
   'IDLE', 'IDLEINS', 'WORKING', 'PAUSE', 'SLEEP',
+  // Goodcell-Firmware (Feyree u. a.), DP 101 "DeviceState". Die Tippfehler stehen so
+  // im Geraet und muessen so bleiben.
+  'no_connet', 'connect', 'wait_rfid', 'charing', 'wait_charing', 'finish', 'error',
 ];
 
 // Tuya's 8 work_state values → Homey's 5 standard evcharger_charging_state
@@ -79,7 +82,22 @@ const STATE_MAP = {
   IDLEINS:  'plugged_in',
   WORKING:  'plugged_in_charging',
   PAUSE:    'plugged_in_paused',
+
+  // Goodcell. Zuordnung wie im gemeldeten Bericht vorgeschlagen und wie tuya-local
+  // (goodcell_ev_charger) sie liest: wait_rfid wartet auf Freigabe, das Auto steckt;
+  // wait_charing ist ein verzoegerter Start, also pausiert; finish steckt noch.
+  no_connet:    'plugged_out',
+  connect:      'plugged_in',
+  wait_rfid:    'plugged_in',
+  finish:       'plugged_in',
+  charing:      'plugged_in_charging',
+  wait_charing: 'plugged_in_paused',
 };
+
+// Zustaende, die bekannt sind, aber nichts ueber den Stecker sagen. "error" kann mit
+// und ohne Auto kommen; die Kachel behaelt darum ihren letzten Wert, statt zu raten,
+// und der Fehler selbst kommt ueber dp_fault. Bekannt heisst nur: keine Warnung.
+const OHNE_ZUORDNUNG = new Set(['error']);
 
 // Der Schalter zeigt, ob geladen wird — nicht, ob der Lader freigegeben ist.
 //
@@ -229,7 +247,7 @@ class EvChargerDevice extends BaseTuyaDevice {
     // generates the "Start/Stop charging" actions and "Is charging" condition
     // from it automatically — no custom flow cards needed for those.
     register('evcharger_charging', async (value) => {
-      await this._set(this.getSetting('dp_switch'), Boolean(value));
+      await this._schalteLaden(Boolean(value));
     });
 
     // target_power is Homey's standard charge-power control (watts) and is what
@@ -249,7 +267,7 @@ class EvChargerDevice extends BaseTuyaDevice {
             const watts = Number(value) || 0;
             if (watts <= 0) {
               // Idle request — stop charging rather than writing an invalid 0 A.
-              await this._set(this.getSetting('dp_switch'), false).catch(() => {});
+              await this._schalteLaden(false).catch(() => {});
             } else {
               await this._set(dp, this._wattsToRawCurrent(watts)).catch(() => {});
             }
@@ -273,6 +291,29 @@ class EvChargerDevice extends BaseTuyaDevice {
         }, DEBOUNCE_MS);
       });
     });
+  }
+
+  /**
+   * Die Befehlswoerter fuer Start und Stopp, wenn der Lader keinen Schalter hat.
+   *
+   * Goodcell-Firmware startet mit "OpenCharging" und stoppt mit "CloseCharging" auf
+   * einem Text-DP (124). Beide Einstellungen leer - die Vorgabe und der Stand jeder
+   * bestehenden Installation - heisst: true/false wie bisher. Nur beide zusammen
+   * gelten; einer allein waere ein Lader, den man starten, aber nicht stoppen kann.
+   *
+   * @returns {{an: string, aus: string}|null}
+   */
+  _befehlsWoerter() {
+    const an  = String(this.getSetting('switch_on_value')  ?? '').trim();
+    const aus = String(this.getSetting('switch_off_value') ?? '').trim();
+    return an && aus ? { an, aus } : null;
+  }
+
+  /** Startet oder stoppt das Laden - mit true/false oder mit den Befehlswoertern. */
+  async _schalteLaden(an) {
+    const dp = this.getSetting('dp_switch');
+    const woerter = this._befehlsWoerter();
+    await this._set(dp, woerter ? (an ? woerter.an : woerter.aus) : Boolean(an));
   }
 
   // ── Power ⇄ current conversion ──────────────────────────────────────────────
@@ -924,6 +965,13 @@ class EvChargerDevice extends BaseTuyaDevice {
 
       // ── Switch ───────────────────────────────────────────────────────────
       if (settings.dp_switch > 0 && dp === settings.dp_switch) {
+        // Mit Befehlswoertern ist der DP ein Befehlseingang, kein Zustand: Goodcell
+        // meldet dort "CloseCharging" oder "WaitOperation", auch waehrend und nach
+        // einer Ladung, die es selbst beendet hat. In den Schalter gelesen stuende
+        // er nach einem fertigen Ladevorgang auf an - genau der Fehler, den LAEDT
+        // oben beschreibt. Also nicht lesen, und auch nicht als "meldet sich"
+        // zaehlen: der Schalter folgt dann dem Ladestatus, siehe _schalterAusZustand.
+        if (this._befehlsWoerter() && typeof value !== 'boolean') continue;
         // Hier ankommen heisst: der Datenpunkt meldet sich wirklich. Was hier landet,
         // hat den Echo-Filter schon hinter sich — ein Wert, den wir selbst gerade
         // gesetzt haben, kommt nie bis hierher. Genau diese Unterscheidung fehlte:
@@ -946,7 +994,7 @@ class EvChargerDevice extends BaseTuyaDevice {
         // Verfügung, auch wenn die Kachel ihn nicht darstellen kann. Also nur die
         // Zuordnung überspringen, nicht den Rest. Gemeldet wird je Wert einmal,
         // statt siebzehnmal wie im Bericht, der das ans Licht brachte.
-        if (!STATE_MAP[state] && !this._wsGemeldet?.has(state)) {
+        if (!STATE_MAP[state] && !OHNE_ZUORDNUNG.has(state) && !this._wsGemeldet?.has(state)) {
           (this._wsGemeldet = this._wsGemeldet || new Set()).add(state);
           this._appLog(`work_state: unknown value "${state}" — expected one of `
             + `${WORK_STATES.join(', ')}. The state tile keeps its last value; flows on `

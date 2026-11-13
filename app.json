@@ -8246,6 +8246,55 @@
                   "en": "Asleep (SLEEP)",
                   "de": "Schlafend (SLEEP)"
                 }
+              },
+              {
+                "id": "no_connet",
+                "label": {
+                  "en": "Not connected (no_connet)",
+                  "de": "Nicht verbunden (no_connet)"
+                }
+              },
+              {
+                "id": "connect",
+                "label": {
+                  "en": "Plugged in (connect)",
+                  "de": "Eingesteckt (connect)"
+                }
+              },
+              {
+                "id": "wait_rfid",
+                "label": {
+                  "en": "Waiting for authorisation (wait_rfid)",
+                  "de": "Wartet auf Freigabe (wait_rfid)"
+                }
+              },
+              {
+                "id": "charing",
+                "label": {
+                  "en": "Charging (charing)",
+                  "de": "Lädt (charing)"
+                }
+              },
+              {
+                "id": "wait_charing",
+                "label": {
+                  "en": "Delayed start (wait_charing)",
+                  "de": "Verzögerter Start (wait_charing)"
+                }
+              },
+              {
+                "id": "finish",
+                "label": {
+                  "en": "Finished (finish)",
+                  "de": "Beendet (finish)"
+                }
+              },
+              {
+                "id": "error",
+                "label": {
+                  "en": "Fault (error)",
+                  "de": "Fehler (error)"
+                }
               }
             ]
           }
@@ -27001,6 +27050,32 @@
               }
             },
             {
+              "id": "switch_on_value",
+              "type": "text",
+              "label": {
+                "en": "Start Command Value",
+                "de": "Wert für Start"
+              },
+              "value": "",
+              "hint": {
+                "en": "Leave empty for a normal on/off switch. For chargers that start and stop with a text command instead: the text that starts charging - OpenCharging on Goodcell firmware (Feyree), with On/Off DP 124. Only takes effect together with the stop value; the switch then follows the charger state.",
+                "de": "Leer lassen für einen normalen Ein/Aus-Schalter. Für Lader, die mit einem Textbefehl starten und stoppen: der Text, der das Laden startet - OpenCharging bei Goodcell-Firmware (Feyree), mit Ein/Aus DP 124. Gilt nur zusammen mit dem Wert für Stopp; der Schalter folgt dann dem Ladestatus."
+              }
+            },
+            {
+              "id": "switch_off_value",
+              "type": "text",
+              "label": {
+                "en": "Stop Command Value",
+                "de": "Wert für Stopp"
+              },
+              "value": "",
+              "hint": {
+                "en": "The text that stops charging - CloseCharging on Goodcell firmware. Leave empty for a normal on/off switch.",
+                "de": "Der Text, der das Laden stoppt - CloseCharging bei Goodcell-Firmware. Leer lassen für einen normalen Ein/Aus-Schalter."
+              }
+            },
+            {
               "id": "dp_work_state",
               "type": "number",
               "label": {
@@ -27009,8 +27084,8 @@
               },
               "value": 3,
               "hint": {
-                "en": "DP for work_state (idle / plugged in / charging / finished / fault). Set to 0 to disable.",
-                "de": "DP für work_state (bereit / eingesteckt / lädt / beendet / Fehler). 0 = deaktiviert."
+                "en": "DP for work_state (idle / plugged in / charging / finished / fault). Set to 0 to disable. Goodcell firmware (Feyree) reports its state on DP 101 (no_connet, connect, charing, finish …).",
+                "de": "DP für work_state (bereit / eingesteckt / lädt / beendet / Fehler). 0 = deaktiviert. Goodcell-Firmware (Feyree) meldet ihren Status auf DP 101 (no_connet, connect, charing, finish …)."
               }
             },
             {

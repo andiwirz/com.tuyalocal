@@ -1,4 +1,8 @@
 {
+  "1.0.289": {
+    "en": "EV chargers with Goodcell firmware (Feyree): the charging state on DP 101 is now shown, can be chosen in \"Detailed charger state is\", and start/stop works through text commands on DP 124 (new settings Start/Stop Command Value). Adding such a charger detects this together with the charge current DP. Existing chargers are unchanged.",
+    "de": "Wallboxen mit Goodcell-Firmware (Feyree): Der Ladestatus auf DP 101 wird jetzt angezeigt und ist in „Detaillierter Ladestatus ist“ wählbar, und Start/Stopp funktioniert über Textbefehle auf DP 124 (neue Einstellungen „Wert für Start“ und „Wert für Stopp“). Beim Hinzufügen wird das samt Ladestrom-DP erkannt. Bestehende Wallboxen bleiben unverändert."
+  },
   "1.0.288": {
     "en": "Lights: RGBIC strips that take colour and brightness from a colour block (paint_colour_data, usually DP 61) can now be controlled - set Colour Block DP, or add the strip again with Cloud Lookup. Changing the colour switches a light out of a scene first, and a light without a brightness DP dims through its colour.",
     "de": "Lichter: RGBIC-Streifen, die Farbe und Helligkeit aus einem Farbblock nehmen (paint_colour_data, meist DP 61), lassen sich jetzt steuern – „DP Farbblock“ setzen oder den Streifen mit der Cloud-Abfrage neu hinzufügen. Eine Farbänderung holt eine Lampe zuerst aus einer Szene, und eine Lampe ohne Helligkeits-DP dimmt über ihre Farbe."

@@ -1268,6 +1268,7 @@ Uses Homey's native EV charger capabilities, so the built-in **Start charging** 
 | Setting | Icon | Capability | Type | Default DP | Notes |
 |---|:---:|---|---|---|---|
 | `dp_switch` |  | `evcharger_charging` | boolean | 18 | Homey's standard charge switch |
+| `switch_on_value` / `switch_off_value` |  | — | text | empty | Only for chargers that start and stop with a text command — see Goodcell below |
 | `dp_work_state` |  | `evcharger_charging_state` | enum | 3 | Tuya's 8 states mapped onto Homey's 5 — see below |
 | `dp_charge_current` |  | `target_power` | number | 4 | Charger speaks amps, Homey speaks watts |
 | `dp_phase_a` |  | voltage / current / power | raw | 6 | Packed DP: 2 B voltage ×0.1 V, 3 B current ×0.001 A, then power in W. Both the 8-byte and 7-byte layouts are decoded automatically |
@@ -1325,6 +1326,34 @@ Tuya reports eight states, Homey has five:
 | `charger_pause` | Paused |
 
 The exact Tuya state stays available through the **Detailed charger state changed** trigger and its matching condition, which can tell *waiting* from *finished*.
+
+#### Goodcell Firmware (Feyree)
+
+Some Feyree wallboxes run Goodcell firmware with data points of their own, outside Tuya's
+standard set, so Cloud Lookup sees only stale standard values for them. Read from a reported
+three-phase unit:
+
+| DP | Meaning | Setting |
+|---|---|---|
+| 101 | State: `no_connet`, `connect`, `wait_rfid`, `charing`, `wait_charing`, `finish`, `error` (the typos are the firmware's) | `dp_work_state` = 101 |
+| 124 | Start / stop as text: `OpenCharging`, `CloseCharging`; `WaitOperation` in between | `dp_switch` = 124, `switch_on_value` = `OpenCharging`, `switch_off_value` = `CloseCharging` |
+| 113 | Model: `Max16A` or `Max32A` | — |
+| 114 / 115 | Charge current in A — 114 on a `Max16A` unit (6–16 A), 115 on a `Max32A` unit (6–32 A) | `dp_charge_current` = 114 / 115, `current_max` = 16 / 32 |
+
+| Goodcell state | Homey `evcharger_charging_state` |
+|---|---|
+| `no_connet` | Not plugged in |
+| `connect`, `wait_rfid`, `finish` | Plugged in |
+| `charing` | Charging |
+| `wait_charing` | Paused (delayed start) |
+| `error` | Unchanged — the fault itself comes through `dp_fault` |
+
+Adding the charger detects all of this from its live values. On a charger added earlier, set it
+by hand. With command values set, what the charger reports on DP 124 is not read into the
+switch: it says `CloseCharging` or `WaitOperation` during and after a charge it ended itself.
+The switch follows the state instead and shows whether the car is charging. Both values empty —
+the default — keeps the plain on/off switch, and a charger added before this keeps working
+exactly as it did.
 
 #### Notes
 
@@ -3126,7 +3155,7 @@ same state, under `state`.
 | EV charger reports voltage and current per phase, but the fields stay empty | Some chargers name those data points themselves (`A_Voltage`, `A_Current`, `DeviceKw`) instead of using the standard code names | Cloud Lookup now recognises those names — pair the device again, or read the numbers off **DP Debug** and enter `dp_voltage_a` … `dp_current_c` by hand |
 | EV charger: Session Energy stays empty and the total never moves | On chargers with vendor code names, DP 25 (`charge_energy_once`) is never sent — their session counter is **DP 112** (`DeviceKwh`), which rises during a charge and returns to 0 afterwards | Set `dp_session_energy = 112`, `dp_energy_total = 0` and **Total Energy Source** to *session*. The app then builds the lifetime total from completed sessions. Watch the Logs tab: it names any unmapped data point that is counting up |
 | EV charger: voltage reads ~2400 V, power is far too low | Those chargers scale differently on all three quantities, and `DeviceKw` counts **tenths of a kilowatt**, not watts | `voltage_scale` **0.1**, `amp_scale` **0.1**, `power_scale` **100**. Check the result against itself: volts × amps × phases must come out near the reported power |
-| EV charger: Charging state stays empty | The charger reports its state on DP 101 (`DeviceState`: `no_connet`, `connect`, `charing`, …) rather than on DP 3 (`work_state`), which it never sends | Not yet read by the app. Set `dp_work_state = 0` so the setting does not look configured; the tile fills once support for that vocabulary ships |
+| EV charger: Charging state stays empty | The charger reports its state on DP 101 (`DeviceState`: `no_connet`, `connect`, `charing`, …) rather than on DP 3 (`work_state`), which it never sends — Goodcell firmware | Since 1.0.289: set `dp_work_state` to 101. Start and stop on the same firmware go through DP 124 — see **Goodcell Firmware (Feyree)** under EV Charger |
 
 ---
 
