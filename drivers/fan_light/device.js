@@ -23,6 +23,7 @@
 const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 const { parseColorHex, buildColorHex } = require('../../lib/tuyaColor');
 const { zeitRohZuKachel, zeitKachelZuRoh } = require('../../lib/utils.js');
+const decke = require('../../lib/deckenventilator');
 
 const DEBOUNCE_MS = 300;
 
@@ -45,7 +46,7 @@ const DP_PROFILE = [
   { settingKey: 'dp_onoff',           capability: 'onoff.fan',       transform: (v) => Boolean(v),  settable: true  },
   { settingKey: 'dp_fan_speed',       capability: 'fan_speed',       transform: (v) => String(v),   settable: true  },
   { settingKey: 'dp_oscillate',       capability: 'oscillate',       transform: (v) => Boolean(v),  settable: true  },
-  { settingKey: 'dp_direction',       capability: 'fan_direction',   transform: (v) => String(v),   settable: true  },
+  { settingKey: 'dp_direction',       capability: 'fan_direction',   transform: decke.richtungAusRoh, settable: true  },
   { settingKey: 'dp_mode',            capability: 'fan_mode',        transform: (v) => String(v),   settable: true  },
   { settingKey: 'dp_child_lock',      capability: 'child_lock',      transform: (v) => Boolean(v),  settable: true  },
   { settingKey: 'dp_countdown_timer', capability: 'countdown_timer', transform: (v) => String(v),   settable: true  },
@@ -139,6 +140,15 @@ class FanLightDevice extends BaseTuyaDevice {
     for (const entry of DP_PROFILE) {
       if (!entry.settable) continue;
       register(entry.capability, async (value) => {
+        // Deckenventilatoren, siehe lib/deckenventilator.js. Hier ist onoff das Licht
+        // und onoff.fan der Ventilator.
+        if (entry.capability === 'onoff') decke.lichtBefohlen(this, value);
+        if (entry.capability === 'onoff.fan' && await decke.einschaltenMitRichtung(this, value)) return;
+        if (entry.capability === 'fan_direction') {
+          if (!await decke.richtungBefohlen(this, value, 'onoff.fan')) return;
+          await this._set(this.getSetting(entry.settingKey), decke.richtungZuRoh(this, value));
+          return;
+        }
         // Die Abschaltzeit, wo das Geraet eine blosse Zahl fuehrt: "2h" an ein
         // Geraet, das "2" erwartet, tut gar nichts — der Datenpunkt bleibt auf 0.
         const roh = entry.capability === 'countdown_timer'
@@ -159,7 +169,8 @@ class FanLightDevice extends BaseTuyaDevice {
             const min = this.getSetting('speed_min') ?? 1;
             const max = this.getSetting('speed_max') ?? 6;
             const raw = Math.round(min + (max - min) * Math.max(0, Math.min(1, value)));
-            await this._set(dp, raw).catch(() => {});
+            // Als Text, wenn der DP die Stufe als Text meldet ("1" bis "32").
+            await this._set(dp, decke.stufeZuRoh(this, dp, raw)).catch(() => {});
           }
           resolve();
         }, DEBOUNCE_MS);
@@ -295,6 +306,7 @@ class FanLightDevice extends BaseTuyaDevice {
   }
 
   async _onDeleted() {
+    decke.wacheBeenden(this);
     clearTimeout(this._dimDebounceTimer);
     clearTimeout(this._lightDimDebounceTimer);
     clearTimeout(this._hueDebounceTimer);
@@ -414,6 +426,7 @@ class FanLightDevice extends BaseTuyaDevice {
       if (entry.capability === 'onoff.fan') {
         const prevOn = this.getCapabilityValue('onoff.fan');
         await this.setCapabilityValue('onoff.fan', converted).catch(() => {});
+        decke.ventilatorGemeldet(this, converted, prevOn, 'onoff');
         if (prevOn !== null && prevOn !== converted) {
           this._triggerFanSwitched
             .trigger(this, {}, { enabled: String(converted) })
@@ -434,6 +447,8 @@ class FanLightDevice extends BaseTuyaDevice {
       }
 
       if (entry.capability === 'fan_direction') {
+        // Steht der Ventilator und soll Homey die Richtung halten, bleibt die Kachel.
+        if (!decke.richtungGemeldet(this, converted, 'onoff.fan')) continue;
         const prevDir = this.getCapabilityValue('fan_direction');
         await this.setCapabilityValue('fan_direction', converted).catch(() => {});
         if (prevDir !== null && prevDir !== converted) {
@@ -446,6 +461,7 @@ class FanLightDevice extends BaseTuyaDevice {
 
       if (!this.hasCapability(entry.capability)) continue;
       await this._applyCapability(entry.capability, converted);
+      if (entry.capability === 'onoff') decke.lichtGemeldet(this, converted);
     }
 
     if (changed) {

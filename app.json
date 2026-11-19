@@ -20400,8 +20400,21 @@
               "max": 255,
               "step": 1,
               "hint": {
-                "en": "DP number for fan_direction (forward / reverse). Set to 0 to disable.",
-                "de": "DP-Nummer für fan_direction (forward / reverse). 0 = deaktiviert."
+                "en": "DP number for the fan direction. Text values forward / reverse, or true / false (true = reverse). Set to 0 to disable.",
+                "de": "DP-Nummer für die Lüfterrichtung. Textwerte forward / reverse oder true / false (true = rückwärts). 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "direction_hold_when_off",
+              "type": "checkbox",
+              "label": {
+                "en": "Remember direction while the fan is off",
+                "de": "Richtung merken, solange der Ventilator aus ist"
+              },
+              "value": false,
+              "hint": {
+                "en": "For ceiling fans that start in forward every time they are switched on. A direction chosen while the fan is off is kept in Homey and sent together with power on, so the fan never starts the wrong way round. While the fan is off, the Direction tile shows the remembered direction, not what the fan reports.",
+                "de": "Für Deckenventilatoren, die nach jedem Einschalten vorwärts anlaufen. Eine Richtung, die bei ausgeschaltetem Ventilator gewählt wird, merkt sich Homey und sendet sie zusammen mit dem Einschalten – so läuft er nie falsch herum an. Solange er aus ist, zeigt die Richtungs-Kachel die gemerkte Richtung, nicht die gemeldete."
               }
             },
             {
@@ -20515,6 +20528,19 @@
               "hint": {
                 "en": "DP for light on/off (boolean). Set to 0 to disable.",
                 "de": "DP für Licht Ein/Aus (Boolean). 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "light_off_with_fan",
+              "type": "checkbox",
+              "label": {
+                "en": "Keep the light off when the fan turns off",
+                "de": "Licht aus lassen, wenn der Ventilator ausgeht"
+              },
+              "value": false,
+              "hint": {
+                "en": "For ceiling fans that switch their own light on when the fan is switched off. For 30 seconds after the fan turns off, the light is switched off again whenever it comes on. Only if the light was off when the fan turned off; switching the light on in Homey ends the 30 seconds early.",
+                "de": "Für Deckenventilatoren, die beim Ausschalten des Ventilators selbst ihr Licht einschalten. 30 Sekunden lang nach dem Ausschalten wird das Licht wieder ausgeschaltet, sobald es angeht. Nur wenn das Licht beim Ausschalten aus war; wer es in Homey einschaltet, beendet die 30 Sekunden vorzeitig."
               }
             },
             {
@@ -21080,8 +21106,21 @@
               "max": 255,
               "step": 1,
               "hint": {
-                "en": "DP number for fan_direction (forward / reverse). Set to 0 to disable.",
-                "de": "DP-Nummer für fan_direction (forward / reverse). 0 = deaktiviert."
+                "en": "DP number for the fan direction. Text values forward / reverse, or true / false (true = reverse). Set to 0 to disable.",
+                "de": "DP-Nummer für die Lüfterrichtung. Textwerte forward / reverse oder true / false (true = rückwärts). 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "direction_hold_when_off",
+              "type": "checkbox",
+              "label": {
+                "en": "Remember direction while the fan is off",
+                "de": "Richtung merken, solange der Ventilator aus ist"
+              },
+              "value": false,
+              "hint": {
+                "en": "For ceiling fans that start in forward every time they are switched on. A direction chosen while the fan is off is kept in Homey and sent together with power on, so the fan never starts the wrong way round. While the fan is off, the Direction tile shows the remembered direction, not what the fan reports.",
+                "de": "Für Deckenventilatoren, die nach jedem Einschalten vorwärts anlaufen. Eine Richtung, die bei ausgeschaltetem Ventilator gewählt wird, merkt sich Homey und sendet sie zusammen mit dem Einschalten – so läuft er nie falsch herum an. Solange er aus ist, zeigt die Richtungs-Kachel die gemerkte Richtung, nicht die gemeldete."
               }
             },
             {
@@ -21195,6 +21234,19 @@
               "hint": {
                 "en": "DP for the lamp's on/off switch. This is the tile's main switch: it is what a light group and “turn off all the lights” act on. Usually 20, sometimes 9 or 15. Set to 0 to disable.",
                 "de": "DP für den Ein-/Aus-Schalter der Lampe. Das ist der Hauptschalter der Kachel — daran hängen Lichtgruppen und „alle Lichter ausschalten“. Meist 20, mitunter 9 oder 15. 0 = deaktiviert."
+              }
+            },
+            {
+              "id": "light_off_with_fan",
+              "type": "checkbox",
+              "label": {
+                "en": "Keep the light off when the fan turns off",
+                "de": "Licht aus lassen, wenn der Ventilator ausgeht"
+              },
+              "value": false,
+              "hint": {
+                "en": "For ceiling fans that switch their own light on when the fan is switched off. For 30 seconds after the fan turns off, the light is switched off again whenever it comes on. Only if the light was off when the fan turned off; switching the light on in Homey ends the 30 seconds early.",
+                "de": "Für Deckenventilatoren, die beim Ausschalten des Ventilators selbst ihr Licht einschalten. 30 Sekunden lang nach dem Ausschalten wird das Licht wieder ausgeschaltet, sobald es angeht. Nur wenn das Licht beim Ausschalten aus war; wer es in Homey einschaltet, beendet die 30 Sekunden vorzeitig."
               }
             },
             {

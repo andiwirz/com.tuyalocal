@@ -450,7 +450,18 @@ Because the speed slider already occupies `dim`, the light's brightness uses its
 > `dp_speed = 0` when your fan has stepped speeds rather than a percentage, and use
 > `dp_fan_speed` for the steps.
 
-The `fan_direction` capability uses fixed values `forward` and `reverse` (Tuya standard). The DP is auto-detected at pairing time if the device reports either of those strings.
+The `fan_direction` capability uses fixed values `forward` and `reverse` (Tuya standard). The DP is auto-detected at pairing time if the device reports either of those strings. Since 1.0.289 a direction DP that reports `true` / `false` works as well (`true` = reverse, the winter setting): the tile shows forward/reverse and the command goes out as true/false. A boolean cannot be recognised as a direction from its value alone, so such a DP is found by Cloud Lookup (code `fan_direction`) or entered by hand.
+
+A speed DP that reports its steps as text (`"1"` … `"32"`) can drive the slider too: set `dp_speed` to it with `speed_min` / `speed_max` matching, and the slider sends the step as text. Before 1.0.289 it sent a number, which such a fan ignores.
+
+#### Ceiling Fan Extras
+
+Two tick boxes for ceiling fans, both off by default. They behave the same on the **Ceiling Fan Light** driver.
+
+| Setting | Group | What it does |
+|---|---|---|
+| `light_off_with_fan` | Light (optional) | **Keep the light off when the fan turns off.** Some ceiling fans switch their own light on when the fan is switched off — on the reported Mantra fans about 2 s after the off command, and again about 13 s later when the motor has stopped, with light-off commands ignored in between. For 30 s after the fan turns off, the app switches the light off again whenever it reports on, and repeats that every 2 s while it stays on. Only if the light was off when the fan turned off; switching the light on in Homey ends the 30 s early. After 30 s the light is left alone, so the remote and the wall switch work as usual. |
+| `direction_hold_when_off` | Data Points (DPs) | **Remember direction while the fan is off.** For fans that start in forward every time, whatever they last ran in. A direction chosen while the fan is off is not sent but kept in Homey, and goes out together with the next power on in one command — the fan never starts the wrong way round. While the fan is off, the Direction tile shows the remembered direction rather than what the fan reports; while it runs, a change at the remote counts and is remembered. |
 
 #### Fixed Power Reporting
 
@@ -507,6 +518,8 @@ Same settings as Dehumidifier, plus **Fire and Forget** (on by default — most 
 
 `speed_min` / `speed_max` (default 1 … 100) map the device's raw speed range onto the 0–100 % slider.
 A fan with six steps takes `speed_min = 1`, `speed_max = 6`.
+
+Direction as `true` / `false`, speed steps as text, and the two tick boxes **Keep the light off when the fan turns off** and **Remember direction while the fan is off** work as described under [Ceiling Fan Extras](#ceiling-fan-extras) for the Fan driver.
 
 #### Data Points — light
 

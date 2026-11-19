@@ -3,6 +3,7 @@
 const BaseTuyaDevice = require('../../lib/BaseTuyaDevice');
 const { parseColorHex, buildColorHex } = require('../../lib/tuyaColor');
 const { rohZuId, idZuRoh, zeitRohZuKachel, zeitKachelZuRoh } = require('../../lib/utils.js');
+const decke = require('../../lib/deckenventilator');
 
 const DEBOUNCE_MS = 300;
 
@@ -35,7 +36,7 @@ const DP_PROFILE = [
   { settingKey: 'dp_onoff',           capability: 'onoff',           transform: (v) => Boolean(v),  settable: true  },
   { settingKey: 'dp_fan_speed',       capability: 'fan_speed',       transform: (v) => String(v),   settable: true  },
   { settingKey: 'dp_oscillate',       capability: 'oscillate',       transform: (v) => Boolean(v),  settable: true  },
-  { settingKey: 'dp_direction',       capability: 'fan_direction',   transform: (v) => String(v),   settable: true  },
+  { settingKey: 'dp_direction',       capability: 'fan_direction',   transform: decke.richtungAusRoh, settable: true  },
   { settingKey: 'dp_mode',            capability: 'fan_mode',        transform: (v) => String(v),   settable: true  },
   { settingKey: 'dp_child_lock',      capability: 'child_lock',      transform: (v) => Boolean(v),  settable: true  },
   { settingKey: 'dp_countdown_timer', capability: 'countdown_timer', transform: (v) => String(v),   settable: true  },
@@ -137,6 +138,16 @@ class FanDevice extends BaseTuyaDevice {
     for (const entry of DP_PROFILE) {
       if (!entry.settable) continue;
       register(entry.capability, async (value) => {
+        // Deckenventilatoren, siehe lib/deckenventilator.js: Licht in Homey eingeschaltet
+        // beendet das Nachlauffenster; Einschalten nimmt die gemerkte Richtung mit; eine
+        // Richtung bei stehendem Ventilator wird nur gemerkt.
+        if (entry.capability === 'onoff.light') decke.lichtBefohlen(this, value);
+        if (entry.capability === 'onoff' && await decke.einschaltenMitRichtung(this, value)) return;
+        if (entry.capability === 'fan_direction') {
+          if (!await decke.richtungBefohlen(this, value, 'onoff')) return;
+          await this._set(this.getSetting(entry.settingKey), decke.richtungZuRoh(this, value));
+          return;
+        }
         // Traegt die Werteliste eine Zuordnung, geht der Wert des Geraets hinaus und
         // nicht der Name. Ohne Zuordnung faellt idZuRoh auf den Wert selbst zurueck.
         const quelle = ENUM_QUELLE[entry.capability];
@@ -160,7 +171,8 @@ class FanDevice extends BaseTuyaDevice {
             const min = this.getSetting('speed_min') ?? 1;
             const max = this.getSetting('speed_max') ?? 6;
             const raw = Math.round(min + (max - min) * Math.max(0, Math.min(1, value)));
-            await this._set(dp, raw).catch(() => {});
+            // Als Text, wenn der DP die Stufe als Text meldet ("1" bis "32").
+            await this._set(dp, decke.stufeZuRoh(this, dp, raw)).catch(() => {});
           }
           resolve();
         }, DEBOUNCE_MS);
@@ -296,6 +308,7 @@ class FanDevice extends BaseTuyaDevice {
   }
 
   async _onDeleted() {
+    decke.wacheBeenden(this);
     clearTimeout(this._dimDebounceTimer);
     clearTimeout(this._lightDimDebounceTimer);
     clearTimeout(this._hueDebounceTimer);
@@ -425,6 +438,8 @@ class FanDevice extends BaseTuyaDevice {
       }
 
       if (entry.capability === 'fan_direction') {
+        // Steht der Ventilator und soll Homey die Richtung halten, bleibt die Kachel.
+        if (!decke.richtungGemeldet(this, converted, 'onoff')) continue;
         const prevDir = this.getCapabilityValue('fan_direction');
         await this.setCapabilityValue('fan_direction', converted).catch(() => {});
         if (prevDir !== null && prevDir !== converted) {
@@ -436,7 +451,10 @@ class FanDevice extends BaseTuyaDevice {
       }
 
       if (!this.hasCapability(entry.capability)) continue;
+      const vorher = this.getCapabilityValue(entry.capability);
       await this._applyCapability(entry.capability, converted);
+      if (entry.capability === 'onoff') decke.ventilatorGemeldet(this, converted, vorher, 'onoff.light');
+      if (entry.capability === 'onoff.light') decke.lichtGemeldet(this, converted);
     }
 
     if (changed) {
