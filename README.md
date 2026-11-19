@@ -1837,6 +1837,8 @@ Each entry in the `dp_config` JSON array supports the following fields:
 
 **Debounce:** Slider capabilities are debounced by 300 ms to prevent flooding the device during drag.
 
+**Editing later:** Changes to `dp_config` in the device settings apply when you save — tiles are added or removed, picker choices updated and commands re-wired, without restarting the app. Only if a picker still shows its old choices in the Homey app, restart Tuya Local.
+
 #### Available capability pools
 
 | Pool | Capability IDs | Type | Settable |

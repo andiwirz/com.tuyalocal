@@ -18628,8 +18628,8 @@
               },
               "value": "[]",
               "hint": {
-                "en": "JSON array configured during pairing. Each entry: {\"dp\":1,\"cap\":\"onoff\",\"label\":\"Power\",\"settable\":true,\"scale\":1}. After editing, the Tuya Local app must be restarted.",
-                "de": "JSON-Array, das beim Pairing konfiguriert wird. Jeder Eintrag: {\"dp\":1,\"cap\":\"onoff\",\"label\":\"Power\",\"settable\":true,\"scale\":1}. Nach Änderungen die Tuya Local App neu starten."
+                "en": "JSON array configured during pairing. Each entry: {\"dp\":1,\"cap\":\"onoff\",\"label\":\"Power\",\"settable\":true,\"scale\":1}. Changes apply when you save. If a picker still shows its old choices, restart the Tuya Local app.",
+                "de": "JSON-Array, das beim Pairing konfiguriert wird. Jeder Eintrag: {\"dp\":1,\"cap\":\"onoff\",\"label\":\"Power\",\"settable\":true,\"scale\":1}. Änderungen gelten beim Speichern. Zeigt ein Picker noch die alten Einträge, die Tuya Local App neu starten."
               }
             }
           ]
