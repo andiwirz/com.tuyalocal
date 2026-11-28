@@ -325,6 +325,9 @@ class FanDevice extends BaseTuyaDevice {
 
     for (const [dpStr, value] of Object.entries(dps)) {
       if (this._lastDps[dpStr] === value) continue;
+      // Der Wert davor, fuer den Wechsel an -> aus in lib/deckenventilator.js. Nicht die
+      // Kachel: die setzt Homey schon beim Befehl auf aus, bevor das Geraet bestaetigt.
+      const vorherRoh = this._lastDps[dpStr];
       this._lastDps[dpStr] = value;
       changed = true;
 
@@ -451,9 +454,8 @@ class FanDevice extends BaseTuyaDevice {
       }
 
       if (!this.hasCapability(entry.capability)) continue;
-      const vorher = this.getCapabilityValue(entry.capability);
       await this._applyCapability(entry.capability, converted);
-      if (entry.capability === 'onoff') decke.ventilatorGemeldet(this, converted, vorher, 'onoff.light');
+      if (entry.capability === 'onoff') decke.ventilatorGemeldet(this, converted, vorherRoh, 'onoff.light');
       if (entry.capability === 'onoff.light') decke.lichtGemeldet(this, converted);
     }
 

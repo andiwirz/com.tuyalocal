@@ -20413,8 +20413,8 @@
               },
               "value": false,
               "hint": {
-                "en": "For ceiling fans that start in forward every time they are switched on. A direction chosen while the fan is off is kept in Homey and sent together with power on, so the fan never starts the wrong way round. While the fan is off, the Direction tile shows the remembered direction, not what the fan reports.",
-                "de": "Für Deckenventilatoren, die nach jedem Einschalten vorwärts anlaufen. Eine Richtung, die bei ausgeschaltetem Ventilator gewählt wird, merkt sich Homey und sendet sie zusammen mit dem Einschalten – so läuft er nie falsch herum an. Solange er aus ist, zeigt die Richtungs-Kachel die gemerkte Richtung, nicht die gemeldete."
+                "en": "For ceiling fans that start in forward every time they are switched on. A direction chosen while the fan is off is kept in Homey. Reverse is sent together with power on, so the fan never starts the wrong way round; forward needs nothing, so only power on is sent. While the fan is off, the Direction tile shows the remembered direction, not what the fan reports.",
+                "de": "Für Deckenventilatoren, die nach jedem Einschalten vorwärts anlaufen. Eine Richtung, die bei ausgeschaltetem Ventilator gewählt wird, merkt sich Homey. Rückwärts geht zusammen mit dem Einschalten hinaus – so läuft er nie falsch herum an; vorwärts braucht nichts, dann wird nur eingeschaltet. Solange er aus ist, zeigt die Richtungs-Kachel die gemerkte Richtung, nicht die gemeldete."
               }
             },
             {
@@ -21119,8 +21119,8 @@
               },
               "value": false,
               "hint": {
-                "en": "For ceiling fans that start in forward every time they are switched on. A direction chosen while the fan is off is kept in Homey and sent together with power on, so the fan never starts the wrong way round. While the fan is off, the Direction tile shows the remembered direction, not what the fan reports.",
-                "de": "Für Deckenventilatoren, die nach jedem Einschalten vorwärts anlaufen. Eine Richtung, die bei ausgeschaltetem Ventilator gewählt wird, merkt sich Homey und sendet sie zusammen mit dem Einschalten – so läuft er nie falsch herum an. Solange er aus ist, zeigt die Richtungs-Kachel die gemerkte Richtung, nicht die gemeldete."
+                "en": "For ceiling fans that start in forward every time they are switched on. A direction chosen while the fan is off is kept in Homey. Reverse is sent together with power on, so the fan never starts the wrong way round; forward needs nothing, so only power on is sent. While the fan is off, the Direction tile shows the remembered direction, not what the fan reports.",
+                "de": "Für Deckenventilatoren, die nach jedem Einschalten vorwärts anlaufen. Eine Richtung, die bei ausgeschaltetem Ventilator gewählt wird, merkt sich Homey. Rückwärts geht zusammen mit dem Einschalten hinaus – so läuft er nie falsch herum an; vorwärts braucht nichts, dann wird nur eingeschaltet. Solange er aus ist, zeigt die Richtungs-Kachel die gemerkte Richtung, nicht die gemeldete."
               }
             },
             {
